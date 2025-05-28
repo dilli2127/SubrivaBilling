@@ -1,0 +1,36 @@
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import { ApiRequest } from "../../services/api/apiService";
+import { dynamic_request, useDynamicSelector } from "../../services/redux";
+import { useDispatch } from "react-redux";
+import { Dispatch } from "redux";
+import { getApiRouteCmsImage } from "../../helpers/Common_functions";
+
+const LandingBanner: React.FC = () => {
+  const getImageRoute = getApiRouteCmsImage("GetAll");
+  const { loading, items } = useDynamicSelector(getImageRoute.identifier);
+  const dispatch: Dispatch<any> = useDispatch();
+  const callBackServer = useCallback(
+    (variables: ApiRequest, key: string) => {
+      dispatch(dynamic_request(variables, key));
+    },
+    [dispatch]
+  );
+
+  const getAllImages = () => {
+    callBackServer(
+      {
+        method: getImageRoute.method,
+        endpoint: getImageRoute.endpoint,
+        data: { pageLimit: 100 },
+      },
+      getImageRoute.identifier
+    );
+  };
+  useEffect(() => {
+    getAllImages();
+  }, []);
+
+  return <></>;
+};
+
+export default LandingBanner;

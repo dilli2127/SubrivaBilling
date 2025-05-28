@@ -1,0 +1,134 @@
+/* Header Styles */
+.header {
+  /* Styles are now inline in the React component for dynamic effects */
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+}
+
+.logo img {
+  width: 90px; 
+  margin-right: 10px;
+  transition: transform 0.3s ease;
+}
+
+.logo a {
+  display: flex;
+  align-items: center;
+  color: white;
+  text-decoration: none;
+}
+
+.logo a:hover img {
+  transform: scale(1.1);
+}
+
+.logo a span {
+  font-size: 28px; 
+  font-weight: bold;
+}
+
+.desktop-nav {
+  display: flex;
+  flex-grow: 1;
+  justify-content: flex-end;
+}
+
+.nav-links {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.nav-links .ant-menu-item {
+  font-size: 16px;
+  transition: color 0.3s ease;
+}
+
+.nav-links .ant-menu-item:hover {
+  color: #ffdd67;
+}
+
+.mobile-nav {
+  display: none;
+}
+
+.menu-icon {
+  font-size: 24px;
+  border: none;
+  background: transparent;
+  color: white;
+}
+
+.drawer-title {
+  font-size: 20px;
+  font-weight: bold;
+  color: #333;
+}
+
+.mobile-nav-links .ant-menu-item {
+  font-size: 18px;
+  padding: 10px 0;
+}
+
+.mobile-nav-links .ant-menu-item a {
+  color: #333;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+.mobile-nav-links .ant-menu-item:hover a {
+  color: #6a11cb;
+}
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+@media (max-width: 768px) {
+  .desktop-nav {
+    display: none;
+  }
+
+  .mobile-nav {
+    display: flex;
+  }
+}
+
+.menu-link {
+  color: white;
+  font-weight: 500;
+  text-decoration: none;
+  position: relative;
+  transition: color 0.3s ease;
+}
+
+.menu-link::after {
+  content: "";
+  position: absolute;
+  width: 100%;
+  transform: scaleX(0);
+  height: 2px;
+  bottom: -5px;
+  left: 0;
+  background-color: #ffdd67;
+  transform-origin: bottom right;
+  transition: transform 0.3s ease-out;
+}
+
+.menu-link:hover {
+  color: #ffdd67;
+}
+
+.menu-link:hover::after {
+  transform: scaleX(1);
+  transform-origin: bottom left;
+}
+.header {
+  transition: background 0.3s ease, height 0.3s ease, transform 0.3s ease;
+  transform: translateY(0);
+}

@@ -1,0 +1,106 @@
+/* Full page with gradient background */
+.coming-soon-page {
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(to right, #ff7e5f, #feb47b); /* Gradient background */
+    color: white;
+    font-family: 'Arial', sans-serif;
+    text-align: center;
+  }
+  
+  /* Overlay for darkening the background */
+  .overlay {
+    background: rgba(0, 0, 0, 0.4); /* Slightly dark overlay */
+    padding: 30px;
+    border-radius: 10px;
+    width: 80%;
+    max-width: 600px;
+  }
+  
+  /* Main title styling */
+  .title {
+    font-size: 4rem;
+    font-weight: bold;
+    margin-bottom: 20px;
+    letter-spacing: 2px;
+    text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.4);
+  }
+  
+  /* Description text */
+  .description {
+    font-size: 1.5rem;
+    margin-bottom: 30px;
+    line-height: 1.5;
+  }
+  
+  /* Countdown timer */
+  .countdown {
+    font-size: 2rem;
+    font-weight: bold;
+  }
+  
+  /* Countdown time styling */
+  .countdown-time p {
+    display: inline-block;
+    font-size: 3rem;
+    margin: 0 10px;
+    background: rgba(255, 255, 255, 0.2);
+    padding: 15px;
+    border-radius: 5px;
+  }
+  
+  /* Styling for mobile responsiveness */
+  @media (max-width: 768px) {
+    .coming-soon-page {
+      padding: 20px; /* Padding on small screens */
+      height: auto; /* Prevents overflow */
+    }
+  
+    .overlay {
+      padding: 20px;
+      width: 100%; /* Full width on smaller screens */
+      max-width: none; /* No max-width to make it flexible */
+    }
+  
+    .title {
+      font-size: 2.5rem; /* Smaller font size for title */
+      margin-bottom: 15px; /* Adjusted margin */
+    }
+  
+    .description {
+      font-size: 1.2rem; /* Slightly smaller description text */
+      margin-bottom: 20px; /* Reduced margin */
+    }
+  
+    .countdown {
+      font-size: 1.5rem; /* Adjusted font size for countdown */
+    }
+  
+    .countdown-time p {
+      font-size: 2.5rem; /* Adjust countdown time font size */
+      padding: 10px; /* Reduced padding for countdown */
+      margin: 0 5px; /* Reduced margin */
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .title {
+      font-size: 2rem; /* Further reduce title size */
+    }
+  
+    .description {
+      font-size: 1rem; /* Further reduce description size */
+    }
+  
+    .countdown {
+      font-size: 1.3rem; /* Further reduce countdown size */
+    }
+  
+    .countdown-time p {
+      font-size: 2rem; /* Further reduce countdown time font size */
+      padding: 8px; /* Adjust padding for smaller screens */
+    }
+  }
+  
