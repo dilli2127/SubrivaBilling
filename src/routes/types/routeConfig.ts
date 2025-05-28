@@ -7,6 +7,9 @@ export interface RouteConfig {
   path: string;
   element?: ReactNode;
   children?: RouteConfig[];
+  title?: string;
+  authenticate?: boolean;
+  breadcrumbs?: { name: string; path: string }[];
 }
 export interface Album {
   _id: number;
