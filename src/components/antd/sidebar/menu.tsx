@@ -8,10 +8,10 @@ export const menuItems = [
     path: "einvite_crud",
   },
   {
-    key: "EMemories", 
+    key: "EMemories",
     icon: <AppstoreOutlined />,
     label: "E-Memories",
-    children: [ 
+    children: [
       {
         key: "EAlbumCrud",
         icon: <UserOutlined />,
@@ -27,17 +27,16 @@ export const menuItems = [
     ],
   },
   {
-    key: "Gallery Crud",
+    key: "GalleryCrud",
     icon: <UserOutlined />,
     label: "Gallery",
     path: "gallery_crud",
   },
- 
   {
     key: "MasterData",
-    icon: <UserOutlined />, 
+    icon: <UserOutlined />,
     label: "Master Data",
-    children: [ 
+    children: [
       {
         key: "GalaryCategory",
         icon: <UserOutlined />,
@@ -45,7 +44,7 @@ export const menuItems = [
         path: "gallary_category_Crud",
       },
       {
-        key: "CMS Images Crud",
+        key: "CMSImagesCrud",
         icon: <UserOutlined />,
         label: "CMS Images",
         path: "image_crud",

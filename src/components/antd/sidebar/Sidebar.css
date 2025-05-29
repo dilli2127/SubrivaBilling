@@ -1,0 +1,64 @@
+/* Base styles for menu */
+.ant-menu-item, .ant-menu-submenu-title {
+  color: #031a3e !important;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+/* Highlight selected menu item */
+.ant-menu-item-selected {
+  background: rgba(255, 255, 255, 0.2) !important;
+  font-weight: bold;
+  color: #fff !important;
+}
+
+/* Hover effect */
+.ant-menu-item:hover, .ant-menu-submenu-title:hover {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  transform: scale(1.03);
+}
+
+/* Collapsed: Center icons only */
+.ant-layout-sider-collapsed .ant-menu-item,
+.ant-layout-sider-collapsed .ant-menu-submenu-title {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  padding: 12px 0 !important;
+}
+
+/* Hide label text when collapsed */
+.ant-layout-sider-collapsed .ant-menu-item > span:not(.anticon),
+.ant-layout-sider-collapsed .ant-menu-submenu-title > span:not(.anticon):not(.ant-menu-submenu-arrow) {
+  display: none !important;
+}
+
+/* Hide arrow icon when collapsed */
+.ant-layout-sider-collapsed .ant-menu-submenu-arrow {
+  display: none !important;
+}
+
+/* Submenu popup styles */
+.custom-submenu-popup {
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+  padding: 4px 0;
+}
+
+/* Submenu item text & hover */
+.custom-submenu-popup .ant-menu-item {
+  color: #847ff1 !important;
+}
+.custom-submenu-popup .ant-menu-item:hover {
+  background: rgba(109, 144, 239, 0.2) !important;
+}
+.custom-submenu-popup .ant-menu-item-selected {
+  background: #ecb7b2 !important;
+  color: #000 !important;
+  font-weight: bold;
+}
+
+/* Submenu arrow color */
+.ant-menu-submenu-arrow {
+  color: #fff !important;
+}
