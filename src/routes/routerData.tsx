@@ -41,32 +41,32 @@ const routerData: RouteConfig[] = [
     children: [],
   },
   // user web
-  {
-    key: "userweb",
-    path: "/",
-    element: (
-      <Suspense fallback={<Loader />}>
-        <AppHeader />
-        <Outlet />
-      </Suspense>
-    ),
-    children: [
-      {
-        key: "landingPage",
-        path: "/",
-        element: (
-          <Suspense fallback={<Loader />}>
-            <LandingBanner />
-          </Suspense>
-        ),
-      },
-    ],
-  },
+  // {
+  //   key: "userweb",
+  //   path: "/",
+  //   element: (
+  //     <Suspense fallback={<Loader />}>
+  //       <AppHeader />
+  //       <Outlet />
+  //     </Suspense>
+  //   ),
+  //   children: [
+  //     {
+  //       key: "landingPage",
+  //       path: "/",
+  //       element: (
+  //         <Suspense fallback={<Loader />}>
+  //           <LandingBanner />
+  //         </Suspense>
+  //       ),
+  //     },
+  //   ],
+  // },
 
   // Admin Routes
   {
     key: "admin",
-    path: "admin",
+    path: "/",
     element: (
       <Suspense fallback={<Loader />}>
         <Sidebar>
