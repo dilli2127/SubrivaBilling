@@ -2,6 +2,8 @@
   "name": "E-Invite",
   "version": "0.1.0",
   "private": true,
+  "main": "main.js",
+  "homepage": "./",
   "dependencies": {
     "@ant-design/charts": "^2.3.0",
     "@ant-design/icons": "^5.5.1",
@@ -37,7 +39,9 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "electron-dev": "concurrently \"cross-env BROWSER=none npm start\" \"wait-on http://localhost:3000 && electron .\"",
+    "electron-build": "npm run build && electron-builder"
   },
   "eslintConfig": {
     "extends": [
@@ -61,6 +65,23 @@
     "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
     "@types/leaflet": "^1.9.15",
     "@types/react-color": "^3.0.13",
-    "@types/react-redux": "^7.1.34"
+    "@types/react-redux": "^7.1.34",
+    "concurrently": "^9.1.2",
+    "cross-env": "^7.0.3",
+    "electron": "^36.3.2",
+    "electron-builder": "^26.0.12",
+    "wait-on": "^8.0.3"
+  },
+  "build": {
+    "appId": "your.app.id",
+    "productName": "YourAppName",
+    "files": [
+      "build/**/*",
+      "main.js",
+      "package.json"
+    ],
+    "directories": {
+      "buildResources": "assets"
+    }
   }
 }
