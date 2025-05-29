@@ -6,6 +6,7 @@ import AppHeader from "../components/Header/Header";
 import LandingBanner from "../pages/Home";
 import Login from "../pages/login/login";
 import Signup from "../pages/login/Signup";
+import Dashboard from "../pages/Dashboard";
 
 const Loader = () => <div>Loading...</div>;
 
@@ -74,7 +75,18 @@ const routerData: RouteConfig[] = [
         </Sidebar>
       </Suspense>
     ),
-    children: [],
+    children: [
+      {
+        key: "dashboard",
+        path: "dashboard",
+        element: (
+          <Suspense fallback={<Loader />}>
+            <Dashboard />
+          </Suspense>
+        ),
+        children: [],
+      },
+    ],
   },
 ];
 
