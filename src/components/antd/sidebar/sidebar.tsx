@@ -98,25 +98,28 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
           >
             {menuItems.map((item) =>
               item.children ? (
-                <Menu.SubMenu
-                  key={item.key}
-                  icon={item.icon}
-                  title={item.label}
-                  popupClassName="custom-submenu-popup"
-                >
-                  {item.children.map((child) => (
-                    <Menu.Item
-                      key={child.key}
-                      icon={child.icon}
-                      onClick={() => handleMenuClick(child.key, child.path)}
-                      className={`custom-subitem ${
-                        selectedKey === child.key ? "active" : ""
-                      }`}
-                    >
-                      {child.label}
-                    </Menu.Item>
-                  ))}
-                </Menu.SubMenu>
+                <>
+                  {item?.key === "EMemories" && "Produce"}
+                  <Menu.SubMenu
+                    key={item.key}
+                    icon={item.icon}
+                    title={item.label}
+                    popupClassName="custom-submenu-popup"
+                  >
+                    {item.children.map((child) => (
+                      <Menu.Item
+                        key={child.key}
+                        icon={child.icon}
+                        onClick={() => handleMenuClick(child.key, child.path)}
+                        className={`custom-subitem ${
+                          selectedKey === child.key ? "active" : ""
+                        }`}
+                      >
+                        {child.label}
+                      </Menu.Item>
+                    ))}
+                  </Menu.SubMenu>
+                </>
               ) : (
                 <Menu.Item
                   key={item.key}
