@@ -69,7 +69,7 @@ export const menuItems = [
         key: "add-product",
         label: "Add Product",
         icon: <PlusCircleOutlined />,
-        path: "/products/add",
+        path: "/prduct_crud",
       },
       {
         key: "all-products",

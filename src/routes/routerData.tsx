@@ -7,7 +7,7 @@ import LandingBanner from "../pages/Home";
 import Login from "../pages/login/login";
 import Signup from "../pages/login/Signup";
 import Dashboard from "../pages/Dashboard";
-
+const ProductCrud = lazy(() => import("../pages/Products/crud"));
 const Loader = () => <div>Loading...</div>;
 
 const routerData: RouteConfig[] = [
@@ -82,6 +82,16 @@ const routerData: RouteConfig[] = [
         element: (
           <Suspense fallback={<Loader />}>
             <Dashboard />
+          </Suspense>
+        ),
+        children: [],
+      },
+      {
+        key: "prduct_crud",
+        path: "prduct_crud",
+        element: (
+          <Suspense fallback={<Loader />}>
+            <ProductCrud />
           </Suspense>
         ),
         children: [],

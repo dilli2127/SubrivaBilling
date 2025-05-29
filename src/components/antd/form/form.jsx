@@ -17,7 +17,6 @@ const AntdForm = (props) => {
     loading,
     form,
   } = props;
-console.log("dilli",initialValues)
   const columns = formColumns || 1;
   const handleCancel = () => {
     onChildCancel(false);
