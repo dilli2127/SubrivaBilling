@@ -41,7 +41,7 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          background: "linear-gradient(90deg, #fc466b, #3f5efb)",
+          background: "linear-gradient(90deg, #ff6a00, #ee0979)",
           color: "#fff",
           padding: "0 16px",
           position: "fixed",
@@ -57,8 +57,10 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
           onClick={() => setCollapsed(!collapsed)}
           style={{ color: "#fff", fontSize: 18 }}
         />
-        <h2 style={{ margin: 0, color: "#fff", flex: 1, textAlign: "center" }}>
-          Fresh Focuz Studio
+        <h2
+          style={{ margin: 0, flex: 1, textAlign: "center" }}
+        >
+          Fresh Focuz Billing
         </h2>
         <Button
           icon={<LogoutOutlined />}
@@ -76,7 +78,7 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
           collapsed={collapsed}
           width={240}
           style={{
-            background: "linear-gradient(180deg,rgb(178, 182, 244), #8f94fb)",
+            background: "linear-gradient(180deg, #4e54c8, #8f94fb)",
             position: "fixed",
             top: 64,
             height: "100vh",

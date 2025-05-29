@@ -1,6 +1,6 @@
 /* Base styles for menu */
 .ant-menu-item, .ant-menu-submenu-title {
-  color: #031a3e !important;
+  color: #e2edff !important;
   font-weight: 500;
   transition: all 0.3s ease;
 }
@@ -9,7 +9,7 @@
 .ant-menu-item-selected {
   background: rgba(255, 255, 255, 0.2) !important;
   font-weight: bold;
-  color: #fff !important;
+  color: #010b25 !important;
 }
 
 /* Hover effect */
