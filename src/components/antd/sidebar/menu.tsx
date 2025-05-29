@@ -72,10 +72,10 @@ export const menuItems = [
         path: "/prduct_crud",
       },
       {
-        key: "all-products",
-        label: "All Products",
+        key: "unit",
+        label: "Unit",
         icon: <DatabaseOutlined />,
-        path: "/products",
+        path: "/unit_crud",
       },
     ],
   },
