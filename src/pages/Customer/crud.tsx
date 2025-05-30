@@ -30,6 +30,7 @@ import {
 import { getApiRouteCmsImage, showToast } from "../../helpers/Common_functions";
 import { API_ROUTES } from "../../services/api/utils";
 import GlobalDrawer from "../../components/antd/GlobalDrawer";
+import GlobalTable from "../../components/antd/GlobalTable";
 const { Title } = Typography;
 const formColumns = 2;
 const { Option } = Select;
@@ -302,7 +303,7 @@ const CustomerCrud: React.FC = () => {
         </div>
       </Row>
 
-      <Table columns={columns} dataSource={items?.result} rowKey="id" />
+      <GlobalTable columns={columns} data={items?.result} />
 
       <GlobalDrawer
         title="Add New Customer"
