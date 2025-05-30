@@ -23,15 +23,34 @@ export const menuItems = [
     path: "/dashboard",
   },
   {
+    key: "Retail Bills",
+    label: "Retail Bills",
+    icon: <FileTextOutlined />,
+    children: [
+      {
+        key: "create-retail-bill",
+        label: "Retail Bill",
+        icon: <PlusCircleOutlined />,
+        path: "/retaill_billing",
+      },
+      {
+        key: "all-retail-bills",
+        label: "Retail Bills List",
+        icon: <UnorderedListOutlined />,
+        path: "/retaill_bill_list",
+      },
+    ],
+  },
+  {
     key: "invoices",
     label: "Invoices",
     icon: <FileTextOutlined />,
     children: [
       {
-        key: "create-invoice",
-        label: "Create Invoice",
+        key: "invoice_create",
+        label: "Invoice Create",
         icon: <PlusCircleOutlined />,
-        path: "/invoices/create",
+        path: "/invoice_create",
       },
       {
         key: "all-invoices",
@@ -67,7 +86,7 @@ export const menuItems = [
     children: [
       {
         key: "add-product",
-        label: "Add Product",
+        label: "Product",
         icon: <PlusCircleOutlined />,
         path: "/prduct_crud",
       },
@@ -76,6 +95,18 @@ export const menuItems = [
         label: "Unit",
         icon: <DatabaseOutlined />,
         path: "/unit_crud",
+      },
+        {
+        key: "category",
+        label: "Category",
+        icon: <DatabaseOutlined />,
+        path: "/category_crud",
+      },
+      {
+        key: "variant",
+        label: "Variant",
+        icon: <DatabaseOutlined />,
+        path: "/variant_crud",
       },
     ],
   },

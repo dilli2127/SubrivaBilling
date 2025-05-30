@@ -9,6 +9,12 @@ import Signup from "../pages/login/Signup";
 import Dashboard from "../pages/Dashboard";
 const ProductCrud = lazy(() => import("../pages/Products/crud"));
 const UnitCrud = lazy(() => import("../pages/Unit/crud"));
+const CategoryCrud = lazy(() => import("../pages/Category/crud"));
+const VariantCrud = lazy(() => import("../pages/Variant/crud"));
+const RetailBillForm = lazy(() => import("../pages/RetaillBill/retaill_bill"));
+const BillListPage = lazy(() => import("../pages/RetaillBill/BillListPage"));
+const InvoiceCreatePage = lazy(() => import("../pages/Invoice/InvoiceCreatePage"));
+
 const Loader = () => <div>Loading...</div>;
 
 const routerData: RouteConfig[] = [
@@ -42,28 +48,6 @@ const routerData: RouteConfig[] = [
     ),
     children: [],
   },
-  // user web
-  // {
-  //   key: "userweb",
-  //   path: "/",
-  //   element: (
-  //     <Suspense fallback={<Loader />}>
-  //       <AppHeader />
-  //       <Outlet />
-  //     </Suspense>
-  //   ),
-  //   children: [
-  //     {
-  //       key: "landingPage",
-  //       path: "/",
-  //       element: (
-  //         <Suspense fallback={<Loader />}>
-  //           <LandingBanner />
-  //         </Suspense>
-  //       ),
-  //     },
-  //   ],
-  // },
 
   // Admin Routes
   {
@@ -103,6 +87,56 @@ const routerData: RouteConfig[] = [
         element: (
           <Suspense fallback={<Loader />}>
             <UnitCrud />
+          </Suspense>
+        ),
+        children: [],
+      },
+      {
+        key: "category_crud",
+        path: "category_crud",
+        element: (
+          <Suspense fallback={<Loader />}>
+            <CategoryCrud />
+          </Suspense>
+        ),
+        children: [],
+      },
+      {
+        key: "variant_crud",
+        path: "variant_crud",
+        element: (
+          <Suspense fallback={<Loader />}>
+            <VariantCrud />
+          </Suspense>
+        ),
+        children: [],
+      },
+      {
+        key: "retaill_billing",
+        path: "retaill_billing",
+        element: (
+          <Suspense fallback={<Loader />}>
+            <RetailBillForm />
+          </Suspense>
+        ),
+        children: [],
+      },
+      {
+        key: "retaill_bill_list",
+        path: "retaill_bill_list",
+        element: (
+          <Suspense fallback={<Loader />}>
+            <BillListPage />
+          </Suspense>
+        ),
+        children: [],
+      },
+       {
+        key: "invoice_create",
+        path: "invoice_create",
+        element: (
+          <Suspense fallback={<Loader />}>
+            <InvoiceCreatePage />
           </Suspense>
         ),
         children: [],

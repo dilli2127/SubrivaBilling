@@ -3,17 +3,13 @@ import {
   Table,
   Button,
   Row,
-  Drawer,
   Input,
   Form,
   Tooltip,
   Image,
   Select,
 } from "antd";
-import {
-  DeleteOutlined,
-  EditOutlined,
-} from "@ant-design/icons";
+import { DeleteOutlined, EditOutlined } from "@ant-design/icons";
 import { useFileUpload } from "../../helpers/useFileUpload";
 import AntdForm from "../../components/antd/form/form";
 import { useDispatch } from "react-redux";
@@ -26,6 +22,7 @@ import {
 } from "../../services/redux";
 import { getApiRouteCmsImage, showToast } from "../../helpers/Common_functions";
 import { API_ROUTES } from "../../services/api/utils";
+import GlobalDrawer from "../../components/antd/GlobalDrawer";
 
 const formColumns = 2;
 const { Option } = Select;
@@ -100,7 +97,7 @@ const UnitCrud: React.FC = () => {
       ),
     },
   ];
-const formItems = [
+  const formItems = [
     {
       label: "Unit Name",
       name: "unit_name",
@@ -261,17 +258,11 @@ const formItems = [
 
       <Table columns={columns} dataSource={items?.result} rowKey="id" />
 
-      <Drawer
+      <GlobalDrawer
         title="Add New Units"
-        placement="right"
         onClose={resetForm}
         open={drawerVisible}
         width={600}
-        bodyStyle={{
-          background: "linear-gradient(135deg, rgb(231 235 255), rgb(218 183 253))",
-          color: "white",
-          padding: "24px",
-        }}
       >
         <AntdForm
           form={form}
@@ -281,7 +272,7 @@ const formItems = [
           formColumns={formColumns}
           onChildCancel={resetForm}
         />
-      </Drawer>
+      </GlobalDrawer>
     </div>
   );
 };

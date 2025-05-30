@@ -8,14 +8,11 @@ import {
   Form,
   Tooltip,
   Image,
-  Switch,
   Select,
-  Typography,
 } from "antd";
 import {
   DeleteOutlined,
   EditOutlined,
-  UploadOutlined,
 } from "@ant-design/icons";
 import { useFileUpload } from "../../helpers/useFileUpload";
 import AntdForm from "../../components/antd/form/form";
@@ -30,10 +27,10 @@ import {
 import { getApiRouteCmsImage, showToast } from "../../helpers/Common_functions";
 import { API_ROUTES } from "../../services/api/utils";
 import GlobalDrawer from "../../components/antd/GlobalDrawer";
-const { Title } = Typography;
+
 const formColumns = 2;
 const { Option } = Select;
-const ProductCrud: React.FC = () => {
+const CategoryCrud: React.FC = () => {
   const getRoute = getApiRouteCmsImage("Get");
   const addRoute = getApiRouteCmsImage("Create");
   const updateRoute = getApiRouteCmsImage("Update");
@@ -105,92 +102,30 @@ const ProductCrud: React.FC = () => {
   ];
   const formItems = [
     {
-      label: "Product Name",
-      name: "name",
-      rules: [{ required: true, message: "Please enter the product name!" }],
-      component: <Input placeholder="e.g., HP Toner 85A" />,
+      label: "Category Name",
+      name: "category_name",
+      rules: [{ required: true, message: "Please enter category name" }],
+      component: <Input placeholder="Enter category name" />,
     },
     {
-      label: "Category",
-      name: "category",
-      rules: [{ required: true, message: "Please select a category!" }],
-      component: (
-        <Select placeholder="Select category">
-          <Option value="electronics">Electronics</Option>
-          <Option value="stationery">Stationery</Option>
-          <Option value="services">Services</Option>
-        </Select>
-      ),
+      label: "HSN Code",
+      name: "hsn_code",
+      rules: [{ required: true, message: "Please enter HSN code" }],
+      component: <Input placeholder="Enter HSN code" />,
     },
     {
-      label: "SKU / Code",
-      name: "sku",
-      rules: [{ required: false }],
-      component: <Input placeholder="Optional SKU code" />,
-    },
-    {
-      label: "Price",
-      name: "price",
-      rules: [{ required: true, message: "Please enter price!" }],
-      component: <InputNumber min={0} style={{ width: "100%" }} />,
-    },
-    {
-      label: "Cost Price",
-      name: "cost_price",
-      rules: [{ required: false }],
-      component: <InputNumber min={0} style={{ width: "100%" }} />,
-    },
-    {
-      label: "Tax (%)",
+      label: "Tax Percentage",
       name: "tax_percentage",
-      rules: [],
-      component: <InputNumber min={0} max={100} style={{ width: "100%" }} />,
-    },
-    {
-      label: "Unit",
-      name: "unit",
-      rules: [{ required: true, message: "Please enter unit!" }],
+      rules: [{ required: true, message: "Please enter tax percentage" }],
       component: (
-        <Select placeholder="Select unit">
-          <Option value="pcs">pcs</Option>
-          <Option value="box">box</Option>
-          <Option value="kg">kg</Option>
-          <Option value="liter">liter</Option>
-        </Select>
-      ),
-    },
-    {
-      label: "Barcode",
-      name: "barcode",
-      rules: [],
-      component: <Input placeholder="Optional barcode" />,
-    },
-    // {
-    //   label: "Image",
-    //   name: "image",
-    //   valuePropName: "fileList",
-    //   getValueFromEvent: (e) => (Array.isArray(e) ? e : e?.fileList),
-    //   component: (
-    //     <Upload name="image" listType="picture" maxCount={1}>
-    //       <button type="button">
-    //         <UploadOutlined /> Upload
-    //       </button>
-    //     </Upload>
-    //   ),
-    // },
-    {
-      label: "Status",
-      name: "status",
-      valuePropName: "checked",
-      rules: [],
-      component: (
-        <Switch
-          checkedChildren="Active"
-          unCheckedChildren="Inactive"
-          defaultChecked
+        <InputNumber
+          placeholder="Tax %"
+          min={0}
+          max={100}
+          style={{ width: "100%" }}
         />
       ),
-    },
+    }
   ];
   const getAllInvites = () => {
     callBackServer(
@@ -323,18 +258,16 @@ const ProductCrud: React.FC = () => {
           alignItems: "flex-start",
         }}
       >
-          <Title level={3} style={{ marginBottom: 24, color: "#1890ff" }}>
-        Bill List
-      </Title>
+        <h1>Categorys List</h1>
         <div style={{ display: "flex", gap: "16px" }}>
           <Input
-            placeholder="Search Products"
+            placeholder="Search Categorys"
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
             style={{ width: 300 }}
           />
           <Button type="primary" onClick={handleDrawerOpen}>
-            Add Products
+            Add Categorys
           </Button>
         </div>
       </Row>
@@ -342,7 +275,7 @@ const ProductCrud: React.FC = () => {
       <Table columns={columns} dataSource={items?.result} rowKey="id" />
 
       <GlobalDrawer
-        title="Add New Produts"
+        title="Add New Categorys"
         onClose={resetForm}
         open={drawerVisible}
         width={600}
@@ -360,4 +293,4 @@ const ProductCrud: React.FC = () => {
   );
 };
 
-export default memo(ProductCrud);
+export default memo(CategoryCrud);
