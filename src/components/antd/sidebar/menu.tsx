@@ -56,7 +56,7 @@ export const menuItems = [
         key: "all-invoices",
         label: "All Invoices",
         icon: <UnorderedListOutlined />,
-        path: "/invoices",
+        path: "/invoice_list",
       },
     ],
   },
@@ -69,14 +69,9 @@ export const menuItems = [
         key: "add-customer",
         label: "Add Customer",
         icon: <UserAddOutlined />,
-        path: "/customers/add",
+        path: "/customer_crud",
       },
-      {
-        key: "all-customers",
-        label: "All Customers",
-        icon: <TeamOutlined />,
-        path: "/customers",
-      },
+    
     ],
   },
   {
@@ -114,7 +109,20 @@ export const menuItems = [
     key: "payments",
     label: "Payments",
     icon: <DollarCircleOutlined />,
-    path: "/payments",
+    children: [
+      {
+        key: "payment-history",
+        label: "Payment History",
+        icon: <LineChartOutlined />,
+        path: "payment_history",
+      },
+      {
+        key: " expenses",
+        label: "expenses",
+        icon: <PieChartOutlined />,
+        path: "/expenses",
+      },
+    ],
   },
   {
     key: "reports",

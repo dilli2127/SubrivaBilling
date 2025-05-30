@@ -2,8 +2,6 @@ import React, { Suspense, lazy } from "react";
 import { RouteConfig } from "./types/routeConfig";
 import Sidebar from "../components/antd/sidebar/sidebar";
 import { Outlet } from "react-router-dom";
-import AppHeader from "../components/Header/Header";
-import LandingBanner from "../pages/Home";
 import Login from "../pages/login/login";
 import Signup from "../pages/login/Signup";
 import Dashboard from "../pages/Dashboard";
@@ -14,6 +12,10 @@ const VariantCrud = lazy(() => import("../pages/Variant/crud"));
 const RetailBillForm = lazy(() => import("../pages/RetaillBill/retaill_bill"));
 const BillListPage = lazy(() => import("../pages/RetaillBill/BillListPage"));
 const InvoiceCreatePage = lazy(() => import("../pages/Invoice/InvoiceCreatePage"));
+const InvoiceListPage = lazy(() => import("../pages/Invoice/InvoiceListPage"));
+const CustomerCrud = lazy(() => import("../pages/Customer/crud"));
+const PaymentHistory = lazy(() => import("../pages/Payment/PaymentHistory"));
+const ExpensesPage = lazy(() => import("../pages/Payment/ExpensesPage"));
 
 const Loader = () => <div>Loading...</div>;
 
@@ -137,6 +139,46 @@ const routerData: RouteConfig[] = [
         element: (
           <Suspense fallback={<Loader />}>
             <InvoiceCreatePage />
+          </Suspense>
+        ),
+        children: [],
+      },
+     {
+        key: "invoice_list",
+        path: "invoice_list",
+        element: (
+          <Suspense fallback={<Loader />}>
+            <InvoiceListPage />
+          </Suspense>
+        ),
+        children: [],
+      },
+       {
+        key: "customer_crud",
+        path: "customer_crud",
+        element: (
+          <Suspense fallback={<Loader />}>
+            <CustomerCrud />
+          </Suspense>
+        ),
+        children: [],
+      },
+        {
+        key: "payment_history",
+        path: "payment_history",
+        element: (
+          <Suspense fallback={<Loader />}>
+            <PaymentHistory customerId="" />
+          </Suspense>
+        ),
+        children: [],
+      },
+      {
+        key: "expenses",
+        path: "expenses",
+        element: (
+          <Suspense fallback={<Loader />}>
+            <ExpensesPage />
           </Suspense>
         ),
         children: [],
