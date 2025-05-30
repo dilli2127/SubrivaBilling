@@ -19,7 +19,13 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const [selectedKey, setSelectedKey] = useState("dashboard");
+  const [openKeys, setOpenKeys] = useState<string[]>([]);
+
   const navigate = useNavigate();
+  const handleOpenChange = (keys: string[]) => {
+    const latestOpenKey = keys.find((key) => !openKeys.includes(key));
+    setOpenKeys(latestOpenKey ? [latestOpenKey] : []);
+  };
 
   const showLogoutConfirm = () => setIsModalVisible(true);
   const handleOk = () => {
@@ -57,9 +63,7 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
           onClick={() => setCollapsed(!collapsed)}
           style={{ color: "#fff", fontSize: 18 }}
         />
-        <h2
-          style={{ margin: 0, flex: 1, textAlign: "center" }}
-        >
+        <h2 style={{ margin: 0, flex: 1, textAlign: "center" }}>
           Fresh Focuz Billing
         </h2>
         <Button
@@ -81,61 +85,66 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
             background: "linear-gradient(180deg, #4e54c8, #8f94fb)",
             position: "fixed",
             top: 64,
-            height: "100vh",
-            overflow: "auto",
+            height: "calc(100vh - 64px)", // subtract header height
+            overflow: "hidden", // disable overflow here
             boxShadow: "2px 0 10px rgba(0, 0, 0, 0.2)",
+            zIndex: 999,
           }}
         >
-          <Menu
-            mode="inline"
-            selectedKeys={[selectedKey]}
-            theme="light"
-            inlineCollapsed={collapsed} // This triggers popup submenu on collapse
-            style={{
-              background: "transparent",
-              color: "#fff",
-              paddingTop: 16,
-              fontWeight: 500,
-            }}
-          >
-            {menuItems.map((item) =>
-              item.children ? (
-                <>
-                  {item?.key === "EMemories" && "Produce"}
-                  <Menu.SubMenu
+          <div style={{ height: "100%", overflowY: "auto", paddingBottom: 32 }}>
+            <Menu
+              mode="inline"
+              selectedKeys={[selectedKey]}
+              theme="light"
+              openKeys={openKeys}
+              onOpenChange={handleOpenChange}
+              inlineCollapsed={collapsed}
+              style={{
+                background: "transparent",
+                color: "#fff",
+                paddingTop: 16,
+                fontWeight: 500,
+              }}
+            >
+              {menuItems.map((item) =>
+                item.children ? (
+                  <>
+                    {item?.key === "EMemories" && "Produce"}
+                    <Menu.SubMenu
+                      key={item.key}
+                      icon={item.icon}
+                      title={item.label}
+                      popupClassName="custom-submenu-popup"
+                    >
+                      {item.children.map((child) => (
+                        <Menu.Item
+                          key={child.key}
+                          icon={child.icon}
+                          onClick={() => handleMenuClick(child.key, child.path)}
+                          className={`custom-subitem ${
+                            selectedKey === child.key ? "active" : ""
+                          }`}
+                        >
+                          {child.label}
+                        </Menu.Item>
+                      ))}
+                    </Menu.SubMenu>
+                  </>
+                ) : (
+                  <Menu.Item
                     key={item.key}
                     icon={item.icon}
-                    title={item.label}
-                    popupClassName="custom-submenu-popup"
+                    onClick={() => handleMenuClick(item.key, item.path)}
+                    className={`custom-menuitem ${
+                      selectedKey === item.key ? "active" : ""
+                    }`}
                   >
-                    {item.children.map((child) => (
-                      <Menu.Item
-                        key={child.key}
-                        icon={child.icon}
-                        onClick={() => handleMenuClick(child.key, child.path)}
-                        className={`custom-subitem ${
-                          selectedKey === child.key ? "active" : ""
-                        }`}
-                      >
-                        {child.label}
-                      </Menu.Item>
-                    ))}
-                  </Menu.SubMenu>
-                </>
-              ) : (
-                <Menu.Item
-                  key={item.key}
-                  icon={item.icon}
-                  onClick={() => handleMenuClick(item.key, item.path)}
-                  className={`custom-menuitem ${
-                    selectedKey === item.key ? "active" : ""
-                  }`}
-                >
-                  {item.label}
-                </Menu.Item>
-              )
-            )}
-          </Menu>
+                    {item.label}
+                  </Menu.Item>
+                )
+              )}
+            </Menu>
+          </div>
         </Sider>
 
         <Layout
