@@ -1,9 +1,7 @@
 {
-  "name": "E-Invite",
+  "name": "FOCUZ-BILLING",
   "version": "0.1.0",
   "private": true,
-  "main": "main.js",
-  "homepage": "./",
   "dependencies": {
     "@ant-design/charts": "^2.3.0",
     "@ant-design/icons": "^6.0.0",
@@ -67,17 +65,5 @@
     "concurrently": "^9.1.2",
     "cross-env": "^7.0.3",
     "wait-on": "^8.0.3"
-  },
-  "build": {
-    "appId": "your.app.id",
-    "productName": "YourAppName",
-    "files": [
-      "build/**/*",
-      "main.js",
-      "package.json"
-    ],
-    "directories": {
-      "buildResources": "assets"
-    }
   }
 }
