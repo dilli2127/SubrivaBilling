@@ -9,6 +9,7 @@ import {
   Image,
   Select,
   Typography,
+  message,
 } from "antd";
 import {
   DeleteOutlined,
@@ -27,7 +28,7 @@ import {
   dynamic_request,
   useDynamicSelector,
 } from "../../services/redux";
-import { getApiRouteCmsImage, showToast } from "../../helpers/Common_functions";
+import { getApiRouteCustomer, showToast } from "../../helpers/Common_functions";
 import { API_ROUTES } from "../../services/api/utils";
 import GlobalDrawer from "../../components/antd/GlobalDrawer";
 import GlobalTable from "../../components/antd/GlobalTable";
@@ -35,10 +36,10 @@ const { Title } = Typography;
 const formColumns = 2;
 const { Option } = Select;
 const CustomerCrud: React.FC = () => {
-  const getRoute = getApiRouteCmsImage("Get");
-  const addRoute = getApiRouteCmsImage("Create");
-  const updateRoute = getApiRouteCmsImage("Update");
-  const deleteRoute = getApiRouteCmsImage("Delete");
+  const getRoute = getApiRouteCustomer("Get");
+  const addRoute = getApiRouteCustomer("Create");
+  const updateRoute = getApiRouteCustomer("Update");
+  const deleteRoute = getApiRouteCustomer("Delete");
   const [form] = Form.useForm();
   const dispatch: Dispatch<any> = useDispatch();
   const { handleFileUpload } = useFileUpload();
@@ -48,7 +49,6 @@ const CustomerCrud: React.FC = () => {
     _id?: string;
     url?: string;
   } | null>({});
-  const [uploadedImageUrls, setUploadedImageUrls] = useState<string[]>([]);
   const { items: updateItems, error: updateError } = useDynamicSelector(
     updateRoute.identifier
   );
@@ -58,6 +58,7 @@ const CustomerCrud: React.FC = () => {
   const { items: createItems, error: createError } = useDynamicSelector(
     addRoute.identifier
   );
+  console.log("createItems", createItems);
   const [InviteUrl, setInviteUrl] = useState<string[]>([]);
   const callBackServer = useCallback(
     (variables: ApiRequest, key: string) => {
@@ -106,7 +107,7 @@ const CustomerCrud: React.FC = () => {
   ];
   const formItems = [
     {
-      name: "fullName",
+      name: "full_name",
       label: "Full Name",
       rules: [{ required: true, message: "Please enter full name" }],
       component: (
@@ -144,7 +145,7 @@ const CustomerCrud: React.FC = () => {
       component: <Input.TextArea placeholder="Enter address" rows={3} />,
     },
     {
-      name: "customerType",
+      name: "customer_type",
       label: "Customer Type",
       rules: [{ required: true, message: "Please select customer type" }],
       component: (
@@ -156,7 +157,7 @@ const CustomerCrud: React.FC = () => {
       ),
     },
   ];
-  const getAllInvites = () => {
+  const getAllCustomer = () => {
     callBackServer(
       { method: getRoute.method, endpoint: getRoute.endpoint, data: {} },
       getRoute.identifier
@@ -182,7 +183,7 @@ const CustomerCrud: React.FC = () => {
     form.resetFields();
   };
   useEffect(() => {
-    getAllInvites();
+    getAllCustomer();
   }, []);
   const handleApiResponse = (
     action: "create" | "update" | "delete",
@@ -190,9 +191,10 @@ const CustomerCrud: React.FC = () => {
   ) => {
     if (success) {
       showToast("success", `Image ${action}d successfully`);
-      getAllInvites();
+      console.log("Image", action, "successfully");
+      getAllCustomer();
       resetForm();
-      const actionRoute = getApiRouteCmsImage(
+      const actionRoute = getApiRouteCustomer(
         (action.charAt(0).toUpperCase() +
           action.slice(1)) as keyof typeof API_ROUTES.GetEivite
       );
@@ -216,33 +218,6 @@ const CustomerCrud: React.FC = () => {
     if (deleteItems?.statusCode === "200") handleApiResponse("delete", true);
     if (deleteError) handleApiResponse("delete", false);
   }, [deleteItems, deleteError]);
-  const handleCustomUpload = async ({ file, onSuccess, onError }: any) => {
-    try {
-      const uploadedImageUrl = await handleFileUpload(file);
-
-      if (uploadedImageUrl) {
-        setUploadedImageUrls((prev) => {
-          const updatedUrls = [...prev, uploadedImageUrl];
-          form.setFieldsValue({ images: updatedUrls });
-          return updatedUrls;
-        });
-
-        onSuccess?.(uploadedImageUrl);
-      } else {
-        onError?.(new Error("File upload failed"));
-      }
-    } catch (err) {
-      onError?.(new Error("File upload failed"));
-    }
-  };
-
-  const handleRemove = (file: any) => {
-    setUploadedImageUrls((prev) => {
-      const updatedUrls = prev.filter((url) => url !== file.url);
-      form.setFieldsValue({ images: updatedUrls });
-      return updatedUrls;
-    });
-  };
 
   const handleDrawerOpen = () => setDrawerVisible(true);
 
@@ -251,8 +226,6 @@ const CustomerCrud: React.FC = () => {
     delete values.image;
     const finalData = {
       ...values,
-      images: uploadedImageUrls,
-      invite_url: InviteUrl,
     };
     if (initialValues?._id) {
       callBackServer(
@@ -275,7 +248,6 @@ const CustomerCrud: React.FC = () => {
     }
     setDrawerVisible(false);
     form.resetFields();
-    setUploadedImageUrls([]);
   };
 
   return (

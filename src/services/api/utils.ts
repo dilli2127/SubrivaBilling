@@ -17,7 +17,7 @@ export const API_ROUTES = {
       endpoint: "signup",
     },
   },
-Login: {
+  Login: {
     Create: {
       identifier: "CreateLogin",
       method: API_METHODS.POST,
@@ -105,139 +105,32 @@ Login: {
       endpoint: "/cms_image",
     },
   },
-  GalleryCategory: {
+
+  Customer: {
     Create: {
-      identifier: "AddGalleryCategory",
+      identifier: "AddCustomer",
       method: API_METHODS.PUT,
-      endpoint: "/gallery_category",
+      endpoint: "/customer",
     },
     Update: {
-      identifier: "UpdatGalleryCategory",
+      identifier: "UpdatCustomer",
       method: API_METHODS.PATCH,
-      endpoint: "/gallery_category",
+      endpoint: "/customer",
     },
     Get: {
-      identifier: "GetGalleryCategory",
+      identifier: "GetCustomer",
       method: API_METHODS.GET,
-      endpoint: "/gallery_category",
+      endpoint: "/customer",
     },
     GetAll: {
-      identifier: "GetGalleryCategory",
+      identifier: "GetAllCustomer",
       method: API_METHODS.POST,
-      endpoint: "/gallery_category",
+      endpoint: "/customer",
     },
     Delete: {
-      identifier: "DeleteGalleryCategory",
+      identifier: "DeleteCustomer",
       method: API_METHODS.DELETE,
-      endpoint: "/gallery_category",
-    },
-  },
-  Gallery: {
-    Create: {
-      identifier: "AddGallery",
-      method: API_METHODS.PUT,
-      endpoint: "/gallery",
-    },
-    Update: {
-      identifier: "UpdatGallery",
-      method: API_METHODS.PATCH,
-      endpoint: "/gallery",
-    },
-    Get: {
-      identifier: "GetGallery",
-      method: API_METHODS.GET,
-      endpoint: "/gallery",
-    },
-    GetAll: {
-      identifier: "GetGallery",
-      method: API_METHODS.POST,
-      endpoint: "/gallery",
-    },
-    Delete: {
-      identifier: "DeleteGallery",
-      method: API_METHODS.DELETE,
-      endpoint: "/gallery",
-    },
-  },
-  EGallery: {
-    Create: {
-      identifier: "AddEGallery",
-      method: API_METHODS.PUT,
-      endpoint: "/e_gallery",
-    },
-    Update: {
-      identifier: "UpdatEGallery",
-      method: API_METHODS.PATCH,
-      endpoint: "/e_gallery",
-    },
-    Get: {
-      identifier: "GetEGallery",
-      method: API_METHODS.GET,
-      endpoint: "/e_gallery",
-    },
-    GetAll: {
-      identifier: "GetEGallery",
-      method: API_METHODS.POST,
-      endpoint: "/e_gallery",
-    },
-    Delete: {
-      identifier: "DeleteEGallery",
-      method: API_METHODS.DELETE,
-      endpoint: "/e_gallery",
-    },
-  },
-  User: {
-    Create: {
-      identifier: "AddUser",
-      method: API_METHODS.PUT,
-      endpoint: "/user",
-    },
-    Update: {
-      identifier: "UpdatUser",
-      method: API_METHODS.PATCH,
-      endpoint: "/user",
-    },
-    Get: {
-      identifier: "GetEUser",
-      method: API_METHODS.GET,
-      endpoint: "/user",
-    },
-    GetAll: {
-      identifier: "GetAllUser",
-      method: API_METHODS.POST,
-      endpoint: "/user",
-    },
-    Delete: {
-      identifier: "DeleteUser",
-      method: API_METHODS.DELETE,
-      endpoint: "/user",
-    },
-  },
-  EAlbum: {
-    Create: {
-      identifier: "AddEAlbum",
-      method: API_METHODS.PUT,
-      endpoint: "/e_album",
-    },
-    Update: {
-      identifier: "UpdatEAlbum",
-      method: API_METHODS.PATCH,
-      endpoint: "/e_album",
-    },
-    Get: {
-      identifier: "GetEAlbum",
-      method: API_METHODS.GET,
-      endpoint: "/e_album",
-    },
-    GetAll: {
-      identifier: "GetEAlbum",
-      method: API_METHODS.POST,
-      endpoint: "/e_album",
-    },
-    Delete: {
-      identifier: "DeleteEAlbum",
-      method: API_METHODS.DELETE,
-      endpoint: "/e_album",
+      endpoint: "/customer",
     },
   },
 };

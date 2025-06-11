@@ -3,7 +3,9 @@ import { API_ROUTES } from "../services/api/utils";
 
 export const showToast = (type: "success" | "error", content: string) => {
   if (type === "success") {
+    debugger
     message.success(content);
+    alert(content); // This line is added to show an alert for success messages
   } else if (type === "error") {
     message.error(content);
   }
@@ -14,6 +16,15 @@ export const getApiRouteCmsImage = (action: keyof typeof API_ROUTES.CmsImage) =>
   if (!route) {
     console.error(`API_ROUTES.CmsImage.${action} is undefined.`);
     throw new Error(`API route for CmsImage.${action} is not defined.`);
+  }
+  return route;
+};
+
+export const getApiRouteCustomer = (action: keyof typeof API_ROUTES.Customer) => {
+  const route = API_ROUTES?.Customer?.[action];
+  if (!route) {
+    console.error(`API_ROUTES.Customer.${action} is undefined.`);
+    throw new Error(`API route for Customer.${action} is not defined.`);
   }
   return route;
 };
