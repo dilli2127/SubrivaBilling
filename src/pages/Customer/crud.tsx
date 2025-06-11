@@ -1,15 +1,12 @@
 import React, { memo, useCallback, useEffect, useState } from "react";
 import {
-  Table,
   Button,
   Row,
   Input,
   Form,
   Tooltip,
-  Image,
   Select,
   Typography,
-  message,
 } from "antd";
 import {
   DeleteOutlined,
@@ -18,7 +15,6 @@ import {
   PhoneOutlined,
   UserOutlined,
 } from "@ant-design/icons";
-import { useFileUpload } from "../../helpers/useFileUpload";
 import AntdForm from "../../components/antd/form/form";
 import { useDispatch } from "react-redux";
 import { Dispatch } from "redux";
