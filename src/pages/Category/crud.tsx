@@ -37,7 +37,7 @@ const UnitCrud = () => {
   ];
 
   const apiRoutes = {
-    get: getApiRouteCategory("Get"),
+    get: getApiRouteCategory("GetAll"),
     create: getApiRouteCategory("Create"),
     update: getApiRouteCategory("Update"),
     delete: getApiRouteCategory("Delete"),

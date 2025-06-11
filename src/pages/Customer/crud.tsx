@@ -32,7 +32,7 @@ const { Title } = Typography;
 const formColumns = 2;
 const { Option } = Select;
 const CustomerCrud: React.FC = () => {
-  const getRoute = getApiRouteCustomer("Get");
+  const getRoute = getApiRouteCustomer("GetAll");
   const addRoute = getApiRouteCustomer("Create");
   const updateRoute = getApiRouteCustomer("Update");
   const deleteRoute = getApiRouteCustomer("Delete");

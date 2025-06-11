@@ -24,7 +24,7 @@ const UnitCrud = () => {
   ];
 
   const apiRoutes = {
-    get: getApiRouteUnit("Get"),
+    get: getApiRouteUnit("GetAll"),
     create: getApiRouteUnit("Create"),
     update: getApiRouteUnit("Update"),
     delete: getApiRouteUnit("Delete"),

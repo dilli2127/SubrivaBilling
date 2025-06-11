@@ -129,7 +129,7 @@ export const API_ROUTES = {
       endpoint: "/customer",
     },
   },
-    Unit: {
+  Unit: {
     Create: {
       identifier: "AddUnit",
       method: API_METHODS.PUT,
@@ -156,7 +156,7 @@ export const API_ROUTES = {
       endpoint: "/unit",
     },
   },
-    Variant: {
+  Variant: {
     Create: {
       identifier: "AddVariant",
       method: API_METHODS.PUT,
@@ -183,7 +183,7 @@ export const API_ROUTES = {
       endpoint: "/variant",
     },
   },
-    Category: {
+  Category: {
     Create: {
       identifier: "AddCategory",
       method: API_METHODS.PUT,
@@ -208,6 +208,33 @@ export const API_ROUTES = {
       identifier: "DeleteCategory",
       method: API_METHODS.DELETE,
       endpoint: "/category",
+    },
+  },
+  Product: {
+    Create: {
+      identifier: "AddProduct",
+      method: API_METHODS.PUT,
+      endpoint: "/products",
+    },
+    Update: {
+      identifier: "UpdatProduct",
+      method: API_METHODS.PATCH,
+      endpoint: "/products",
+    },
+    Get: {
+      identifier: "GetProduct",
+      method: API_METHODS.GET,
+      endpoint: "/products",
+    },
+    GetAll: {
+      identifier: "GetAllProduct",
+      method: API_METHODS.POST,
+      endpoint: "/products",
+    },
+    Delete: {
+      identifier: "DeleteProduct",
+      method: API_METHODS.DELETE,
+      endpoint: "/products",
     },
   },
 };

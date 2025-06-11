@@ -52,3 +52,12 @@ export const getApiRouteCategory = (action: keyof typeof API_ROUTES.Category) =>
   }
   return route;
 };
+
+export const getApiRouteProduct = (action: keyof typeof API_ROUTES.Product) => {
+  const route = API_ROUTES?.Product?.[action];
+  if (!route) {
+    console.error(`API_ROUTES.Product.${action} is undefined.`);
+    throw new Error(`API route for Product.${action} is not defined.`);
+  }
+  return route;
+};

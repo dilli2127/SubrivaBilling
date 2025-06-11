@@ -1,7 +1,7 @@
 import React from "react";
 import CrudModule from "../../components/common/CrudModule";
-import { getApiRouteCategory } from "../../helpers/Common_functions";
-import { Input, InputNumber, Select, Switch } from "antd";
+import { getApiRouteProduct } from "../../helpers/Common_functions";
+import { Input, Select, Switch, Tag } from "antd";
 import { Option } from "antd/es/mentions";
 const UnitCrud = () => {
   const formItems = [
@@ -30,24 +30,6 @@ const UnitCrud = () => {
       component: <Input placeholder="Optional SKU code" />,
     },
     {
-      label: "Price",
-      name: "price",
-      rules: [{ required: true, message: "Please enter price!" }],
-      component: <InputNumber min={0} style={{ width: "100%" }} />,
-    },
-    {
-      label: "Cost Price",
-      name: "cost_price",
-      rules: [{ required: false }],
-      component: <InputNumber min={0} style={{ width: "100%" }} />,
-    },
-    {
-      label: "Tax (%)",
-      name: "tax_percentage",
-      rules: [],
-      component: <InputNumber min={0} max={100} style={{ width: "100%" }} />,
-    },
-    {
       label: "Unit",
       name: "unit",
       rules: [{ required: true, message: "Please enter unit!" }],
@@ -59,12 +41,6 @@ const UnitCrud = () => {
           <Option value="liter">liter</Option>
         </Select>
       ),
-    },
-    {
-      label: "Barcode",
-      name: "barcode",
-      rules: [],
-      component: <Input placeholder="Optional barcode" />,
     },
     // {
     //   label: "Image",
@@ -94,16 +70,27 @@ const UnitCrud = () => {
     },
   ];
   const columns = [
-    { title: "Name", dataIndex: "category_name", key: "category_name" },
-    { title: "HSN Code", dataIndex: "hsn_code", key: "hsn_code" },
-     { title: "Tax Percentage", dataIndex: "tax_percentage", key: "tax_percentage" },
+    { title: "name", dataIndex: "name", key: "name" },
+    { title: "Category", dataIndex: "category", key: "category" },
+    { title: "SKU", dataIndex: "sku", key: "sku" },
+    { title: "Unit", dataIndex: "unit", key: "unit" },
+    {
+      title: "Status",
+      dataIndex: "status",
+      key: "status",
+      render: (status: boolean) => (
+        <Tag color={status ? "green" : "volcano"}>
+          {status ? "Active" : "Inactive"}
+        </Tag>
+      ),
+    },
   ];
 
   const apiRoutes = {
-    get: getApiRouteCategory("Get"),
-    create: getApiRouteCategory("Create"),
-    update: getApiRouteCategory("Update"),
-    delete: getApiRouteCategory("Delete"),
+    get: getApiRouteProduct("GetAll"),
+    create: getApiRouteProduct("Create"),
+    update: getApiRouteProduct("Update"),
+    delete: getApiRouteProduct("Delete"),
   };
 
   return (
