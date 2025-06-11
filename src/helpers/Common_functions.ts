@@ -35,3 +35,20 @@ export const getApiRouteUnit = (action: keyof typeof API_ROUTES.Unit) => {
   }
   return route;
 };
+export const getApiRouteVariant = (action: keyof typeof API_ROUTES.Variant) => {
+  const route = API_ROUTES?.Variant?.[action];
+  if (!route) {
+    console.error(`API_ROUTES.Variant.${action} is undefined.`);
+    throw new Error(`API route for Variant.${action} is not defined.`);
+  }
+  return route;
+};
+
+export const getApiRouteCategory = (action: keyof typeof API_ROUTES.Category) => {
+  const route = API_ROUTES?.Category?.[action];
+  if (!route) {
+    console.error(`API_ROUTES.Category.${action} is undefined.`);
+    throw new Error(`API route for Category.${action} is not defined.`);
+  }
+  return route;
+};

@@ -1,6 +1,6 @@
 import React from "react";
 import CrudModule from "../../components/common/CrudModule";
-import { getApiRouteUnit } from "../../helpers/Common_functions";
+import { getApiRouteVariant } from "../../helpers/Common_functions";
 import { Input, Select } from "antd";
 import { Option } from "antd/es/mentions";
 const UnitCrud = () => {
@@ -17,6 +17,7 @@ const UnitCrud = () => {
       rules: [{ required: true, message: "Please select unit" }],
       component: (
         <Select placeholder="Select unit">
+          <Option value="tablet">Tablet</Option>
           <Option value="kg">Kilogram (kg)</Option>
           <Option value="g">Gram (g)</Option>
           <Option value="l">Litre (L)</Option>
@@ -24,6 +25,32 @@ const UnitCrud = () => {
           <Option value="pcs">Pieces (pcs)</Option>
           <Option value="box">Box</Option>
         </Select>
+      ),
+    },
+    {
+      label: "Pack Type",
+      name: "pack_type",
+      rules: [{ required: true, message: "Please select pack type" }],
+      component: (
+        <Select placeholder="Select pack type">
+          <Option value="strip">Strip</Option>
+          <Option value="bottle">Bottle</Option>
+          <Option value="packet">Packet</Option>
+          <Option value="box">Box</Option>
+          <Option value="pouch">Pouch</Option>
+          <Option value="pack">Pack</Option>
+        </Select>
+      ),
+    },
+    {
+      label: "Pack Size",
+      name: "pack_size",
+      rules: [{ required: true, message: "Enter number of items in pack" }],
+      component: (
+        <Input
+          type="number"
+          placeholder="e.g., 15 (for 15 tablets in a strip)"
+        />
       ),
     },
     {
@@ -40,20 +67,21 @@ const UnitCrud = () => {
     },
   ];
   const columns = [
-    { title: "Unit Name", dataIndex: "unit_name", key: "unit_name" },
-    { title: "Unit Code", dataIndex: "unit_code", key: "unit_code" },
+    { title: "Name", dataIndex: "variant_name", key: "variant_name" },
+    { title: "Unit Type", dataIndex: "unit", key: "unit" },
+    { title: "Category", dataIndex: "category", key: "category" },
   ];
 
   const apiRoutes = {
-    get: getApiRouteUnit("Get"),
-    create: getApiRouteUnit("Create"),
-    update: getApiRouteUnit("Update"),
-    delete: getApiRouteUnit("Delete"),
+    get: getApiRouteVariant("Get"),
+    create: getApiRouteVariant("Create"),
+    update: getApiRouteVariant("Update"),
+    delete: getApiRouteVariant("Delete"),
   };
 
   return (
     <CrudModule
-      title="Units"
+      title="Variants"
       formItems={formItems}
       columns={columns}
       apiRoutes={apiRoutes}

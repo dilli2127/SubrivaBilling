@@ -1,5 +1,3 @@
-// pages/unit/UnitCrud.tsx
-
 import React from "react";
 import CrudModule from "../../components/common/CrudModule";
 import { getApiRouteUnit } from "../../helpers/Common_functions";

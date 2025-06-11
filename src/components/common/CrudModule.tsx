@@ -1,7 +1,7 @@
 // components/common/CrudModule.tsx
 
 import React, { useCallback, useEffect, useState, memo } from "react";
-import { Table, Button, Row, Input, Tooltip, Form } from "antd";
+import { Button, Row, Input, Tooltip, Form } from "antd";
 import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import { useDispatch } from "react-redux";
 import { Dispatch } from "redux";

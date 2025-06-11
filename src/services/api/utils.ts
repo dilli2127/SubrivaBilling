@@ -1,6 +1,3 @@
-import Login from "../../pages/login/login";
-import Signup from "../../pages/login/Signup";
-
 export const API_METHODS = {
   GET: "GET",
   POST: "POST",
@@ -157,6 +154,60 @@ export const API_ROUTES = {
       identifier: "DeleteUnit",
       method: API_METHODS.DELETE,
       endpoint: "/unit",
+    },
+  },
+    Variant: {
+    Create: {
+      identifier: "AddVariant",
+      method: API_METHODS.PUT,
+      endpoint: "/variant",
+    },
+    Update: {
+      identifier: "UpdatVariant",
+      method: API_METHODS.PATCH,
+      endpoint: "/variant",
+    },
+    Get: {
+      identifier: "GetVariant",
+      method: API_METHODS.GET,
+      endpoint: "/variant",
+    },
+    GetAll: {
+      identifier: "GetAllVariant",
+      method: API_METHODS.POST,
+      endpoint: "/variant",
+    },
+    Delete: {
+      identifier: "DeleteVariant",
+      method: API_METHODS.DELETE,
+      endpoint: "/variant",
+    },
+  },
+    Category: {
+    Create: {
+      identifier: "AddCategory",
+      method: API_METHODS.PUT,
+      endpoint: "/category",
+    },
+    Update: {
+      identifier: "UpdatCategory",
+      method: API_METHODS.PATCH,
+      endpoint: "/category",
+    },
+    Get: {
+      identifier: "GetCategory",
+      method: API_METHODS.GET,
+      endpoint: "/category",
+    },
+    GetAll: {
+      identifier: "GetAllCategory",
+      method: API_METHODS.POST,
+      endpoint: "/category",
+    },
+    Delete: {
+      identifier: "DeleteCategory",
+      method: API_METHODS.DELETE,
+      endpoint: "/category",
     },
   },
 };
