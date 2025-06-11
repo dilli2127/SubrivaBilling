@@ -42,7 +42,6 @@ const CustomerCrud: React.FC = () => {
   const deleteRoute = getApiRouteCustomer("Delete");
   const [form] = Form.useForm();
   const dispatch: Dispatch<any> = useDispatch();
-  const { handleFileUpload } = useFileUpload();
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [searchText, setSearchText] = useState("");
   const [initialValues, setInitialValues] = useState<{
@@ -58,8 +57,6 @@ const CustomerCrud: React.FC = () => {
   const { items: createItems, error: createError } = useDynamicSelector(
     addRoute.identifier
   );
-  console.log("createItems", createItems);
-  const [InviteUrl, setInviteUrl] = useState<string[]>([]);
   const callBackServer = useCallback(
     (variables: ApiRequest, key: string) => {
       dispatch(dynamic_request(variables, key));
@@ -68,22 +65,10 @@ const CustomerCrud: React.FC = () => {
   );
   const { loading, items } = useDynamicSelector(getRoute.identifier);
   const columns = [
-    { title: "Invite Name", dataIndex: "invite_name", key: "invite_name" },
-    {
-      title: "Image",
-      dataIndex: "invite_url",
-      key: "invite_url",
-      render: (url: string) =>
-        url ? (
-          <Image
-            src={url}
-            alt="image"
-            style={{ width: 100, height: 100, objectFit: "cover" }}
-          />
-        ) : (
-          "No Image"
-        ),
-    },
+    { title: "Name", dataIndex: "full_name", key: "full_name" },
+    { title: "Email", dataIndex: "email", key: "email" },
+     { title: "Mobile", dataIndex: "mobile", key: "mobile" },
+      { title: "Mobile", dataIndex: "mobile", key: "mobile" },
     {
       title: "Actions",
       key: "actions",
@@ -190,8 +175,7 @@ const CustomerCrud: React.FC = () => {
     success: boolean
   ) => {
     if (success) {
-      showToast("success", `Image ${action}d successfully`);
-      console.log("Image", action, "successfully");
+      showToast("success", `Customer ${action}d successfully`);
       getAllCustomer();
       resetForm();
       const actionRoute = getApiRouteCustomer(
@@ -200,7 +184,7 @@ const CustomerCrud: React.FC = () => {
       );
       dispatch(dynamic_clear(actionRoute.identifier));
     } else {
-      showToast("error", `Failed to ${action} image`);
+      showToast("error", `Failed to ${action} Customer`);
     }
   };
 
@@ -275,7 +259,7 @@ const CustomerCrud: React.FC = () => {
         </div>
       </Row>
 
-      <GlobalTable columns={columns} data={items?.result} />
+      <GlobalTable columns={columns} data={items?.result}  />
 
       <GlobalDrawer
         title="Add New Customer"

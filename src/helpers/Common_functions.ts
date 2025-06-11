@@ -3,9 +3,7 @@ import { API_ROUTES } from "../services/api/utils";
 
 export const showToast = (type: "success" | "error", content: string) => {
   if (type === "success") {
-    debugger
     message.success(content);
-    alert(content); // This line is added to show an alert for success messages
   } else if (type === "error") {
     message.error(content);
   }
