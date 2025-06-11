@@ -9,6 +9,7 @@ import { dynamic_clear, dynamic_request, useDynamicSelector } from "../../servic
 import GlobalDrawer from "../antd/GlobalDrawer";
 import AntdForm from "../antd/form/form";
 import { showToast } from "../../helpers/Common_functions";
+import GlobalTable from "../antd/GlobalTable";
 
 const CrudModule = ({
   title,
@@ -139,7 +140,7 @@ const CrudModule = ({
         </div>
       </Row>
 
-      <Table
+      <GlobalTable
         columns={[
           ...columns,
           {
@@ -157,6 +158,7 @@ const CrudModule = ({
             ),
           },
         ]}
+        data={filteredItems}
         dataSource={filteredItems}
         rowKey="_id"
         loading={loading}
