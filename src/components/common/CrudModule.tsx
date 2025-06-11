@@ -74,12 +74,12 @@ const CrudModule = ({
     success: boolean
   ) => {
     if (success) {
-      showToast("success", `Item ${action}d successfully`);
+      showToast("success", `${title} ${action}d successfully`);
       getAllItems();
       resetForm();
       dispatch(dynamic_clear(apiRoutes[action].identifier));
     } else {
-      showToast("error", `Failed to ${action} item`);
+      showToast("error", `Failed to ${action} ${title}`);
     }
   };
 
