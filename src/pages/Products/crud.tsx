@@ -3,7 +3,7 @@ import CrudModule from "../../components/common/CrudModule";
 import { getApiRouteProduct } from "../../helpers/Common_functions";
 import { Input, Select, Switch, Tag } from "antd";
 import { Option } from "antd/es/mentions";
-const UnitCrud = () => {
+const ProductCrud = () => {
   const formItems = [
     {
       label: "Product Name",
@@ -30,8 +30,8 @@ const UnitCrud = () => {
       component: <Input placeholder="Optional SKU code" />,
     },
     {
-      label: "Unit",
-      name: "unit",
+      label: "Variant",
+      name: "variant",
       rules: [{ required: true, message: "Please enter unit!" }],
       component: (
         <Select placeholder="Select unit">
@@ -104,4 +104,4 @@ const UnitCrud = () => {
   );
 };
 
-export default UnitCrud;
+export default ProductCrud;

@@ -2,7 +2,7 @@ import React from "react";
 import CrudModule from "../../components/common/CrudModule";
 import { getApiRouteCategory } from "../../helpers/Common_functions";
 import { Input, InputNumber } from "antd";
-const UnitCrud = () => {
+const CategoryCrud = () => {
   const formItems = [
     {
       label: "Category Name",
@@ -54,4 +54,4 @@ const UnitCrud = () => {
   );
 };
 
-export default UnitCrud;
+export default CategoryCrud;

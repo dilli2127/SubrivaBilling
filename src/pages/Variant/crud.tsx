@@ -3,7 +3,7 @@ import CrudModule from "../../components/common/CrudModule";
 import { getApiRouteVariant } from "../../helpers/Common_functions";
 import { Input, Select } from "antd";
 import { Option } from "antd/es/mentions";
-const UnitCrud = () => {
+const VariantCrud = () => {
   const formItems = [
     {
       label: "Variant Name",
@@ -92,4 +92,4 @@ const UnitCrud = () => {
   );
 };
 
-export default UnitCrud;
+export default VariantCrud;
