@@ -7,7 +7,6 @@ import {
   Form,
   Tooltip,
   Image,
-  Select,
 } from "antd";
 import { DeleteOutlined, EditOutlined } from "@ant-design/icons";
 import { useFileUpload } from "../../helpers/useFileUpload";
@@ -20,18 +19,17 @@ import {
   dynamic_request,
   useDynamicSelector,
 } from "../../services/redux";
-import { getApiRouteCmsImage, showToast } from "../../helpers/Common_functions";
+import { getApiRouteCmsImage, getApiRouteUnit, showToast } from "../../helpers/Common_functions";
 import { API_ROUTES } from "../../services/api/utils";
 import GlobalDrawer from "../../components/antd/GlobalDrawer";
 
 const formColumns = 2;
-const { Option } = Select;
 
 const UnitCrud: React.FC = () => {
-  const getRoute = getApiRouteCmsImage("Get");
-  const addRoute = getApiRouteCmsImage("Create");
-  const updateRoute = getApiRouteCmsImage("Update");
-  const deleteRoute = getApiRouteCmsImage("Delete");
+  const getRoute = getApiRouteUnit("Get");
+  const addRoute = getApiRouteUnit("Create");
+  const updateRoute = getApiRouteUnit("Update");
+  const deleteRoute = getApiRouteUnit("Delete");
   const [form] = Form.useForm();
   const dispatch: Dispatch<any> = useDispatch();
   const { handleFileUpload } = useFileUpload();
@@ -41,7 +39,6 @@ const UnitCrud: React.FC = () => {
     _id?: string;
     url?: string;
   } | null>({});
-  const [uploadedImageUrls, setUploadedImageUrls] = useState<string[]>([]);
   const { items: updateItems, error: updateError } = useDynamicSelector(
     updateRoute.identifier
   );
@@ -51,7 +48,6 @@ const UnitCrud: React.FC = () => {
   const { items: createItems, error: createError } = useDynamicSelector(
     addRoute.identifier
   );
-  const [InviteUrl, setInviteUrl] = useState<string[]>([]);
   const callBackServer = useCallback(
     (variables: ApiRequest, key: string) => {
       dispatch(dynamic_request(variables, key));
@@ -60,22 +56,8 @@ const UnitCrud: React.FC = () => {
   );
   const { loading, items } = useDynamicSelector(getRoute.identifier);
   const columns = [
-    { title: "Invite Name", dataIndex: "invite_name", key: "invite_name" },
-    {
-      title: "Image",
-      dataIndex: "invite_url",
-      key: "invite_url",
-      render: (url: string) =>
-        url ? (
-          <Image
-            src={url}
-            alt="image"
-            style={{ width: 100, height: 100, objectFit: "cover" }}
-          />
-        ) : (
-          "No Image"
-        ),
-    },
+    { title: "Unit Name", dataIndex: "unit_name", key: "unit_name" },
+  { title: "Unit Code", dataIndex: "unit_code", key: "unit_code" },
     {
       title: "Actions",
       key: "actions",
@@ -111,7 +93,7 @@ const UnitCrud: React.FC = () => {
       component: <Input placeholder="e.g. pcs, kg, box" />,
     },
   ];
-  const getAllInvites = () => {
+  const getAllUnits = () => {
     callBackServer(
       { method: getRoute.method, endpoint: getRoute.endpoint, data: {} },
       getRoute.identifier
@@ -137,7 +119,7 @@ const UnitCrud: React.FC = () => {
     form.resetFields();
   };
   useEffect(() => {
-    getAllInvites();
+    getAllUnits();
   }, []);
   const handleApiResponse = (
     action: "create" | "update" | "delete",
@@ -145,11 +127,11 @@ const UnitCrud: React.FC = () => {
   ) => {
     if (success) {
       showToast("success", `Image ${action}d successfully`);
-      getAllInvites();
+      getAllUnits();
       resetForm();
-      const actionRoute = getApiRouteCmsImage(
+      const actionRoute = getApiRouteUnit(
         (action.charAt(0).toUpperCase() +
-          action.slice(1)) as keyof typeof API_ROUTES.GetEivite
+          action.slice(1)) as keyof typeof API_ROUTES.Unit
       );
       dispatch(dynamic_clear(actionRoute.identifier));
     } else {
@@ -171,33 +153,6 @@ const UnitCrud: React.FC = () => {
     if (deleteItems?.statusCode === "200") handleApiResponse("delete", true);
     if (deleteError) handleApiResponse("delete", false);
   }, [deleteItems, deleteError]);
-  const handleCustomUpload = async ({ file, onSuccess, onError }: any) => {
-    try {
-      const uploadedImageUrl = await handleFileUpload(file);
-
-      if (uploadedImageUrl) {
-        setUploadedImageUrls((prev) => {
-          const updatedUrls = [...prev, uploadedImageUrl];
-          form.setFieldsValue({ images: updatedUrls });
-          return updatedUrls;
-        });
-
-        onSuccess?.(uploadedImageUrl);
-      } else {
-        onError?.(new Error("File upload failed"));
-      }
-    } catch (err) {
-      onError?.(new Error("File upload failed"));
-    }
-  };
-
-  const handleRemove = (file: any) => {
-    setUploadedImageUrls((prev) => {
-      const updatedUrls = prev.filter((url) => url !== file.url);
-      form.setFieldsValue({ images: updatedUrls });
-      return updatedUrls;
-    });
-  };
 
   const handleDrawerOpen = () => setDrawerVisible(true);
 
@@ -206,8 +161,6 @@ const UnitCrud: React.FC = () => {
     delete values.image;
     const finalData = {
       ...values,
-      images: uploadedImageUrls,
-      invite_url: InviteUrl,
     };
     if (initialValues?._id) {
       callBackServer(
@@ -230,7 +183,6 @@ const UnitCrud: React.FC = () => {
     }
     setDrawerVisible(false);
     form.resetFields();
-    setUploadedImageUrls([]);
   };
 
   return (
@@ -256,7 +208,7 @@ const UnitCrud: React.FC = () => {
         </div>
       </Row>
 
-      <Table columns={columns} dataSource={items?.result} rowKey="id" />
+      <Table columns={columns} dataSource={items?.result} rowKey="id"  loading={loading} />
 
       <GlobalDrawer
         title="Add New Units"

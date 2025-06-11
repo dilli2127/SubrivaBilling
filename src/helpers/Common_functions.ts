@@ -26,3 +26,12 @@ export const getApiRouteCustomer = (action: keyof typeof API_ROUTES.Customer) =>
   }
   return route;
 };
+
+export const getApiRouteUnit = (action: keyof typeof API_ROUTES.Unit) => {
+  const route = API_ROUTES?.Unit?.[action];
+  if (!route) {
+    console.error(`API_ROUTES.Unit.${action} is undefined.`);
+    throw new Error(`API route for Unit.${action} is not defined.`);
+  }
+  return route;
+};

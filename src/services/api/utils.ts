@@ -105,7 +105,6 @@ export const API_ROUTES = {
       endpoint: "/cms_image",
     },
   },
-
   Customer: {
     Create: {
       identifier: "AddCustomer",
@@ -131,6 +130,33 @@ export const API_ROUTES = {
       identifier: "DeleteCustomer",
       method: API_METHODS.DELETE,
       endpoint: "/customer",
+    },
+  },
+    Unit: {
+    Create: {
+      identifier: "AddUnit",
+      method: API_METHODS.PUT,
+      endpoint: "/unit",
+    },
+    Update: {
+      identifier: "UpdatUnit",
+      method: API_METHODS.PATCH,
+      endpoint: "/unit",
+    },
+    Get: {
+      identifier: "GetUnit",
+      method: API_METHODS.GET,
+      endpoint: "/unit",
+    },
+    GetAll: {
+      identifier: "GetAllUnit",
+      method: API_METHODS.POST,
+      endpoint: "/unit",
+    },
+    Delete: {
+      identifier: "DeleteUnit",
+      method: API_METHODS.DELETE,
+      endpoint: "/unit",
     },
   },
 };

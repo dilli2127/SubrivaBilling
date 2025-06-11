@@ -176,7 +176,7 @@ const CustomerCrud: React.FC = () => {
       resetForm();
       const actionRoute = getApiRouteCustomer(
         (action.charAt(0).toUpperCase() +
-          action.slice(1)) as keyof typeof API_ROUTES.GetEivite
+          action.slice(1)) as keyof typeof API_ROUTES.Customer
       );
       dispatch(dynamic_clear(actionRoute.identifier));
     } else {
@@ -255,7 +255,7 @@ const CustomerCrud: React.FC = () => {
         </div>
       </Row>
 
-      <GlobalTable columns={columns} data={items?.result} />
+      <GlobalTable columns={columns} data={items?.result} loading={loading}/>
 
       <GlobalDrawer
         title="Add New Customer"
