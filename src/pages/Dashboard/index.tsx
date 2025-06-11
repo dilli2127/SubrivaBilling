@@ -8,6 +8,7 @@ import {
   Typography,
   Space,
   Tag,
+  message,
 } from "antd";
 import {
   DollarOutlined,
@@ -82,6 +83,11 @@ const Dashboard = () => {
     areaStyle: { fill: "l(270) 0:#3f5efb 1:#fc466b" },
   };
 
+ const handlemse = () => {
+  message.success("clicked on reports");
+};
+
+
   return (
     <div className="p-4 space-y-6">
       <Title level={3}>Dashboard</Title>
@@ -152,7 +158,7 @@ const Dashboard = () => {
           <Button type="primary" icon={<PlusCircleOutlined />}>
             New Invoice
           </Button>
-          <Button icon={<FileDoneOutlined />}>Reports</Button>
+          <Button icon={<FileDoneOutlined />} onClick={() => {handlemse()}}>Reports</Button>
           <Button icon={<UserOutlined />}>Add Customer</Button>
         </Space>
       </Card>
