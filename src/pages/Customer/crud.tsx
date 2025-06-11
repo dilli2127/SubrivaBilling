@@ -67,8 +67,8 @@ const CustomerCrud: React.FC = () => {
   const columns = [
     { title: "Name", dataIndex: "full_name", key: "full_name" },
     { title: "Email", dataIndex: "email", key: "email" },
-     { title: "Mobile", dataIndex: "mobile", key: "mobile" },
-      { title: "Mobile", dataIndex: "mobile", key: "mobile" },
+    { title: "Mobile", dataIndex: "mobile", key: "mobile" },
+    { title: "Mobile", dataIndex: "mobile", key: "mobile" },
     {
       title: "Actions",
       key: "actions",
@@ -259,7 +259,7 @@ const CustomerCrud: React.FC = () => {
         </div>
       </Row>
 
-      <GlobalTable columns={columns} data={items?.result}  />
+      <GlobalTable columns={columns} data={items?.result} />
 
       <GlobalDrawer
         title="Add New Customer"
