@@ -1,68 +1,23 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import CrudModule from "../../components/common/CrudModule";
-import {
-  getApiRouteCategory,
-  getApiRouteProduct,
-  getApiRouteVariant,
-} from "../../helpers/Common_functions";
-import { DatePicker, Input, InputNumber, Select, Switch, Tag } from "antd";
-import { ApiRequest } from "../../services/api/apiService";
-import { dynamic_request, useDynamicSelector } from "../../services/redux";
-import { useDispatch } from "react-redux";
-import { Dispatch } from "redux";
+import { getApiRouteProduct } from "../../helpers/Common_functions";
+import { DatePicker, Input, InputNumber, Select, Tag } from "antd";
+
 import dayjs from "dayjs";
 import { Form } from "antd";
 import { useApiActions } from "../../services/api/useApiActions";
+import { useDynamicSelector } from "../../services/redux";
 
 const { Option } = Select;
 
 const StockAudit = () => {
-  const dispatch: Dispatch<any> = useDispatch();
   const [form] = Form.useForm();
-  const variantRoute = getApiRouteVariant("Get");
-  const categoryRoute = getApiRouteCategory("Get");
   const { ProductsApi } = useApiActions();
-  const { loading: variantLoading, items: variantItems } = useDynamicSelector(
-    variantRoute.identifier
-  );
-  const { loading: categoryLoading, items: categoryItems } = useDynamicSelector(
-    categoryRoute.identifier
-  );
-  const { items: productData, loading } = useDynamicSelector(
+
+  const { items: productList, loading } = useDynamicSelector(
     ProductsApi.getIdentifier("GetAll")
   );
-  const [variantMap, setVariantMap] = useState<Record<string, string>>({});
-  const [categoryMap, setCategoryMap] = useState<Record<string, string>>({});
-
-  const fetchData = useCallback(() => {
-    [variantRoute, categoryRoute].forEach((route) => {
-      dispatch(
-        dynamic_request(
-          { method: route.method, endpoint: route.endpoint, data: {} },
-          route.identifier
-        )
-      );
-    });
-  }, [dispatch]);
-
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
-
-  const createMap = (items: any[], labelKey: string) =>
-    items.reduce((acc: Record<string, string>, item) => {
-      acc[item._id] = item[labelKey];
-      return acc;
-    }, {});
-
-  useEffect(() => {
-    setVariantMap(createMap(variantItems?.result || [], "variant_name"));
-  }, [variantItems]);
-
-  useEffect(() => {
-    setCategoryMap(createMap(categoryItems?.result || [], "category_name"));
-  }, [categoryItems]);
-
+console.log("Product List:", productList);
   useEffect(() => {
     const qty = form.getFieldValue("quantity");
     const price = form.getFieldValue("buy_price");
@@ -86,18 +41,24 @@ const StockAudit = () => {
       name: "product",
       rules: [{ required: true, message: "Please select a product!" }],
       component: (
-        <Select placeholder="Select product" showSearch allowClear>
-          {/* Populate from backend */}
-        </Select>
-      ),
-    },
-    {
-      label: "Variant / Unit",
-      name: "variant",
-      rules: [{ required: true, message: "Select a variant!" }],
-      component: (
-        <Select placeholder="Select variant" showSearch allowClear>
-          {/* Populate from backend */}
+        <Select
+          placeholder="Select product"
+          showSearch
+          allowClear
+          loading={loading}
+          optionFilterProp="children"
+          filterOption={(input, option) =>
+            typeof option?.children === "string" &&
+            (option.children as string)
+              .toLowerCase()
+              .includes(input.toLowerCase())
+          }
+        >
+          {productList?.result?.map((product: any) => (
+            <Select.Option key={product?._id} value={product?._id}>
+              {`${product.name} ${product?.VariantItem?.variant_name}`}
+            </Select.Option>
+          ))}
         </Select>
       ),
     },
@@ -264,14 +225,12 @@ const StockAudit = () => {
       title: "Category",
       dataIndex: "category",
       key: "category",
-      render: (id: string) => categoryMap[id] || "-",
     },
     { title: "SKU", dataIndex: "sku", key: "sku" },
     {
       title: "Variant",
       dataIndex: "variant",
       key: "variant",
-      render: (id: string) => variantMap[id] || "-",
     },
     {
       title: "Status",
