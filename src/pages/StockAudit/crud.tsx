@@ -255,104 +255,114 @@ const StockAudit = () => {
     },
   ];
 
- const columns = [
-  {
-    title: "Invoice ID",
-    dataIndex: "invoice_id",
-    key: "invoice_id",
-  },
-  {
-    title: "Product",
-    dataIndex: "product_name", // You may need to map this in your API
-    key: "product_name",
-  },
-  {
-    title: "Quantity",
-    dataIndex: "quantity",
-    key: "quantity",
-  },
- {
-  title: "Buy Price",
-  dataIndex: "buy_price",
-  key: "buy_price",
-  render: (value: any) => {
-    const num = Number(value);
-    return isNaN(num) ? "-" : `₹${num.toFixed(2)}`;
-  },
-},
-{
-  title: "Total Cost",
-  dataIndex: "total_cost",
-  key: "total_cost",
-  render: (value: any) => {
-    const num = Number(value);
-    return isNaN(num) ? "-" : `₹${num.toFixed(2)}`;
-  },
-},
-{
-  title: "Sell Price",
-  dataIndex: "sell_price",
-  key: "sell_price",
-  render: (value: any) => {
-    const num = Number(value);
-    return isNaN(num) ? "-" : `₹${num.toFixed(2)}`;
-  },
-},
+  const columns = [
+    {
+      title: "Invoice ID",
+      dataIndex: "invoice_id",
+      key: "invoice_id",
+    },
+    {
+      title: "Product",
+      dataIndex: "product_name",
+      key: "product_name",
+      render: (_: any, record: any) => (
+        `${record.ProductItem?.name} - ${record.ProductItem?.VariantItem?.variant_name}`
+      ),
+    },
+    {
+      title: "Variant",
+      dataIndex: "variant_name", 
+      key: "variant_name",
+      render: (_: any, record: any) =>
+        record.ProductItem?.VariantItem?.variant_name || "-",
+    },
+    {
+      title: "Quantity",
+      dataIndex: "quantity",
+      key: "quantity",
+    },
+    {
+      title: "Buy Price",
+      dataIndex: "buy_price",
+      key: "buy_price",
+      render: (value: any) => {
+        const num = Number(value);
+        return isNaN(num) ? "-" : `₹${num.toFixed(2)}`;
+      },
+    },
+    {
+      title: "Total Cost",
+      dataIndex: "total_cost",
+      key: "total_cost",
+      render: (value: any) => {
+        const num = Number(value);
+        return isNaN(num) ? "-" : `₹${num.toFixed(2)}`;
+      },
+    },
+    {
+      title: "Sell Price",
+      dataIndex: "sell_price",
+      key: "sell_price",
+      render: (value: any) => {
+        const num = Number(value);
+        return isNaN(num) ? "-" : `₹${num.toFixed(2)}`;
+      },
+    },
 
-  {
-    title: "Batch No",
-    dataIndex: "batch_no",
-    key: "batch_no",
-  },
-  {
-    title: "MFG Date",
-    dataIndex: "mfg_date",
-    key: "mfg_date",
-  },
-  {
-    title: "Expiry Date",
-    dataIndex: "expiry_date",
-    key: "expiry_date",
-  },
-  {
-    title: "Vendor",
-    dataIndex: "vendor_name", // Populate this using `populate` or a join
-    key: "vendor_name",
-  },
-  {
-    title: "Buyed Date",
-    dataIndex: "buyed_date",
-    key: "buyed_date",
-  },
-  {
-    title: "Payment Status",
-    dataIndex: "payment_status",
-    key: "payment_status",
-    render: (status: string) => status.charAt(0).toUpperCase() + status.slice(1),
-  },
-  {
-    title: "Stock Type",
-    dataIndex: "stock_type",
-    key: "stock_type",
-    render: (type: string) => type === "in" ? "Stock In" : "Stock Out",
-  },
-  {
-    title: "Out Reason",
-    dataIndex: "out_reason",
-    key: "out_reason",
-  },
-  {
-    title: "Warehouse",
-    dataIndex: "location_name",
-    key: "location_name",
-  },
-  {
-    title: "Note",
-    dataIndex: "note",
-    key: "note",
-  },
-];
-
+    {
+      title: "Batch No",
+      dataIndex: "batch_no",
+      key: "batch_no",
+    },
+    {
+      title: "MFG Date",
+      dataIndex: "mfg_date",
+      key: "mfg_date",
+    },
+    {
+      title: "Expiry Date",
+      dataIndex: "expiry_date",
+      key: "expiry_date",
+    },
+    // {
+    //   title: "Vendor",
+    //   dataIndex: "vendor_name", 
+    //   key: "vendor_name",
+    // },
+    // {
+    //   title: "Buyed Date",
+    //   dataIndex: "buyed_date",
+    //   key: "buyed_date",
+    // },
+    // {
+    //   title: "Payment Status",
+    //   dataIndex: "payment_status",
+    //   key: "payment_status",
+    //   render: (status: string) =>
+    //     status.charAt(0).toUpperCase() + status.slice(1),
+    // },
+    // {
+    //   title: "Stock Type",
+    //   dataIndex: "stock_type",
+    //   key: "stock_type",
+    //   render: (type: string) => (type === "in" ? "Stock In" : "Stock Out"),
+    // },
+    // {
+    //   title: "Out Reason",
+    //   dataIndex: "out_reason",
+    //   key: "out_reason",
+    // },
+    // {
+    //   title: "Warehouse",
+    //   dataIndex: "location_name",
+    //   key: "location_name",
+    // },
+    // {
+    //   title: "Note",
+    //   dataIndex: "note",
+    //   key: "note",
+    // },
+  ];
 
   const apiRoutes = {
     get: getApiRouteStockAudit("GetAll"),
