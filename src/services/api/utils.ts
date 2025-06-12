@@ -264,4 +264,31 @@ export const API_ROUTES = {
       endpoint: "/vendor",
     },
   },
+   Warehouse: {
+    Create: {
+      identifier: "AddWarehouse",
+      method: API_METHODS.PUT,
+      endpoint: "/warehouse",
+    },
+    Update: {
+      identifier: "UpdatWarehouse",
+      method: API_METHODS.PATCH,
+      endpoint: "/warehouse",
+    },
+    Get: {
+      identifier: "GetWarehouse",
+      method: API_METHODS.GET,
+      endpoint: "/warehouse",
+    },
+    GetAll: {
+      identifier: "GetAllWarehouse",
+      method: API_METHODS.POST,
+      endpoint: "/warehouse",
+    },
+    Delete: {
+      identifier: "DeleteWarehouse",
+      method: API_METHODS.DELETE,
+      endpoint: "/warehouse",
+    },
+  },
 };

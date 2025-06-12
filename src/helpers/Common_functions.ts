@@ -70,3 +70,12 @@ export const getApiRouteVendor = (action: keyof typeof API_ROUTES.Vendor) => {
   }
   return route;
 };
+
+export const getApiRouteWareHouse = (action: keyof typeof API_ROUTES.Warehouse) => {
+  const route = API_ROUTES?.Warehouse?.[action];
+  if (!route) {
+    console.error(`API_ROUTES.Warehouse.${action} is undefined.`);
+    throw new Error(`API route for Warehouse.${action} is not defined.`);
+  }
+  return route;
+};

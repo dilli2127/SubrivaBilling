@@ -122,6 +122,12 @@ export const menuItems = [
         icon: <DatabaseOutlined />,
         path: "/variant_crud",
       },
+       {
+        key: "warehouse",
+        label: "Warehouse",
+        icon: <DatabaseOutlined />,
+        path: "/warehouse_crud",
+      },
     ],
   },
   {
