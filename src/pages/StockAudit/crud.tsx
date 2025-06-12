@@ -1,25 +1,27 @@
 import React, { useEffect, useState } from "react";
-import CrudModule from "../../components/common/CrudModule";
-import { getApiRouteProduct } from "../../helpers/Common_functions";
+import { getApiRouteStockAudit } from "../../helpers/Common_functions";
 import { DatePicker, Input, InputNumber, Select, Tag } from "antd";
 
 import dayjs from "dayjs";
 import { Form } from "antd";
 import { useApiActions } from "../../services/api/useApiActions";
 import { useDynamicSelector } from "../../services/redux";
+import StockCrudModule from "../../components/common/StockCrudModule";
 
 const { Option } = Select;
 
 const StockAudit = () => {
   const [form] = Form.useForm();
-  const { ProductsApi, VendorApi } = useApiActions();
+  const { ProductsApi, VendorApi, WarehouseApi } = useApiActions();
 
   const { items: productList, loading } = useDynamicSelector(
     ProductsApi.getIdentifier("GetAll")
   );
-  const { items: vendorList, loading:vendorloading } = useDynamicSelector(
+  const { items: vendorList, loading: vendorloading } = useDynamicSelector(
     VendorApi.getIdentifier("GetAll")
   );
+  const { items: wareHouseList, loading: wareHouseLoading } =
+    useDynamicSelector(WarehouseApi.getIdentifier("GetAll"));
   useEffect(() => {
     const qty = form.getFieldValue("quantity");
     const price = form.getFieldValue("buy_price");
@@ -31,6 +33,7 @@ const StockAudit = () => {
   useEffect(() => {
     ProductsApi("GetAll");
     VendorApi("GetAll");
+    WarehouseApi("GetAll");
   }, [ProductsApi, VendorApi]);
   const formItems = [
     {
@@ -148,7 +151,7 @@ const StockAudit = () => {
       label: "Vendor",
       name: "vendor",
       rules: [],
-       component: (
+      component: (
         <Select
           placeholder="Select Vendor"
           showSearch
@@ -223,10 +226,24 @@ const StockAudit = () => {
       name: "location",
       rules: [],
       component: (
-        <Select placeholder="Select warehouse/location" allowClear showSearch>
-          {/* Example options: */}
-          <Option value="main">Main Warehouse</Option>
-          <Option value="branch1">Branch 1</Option>
+        <Select
+          placeholder="Select warehouse"
+          showSearch
+          allowClear
+          loading={wareHouseLoading}
+          optionFilterProp="children"
+          filterOption={(input, option) =>
+            typeof option?.children === "string" &&
+            (option.children as string)
+              .toLowerCase()
+              .includes(input.toLowerCase())
+          }
+        >
+          {wareHouseList?.result?.map((wareHouse: any) => (
+            <Select.Option key={wareHouse?._id} value={wareHouse?._id}>
+              {`${wareHouse.warehouse_name} ${wareHouse?.warehouse_code}`}
+            </Select.Option>
+          ))}
         </Select>
       ),
     },
@@ -238,40 +255,114 @@ const StockAudit = () => {
     },
   ];
 
-  const columns = [
-    { title: "Name", dataIndex: "name", key: "name" },
-    {
-      title: "Category",
-      dataIndex: "category",
-      key: "category",
-    },
-    { title: "SKU", dataIndex: "sku", key: "sku" },
-    {
-      title: "Variant",
-      dataIndex: "variant",
-      key: "variant",
-    },
-    {
-      title: "Status",
-      dataIndex: "status",
-      key: "status",
-      render: (status: boolean) => (
-        <Tag color={status ? "green" : "volcano"}>
-          {status ? "Active" : "Inactive"}
-        </Tag>
-      ),
-    },
-  ];
+ const columns = [
+  {
+    title: "Invoice ID",
+    dataIndex: "invoice_id",
+    key: "invoice_id",
+  },
+  {
+    title: "Product",
+    dataIndex: "product_name", // You may need to map this in your API
+    key: "product_name",
+  },
+  {
+    title: "Quantity",
+    dataIndex: "quantity",
+    key: "quantity",
+  },
+ {
+  title: "Buy Price",
+  dataIndex: "buy_price",
+  key: "buy_price",
+  render: (value: any) => {
+    const num = Number(value);
+    return isNaN(num) ? "-" : `₹${num.toFixed(2)}`;
+  },
+},
+{
+  title: "Total Cost",
+  dataIndex: "total_cost",
+  key: "total_cost",
+  render: (value: any) => {
+    const num = Number(value);
+    return isNaN(num) ? "-" : `₹${num.toFixed(2)}`;
+  },
+},
+{
+  title: "Sell Price",
+  dataIndex: "sell_price",
+  key: "sell_price",
+  render: (value: any) => {
+    const num = Number(value);
+    return isNaN(num) ? "-" : `₹${num.toFixed(2)}`;
+  },
+},
+
+  {
+    title: "Batch No",
+    dataIndex: "batch_no",
+    key: "batch_no",
+  },
+  {
+    title: "MFG Date",
+    dataIndex: "mfg_date",
+    key: "mfg_date",
+  },
+  {
+    title: "Expiry Date",
+    dataIndex: "expiry_date",
+    key: "expiry_date",
+  },
+  {
+    title: "Vendor",
+    dataIndex: "vendor_name", // Populate this using `populate` or a join
+    key: "vendor_name",
+  },
+  {
+    title: "Buyed Date",
+    dataIndex: "buyed_date",
+    key: "buyed_date",
+  },
+  {
+    title: "Payment Status",
+    dataIndex: "payment_status",
+    key: "payment_status",
+    render: (status: string) => status.charAt(0).toUpperCase() + status.slice(1),
+  },
+  {
+    title: "Stock Type",
+    dataIndex: "stock_type",
+    key: "stock_type",
+    render: (type: string) => type === "in" ? "Stock In" : "Stock Out",
+  },
+  {
+    title: "Out Reason",
+    dataIndex: "out_reason",
+    key: "out_reason",
+  },
+  {
+    title: "Warehouse",
+    dataIndex: "location_name",
+    key: "location_name",
+  },
+  {
+    title: "Note",
+    dataIndex: "note",
+    key: "note",
+  },
+];
+
 
   const apiRoutes = {
-    get: getApiRouteProduct("GetAll"),
-    create: getApiRouteProduct("Create"),
-    update: getApiRouteProduct("Update"),
-    delete: getApiRouteProduct("Delete"),
+    get: getApiRouteStockAudit("GetAll"),
+    create: getApiRouteStockAudit("Create"),
+    update: getApiRouteStockAudit("Update"),
+    delete: getApiRouteStockAudit("Delete"),
   };
 
   return (
-    <CrudModule
+    <StockCrudModule
       title="Stock Audit"
       formItems={formItems}
       columns={columns}

@@ -291,4 +291,31 @@ export const API_ROUTES = {
       endpoint: "/warehouse",
     },
   },
+   StockAudit: {
+    Create: {
+      identifier: "AddStockAudit",
+      method: API_METHODS.PUT,
+      endpoint: "/stock_audit",
+    },
+    Update: {
+      identifier: "UpdatStockAudit",
+      method: API_METHODS.PATCH,
+      endpoint: "/stock_audit",
+    },
+    Get: {
+      identifier: "GetStockAudit",
+      method: API_METHODS.GET,
+      endpoint: "/stock_audit",
+    },
+    GetAll: {
+      identifier: "GetAllStockAudit",
+      method: API_METHODS.POST,
+      endpoint: "/stock_audit",
+    },
+    Delete: {
+      identifier: "DeleteStockAudit",
+      method: API_METHODS.DELETE,
+      endpoint: "/stock_audit",
+    },
+  },
 };
