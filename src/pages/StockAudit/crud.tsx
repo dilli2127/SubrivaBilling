@@ -12,6 +12,7 @@ import { useDispatch } from "react-redux";
 import { Dispatch } from "redux";
 import dayjs from "dayjs";
 import { Form } from "antd";
+import { useApiActions } from "../../services/api/useApiActions";
 
 const { Option } = Select;
 
@@ -20,14 +21,16 @@ const StockAudit = () => {
   const [form] = Form.useForm();
   const variantRoute = getApiRouteVariant("Get");
   const categoryRoute = getApiRouteCategory("Get");
-
+  const { ProductsApi } = useApiActions();
   const { loading: variantLoading, items: variantItems } = useDynamicSelector(
     variantRoute.identifier
   );
   const { loading: categoryLoading, items: categoryItems } = useDynamicSelector(
     categoryRoute.identifier
   );
-
+  const { items: productData, loading } = useDynamicSelector(
+    ProductsApi.getIdentifier("GetAll")
+  );
   const [variantMap, setVariantMap] = useState<Record<string, string>>({});
   const [categoryMap, setCategoryMap] = useState<Record<string, string>>({});
 
@@ -68,6 +71,9 @@ const StockAudit = () => {
     }
   }, [form, form.getFieldValue("quantity"), form.getFieldValue("buy_price")]);
 
+  useEffect(() => {
+    ProductsApi("GetAll");
+  }, [ProductsApi]);
   const formItems = [
     {
       label: "Invoice / Reference ID",
@@ -291,7 +297,7 @@ const StockAudit = () => {
       title="Stock Audit"
       formItems={formItems}
       columns={columns}
-      drawerWidth={800}
+      drawerWidth={600}
       apiRoutes={apiRoutes}
       formColumns={2}
     />
