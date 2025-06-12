@@ -12,12 +12,14 @@ const { Option } = Select;
 
 const StockAudit = () => {
   const [form] = Form.useForm();
-  const { ProductsApi } = useApiActions();
+  const { ProductsApi, VendorApi } = useApiActions();
 
   const { items: productList, loading } = useDynamicSelector(
     ProductsApi.getIdentifier("GetAll")
   );
-console.log("Product List:", productList);
+  const { items: vendorList, loading:vendorloading } = useDynamicSelector(
+    VendorApi.getIdentifier("GetAll")
+  );
   useEffect(() => {
     const qty = form.getFieldValue("quantity");
     const price = form.getFieldValue("buy_price");
@@ -28,7 +30,8 @@ console.log("Product List:", productList);
 
   useEffect(() => {
     ProductsApi("GetAll");
-  }, [ProductsApi]);
+    VendorApi("GetAll");
+  }, [ProductsApi, VendorApi]);
   const formItems = [
     {
       label: "Invoice / Reference ID",
@@ -145,9 +148,25 @@ console.log("Product List:", productList);
       label: "Vendor",
       name: "vendor",
       rules: [],
-      component: (
-        <Select placeholder="Select vendor" showSearch allowClear>
-          {/* Populate dynamically */}
+       component: (
+        <Select
+          placeholder="Select Vendor"
+          showSearch
+          allowClear
+          loading={vendorloading}
+          optionFilterProp="children"
+          filterOption={(input, option) =>
+            typeof option?.children === "string" &&
+            (option.children as string)
+              .toLowerCase()
+              .includes(input.toLowerCase())
+          }
+        >
+          {vendorList?.result?.map((vendor: any) => (
+            <Select.Option key={vendor?._id} value={vendor?._id}>
+              {`${vendor.vendor_name} ${vendor?.company_name}`}
+            </Select.Option>
+          ))}
         </Select>
       ),
     },

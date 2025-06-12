@@ -237,4 +237,31 @@ export const API_ROUTES = {
       endpoint: "/products",
     },
   },
+   Vendor: {
+    Create: {
+      identifier: "AddVendor",
+      method: API_METHODS.PUT,
+      endpoint: "/vendor",
+    },
+    Update: {
+      identifier: "UpdatVendor",
+      method: API_METHODS.PATCH,
+      endpoint: "/vendor",
+    },
+    Get: {
+      identifier: "GetVendor",
+      method: API_METHODS.GET,
+      endpoint: "/vendor",
+    },
+    GetAll: {
+      identifier: "GetAllVendor",
+      method: API_METHODS.POST,
+      endpoint: "/vendor",
+    },
+    Delete: {
+      identifier: "DeleteVendor",
+      method: API_METHODS.DELETE,
+      endpoint: "/vendor",
+    },
+  },
 };

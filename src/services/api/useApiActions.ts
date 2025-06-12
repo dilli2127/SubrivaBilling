@@ -7,6 +7,7 @@ import {
   getApiRouteProduct,
   getApiRouteVariant,
   getApiRouteUnit,
+  getApiRouteVendor,
 } from "../../helpers/Common_functions";
 
 type Action = "GetAll" | "Create" | "Update" | "Delete";
@@ -61,11 +62,13 @@ export const useApiActions = () => {
   const VariantsApi = createFetcher<Action>(getApiRouteVariant)(dispatch);
   const CategoriesApi = createFetcher<Action>(getApiRouteCategory)(dispatch);
   const UnitsApi = createFetcher<Action>(getApiRouteUnit)(dispatch);
+  const VendorApi = createFetcher<Action>(getApiRouteVendor)(dispatch);
 
   return {
     ProductsApi,
     VariantsApi,
     CategoriesApi,
     UnitsApi,
+    VendorApi
   };
 };

@@ -80,9 +80,15 @@ export const menuItems = [
     children: [
       {
         key: "add-customer",
-        label: "Add Customer",
+        label: "Customer",
         icon: <UserAddOutlined />,
         path: "/customer_crud",
+      },
+       {
+        key: "vendor",
+        label: "Vendor",
+        icon: <TeamOutlined />,
+        path: "/vendor_crud",
       },
     
     ],
