@@ -17,9 +17,10 @@ const CrudModule = ({
   formItems,
   apiRoutes,
   formColumns = 2,
+  drawerWidth,
 }: {
   title: string;
-  columns: any[];
+  columns: any[]; 
   formItems: any[];
   apiRoutes: {
     get: any;
@@ -28,6 +29,7 @@ const CrudModule = ({
     delete: any;
   };
   formColumns?: number;
+  drawerWidth?: number;
 }) => {
   const dispatch: Dispatch<any> = useDispatch();
   const [drawerVisible, setDrawerVisible] = useState(false);
@@ -165,7 +167,7 @@ const CrudModule = ({
         pagination={{ pageSize: 10 }}
       />
 
-      <GlobalDrawer title={`Add New ${title}`} onClose={resetForm} open={drawerVisible} width={600}>
+      <GlobalDrawer title={`Add New ${title}`} onClose={resetForm} open={drawerVisible} width={drawerWidth || 600}>
         <AntdForm
           form={form}
           initialValues={initialValues}

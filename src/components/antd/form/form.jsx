@@ -132,7 +132,7 @@ const AntdForm = (props) => {
           )}
         </Row>
 
-        <Row justify="end" gutter={[16, 16]}>
+        <Row justify="end" gutter={[16, 16]} style={{padding: "16px"}}>
           <Col>
             <Button onClick={handleCancel}>Cancel</Button>
           </Col>

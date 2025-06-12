@@ -60,6 +60,19 @@ export const menuItems = [
       },
     ],
   },
+   {
+    key: "Stock Audit",
+    label: "Stock Audit",
+    icon: <FileTextOutlined />,
+    children: [
+      {
+        key: "stock-audit",
+        label: "Stock Audit",
+        icon: <PlusCircleOutlined />,
+        path: "/stock_audit",
+      },
+    ],
+  },
   {
     key: "customers",
     label: "Customers",
