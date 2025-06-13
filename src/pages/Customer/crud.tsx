@@ -64,7 +64,6 @@ const CustomerCrud: React.FC = () => {
     { title: "Name", dataIndex: "full_name", key: "full_name" },
     { title: "Email", dataIndex: "email", key: "email" },
     { title: "Mobile", dataIndex: "mobile", key: "mobile" },
-    { title: "Mobile", dataIndex: "mobile", key: "mobile" },
     {
       title: "Actions",
       key: "actions",

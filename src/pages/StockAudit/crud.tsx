@@ -34,7 +34,7 @@ const StockAudit = () => {
     ProductsApi("GetAll");
     VendorApi("GetAll");
     WarehouseApi("GetAll");
-  }, [ProductsApi, VendorApi]);
+  }, [ProductsApi, VendorApi, WarehouseApi]);
   const formItems = [
     {
       label: "Invoice / Reference ID",

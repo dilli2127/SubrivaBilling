@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Table,
   Input,
@@ -10,55 +10,128 @@ import {
   Row,
   Col,
   Typography,
+  Drawer,
 } from "antd";
 import dayjs from "dayjs";
 import { DeleteOutlined } from "@ant-design/icons";
+import { useApiActions } from "../../services/api/useApiActions";
+import { useDynamicSelector } from "../../services/redux";
+import CustomerCrud from "../../pages/Customer/crud";
 const { Title } = Typography;
 const { Option } = Select;
 
 const RetailBillingTable = () => {
   const [form] = Form.useForm();
+  const { ProductsApi, StockAuditApi, CustomerApi } = useApiActions();
   const [dataSource, setDataSource] = useState([
-    { key: 0, name: "", qty: 1, price: 0, amount: 0 },
+    {
+      key: 0,
+      name: "",
+      qty: 0,
+      price: 0,
+      amount: 0,
+      product: undefined,
+      stock: undefined,
+      looseQty: 0,
+    },
   ]);
+  const [customerDrawerVisible, setCustomerDrawerVisible] = useState(false);
   const [count, setCount] = useState(1);
-
-  const products = [
-    { label: "Paracetamol 500mg", value: "paracetamol" },
-    { label: "Wheat 1kg", value: "wheat" },
-    { label: "Sugar 1kg", value: "sugar" },
-    { label: "Shampoo 100ml", value: "shampoo" },
-  ];
-
+  const { items: productList, loading: productLoading } = useDynamicSelector(
+    ProductsApi.getIdentifier("GetAll")
+  );
+  const { items: stockAuditList, loding: stockAuditLoading } =
+    useDynamicSelector(StockAuditApi.getIdentifier("GetAll"));
+  const { items: customerList, loding: costomerLoading } = useDynamicSelector(
+    CustomerApi.getIdentifier("GetAll")
+  );
   type DataSourceItem = {
     key: number;
     name: string;
     qty: number;
     price: number;
     amount: number;
+    stock?: any;
+    product?: any;
+    looseQty?: number;
   };
-  type EditableColumn = "name" | "qty" | "price";
+  type EditableColumn =
+    | "name"
+    | "qty"
+    | "price"
+    | "stock"
+    | "product"
+    | "looseQty";
 
-  const handleChange = (value: any, key: number, column: EditableColumn) => {
+  const handleChange = (
+    value: any,
+    key: number,
+    column: EditableColumn | "looseQty"
+  ) => {
     const newData = [...dataSource];
     const item = newData.find((item) => item.key === key);
     if (!item) return;
-    if (column === "name") {
-      item.name = value;
+
+    if (column === "product") {
+      item.product = value;
+      item.stock = undefined;
+      item.price = 0;
+      item.amount = 0;
+    } else if (column === "stock") {
+      item.stock = value;
+
+      const selectedStock = stockAuditList?.result?.find(
+        (s: any) => s._id === value
+      );
+      const sellPrice = selectedStock?.sell_price || 0;
+      item.price = sellPrice;
+
+      const quantity = selectedStock?.quantity || 1;
+      const looseRate = sellPrice / quantity;
+
+      item.amount =
+        (item.qty || 0) * sellPrice + (item.looseQty || 0) * looseRate;
     } else if (column === "qty") {
       item.qty = value;
-      item.amount = (item.qty || 1) * (item.price || 0);
+      const selectedStock = stockAuditList?.result?.find(
+        (s: any) => s._id === item.stock
+      );
+      const sellPrice = selectedStock?.sell_price || 0;
+      const quantity = selectedStock?.quantity || 1;
+      const looseRate = sellPrice / quantity;
+
+      item.amount = (value || 0) * sellPrice + (item.looseQty || 0) * looseRate;
+    } else if (column === "looseQty") {
+      item.looseQty = value;
+      const selectedStock = stockAuditList?.result?.find(
+        (s: any) => s._id === item.stock
+      );
+      const sellPrice = selectedStock?.sell_price || 0;
+      const quantity = selectedStock?.quantity || 1;
+      const looseRate = sellPrice / quantity;
+
+      item.amount = (item.qty || 0) * sellPrice + (value || 0) * looseRate;
     } else if (column === "price") {
       item.price = value;
-      item.amount = (item.qty || 1) * (item.price || 0);
+      item.amount = (item.qty || 1) * (value || 0); // Optional: You may also include looseQty logic here
     }
+
     setDataSource(newData);
   };
 
   const handleAdd = () => {
     setDataSource([
       ...dataSource,
-      { key: count, name: "", qty: 1, price: 0, amount: 0 },
+      {
+        key: count,
+        name: "",
+        qty: 1,
+        price: 0,
+        amount: 0,
+        product: undefined,
+        stock: undefined,
+        looseQty: 0,
+      },
     ]);
     setCount(count + 1);
   };
@@ -114,15 +187,21 @@ const RetailBillingTable = () => {
       title: (
         <span style={{ color: "#1890ff", fontWeight: "bold" }}>Item Name</span>
       ),
-      dataIndex: "name",
+      dataIndex: "product",
       render: (_: any, record: DataSourceItem) => (
         <Select
-          value={record.name}
-          onChange={(value) => handleChange(value, record.key, "name")}
+          value={record.product}
+          onChange={(productId) => {
+            handleChange(productId, record.key, "product");
+            StockAuditApi("GetAll", {
+              product: productId,
+            });
+          }}
           showSearch
           style={{ width: "100%" }}
           placeholder="Select Product"
           optionFilterProp="children"
+          allowClear
           filterOption={(input, option) =>
             String(option?.children)
               .toLowerCase()
@@ -130,10 +209,41 @@ const RetailBillingTable = () => {
           }
           dropdownStyle={{ maxHeight: 150, overflowY: "auto" }}
         >
-          {products.map((product) => (
-            <Option key={product.value} value={product.label}>
-              {product.label}
-            </Option>
+          {productList?.result?.map((product: any) => (
+            <Select.Option key={product?._id} value={product?._id}>
+              {`${product.name} ${product?.VariantItem?.variant_name}`}
+            </Select.Option>
+          ))}
+        </Select>
+      ),
+    },
+
+    {
+      title: (
+        <span style={{ color: "#1890ff", fontWeight: "bold" }}>Stock</span>
+      ),
+      dataIndex: "stock",
+      width: 300,
+      render: (_: any, record: DataSourceItem) => (
+        <Select
+          value={record.stock}
+          onChange={(value) => handleChange(value, record.key, "stock")}
+          showSearch
+          style={{ width: "100%" }}
+          placeholder="Select Stock"
+          optionFilterProp="children"
+          allowClear
+          filterOption={(input, option) =>
+            String(option?.children)
+              .toLowerCase()
+              .indexOf(input.toLowerCase()) >= 0
+          }
+          dropdownStyle={{ maxHeight: 150, overflowY: "auto" }}
+        >
+          {stockAuditList?.result?.map((stockAudit: any) => (
+            <Select.Option key={stockAudit?._id} value={stockAudit?._id}>
+              {`${stockAudit.batch_no} - ${stockAudit?.buy_price}`}
+            </Select.Option>
           ))}
         </Select>
       ),
@@ -147,6 +257,21 @@ const RetailBillingTable = () => {
           min={1}
           value={record.qty}
           onChange={(value) => handleChange(value, record.key, "qty")}
+          style={{ width: "100%" }}
+        />
+      ),
+    },
+    {
+      title: (
+        <span style={{ color: "#1890ff", fontWeight: "bold" }}>Loose Qty</span>
+      ),
+      dataIndex: "looseQty",
+      width: 100,
+      render: (_: any, record: DataSourceItem) => (
+        <InputNumber
+          min={1}
+          value={record.looseQty}
+          onChange={(value) => handleChange(value, record.key, "looseQty")}
           style={{ width: "100%" }}
         />
       ),
@@ -183,9 +308,11 @@ const RetailBillingTable = () => {
       ),
     },
   ];
-
   const totalAmount = dataSource.reduce((sum, item) => sum + item.amount, 0);
-
+  useEffect(() => {
+    ProductsApi("GetAll");
+    CustomerApi("GetAll");
+  }, [ProductsApi, CustomerApi]);
   return (
     <Form
       form={form}
@@ -198,9 +325,10 @@ const RetailBillingTable = () => {
         borderRadius: 10,
         boxShadow: "0 4px 12px rgba(24, 144, 255, 0.15)",
       }}
-    ><Title level={3} style={{ color: "#1890ff", textAlign: "center" }}>
-          Create Bill
-        </Title>
+    >
+      <Title level={3} style={{ color: "#1890ff", textAlign: "center" }}>
+        Create Bill
+      </Title>
       <Row gutter={16} style={{ marginBottom: 24 }}>
         <Col span={12}>
           <Form.Item
@@ -231,15 +359,42 @@ const RetailBillingTable = () => {
       <Row gutter={16} style={{ marginBottom: 24 }}>
         <Col span={12}>
           <Form.Item
-            label="Customer Mobile"
-            name="mobile"
+            label="Customer"
+            name="customer"
             style={{ marginBottom: 0 }}
+            rules={[{ required: true, message: "Please select a customer" }]}
           >
-            <Input
-              maxLength={10}
-              placeholder="Enter mobile number"
-              style={{ borderColor: "#1890ff" }}
-            />
+            <Select
+              placeholder="Select Customer"
+              showSearch
+              allowClear
+              style={{ width: "100%", borderColor: "#1890ff" }}
+              optionFilterProp="children"
+              dropdownRender={(menu) => (
+                <>
+                  {menu}
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "center",
+                      padding: 8,
+                      cursor: "pointer",
+                      color: "#1890ff",
+                      borderTop: "1px solid #f0f0f0",
+                    }}
+                    onClick={() => setCustomerDrawerVisible(true)}
+                  >
+                    + Add Customer
+                  </div>
+                </>
+              )}
+            >
+              {customerList?.result?.map((cust: any) => (
+                <Option key={cust._id} value={cust._id}>
+                  {cust.full_name} - {cust.mobile}
+                </Option>
+              ))}
+            </Select>
           </Form.Item>
         </Col>
 
@@ -322,6 +477,15 @@ const RetailBillingTable = () => {
           }
         `}
       </style>
+      <Drawer
+        title="Add New Customer"
+        open={customerDrawerVisible}
+        onClose={() => setCustomerDrawerVisible(false)}
+        width={500}
+        destroyOnClose
+      >
+        <CustomerCrud />
+      </Drawer>
     </Form>
   );
 };
