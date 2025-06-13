@@ -11,6 +11,7 @@ import {
   getApiRouteWareHouse,
   getApiRouteStockAudit,
   getApiRouteCustomer,
+  getApiRouteRetailBill,
 } from "../../helpers/Common_functions";
 
 type Action = "GetAll" | "Create" | "Update" | "Delete";
@@ -69,6 +70,7 @@ export const useApiActions = () => {
   const WarehouseApi = createFetcher<Action>(getApiRouteWareHouse)(dispatch);
   const StockAuditApi = createFetcher<Action>(getApiRouteStockAudit)(dispatch);
   const CustomerApi = createFetcher<Action>(getApiRouteCustomer)(dispatch);
+  const RetailBill = createFetcher<Action>(getApiRouteRetailBill)(dispatch);
 
   return {
     ProductsApi,
@@ -78,6 +80,7 @@ export const useApiActions = () => {
     VendorApi,
     WarehouseApi,
     StockAuditApi,
-    CustomerApi
+    CustomerApi,
+    RetailBill
   };
 };

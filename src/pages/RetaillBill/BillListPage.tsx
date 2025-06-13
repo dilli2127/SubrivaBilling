@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Table,
   Button,
@@ -16,11 +16,14 @@ import {
 import { EyeOutlined, DeleteOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import GlobalDrawer from "../../components/antd/GlobalDrawer";
+import { useApiActions } from "../../services/api/useApiActions";
 
 const { Title } = Typography;
 const { Option } = Select;
 
 const BillListPage = () => {
+  const { RetailBill } =
+    useApiActions();
   const [bills, setBills] = useState([
     {
       key: "1",
@@ -133,7 +136,9 @@ const BillListPage = () => {
       ),
     },
   ];
-
+  useEffect(() => {
+    RetailBill("GetAll");
+  }, [RetailBill]);
   return (
     <div style={{ padding: 24 }}>
       <Title level={3} style={{ color: "#1890ff" }}>

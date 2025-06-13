@@ -15,14 +15,27 @@ import {
 import dayjs from "dayjs";
 import { DeleteOutlined } from "@ant-design/icons";
 import { useApiActions } from "../../services/api/useApiActions";
-import { useDynamicSelector } from "../../services/redux";
+import { dynamic_clear, useDynamicSelector } from "../../services/redux";
 import CustomerCrud from "../../pages/Customer/crud";
+import {
+  getApiRouteRetailBill,
+  showToast,
+} from "../../helpers/Common_functions";
+import { useDispatch } from "react-redux";
+import { Dispatch } from "redux";
 const { Title } = Typography;
 const { Option } = Select;
 
 const RetailBillingTable = () => {
   const [form] = Form.useForm();
-  const { ProductsApi, StockAuditApi, CustomerApi } = useApiActions();
+  const getRoute = getApiRouteRetailBill("GetAll");
+  const addRoute = getApiRouteRetailBill("Create");
+  const updateRoute = getApiRouteRetailBill("Update");
+  const deleteRoute = getApiRouteRetailBill("Delete");
+
+  const dispatch: Dispatch<any> = useDispatch();
+  const { ProductsApi, StockAuditApi, CustomerApi, RetailBill } =
+    useApiActions();
   const [dataSource, setDataSource] = useState([
     {
       key: 0,
@@ -37,6 +50,9 @@ const RetailBillingTable = () => {
   ]);
   const [customerDrawerVisible, setCustomerDrawerVisible] = useState(false);
   const [count, setCount] = useState(1);
+  const { items: createItems, error: createError } = useDynamicSelector(
+    addRoute.identifier
+  );
   const { items: productList, loading: productLoading } = useDynamicSelector(
     ProductsApi.getIdentifier("GetAll")
   );
@@ -118,6 +134,44 @@ const RetailBillingTable = () => {
 
     setDataSource(newData);
   };
+  const handleSubmit = async (values: any) => {
+    const items = dataSource.map((item) => ({
+      product_id: item.product,
+      stock_id: item.stock,
+      quantity: item.qty,
+      loose_quantity: item.looseQty,
+      price: item.price,
+      amount: item.amount,
+    }));
+    const payload = {
+      invoice_no: values.invoice_no,
+      date: dayjs(values.date).format("YYYY-MM-DD"),
+      customer_id: values.customer,
+      payment_mode: values.payment_mode,
+      items,
+      total_amount: totalAmount,
+    };
+
+    try {
+      await RetailBill("Create", payload);
+      form.resetFields();
+      setDataSource([
+        {
+          key: 0,
+          name: "",
+          qty: 0,
+          price: 0,
+          amount: 0,
+          product: undefined,
+          stock: undefined,
+          looseQty: 0,
+        },
+      ]);
+      setCount(1);
+    } catch (error) {
+      console.error("Bill submission failed:", error);
+    }
+  };
 
   const handleAdd = () => {
     setDataSource([
@@ -138,6 +192,23 @@ const RetailBillingTable = () => {
   const handleDelete = (key: number) => {
     const newData = dataSource.filter((item) => item.key !== key);
     setDataSource(newData);
+  };
+
+  const handleApiResponse = (
+    action: "create" | "update" | "delete",
+    success: boolean
+  ) => {
+    const title = "Retail Bill";
+    if (success) {
+      showToast("success", `${title} ${action}d successfully`);
+      resetForm();
+      dispatch(dynamic_clear(addRoute.identifier));
+    } else {
+      showToast("error", `Failed to ${action} ${title}`);
+    }
+  };
+  const resetForm = () => {
+    form.resetFields();
   };
 
   const columns = [
@@ -223,7 +294,7 @@ const RetailBillingTable = () => {
         <span style={{ color: "#1890ff", fontWeight: "bold" }}>Stock</span>
       ),
       dataIndex: "stock",
-      width: 300,
+      width: 180,
       render: (_: any, record: DataSourceItem) => (
         <Select
           value={record.stock}
@@ -313,10 +384,16 @@ const RetailBillingTable = () => {
     ProductsApi("GetAll");
     CustomerApi("GetAll");
   }, [ProductsApi, CustomerApi]);
+  useEffect(() => {
+    if (createItems?.statusCode === "200") handleApiResponse("create", true);
+    if (createError) handleApiResponse("create", false);
+  }, [createItems, createError]);
+
   return (
     <Form
       form={form}
       layout="vertical"
+      onFinish={handleSubmit}
       initialValues={{ date: dayjs(), payment_mode: "cash" }}
       style={{
         margin: "auto",

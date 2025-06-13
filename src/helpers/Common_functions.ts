@@ -88,3 +88,12 @@ export const getApiRouteStockAudit = (action: keyof typeof API_ROUTES.StockAudit
   }
   return route;
 };
+
+export const getApiRouteRetailBill = (action: keyof typeof API_ROUTES.RetailBill) => {
+  const route = API_ROUTES?.RetailBill?.[action];
+  if (!route) {
+    console.error(`API_ROUTES.RetailBill.${action} is undefined.`);
+    throw new Error(`API route for RetailBill.${action} is not defined.`);
+  }
+  return route;
+};
