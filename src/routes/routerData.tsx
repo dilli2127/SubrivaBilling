@@ -123,7 +123,7 @@ const routerData: RouteConfig[] = [
         path: "retaill_billing",
         element: (
           <Suspense fallback={<Loader />}>
-            <RetailBillForm />
+            <RetailBillForm  />
           </Suspense>
         ),
         children: [],
