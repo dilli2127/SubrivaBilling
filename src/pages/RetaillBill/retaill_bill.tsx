@@ -89,62 +89,63 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
     | "product"
     | "loose_qty";
 
-  const handleChange = (
-    value: any,
-    key: number,
-    column: EditableColumn | "loose_qty"
-  ) => {
-    const newData = [...dataSource];
-    const item = newData.find((item) => item.key === key);
-    if (!item) return;
-
-    if (column === "product") {
-      item.product = value;
-      item.stock = undefined;
-      item.price = 0;
-      item.amount = 0;
-    } else if (column === "stock") {
-      item.stock = value;
-
-      const selectedStock = stockAuditList?.result?.find(
-        (s: any) => s._id === value
-      );
-      const sellPrice = selectedStock?.sell_price || 0;
-      item.price = sellPrice;
-
-      const qty = selectedStock?.qty || 1;
-      const looseRate = sellPrice / qty;
-
-      item.amount =
-        (item.qty || 0) * sellPrice + (item.loose_qty || 0) * looseRate;
-    } else if (column === "qty") {
-      item.qty = value;
-      const selectedStock = stockAuditList?.result?.find(
-        (s: any) => s._id === item.stock
-      );
-      const sellPrice = selectedStock?.sell_price || 0;
-      const qty = selectedStock?.qty || 1;
-      const looseRate = sellPrice / qty;
-
-      item.amount =
-        (value || 0) * sellPrice + (item.loose_qty || 0) * looseRate;
-    } else if (column === "loose_qty") {
-      item.loose_qty = value;
-      const selectedStock = stockAuditList?.result?.find(
-        (s: any) => s._id === item.stock
-      );
-      const sellPrice = selectedStock?.sell_price || 0;
-      const qty = selectedStock?.qty || 1;
-      const looseRate = sellPrice / qty;
-
-      item.amount = (item.qty || 0) * sellPrice + (value || 0) * looseRate;
-    } else if (column === "price") {
-      item.price = value;
-      item.amount = (item.qty || 1) * (value || 0);
-    }
-
-    setDataSource(newData);
-  };
+    const handleChange = (
+      value: any,
+      key: number,
+      column: EditableColumn | "loose_qty"
+    ) => {
+      const newData = [...dataSource];
+      const item = newData.find((item) => item.key === key);
+      if (!item) return;
+    
+      const getSelectedStock = () =>
+        stockAuditList?.result?.find((s: any) => s._id === item.stock);
+    
+      const calculateAmount = () => {
+        const selectedStock = getSelectedStock();
+        const sellPrice = selectedStock?.sell_price || 0;
+        const packQty = selectedStock?.quantity || 1; // <- This is important
+        const looseRate = sellPrice / packQty;
+    
+        return (
+          (item.qty || 0) * sellPrice + (item.loose_qty || 0) * looseRate
+        );
+      };
+    
+      switch (column) {
+        case "product":
+          item.product = value;
+          item.stock = undefined;
+          item.price = 0;
+          item.amount = 0;
+          break;
+    
+        case "stock":
+          item.stock = value;
+          const stock = getSelectedStock();
+          item.price = stock?.sell_price || 0;
+          item.amount = calculateAmount();
+          break;
+    
+        case "qty":
+          item.qty = value;
+          item.amount = calculateAmount();
+          break;
+    
+        case "loose_qty":
+          item.loose_qty = value;
+          item.amount = calculateAmount();
+          break;
+    
+        case "price":
+          item.price = value;
+          item.amount = (item.qty || 1) * (value || 0); // You can also include loose_qty here if needed
+          break;
+      }
+    
+      setDataSource(newData);
+    };
+    
 
   useEffect(() => {
     if (billdata) {
