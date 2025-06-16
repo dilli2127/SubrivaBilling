@@ -41,8 +41,17 @@ const BillListPage = () => {
     pageSize: 10
   });
 
-  const handleDelete = (key: string) => {
-    message.success("Bill deleted successfully");
+  const handleDelete = async (id: string) => {
+    try {
+      await RetailBill("Delete", {}, id );
+      message.success("Bill deleted successfully");
+      RetailBill("GetAll", { 
+        pageNumber: pagination.current, 
+        pageLimit: pagination.pageSize 
+      });
+    } catch (error) {
+      message.error("Failed to delete bill");
+    }
   };
 
   const handleView = (record: any) => {
@@ -147,7 +156,7 @@ const BillListPage = () => {
           </Button>
           <Popconfirm
             title="Are you sure to delete this bill?"
-            onConfirm={() => handleDelete(record.key)}
+            onConfirm={() => handleDelete(record._id)}
             okText="Yes"
             cancelText="No"
           >
