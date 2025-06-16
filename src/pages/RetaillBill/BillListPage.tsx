@@ -142,7 +142,7 @@ const BillListPage = () => {
         open={isDrawerOpen}
         width={1200}
       >
-        <RetailBillingTable  />
+        <RetailBillingTable billdata={selectedBill}  />
       </GlobalDrawer>
     </div>
   );

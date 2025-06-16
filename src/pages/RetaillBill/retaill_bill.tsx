@@ -25,8 +25,10 @@ import { useDispatch } from "react-redux";
 import { Dispatch } from "redux";
 const { Title } = Typography;
 const { Option } = Select;
-
-const RetailBillingTable = () => {
+interface RetailBillingTableProps {
+  billdata: any;
+}
+const RetailBillingTable: React.FC<RetailBillingTableProps> = ({ billdata }) => {
   const [form] = Form.useForm();
   const getRoute = getApiRouteRetailBill("GetAll");
   const addRoute = getApiRouteRetailBill("Create");
