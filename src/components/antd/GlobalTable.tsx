@@ -8,6 +8,9 @@ interface GlobalTableProps<T> extends TableProps<T> {
   data: T[];
   rowKeyField?: string;
   bordered?: boolean;
+  totalCount?: number;
+  pageLimit?:number;
+  onPaginationChange?: (page: number, pageSize: number) => void;
 }
 
 function GlobalTable<T extends object>({
@@ -15,6 +18,9 @@ function GlobalTable<T extends object>({
   data,
   rowKeyField = 'id',
   bordered = true,
+  totalCount,
+  onPaginationChange,
+  pageLimit,
   ...rest
 }: GlobalTableProps<T>) {
   return (
@@ -24,7 +30,13 @@ function GlobalTable<T extends object>({
         dataSource={data}
         rowKey={rowKeyField}
         bordered={bordered}
-        pagination={{ pageSize: 10 }}
+        pagination={{
+          pageSize: pageLimit,
+          total: totalCount,
+          showSizeChanger: true,
+          showTotal: (total) => `Total ${total} items`,
+          onChange: onPaginationChange
+        }}
         className="custom-table"
         {...rest}
       />

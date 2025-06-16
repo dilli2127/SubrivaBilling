@@ -36,6 +36,10 @@ const BillListPage = () => {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [billViewVisible, setBillViewVisible] = useState(false);
   const [form] = Form.useForm();
+  const [pagination, setPagination] = useState({
+    current: 1,
+    pageSize: 10
+  });
 
   const handleDelete = (key: string) => {
     message.success("Bill deleted successfully");
@@ -80,6 +84,11 @@ const BillListPage = () => {
 
     setIsDrawerOpen(false);
     message.success("Bill updated successfully");
+  };
+
+  const handlePaginationChange = (page: number, pageSize: number) => {
+    setPagination({ current: page, pageSize });
+    RetailBill("GetAll", { pageNumber: page, pageLimit: pageSize });
   };
 
   const columns = [
@@ -152,7 +161,7 @@ const BillListPage = () => {
   ];
 
   useEffect(() => {
-    RetailBill("GetAll");
+    RetailBill("GetAll", { pageNumber: pagination.current, pageLimit: pagination.pageSize });
   }, [RetailBill]);
 
   return (
@@ -179,6 +188,9 @@ const BillListPage = () => {
         loading={loading}
         bordered
         rowKey="_id"
+        totalCount={RetailBillList?.pagination?.totalCount || 0}
+        pageLimit={RetailBillList?.pagination?.pageLimit || 0}
+        onPaginationChange={handlePaginationChange}
       />
 
       <GlobalDrawer
