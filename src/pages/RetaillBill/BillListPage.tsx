@@ -14,13 +14,14 @@ import {
   DatePicker,
   Result,
 } from "antd";
-import { EyeOutlined, DeleteOutlined, PrinterOutlined } from "@ant-design/icons";
+import { EyeOutlined, DeleteOutlined, PrinterOutlined, PlusOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import GlobalDrawer from "../../components/antd/GlobalDrawer";
 import { useApiActions } from "../../services/api/useApiActions";
 import { useDynamicSelector } from "../../services/redux";
 import RetailBillingTable from "./retaill_bill";  
 import BillViewModal from "./components/BillViewModal";
+import GlobalTable from "../../components/antd/GlobalTable";
 
 const { Title } = Typography;
 const { Option } = Select;
@@ -50,7 +51,6 @@ const BillListPage = () => {
   };
 
   const handlePrint = (record: any) => {
-    // Structure the bill data properly for the BillViewModal
     const formattedBill = {
       ...record,
       items: record.Items?.map((item: any) => ({
@@ -150,17 +150,31 @@ const BillListPage = () => {
       ),
     },
   ];
+
   useEffect(() => {
     RetailBill("GetAll");
   }, [RetailBill]);
+
   return (
     <div style={{ padding: 24 }}>
-      <Title level={3} style={{ color: "#1890ff" }}>
-        Bill List
-      </Title>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+        <Title level={3} style={{ color: "#1890ff", margin: 0 }}>
+          Bill List
+        </Title>
+        <Button
+          type="primary"
+          icon={<PlusOutlined />}
+          onClick={() => {
+            setSelectedBill(null);
+            setIsDrawerOpen(true);
+          }}
+        >
+          Create New Bill
+        </Button>
+      </div>
 
-      <Table
-        dataSource={RetailBillList?.result}
+      <GlobalTable
+        data={RetailBillList?.result}
         columns={columns}
         loading={loading}
         bordered
@@ -168,14 +182,17 @@ const BillListPage = () => {
       />
 
       <GlobalDrawer
-        title="Edit Bill"
+        title={selectedBill ? "Edit Bill" : "Create New Bill"}
         onClose={() => setIsDrawerOpen(false)}
         open={isDrawerOpen}
         width={1200}
       >
         <RetailBillingTable 
           billdata={selectedBill} 
-          onSuccess={() => setIsDrawerOpen(false)}
+          onSuccess={() => {
+            setIsDrawerOpen(false);
+            RetailBill("GetAll");
+          }}
         />
       </GlobalDrawer>
 
