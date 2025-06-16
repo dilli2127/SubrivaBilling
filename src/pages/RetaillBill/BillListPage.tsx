@@ -131,6 +131,7 @@ const BillListPage = () => {
       <Table
         dataSource={RetailBillList?.result}
         columns={columns}
+        loading={loading}
         bordered
         rowKey="key"
         pagination={{ pageSize: 10 }}

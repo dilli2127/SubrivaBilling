@@ -193,7 +193,7 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
 
     try {
       if (billdata) {
-        await RetailBill("Update", { ...payload, _id: billdata._id });
+        await RetailBill("Update", { ...payload }, billdata._id);
       } else {
         await RetailBill("Create", payload);
       }
@@ -232,9 +232,18 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
     ]);
     setCount(count + 1);
   };
-  const handleDelete = (key: number) => {
-    const newData = dataSource.filter((item) => item.key !== key);
-    setDataSource(newData);
+  const handleDelete = async (key: number) => {
+    try {
+      if (billdata) {
+        await RetailBill("Delete", { id: billdata._id });
+        handleApiResponse("delete", true);
+      }
+      const newData = dataSource.filter((item) => item.key !== key);
+      setDataSource(newData);
+    } catch (error) {
+      console.error("Delete failed:", error);
+      handleApiResponse("delete", false);
+    }
   };
 
   const handleApiResponse = (
