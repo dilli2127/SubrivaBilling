@@ -14,12 +14,17 @@ import {
   DatePicker,
   Result,
 } from "antd";
-import { EyeOutlined, DeleteOutlined, PrinterOutlined, PlusOutlined } from "@ant-design/icons";
+import {
+  EyeOutlined,
+  DeleteOutlined,
+  PrinterOutlined,
+  PlusOutlined,
+} from "@ant-design/icons";
 import dayjs from "dayjs";
 import GlobalDrawer from "../../components/antd/GlobalDrawer";
 import { useApiActions } from "../../services/api/useApiActions";
 import { useDynamicSelector } from "../../services/redux";
-import RetailBillingTable from "./retaill_bill";  
+import RetailBillingTable from "./retaill_bill";
 import BillViewModal from "./components/BillViewModal";
 import GlobalTable from "../../components/antd/GlobalTable";
 
@@ -38,16 +43,16 @@ const BillListPage = () => {
   const [form] = Form.useForm();
   const [pagination, setPagination] = useState({
     current: 1,
-    pageSize: 10
+    pageSize: 10,
   });
 
   const handleDelete = async (id: string) => {
     try {
-      await RetailBill("Delete", {}, id );
+      await RetailBill("Delete", {}, id);
       message.success("Bill deleted successfully");
-      RetailBill("GetAll", { 
-        pageNumber: pagination.current, 
-        pageLimit: pagination.pageSize 
+      await RetailBill("GetAll", {
+        pageNumber: pagination.current,
+        pageLimit: pagination.pageSize,
       });
     } catch (error) {
       message.error("Failed to delete bill");
@@ -66,33 +71,26 @@ const BillListPage = () => {
   const handlePrint = (record: any) => {
     const formattedBill = {
       ...record,
-      items: record.Items?.map((item: any) => ({
-        ...item,
-        product: record.productDetails?.find((p: any) => p._id === item.product_id),
-        qty: item.qty,
-        price: item.price,
-        amount: item.amount,
-        loose_qty: item.loose_qty || 0
-      })) || [],
+      items:
+        record.Items?.map((item: any) => ({
+          ...item,
+          product: record.productDetails?.find(
+            (p: any) => p._id === item.product_id
+          ),
+          qty: item.qty,
+          price: item.price,
+          amount: item.amount,
+          loose_qty: item.loose_qty || 0,
+        })) || [],
       customer: record.customerDetails,
       total_amount: record.total_amount,
       is_paid: record.is_paid,
       is_partially_paid: record.is_partially_paid,
-      paid_amount: record.paid_amount
+      paid_amount: record.paid_amount,
     };
-    
+
     setSelectedBill(formattedBill);
     setBillViewVisible(true);
-  };
-
-  const handleFormSubmit = (values: any) => {
-    const updatedBill = {
-      ...values,
-      date: values.date.format("YYYY-MM-DD"),
-    };
-
-    setIsDrawerOpen(false);
-    message.success("Bill updated successfully");
   };
 
   const handlePaginationChange = (page: number, pageSize: number) => {
@@ -117,7 +115,9 @@ const BillListPage = () => {
       title: "Customer",
       dataIndex: "customerDetails",
       key: "customerDetails",
-      render: (customerDetails: any) => <>{`${customerDetails?.full_name} - ${customerDetails?.mobile}`}</>,
+      render: (customerDetails: any) => (
+        <>{`${customerDetails?.full_name} - ${customerDetails?.mobile}`}</>
+      ),
     },
     {
       title: "Payment Mode",
@@ -170,12 +170,22 @@ const BillListPage = () => {
   ];
 
   useEffect(() => {
-    RetailBill("GetAll", { pageNumber: pagination.current, pageLimit: pagination.pageSize });
+    RetailBill("GetAll", {
+      pageNumber: pagination.current,
+      pageLimit: pagination.pageSize,
+    });
   }, [RetailBill]);
 
   return (
     <div style={{ padding: 24 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: 16,
+        }}
+      >
         <Title level={3} style={{ color: "#1890ff", margin: 0 }}>
           Bill List
         </Title>
@@ -208,8 +218,8 @@ const BillListPage = () => {
         open={isDrawerOpen}
         width={1600}
       >
-        <RetailBillingTable 
-          billdata={selectedBill} 
+        <RetailBillingTable
+          billdata={selectedBill}
           onSuccess={() => {
             setIsDrawerOpen(false);
             RetailBill("GetAll");
