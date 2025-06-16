@@ -143,7 +143,10 @@ const BillListPage = () => {
         open={isDrawerOpen}
         width={1200}
       >
-        <RetailBillingTable billdata={selectedBill}  />
+        <RetailBillingTable 
+          billdata={selectedBill} 
+          onSuccess={() => setIsDrawerOpen(false)}
+        />
       </GlobalDrawer>
     </div>
   );

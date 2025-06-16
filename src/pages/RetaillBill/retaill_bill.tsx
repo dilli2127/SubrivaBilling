@@ -23,13 +23,16 @@ import {
 } from "../../helpers/Common_functions";
 import { useDispatch } from "react-redux";
 import { Dispatch } from "redux";
+import { API_ROUTES } from "../../services/api/utils";
 const { Title } = Typography;
 const { Option } = Select;
 interface RetailBillingTableProps {
   billdata: any;
+  onSuccess?: () => void;
 }
 const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
   billdata,
+  onSuccess,
 }) => {
   const [form] = Form.useForm();
   const getRoute = getApiRouteRetailBill("GetAll");
@@ -199,20 +202,6 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
         await RetailBill("Update", { ...payload }, billdata._id);
       } else {
         await RetailBill("Create", payload);
-         form.resetFields();
-      setDataSource([
-        {
-          key: 0,
-          name: "",
-          qty: 0,
-          price: 0,
-          amount: 0,
-          product: undefined,
-          stock: undefined,
-          loose_qty: 0,
-        },
-      ]);
-      setCount(1);
       }
     } catch (error) {
       console.error("Bill submission failed:", error);
@@ -257,7 +246,14 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
     if (success) {
       showToast("success", `${title} ${action}d successfully`);
       resetForm();
-      dispatch(dynamic_clear(addRoute.identifier));
+      const actionRoute = getApiRouteRetailBill(
+        (action.charAt(0).toUpperCase() +
+          action.slice(1)) as keyof typeof API_ROUTES.RetailBill
+      );
+      dispatch(dynamic_clear(actionRoute.identifier));
+      if (action === "update" && onSuccess) {
+        onSuccess();
+      }
     } else {
       showToast("error", `Failed to ${action} ${title}`);
     }
