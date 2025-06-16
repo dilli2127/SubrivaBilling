@@ -11,6 +11,8 @@ import {
   Col,
   Typography,
   Drawer,
+  Checkbox,
+  Space,
 } from "antd";
 import dayjs from "dayjs";
 import { DeleteOutlined } from "@ant-design/icons";
@@ -71,6 +73,8 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
   const { items: customerList, loding: costomerLoading } = useDynamicSelector(
     CustomerApi.getIdentifier("GetAll")
   );
+  const [isPaid, setIsPaid] = useState(true);
+  const [isPartiallyPaid, setIsPartiallyPaid] = useState(false);
   type DataSourceItem = {
     key: number;
     name: string;
@@ -89,63 +93,60 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
     | "product"
     | "loose_qty";
 
-    const handleChange = (
-      value: any,
-      key: number,
-      column: EditableColumn | "loose_qty"
-    ) => {
-      const newData = [...dataSource];
-      const item = newData.find((item) => item.key === key);
-      if (!item) return;
-    
-      const getSelectedStock = () =>
-        stockAuditList?.result?.find((s: any) => s._id === item.stock);
-    
-      const calculateAmount = () => {
-        const selectedStock = getSelectedStock();
-        const sellPrice = selectedStock?.sell_price || 0;
-        const packQty = selectedStock?.quantity || 1; // <- This is important
-        const looseRate = sellPrice / packQty;
-    
-        return (
-          (item.qty || 0) * sellPrice + (item.loose_qty || 0) * looseRate
-        );
-      };
-    
-      switch (column) {
-        case "product":
-          item.product = value;
-          item.stock = undefined;
-          item.price = 0;
-          item.amount = 0;
-          break;
-    
-        case "stock":
-          item.stock = value;
-          const stock = getSelectedStock();
-          item.price = stock?.sell_price || 0;
-          item.amount = calculateAmount();
-          break;
-    
-        case "qty":
-          item.qty = value;
-          item.amount = calculateAmount();
-          break;
-    
-        case "loose_qty":
-          item.loose_qty = value;
-          item.amount = calculateAmount();
-          break;
-    
-        case "price":
-          item.price = value;
-          item.amount = (item.qty || 1) * (value || 0); // You can also include loose_qty here if needed
-          break;
-      }
-    
-      setDataSource(newData);
+  const handleChange = (
+    value: any,
+    key: number,
+    column: EditableColumn | "loose_qty"
+  ) => {
+    const newData = [...dataSource];
+    const item = newData.find((item) => item.key === key);
+    if (!item) return;
+
+    const getSelectedStock = () =>
+      stockAuditList?.result?.find((s: any) => s._id === item.stock);
+
+    const calculateAmount = () => {
+      const selectedStock = getSelectedStock();
+      const sellPrice = selectedStock?.sell_price || 0;
+      const packQty = selectedStock?.quantity || 1; // <- This is important
+      const looseRate = sellPrice / packQty;
+
+      return (item.qty || 0) * sellPrice + (item.loose_qty || 0) * looseRate;
     };
-    
+
+    switch (column) {
+      case "product":
+        item.product = value;
+        item.stock = undefined;
+        item.price = 0;
+        item.amount = 0;
+        break;
+
+      case "stock":
+        item.stock = value;
+        const stock = getSelectedStock();
+        item.price = stock?.sell_price || 0;
+        item.amount = calculateAmount();
+        break;
+
+      case "qty":
+        item.qty = value;
+        item.amount = calculateAmount();
+        break;
+
+      case "loose_qty":
+        item.loose_qty = value;
+        item.amount = calculateAmount();
+        break;
+
+      case "price":
+        item.price = value;
+        item.amount = (item.qty || 1) * (value || 0); // You can also include loose_qty here if needed
+        break;
+    }
+
+    setDataSource(newData);
+  };
 
   useEffect(() => {
     if (billdata) {
@@ -196,6 +197,13 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
       payment_mode: values.payment_mode,
       items,
       total_amount: total_amount,
+      is_paid: isPaid,
+      is_partially_paid: isPartiallyPaid,
+      paid_amount: isPartiallyPaid
+        ? values.paid_amount
+        : isPaid
+        ? total_amount
+        : 0,
     };
 
     try {
@@ -203,6 +211,19 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
         await RetailBill("Update", { ...payload }, billdata._id);
       } else {
         await RetailBill("Create", payload);
+        setDataSource([
+          {
+            key: count,
+            name: "",
+            qty: 1,
+            price: 0,
+            amount: 0,
+            product: undefined,
+            stock: undefined,
+            loose_qty: 0,
+          },
+        ]);
+        setCount(count + 1);
       }
     } catch (error) {
       console.error("Bill submission failed:", error);
@@ -566,14 +587,93 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
             }}
           >
             Total: ₹ {Number(total_amount).toFixed(2)}
+            {isPartiallyPaid && (
+              <div style={{ fontSize: 14, color: "#52c41a" }}>
+                Paid: ₹ {form.getFieldValue("paid_amount") || 0}
+                <br />
+                Remaining: ₹{" "}
+                {Number(
+                  total_amount - (form.getFieldValue("paid_amount") || 0)
+                ).toFixed(2)}
+              </div>
+            )}
           </div>
         )}
         bordered
       />
 
+      <Row gutter={16} style={{ marginTop: 24, marginBottom: 24 }}>
+        <Col span={24}>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "flex-end",
+            }}
+          >
+            <Form.Item label="Payment Status" style={{ marginBottom: 8 }}>
+              <Space direction="horizontal">
+                <Checkbox
+                  checked={isPaid}
+                  onChange={(e) => {
+                    setIsPaid(e.target.checked);
+                    if (e.target.checked) {
+                      setIsPartiallyPaid(false);
+                    }
+                  }}
+                >
+                  Fully Paid
+                </Checkbox>
+                <Checkbox
+                  checked={isPartiallyPaid}
+                  onChange={(e) => {
+                    setIsPartiallyPaid(e.target.checked);
+                    if (e.target.checked) {
+                      setIsPaid(false);
+                    }
+                  }}
+                >
+                  Partially Paid
+                </Checkbox>
+              </Space>
+            </Form.Item>
+
+            {isPartiallyPaid && (
+              <Form.Item
+                name="paid_amount"
+                rules={[
+                  { required: true, message: "Please enter paid amount" },
+                  {
+                    validator: (_, value) => {
+                      if (value > total_amount) {
+                        return Promise.reject(
+                          "Paid amount cannot be greater than total amount"
+                        );
+                      }
+                      return Promise.resolve();
+                    },
+                  },
+                ]}
+                style={{ marginBottom: 0, width: "210px" }}
+              >
+                <InputNumber
+                  style={{ width: "100%" }}
+                  min={0}
+                  max={total_amount}
+                  formatter={(value) =>
+                    `₹ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                  }
+                  parser={(value) => Number(value!.replace(/₹\s?|(,*)/g, ""))}
+                  placeholder="Enter paid amount"
+                />
+              </Form.Item>
+            )}
+          </div>
+        </Col>
+      </Row>
+
       <div
         style={{
-          marginTop: 24,
           display: "flex",
           justifyContent: "flex-end",
           alignItems: "center",
