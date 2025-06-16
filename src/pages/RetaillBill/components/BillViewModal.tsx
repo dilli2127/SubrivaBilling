@@ -26,10 +26,16 @@ const BillViewModal: React.FC<BillViewModalProps> = ({
   billData,
 }) => {
   const printFrameRef = useRef<HTMLIFrameElement>(null);
- console.log("billData",billData)
+
   const formatAmount = (amount: any) => {
     const numAmount = Number(amount) || 0;
     return numAmount.toFixed(2);
+  };
+
+  const shopDetails = {
+    name: 'Focuz Medicals',
+    address: '123 MG Road, Bangalore, Karnataka - 560001',
+    gst: '29ABCDE1234F1Z5',
   };
 
   const columns = [
@@ -75,38 +81,41 @@ const BillViewModal: React.FC<BillViewModalProps> = ({
   ];
 
   const handlePrint = () => {
-    if (!printFrameRef.current) return;
-
     const content = `
       <html>
         <head>
           <title>Bill - ${billData.invoice_no}</title>
           <style>
-            body { font-family: Arial, sans-serif; padding: 20px; }
-            .header { text-align: center; margin-bottom: 20px; }
-            .info { margin-bottom: 20px; }
-            .info p { margin: 5px 0; }
-            table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+            body { font-family: Arial, sans-serif; padding: 20px; color: #222; }
+            .shop-info { text-align: center; margin-bottom: 20px; }
+            .shop-info h2 { margin-bottom: 0; color: #1890ff; }
+            .info-flex { display: flex; justify-content: space-between; margin-bottom: 10px; }
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
             th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
             th { background-color: #f5f5f5; }
-            .total { text-align: right; font-weight: bold; }
-            .payment-info { margin-top: 20px; }
+            .total { text-align: right; font-weight: bold; margin-top: 10px; }
+            .thank-you { text-align: center; margin-top: 40px; font-size: 16px; color: #1890ff; font-weight: bold; }
             @media print {
-              body { padding: 0; }
               .no-print { display: none; }
             }
           </style>
         </head>
         <body>
-          <div class="header">
-            <h2>Retail Bill</h2>
-            <p>Invoice No: ${billData.invoice_no}</p>
-            <p>Date: ${new Date(billData.date).toLocaleDateString()}</p>
+          <div class="shop-info">
+            <h2>${shopDetails.name}</h2>
+            <p>${shopDetails.address}</p>
+            <p><strong>GST No:</strong> ${shopDetails.gst}</p>
           </div>
-          
-          <div class="info">
-            <p><strong>Customer:</strong> ${billData.customer?.full_name || ''}</p>
-            <p><strong>Payment Mode:</strong> ${billData.payment_mode || ''}</p>
+
+          <div class="info-flex">
+            <div>
+              <p><strong>Invoice No:</strong> ${billData.invoice_no}</p>
+              <p><strong>Date:</strong> ${new Date(billData.date).toLocaleDateString()}</p>
+            </div>
+            <div style="text-align: right;">
+              <p><strong>Customer:</strong> ${billData.customer?.full_name || ''}</p>
+              <p><strong>Payment Mode:</strong> ${billData.payment_mode || ''}</p>
+            </div>
           </div>
 
           <table>
@@ -122,8 +131,8 @@ const BillViewModal: React.FC<BillViewModalProps> = ({
             <tbody>
               ${billData.items.map(item => {
                 const product = item.productItems;
-                const itemName = product ? 
-                  `${product.name}${product.VariantItem?.variant_name ? ` - ${product.VariantItem.variant_name}` : ''}` 
+                const itemName = product
+                  ? `${product.name}${product.VariantItem?.variant_name ? ` - ${product.VariantItem.variant_name}` : ''}`
                   : '';
                 return `
                   <tr>
@@ -144,14 +153,11 @@ const BillViewModal: React.FC<BillViewModalProps> = ({
               <p>Paid Amount: ₹ ${formatAmount(billData.paid_amount)}</p>
               <p>Remaining Amount: ₹ ${formatAmount(Number(billData.total_amount) - Number(billData.paid_amount))}</p>
             ` : ''}
-          </div>
-
-          <div class="payment-info">
             <p><strong>Payment Status:</strong> ${billData.is_paid ? 'Fully Paid' : billData.is_partially_paid ? 'Partially Paid' : 'Unpaid'}</p>
           </div>
 
-          <div class="no-print" style="text-align: center; margin-top: 20px;">
-            <button onclick="window.print()">Print Bill</button>
+          <div class="thank-you">
+            Thank you for shopping with us!
           </div>
 
           <script>
@@ -167,28 +173,21 @@ const BillViewModal: React.FC<BillViewModalProps> = ({
     `;
 
     const iframe = printFrameRef.current;
-    iframe.contentWindow?.document.open();
-    iframe.contentWindow?.document.write(content);
-    iframe.contentWindow?.document.close();
+    iframe!.contentWindow!.document.open();
+    iframe!.contentWindow!.document.write(content);
+    iframe!.contentWindow!.document.close();
 
-    // Listen for print completion message
-    const handleMessage = (event: MessageEvent) => {
+    window.addEventListener('message', (event) => {
       if (event.data === 'printComplete') {
-        window.removeEventListener('message', handleMessage);
         onClose();
       }
-    };
-    window.addEventListener('message', handleMessage);
+    });
   };
 
   return (
     <>
       <Modal
-        title={
-          <Title level={4} style={{ margin: 0, color: '#1890ff' }}>
-            Bill Details
-          </Title>
-        }
+        title={<Title level={4} style={{ margin: 0, color: '#1890ff' }}>Bill Details</Title>}
         open={visible}
         onCancel={onClose}
         width={800}
@@ -201,14 +200,21 @@ const BillViewModal: React.FC<BillViewModalProps> = ({
           </Button>,
         ]}
       >
-        <div style={{ marginBottom: 20 }}>
-          <Text strong>Invoice No:</Text> {billData.invoice_no}
-          <br />
-          <Text strong>Date:</Text> {new Date(billData.date).toLocaleDateString()}
-          <br />
-          <Text strong>Customer:</Text> {billData.customer?.full_name}
-          <br />
-          <Text strong>Payment Mode:</Text> {billData.payment_mode}
+        <div style={{ textAlign: 'center', marginBottom: 16 }}>
+          <Title level={4} style={{ marginBottom: 0, color: '#1890ff' }}>{shopDetails.name}</Title>
+          <Text>{shopDetails.address}</Text><br />
+          <Text><strong>GST No:</strong> <Text code>{shopDetails.gst}</Text></Text>
+        </div>
+
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 20 }}>
+          <div>
+            <Text strong>Invoice No:</Text> {billData.invoice_no}<br />
+            <Text strong>Date:</Text> {new Date(billData.date).toLocaleDateString()}
+          </div>
+          <div style={{ textAlign: 'right' }}>
+            <Text strong>Customer:</Text> {billData.customer?.full_name}<br />
+            <Text strong>Payment Mode:</Text> {billData.payment_mode}
+          </div>
         </div>
 
         <Table
@@ -218,12 +224,8 @@ const BillViewModal: React.FC<BillViewModalProps> = ({
           bordered
           summary={() => (
             <Table.Summary.Row>
-              <Table.Summary.Cell index={0} colSpan={4}>
-                <Text strong>Total Amount:</Text>
-              </Table.Summary.Cell>
-              <Table.Summary.Cell index={1}>
-                <Text strong>₹ {formatAmount(billData.total_amount)}</Text>
-              </Table.Summary.Cell>
+              <Table.Summary.Cell index={0} colSpan={4}><Text strong>Total Amount:</Text></Table.Summary.Cell>
+              <Table.Summary.Cell index={1}><Text strong>₹ {formatAmount(billData.total_amount)}</Text></Table.Summary.Cell>
             </Table.Summary.Row>
           )}
         />
@@ -234,25 +236,23 @@ const BillViewModal: React.FC<BillViewModalProps> = ({
             <Text type="success">Fully Paid</Text>
           ) : billData.is_partially_paid ? (
             <>
-              <Text type="warning">Partially Paid</Text>
-              <br />
-              <Text>Paid Amount: ₹ {formatAmount(billData.paid_amount)}</Text>
-              <br />
+              <Text type="warning">Partially Paid</Text><br />
+              <Text>Paid Amount: ₹ {formatAmount(billData.paid_amount)}</Text><br />
               <Text>Remaining Amount: ₹ {formatAmount(Number(billData.total_amount) - Number(billData.paid_amount))}</Text>
             </>
           ) : (
             <Text type="danger">Unpaid</Text>
           )}
         </div>
+
+        <div style={{ textAlign: 'center', marginTop: 40 }}>
+          <Text style={{ color: '#1890ff', fontWeight: 500 }}>Thank you for shopping with us!</Text>
+        </div>
       </Modal>
 
-      <iframe
-        ref={printFrameRef}
-        style={{ display: 'none' }}
-        title="print-frame"
-      />
+      <iframe ref={printFrameRef} style={{ display: 'none' }} title="print-frame" />
     </>
   );
 };
 
-export default BillViewModal; 
+export default BillViewModal;
