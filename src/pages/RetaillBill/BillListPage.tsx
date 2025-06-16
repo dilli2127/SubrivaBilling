@@ -36,6 +36,9 @@ const BillListPage = () => {
   const { items: RetailBillList, loading } = useDynamicSelector(
     RetailBill.getIdentifier("GetAll")
   );
+  const { items: deleteItems, loading: deleteLoading } = useDynamicSelector(
+    RetailBill.getIdentifier("GetAll")
+  );
 
   const [selectedBill, setSelectedBill] = useState<any>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -49,11 +52,13 @@ const BillListPage = () => {
   const handleDelete = async (id: string) => {
     try {
       await RetailBill("Delete", {}, id);
-      message.success("Bill deleted successfully");
-      await RetailBill("GetAll", {
-        pageNumber: pagination.current,
-        pageLimit: pagination.pageSize,
-      });
+      if (deleteItems?.statusCode === "200") {
+        message.success("Bill deleted successfully");
+        await RetailBill("GetAll", {
+          pageNumber: pagination.current,
+          pageLimit: pagination.pageSize,
+        });
+      }
     } catch (error) {
       message.error("Failed to delete bill");
     }
