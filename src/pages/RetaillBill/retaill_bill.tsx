@@ -11,6 +11,7 @@ import { API_ROUTES } from "../../services/api/utils";
 import BillForm from "./components/BillForm";
 import BillItemsTable from "./components/BillItemsTable";
 import PaymentStatus from "./components/PaymentStatus";
+import BillViewModal from "./components/BillViewModal";
 
 const { Title } = Typography;
 
@@ -68,6 +69,9 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
   const { items: customerList } = useDynamicSelector(
     CustomerApi.getIdentifier("GetAll")
   );
+
+  const [billViewVisible, setBillViewVisible] = useState(false);
+  const [currentBill, setCurrentBill] = useState<any>(null);
 
   const handleChange = (value: any, key: number, column: string) => {
     const newData = [...dataSource];
@@ -183,24 +187,61 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
         await RetailBill("Update", { ...payload }, billdata._id);
       } else {
         await RetailBill("Create", payload);
-        setDataSource([
-          {
-            key: count,
-            name: "",
-            qty: 1,
-            price: 0,
-            amount: 0,
-            product: undefined,
-            stock: undefined,
-            loose_qty: 0,
-          },
-        ]);
-        setCount(count + 1);
       }
     } catch (error) {
       console.error("Bill submission failed:", error);
     }
   };
+
+  useEffect(() => {
+    if (createItems?.statusCode === "200") {
+      handleApiResponse("create", true);
+      if (createItems?.result) {
+        const formattedBill = {
+          ...createItems.result,
+          customer: customerList?.result?.find((c: any) => c._id === form.getFieldValue("customer")),
+          items: dataSource.map((item) => {
+            const product = productList?.result?.find((p: any) => p._id === item.product);
+            return {
+              ...item,
+              productItems: {
+                ...product,
+                name: product?.name || '',
+                VariantItem: product?.VariantItem || null
+              },
+              qty: item.qty || 0,
+              price: item.price || 0,
+              amount: item.amount || 0,
+              loose_qty: item.loose_qty || 0
+            };
+          }),
+          total_amount: total_amount,
+          is_paid: isPaid,
+          is_partially_paid: isPartiallyPaid,
+          paid_amount: isPartiallyPaid ? form.getFieldValue("paid_amount") : isPaid ? total_amount : 0
+        };
+        setCurrentBill(formattedBill);
+        setBillViewVisible(true);
+
+        // Reset form and data after successful submission
+        form.resetFields();
+        setDataSource([{
+          key: 0,
+          name: "",
+          qty: 1,
+          price: 0,
+          amount: 0,
+          product: undefined,
+          stock: undefined,
+          loose_qty: 0,
+        }]);
+        setCount(1);
+        setIsPaid(true);
+        setIsPartiallyPaid(false);
+      }
+    }
+    if (createError) handleApiResponse("create", false);
+  }, [createItems, createError]);
 
   const handleAdd = () => {
     setDataSource([
@@ -268,98 +309,95 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
   }, [ProductsApi, CustomerApi]);
 
   useEffect(() => {
-    if (createItems?.statusCode === "200") handleApiResponse("create", true);
-    if (createError) handleApiResponse("create", false);
-  }, [createItems, createError]);
-
-  useEffect(() => {
     if (updateItems?.statusCode === "200") handleApiResponse("update", true);
     if (updateError) handleApiResponse("update", false);
   }, [updateItems, updateError]);
 
   return (
-    <Form
-      form={form}
-      layout="vertical"
-      onFinish={handleSubmit}
-      initialValues={{
-        date: dayjs(),
-        payment_mode: "cash",
-        ...(billdata && {
-          invoice_no: billdata.invoice_no,
-          date: dayjs(billdata.date),
-          customer: billdata.customer_id,
-          payment_mode: billdata.payment_mode,
-          paid_amount: billdata.paid_amount,
-        }),
-      }}
-      style={{
-        margin: "auto",
-        background: "#f0f5ff",
-        padding: 24,
-        borderRadius: 10,
-        boxShadow: "0 4px 12px rgba(24, 144, 255, 0.15)",
-      }}
-    >
-      <Title level={3} style={{ color: "#1890ff", textAlign: "center" }}>
-        {billdata ? "Edit Bill" : "Create Bill"}
-      </Title>
-
-      <BillForm
-        customerList={customerList}
-        onAddCustomer={() => setCustomerDrawerVisible(true)}
-      />
-
-      <BillItemsTable
-        dataSource={dataSource}
-        productList={productList}
-        stockAuditList={stockAuditList}
-        onAdd={handleAdd}
-        onDelete={handleDelete}
-        onChange={handleChange}
-        onStockAuditFetch={(productId) =>
-          StockAuditApi("GetAll", { product: productId })
-        }
-        total_amount={total_amount}
-        isPartiallyPaid={isPartiallyPaid}
-        paid_amount={form.getFieldValue("paid_amount") || 0}
-      />
-
-      <PaymentStatus
-        isPaid={isPaid}
-        isPartiallyPaid={isPartiallyPaid}
-        onPaidChange={(checked) => {
-          setIsPaid(checked);
-          if (checked) setIsPartiallyPaid(false);
+    <>
+      <Form
+        form={form}
+        layout="vertical"
+        onFinish={handleSubmit}
+        initialValues={{
+          date: dayjs(),
+          payment_mode: "cash",
+          ...(billdata && {
+            invoice_no: billdata.invoice_no,
+            date: dayjs(billdata.date),
+            customer: billdata.customer_id,
+            payment_mode: billdata.payment_mode,
+            paid_amount: billdata.paid_amount,
+          }),
         }}
-        onPartiallyPaidChange={(checked) => {
-          setIsPartiallyPaid(checked);
-          if (checked) setIsPaid(false);
-        }}
-        total_amount={total_amount}
-      />
-
-      <div
         style={{
-          display: "flex",
-          justifyContent: "flex-end",
-          alignItems: "center",
+          margin: "auto",
+          background: "#f0f5ff",
+          padding: 24,
+          borderRadius: 10,
+          boxShadow: "0 4px 12px rgba(24, 144, 255, 0.15)",
         }}
       >
-        <Button
-          type="primary"
-          htmlType="submit"
+        <Title level={3} style={{ color: "#1890ff", textAlign: "center" }}>
+          {billdata ? "Edit Bill" : "Create Bill"}
+        </Title>
+
+        <BillForm
+          customerList={customerList}
+          onAddCustomer={() => setCustomerDrawerVisible(true)}
+        />
+
+        <BillItemsTable
+          dataSource={dataSource}
+          productList={productList}
+          stockAuditList={stockAuditList}
+          onAdd={handleAdd}
+          onDelete={handleDelete}
+          onChange={handleChange}
+          onStockAuditFetch={(productId) =>
+            StockAuditApi("GetAll", { product: productId })
+          }
+          total_amount={total_amount}
+          isPartiallyPaid={isPartiallyPaid}
+          paid_amount={form.getFieldValue("paid_amount") || 0}
+        />
+
+        <PaymentStatus
+          isPaid={isPaid}
+          isPartiallyPaid={isPartiallyPaid}
+          onPaidChange={(checked) => {
+            setIsPaid(checked);
+            if (checked) setIsPartiallyPaid(false);
+          }}
+          onPartiallyPaidChange={(checked) => {
+            setIsPartiallyPaid(checked);
+            if (checked) setIsPaid(false);
+          }}
+          total_amount={total_amount}
+        />
+
+        <div
           style={{
-            backgroundColor: "#1890ff",
-            borderColor: "#1890ff",
-            fontWeight: "bold",
-            fontSize: 16,
-            minWidth: 140,
+            display: "flex",
+            justifyContent: "flex-end",
+            alignItems: "center",
           }}
         >
-          {billdata ? "Update Bill" : "Submit Bill"}
-        </Button>
-      </div>
+          <Button
+            type="primary"
+            htmlType="submit"
+            style={{
+              backgroundColor: "#1890ff",
+              borderColor: "#1890ff",
+              fontWeight: "bold",
+              fontSize: 16,
+              minWidth: 140,
+            }}
+          >
+            {billdata ? "Update Bill" : "Submit Bill"}
+          </Button>
+        </div>
+      </Form>
 
       <Drawer
         title="Add New Customer"
@@ -370,6 +408,14 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
       >
         <CustomerCrud />
       </Drawer>
+
+      {currentBill && (
+        <BillViewModal
+          visible={billViewVisible}
+          onClose={() => setBillViewVisible(false)}
+          billData={currentBill}
+        />
+      )}
 
       <style>
         {`
@@ -390,7 +436,7 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
           }
         `}
       </style>
-    </Form>
+    </>
   );
 };
 
