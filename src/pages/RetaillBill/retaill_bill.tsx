@@ -28,7 +28,9 @@ const { Option } = Select;
 interface RetailBillingTableProps {
   billdata: any;
 }
-const RetailBillingTable: React.FC<RetailBillingTableProps> = ({ billdata }) => {
+const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
+  billdata,
+}) => {
   const [form] = Form.useForm();
   const getRoute = getApiRouteRetailBill("GetAll");
   const addRoute = getApiRouteRetailBill("Create");
@@ -47,7 +49,7 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({ billdata }) => 
       amount: 0,
       product: undefined,
       stock: undefined,
-      looseQty: 0,
+      loose_qty: 0,
     },
   ]);
   const [customerDrawerVisible, setCustomerDrawerVisible] = useState(false);
@@ -71,7 +73,7 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({ billdata }) => 
     amount: number;
     stock?: any;
     product?: any;
-    looseQty?: number;
+    loose_qty?: number;
   };
   type EditableColumn =
     | "name"
@@ -79,12 +81,12 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({ billdata }) => 
     | "price"
     | "stock"
     | "product"
-    | "looseQty";
+    | "loose_qty";
 
   const handleChange = (
     value: any,
     key: number,
-    column: EditableColumn | "looseQty"
+    column: EditableColumn | "loose_qty"
   ) => {
     const newData = [...dataSource];
     const item = newData.find((item) => item.key === key);
@@ -104,58 +106,97 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({ billdata }) => 
       const sellPrice = selectedStock?.sell_price || 0;
       item.price = sellPrice;
 
-      const quantity = selectedStock?.quantity || 1;
-      const looseRate = sellPrice / quantity;
+      const qty = selectedStock?.qty || 1;
+      const looseRate = sellPrice / qty;
 
       item.amount =
-        (item.qty || 0) * sellPrice + (item.looseQty || 0) * looseRate;
+        (item.qty || 0) * sellPrice + (item.loose_qty || 0) * looseRate;
     } else if (column === "qty") {
       item.qty = value;
       const selectedStock = stockAuditList?.result?.find(
         (s: any) => s._id === item.stock
       );
       const sellPrice = selectedStock?.sell_price || 0;
-      const quantity = selectedStock?.quantity || 1;
-      const looseRate = sellPrice / quantity;
+      const qty = selectedStock?.qty || 1;
+      const looseRate = sellPrice / qty;
 
-      item.amount = (value || 0) * sellPrice + (item.looseQty || 0) * looseRate;
-    } else if (column === "looseQty") {
-      item.looseQty = value;
+      item.amount =
+        (value || 0) * sellPrice + (item.loose_qty || 0) * looseRate;
+    } else if (column === "loose_qty") {
+      item.loose_qty = value;
       const selectedStock = stockAuditList?.result?.find(
         (s: any) => s._id === item.stock
       );
       const sellPrice = selectedStock?.sell_price || 0;
-      const quantity = selectedStock?.quantity || 1;
-      const looseRate = sellPrice / quantity;
+      const qty = selectedStock?.qty || 1;
+      const looseRate = sellPrice / qty;
 
       item.amount = (item.qty || 0) * sellPrice + (value || 0) * looseRate;
     } else if (column === "price") {
       item.price = value;
-      item.amount = (item.qty || 1) * (value || 0); // Optional: You may also include looseQty logic here
+      item.amount = (item.qty || 1) * (value || 0);
     }
 
     setDataSource(newData);
   };
+
+  useEffect(() => {
+    if (billdata) {
+      form.setFieldsValue({
+        invoice_no: billdata.invoice_no,
+        date: dayjs(billdata.date),
+        customer: billdata.customer_id,
+        payment_mode: billdata.payment_mode,
+      });
+
+      const transformedItems = billdata?.Items?.map(
+        (item: any, index: number) => ({
+          key: index,
+          name: "",
+          qty: item.qty,
+          price: item.price,
+          amount: item.amount,
+          product: item.product_id,
+          stock: item.stock_id,
+          loose_qty: item.loose_qty || 0,
+        })
+      );
+
+      setDataSource(transformedItems);
+      setCount(transformedItems.length);
+
+      if (transformedItems.length > 0) {
+        const productIds = transformedItems.map((item: any) => item.product);
+        StockAuditApi("GetAll", { products: productIds });
+      }
+    }
+  }, [billdata, form, StockAuditApi]);
+
   const handleSubmit = async (values: any) => {
     const items = dataSource.map((item) => ({
       product_id: item.product,
       stock_id: item.stock,
-      quantity: item.qty,
-      loose_quantity: item.looseQty,
+      qty: item.qty,
+      loose_qty: item.loose_qty,
       price: item.price,
       amount: item.amount,
     }));
+
     const payload = {
       invoice_no: values.invoice_no,
       date: dayjs(values.date).format("YYYY-MM-DD"),
       customer_id: values.customer,
       payment_mode: values.payment_mode,
       items,
-      total_amount: totalAmount,
+      total_amount: total_amount,
     };
 
     try {
-      await RetailBill("Create", payload);
+      if (billdata) {
+        await RetailBill("Update", { ...payload, _id: billdata._id });
+      } else {
+        await RetailBill("Create", payload);
+      }
       form.resetFields();
       setDataSource([
         {
@@ -166,7 +207,7 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({ billdata }) => 
           amount: 0,
           product: undefined,
           stock: undefined,
-          looseQty: 0,
+          loose_qty: 0,
         },
       ]);
       setCount(1);
@@ -186,7 +227,7 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({ billdata }) => 
         amount: 0,
         product: undefined,
         stock: undefined,
-        looseQty: 0,
+        loose_qty: 0,
       },
     ]);
     setCount(count + 1);
@@ -338,13 +379,13 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({ billdata }) => 
       title: (
         <span style={{ color: "#1890ff", fontWeight: "bold" }}>Loose Qty</span>
       ),
-      dataIndex: "looseQty",
+      dataIndex: "loose_qty",
       width: 100,
       render: (_: any, record: DataSourceItem) => (
         <InputNumber
           min={1}
-          value={record.looseQty}
-          onChange={(value) => handleChange(value, record.key, "looseQty")}
+          value={record.loose_qty}
+          onChange={(value) => handleChange(value, record.key, "loose_qty")}
           style={{ width: "100%" }}
         />
       ),
@@ -376,12 +417,12 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({ billdata }) => 
       width: 140,
       render: (_: any, record: DataSourceItem) => (
         <span style={{ fontWeight: "bold", color: "#52c41a" }}>
-          ₹ {record.amount.toFixed(2)}
+          ₹ {record.amount}
         </span>
       ),
     },
   ];
-  const totalAmount = dataSource.reduce((sum, item) => sum + item.amount, 0);
+  const total_amount = dataSource.reduce((sum, item) => sum + item.amount, 0);
   useEffect(() => {
     ProductsApi("GetAll");
     CustomerApi("GetAll");
@@ -406,7 +447,7 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({ billdata }) => 
       }}
     >
       <Title level={3} style={{ color: "#1890ff", textAlign: "center" }}>
-        Create Bill
+        {billdata ? "Edit Bill" : "Create Bill"}
       </Title>
       <Row gutter={16} style={{ marginBottom: 24 }}>
         <Col span={12}>
@@ -507,7 +548,7 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({ billdata }) => 
               paddingRight: 16,
             }}
           >
-            Total: ₹ {totalAmount.toFixed(2)}
+            Total: ₹ {total_amount}
           </div>
         )}
         bordered
@@ -532,7 +573,7 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({ billdata }) => 
             minWidth: 140,
           }}
         >
-          Submit Bill
+          {billdata ? "Update Bill" : "Submit Bill"}
         </Button>
       </div>
 
