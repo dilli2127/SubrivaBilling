@@ -185,7 +185,7 @@ const BillListPage = () => {
         title={selectedBill ? "Edit Bill" : "Create New Bill"}
         onClose={() => setIsDrawerOpen(false)}
         open={isDrawerOpen}
-        width={1200}
+        width={1600}
       >
         <RetailBillingTable 
           billdata={selectedBill} 
