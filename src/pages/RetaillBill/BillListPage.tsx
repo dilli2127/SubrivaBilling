@@ -27,6 +27,7 @@ import { useDynamicSelector } from "../../services/redux";
 import RetailBillingTable from "./retaill_bill";
 import BillViewModal from "./components/BillViewModal";
 import GlobalTable from "../../components/antd/GlobalTable";
+import { handleApiResponse } from "../../components/common/handleApiResponse";
 
 const { Title } = Typography;
 const { Option } = Select;
@@ -52,15 +53,23 @@ const BillListPage = () => {
   const handleDelete = async (id: string) => {
     try {
       await RetailBill("Delete", {}, id);
-      if (deleteItems?.statusCode === "200") {
-        message.success("Bill deleted successfully");
-        await RetailBill("GetAll", {
-          pageNumber: pagination.current,
-          pageLimit: pagination.pageSize,
-        });
-      }
+      const success = deleteItems?.statusCode === "200";
+      handleApiResponse({
+        action: "delete",
+        success,
+        title: "Retail Bill",
+        getAllItems: () =>
+          RetailBill("GetAll", {
+            pageNumber: pagination.current,
+            pageLimit: pagination.pageSize,
+          }),
+      });
     } catch (error) {
-      message.error("Failed to delete bill");
+      handleApiResponse({
+        action: "delete",
+        success: false,
+        title: "Bill",
+      });
     }
   };
 
