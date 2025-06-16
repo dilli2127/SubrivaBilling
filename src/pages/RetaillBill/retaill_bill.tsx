@@ -57,6 +57,9 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
   const { items: createItems, error: createError } = useDynamicSelector(
     addRoute.identifier
   );
+  const { items: updateItems, error: updateError } = useDynamicSelector(
+    updateRoute.identifier
+  );
   const { items: productList, loading: productLoading } = useDynamicSelector(
     ProductsApi.getIdentifier("GetAll")
   );
@@ -196,8 +199,7 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
         await RetailBill("Update", { ...payload }, billdata._id);
       } else {
         await RetailBill("Create", payload);
-      }
-      form.resetFields();
+         form.resetFields();
       setDataSource([
         {
           key: 0,
@@ -211,6 +213,7 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
         },
       ]);
       setCount(1);
+      }
     } catch (error) {
       console.error("Bill submission failed:", error);
     }
@@ -431,7 +434,11 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
       ),
     },
   ];
-  const total_amount = dataSource.reduce((sum, item) => sum + item.amount, 0);
+  const total_amount = dataSource.reduce(
+    (sum, item) => sum + Number(item.amount),
+    0
+  );
+
   useEffect(() => {
     ProductsApi("GetAll");
     CustomerApi("GetAll");
@@ -440,6 +447,10 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
     if (createItems?.statusCode === "200") handleApiResponse("create", true);
     if (createError) handleApiResponse("create", false);
   }, [createItems, createError]);
+  useEffect(() => {
+    if (updateItems?.statusCode === "200") handleApiResponse("update", true);
+    if (updateError) handleApiResponse("update", false);
+  }, [updateItems, updateError]);
 
   return (
     <Form
@@ -557,7 +568,7 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
               paddingRight: 16,
             }}
           >
-            Total: ₹ {total_amount}
+            Total: ₹ {Number(total_amount).toFixed(2)}
           </div>
         )}
         bordered
