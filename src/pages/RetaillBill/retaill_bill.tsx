@@ -1,37 +1,24 @@
 import React, { useEffect, useState } from "react";
-import {
-  Table,
-  Input,
-  InputNumber,
-  Button,
-  Form,
-  DatePicker,
-  Select,
-  Row,
-  Col,
-  Typography,
-  Drawer,
-  Checkbox,
-  Space,
-} from "antd";
+import { Form, Button, Typography, Drawer, message } from "antd";
 import dayjs from "dayjs";
-import { DeleteOutlined } from "@ant-design/icons";
 import { useApiActions } from "../../services/api/useApiActions";
 import { dynamic_clear, useDynamicSelector } from "../../services/redux";
 import CustomerCrud from "../../pages/Customer/crud";
-import {
-  getApiRouteRetailBill,
-  showToast,
-} from "../../helpers/Common_functions";
+import { getApiRouteRetailBill } from "../../helpers/Common_functions";
 import { useDispatch } from "react-redux";
 import { Dispatch } from "redux";
 import { API_ROUTES } from "../../services/api/utils";
+import BillForm from "./components/BillForm";
+import BillItemsTable from "./components/BillItemsTable";
+import PaymentStatus from "./components/PaymentStatus";
+
 const { Title } = Typography;
-const { Option } = Select;
+
 interface RetailBillingTableProps {
   billdata: any;
   onSuccess?: () => void;
 }
+
 const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
   billdata,
   onSuccess,
@@ -45,6 +32,7 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
   const dispatch: Dispatch<any> = useDispatch();
   const { ProductsApi, StockAuditApi, CustomerApi, RetailBill } =
     useApiActions();
+
   const [dataSource, setDataSource] = useState([
     {
       key: 0,
@@ -57,47 +45,31 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
       loose_qty: 0,
     },
   ]);
+
   const [customerDrawerVisible, setCustomerDrawerVisible] = useState(false);
   const [count, setCount] = useState(1);
+  const [isPaid, setIsPaid] = useState(billdata?.is_paid ?? true);
+  const [isPartiallyPaid, setIsPartiallyPaid] = useState(
+    billdata?.is_partially_paid ?? false
+  );
+
   const { items: createItems, error: createError } = useDynamicSelector(
     addRoute.identifier
   );
   const { items: updateItems, error: updateError } = useDynamicSelector(
     updateRoute.identifier
   );
-  const { items: productList, loading: productLoading } = useDynamicSelector(
+  const { items: productList } = useDynamicSelector(
     ProductsApi.getIdentifier("GetAll")
   );
-  const { items: stockAuditList, loding: stockAuditLoading } =
-    useDynamicSelector(StockAuditApi.getIdentifier("GetAll"));
-  const { items: customerList, loding: costomerLoading } = useDynamicSelector(
+  const { items: stockAuditList } = useDynamicSelector(
+    StockAuditApi.getIdentifier("GetAll")
+  );
+  const { items: customerList } = useDynamicSelector(
     CustomerApi.getIdentifier("GetAll")
   );
-  const [isPaid, setIsPaid] = useState(true);
-  const [isPartiallyPaid, setIsPartiallyPaid] = useState(false);
-  type DataSourceItem = {
-    key: number;
-    name: string;
-    qty: number;
-    price: number;
-    amount: number;
-    stock?: any;
-    product?: any;
-    loose_qty?: number;
-  };
-  type EditableColumn =
-    | "name"
-    | "qty"
-    | "price"
-    | "stock"
-    | "product"
-    | "loose_qty";
 
-  const handleChange = (
-    value: any,
-    key: number,
-    column: EditableColumn | "loose_qty"
-  ) => {
+  const handleChange = (value: any, key: number, column: string) => {
     const newData = [...dataSource];
     const item = newData.find((item) => item.key === key);
     if (!item) return;
@@ -108,7 +80,7 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
     const calculateAmount = () => {
       const selectedStock = getSelectedStock();
       const sellPrice = selectedStock?.sell_price || 0;
-      const packQty = selectedStock?.quantity || 1; // <- This is important
+      const packQty = selectedStock?.quantity || 1;
       const looseRate = sellPrice / packQty;
 
       return (item.qty || 0) * sellPrice + (item.loose_qty || 0) * looseRate;
@@ -141,7 +113,7 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
 
       case "price":
         item.price = value;
-        item.amount = (item.qty || 1) * (value || 0); // You can also include loose_qty here if needed
+        item.amount = (item.qty || 1) * (value || 0);
         break;
     }
 
@@ -246,6 +218,7 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
     ]);
     setCount(count + 1);
   };
+
   const handleDelete = async (key: number) => {
     try {
       if (billdata) {
@@ -266,192 +239,24 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
   ) => {
     const title = "Retail Bill";
     if (success) {
-      showToast("success", `${title} ${action}d successfully`);
-      resetForm();
+      message.success(`${title} ${action}d successfully`);
+      if (action === "create") {
+        form.resetFields();
+        setDataSource([]);
+      }
+      if (action === "update" || action === "delete") {
+        onSuccess?.();
+      }
       const actionRoute = getApiRouteRetailBill(
         (action.charAt(0).toUpperCase() +
           action.slice(1)) as keyof typeof API_ROUTES.RetailBill
       );
       dispatch(dynamic_clear(actionRoute.identifier));
-      if (action === "update" && onSuccess) {
-        onSuccess();
-      }
     } else {
-      showToast("error", `Failed to ${action} ${title}`);
+      message.error(`Failed to ${action} ${title}`);
     }
   };
-  const resetForm = () => {
-    form.resetFields();
-  };
 
-  const columns = [
-    {
-      title: (
-        <span style={{ color: "#1890ff", fontWeight: "bold" }}>Add Item</span>
-      ),
-      dataIndex: "additem",
-      width: 180,
-      render: (_: any, record: DataSourceItem, index: number) => (
-        <div style={{ display: "flex", gap: 8 }}>
-          {dataSource.length > 1 && (
-            <Button
-              type="text"
-              danger
-              icon={<DeleteOutlined />}
-              onClick={() => handleDelete(record.key)}
-            />
-          )}
-          {index === dataSource.length - 1 && (
-            <Button
-              type="dashed"
-              onClick={handleAdd}
-              style={{
-                borderColor: "#1890ff",
-                color: "#1890ff",
-                fontWeight: "bold",
-                fontSize: 16,
-                minWidth: 100,
-              }}
-              onMouseEnter={(e) => {
-                (e.currentTarget as HTMLButtonElement).style.backgroundColor =
-                  "#e6f7ff";
-              }}
-              onMouseLeave={(e) => {
-                (e.currentTarget as HTMLButtonElement).style.backgroundColor =
-                  "transparent";
-              }}
-            >
-              + Add
-            </Button>
-          )}
-        </div>
-      ),
-    },
-    {
-      title: (
-        <span style={{ color: "#1890ff", fontWeight: "bold" }}>Item Name</span>
-      ),
-      dataIndex: "product",
-      render: (_: any, record: DataSourceItem) => (
-        <Select
-          value={record.product}
-          onChange={(productId) => {
-            handleChange(productId, record.key, "product");
-            StockAuditApi("GetAll", {
-              product: productId,
-            });
-          }}
-          showSearch
-          style={{ width: "100%" }}
-          placeholder="Select Product"
-          optionFilterProp="children"
-          allowClear
-          filterOption={(input, option) =>
-            String(option?.children)
-              .toLowerCase()
-              .indexOf(input.toLowerCase()) >= 0
-          }
-          dropdownStyle={{ maxHeight: 150, overflowY: "auto" }}
-        >
-          {productList?.result?.map((product: any) => (
-            <Select.Option key={product?._id} value={product?._id}>
-              {`${product.name} ${product?.VariantItem?.variant_name}`}
-            </Select.Option>
-          ))}
-        </Select>
-      ),
-    },
-
-    {
-      title: (
-        <span style={{ color: "#1890ff", fontWeight: "bold" }}>Stock</span>
-      ),
-      dataIndex: "stock",
-      width: 180,
-      render: (_: any, record: DataSourceItem) => (
-        <Select
-          value={record.stock}
-          onChange={(value) => handleChange(value, record.key, "stock")}
-          showSearch
-          style={{ width: "100%" }}
-          placeholder="Select Stock"
-          optionFilterProp="children"
-          allowClear
-          filterOption={(input, option) =>
-            String(option?.children)
-              .toLowerCase()
-              .indexOf(input.toLowerCase()) >= 0
-          }
-          dropdownStyle={{ maxHeight: 150, overflowY: "auto" }}
-        >
-          {stockAuditList?.result?.map((stockAudit: any) => (
-            <Select.Option key={stockAudit?._id} value={stockAudit?._id}>
-              {`${stockAudit.batch_no} - ${stockAudit?.buy_price}`}
-            </Select.Option>
-          ))}
-        </Select>
-      ),
-    },
-    {
-      title: <span style={{ color: "#1890ff", fontWeight: "bold" }}>Qty</span>,
-      dataIndex: "qty",
-      width: 100,
-      render: (_: any, record: DataSourceItem) => (
-        <InputNumber
-          min={1}
-          value={record.qty}
-          onChange={(value) => handleChange(value, record.key, "qty")}
-          style={{ width: "100%" }}
-        />
-      ),
-    },
-    {
-      title: (
-        <span style={{ color: "#1890ff", fontWeight: "bold" }}>Loose Qty</span>
-      ),
-      dataIndex: "loose_qty",
-      width: 100,
-      render: (_: any, record: DataSourceItem) => (
-        <InputNumber
-          min={1}
-          value={record.loose_qty}
-          onChange={(value) => handleChange(value, record.key, "loose_qty")}
-          style={{ width: "100%" }}
-        />
-      ),
-    },
-    {
-      title: (
-        <span style={{ color: "#1890ff", fontWeight: "bold" }}>Price</span>
-      ),
-      dataIndex: "price",
-      width: 120,
-      render: (_: any, record: DataSourceItem) => (
-        <InputNumber
-          min={0}
-          value={record.price}
-          onChange={(value) => handleChange(value, record.key, "price")}
-          style={{ width: "100%" }}
-          formatter={(value) =>
-            `₹ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-          }
-          parser={(value) => Number(value!.replace(/₹\s?|(,*)/g, ""))}
-        />
-      ),
-    },
-    {
-      title: (
-        <span style={{ color: "#1890ff", fontWeight: "bold" }}>Amount</span>
-      ),
-      dataIndex: "amount",
-      width: 140,
-      render: (_: any, record: DataSourceItem) => (
-        <span style={{ fontWeight: "bold", color: "#52c41a" }}>
-          ₹ {record.amount}
-        </span>
-      ),
-    },
-  ];
   const total_amount = dataSource.reduce(
     (sum, item) => sum + Number(item.amount),
     0
@@ -461,10 +266,12 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
     ProductsApi("GetAll");
     CustomerApi("GetAll");
   }, [ProductsApi, CustomerApi]);
+
   useEffect(() => {
     if (createItems?.statusCode === "200") handleApiResponse("create", true);
     if (createError) handleApiResponse("create", false);
   }, [createItems, createError]);
+
   useEffect(() => {
     if (updateItems?.statusCode === "200") handleApiResponse("update", true);
     if (updateError) handleApiResponse("update", false);
@@ -475,7 +282,17 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
       form={form}
       layout="vertical"
       onFinish={handleSubmit}
-      initialValues={{ date: dayjs(), payment_mode: "cash" }}
+      initialValues={{
+        date: dayjs(),
+        payment_mode: "cash",
+        ...(billdata && {
+          invoice_no: billdata.invoice_no,
+          date: dayjs(billdata.date),
+          customer: billdata.customer_id,
+          payment_mode: billdata.payment_mode,
+          paid_amount: billdata.paid_amount,
+        }),
+      }}
       style={{
         margin: "auto",
         background: "#f0f5ff",
@@ -487,190 +304,40 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
       <Title level={3} style={{ color: "#1890ff", textAlign: "center" }}>
         {billdata ? "Edit Bill" : "Create Bill"}
       </Title>
-      <Row gutter={16} style={{ marginBottom: 24 }}>
-        <Col span={12}>
-          <Form.Item
-            label="Date"
-            name="date"
-            initialValue={dayjs()}
-            style={{ marginBottom: 0 }}
-          >
-            <DatePicker disabled style={{ width: "100%" }} />
-          </Form.Item>
-        </Col>
 
-        <Col span={12}>
-          <Form.Item
-            label="Invoice Number"
-            name="invoice_no"
-            rules={[{ required: true, message: "Invoice number is required" }]}
-            style={{ marginBottom: 0 }}
-          >
-            <Input
-              placeholder="Enter invoice number"
-              style={{ borderColor: "#1890ff" }}
-            />
-          </Form.Item>
-        </Col>
-      </Row>
-
-      <Row gutter={16} style={{ marginBottom: 24 }}>
-        <Col span={12}>
-          <Form.Item
-            label="Customer"
-            name="customer"
-            style={{ marginBottom: 0 }}
-            rules={[{ required: true, message: "Please select a customer" }]}
-          >
-            <Select
-              placeholder="Select Customer"
-              showSearch
-              allowClear
-              style={{ width: "100%", borderColor: "#1890ff" }}
-              optionFilterProp="children"
-              dropdownRender={(menu) => (
-                <>
-                  {menu}
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "center",
-                      padding: 8,
-                      cursor: "pointer",
-                      color: "#1890ff",
-                      borderTop: "1px solid #f0f0f0",
-                    }}
-                    onClick={() => setCustomerDrawerVisible(true)}
-                  >
-                    + Add Customer
-                  </div>
-                </>
-              )}
-            >
-              {customerList?.result?.map((cust: any) => (
-                <Option key={cust._id} value={cust._id}>
-                  {cust.full_name} - {cust.mobile}
-                </Option>
-              ))}
-            </Select>
-          </Form.Item>
-        </Col>
-
-        <Col span={12}>
-          <Form.Item
-            label="Payment Mode"
-            name="payment_mode"
-            style={{ marginBottom: 0 }}
-          >
-            <Select style={{ borderColor: "#1890ff" }}>
-              <Option value="cash">Cash</Option>
-              <Option value="upi">UPI</Option>
-              <Option value="card">Card</Option>
-            </Select>
-          </Form.Item>
-        </Col>
-      </Row>
-
-      <Table
-        dataSource={dataSource}
-        columns={columns}
-        pagination={false}
-        rowClassName={() => "custom-row"}
-        footer={() => (
-          <div
-            style={{
-              textAlign: "right",
-              fontWeight: "bold",
-              fontSize: 18,
-              color: "#1890ff",
-              paddingRight: 16,
-            }}
-          >
-            Total: ₹ {Number(total_amount).toFixed(2)}
-            {isPartiallyPaid && (
-              <div style={{ fontSize: 14, color: "#52c41a" }}>
-                Paid: ₹ {form.getFieldValue("paid_amount") || 0}
-                <br />
-                Remaining: ₹{" "}
-                {Number(
-                  total_amount - (form.getFieldValue("paid_amount") || 0)
-                ).toFixed(2)}
-              </div>
-            )}
-          </div>
-        )}
-        bordered
+      <BillForm
+        customerList={customerList}
+        onAddCustomer={() => setCustomerDrawerVisible(true)}
       />
 
-      <Row gutter={16} style={{ marginTop: 24, marginBottom: 24 }}>
-        <Col span={24}>
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "flex-end",
-            }}
-          >
-            <Form.Item label="Payment Status" style={{ marginBottom: 8 }}>
-              <Space direction="horizontal">
-                <Checkbox
-                  checked={isPaid}
-                  onChange={(e) => {
-                    setIsPaid(e.target.checked);
-                    if (e.target.checked) {
-                      setIsPartiallyPaid(false);
-                    }
-                  }}
-                >
-                  Fully Paid
-                </Checkbox>
-                <Checkbox
-                  checked={isPartiallyPaid}
-                  onChange={(e) => {
-                    setIsPartiallyPaid(e.target.checked);
-                    if (e.target.checked) {
-                      setIsPaid(false);
-                    }
-                  }}
-                >
-                  Partially Paid
-                </Checkbox>
-              </Space>
-            </Form.Item>
+      <BillItemsTable
+        dataSource={dataSource}
+        productList={productList}
+        stockAuditList={stockAuditList}
+        onAdd={handleAdd}
+        onDelete={handleDelete}
+        onChange={handleChange}
+        onStockAuditFetch={(productId) =>
+          StockAuditApi("GetAll", { product: productId })
+        }
+        total_amount={total_amount}
+        isPartiallyPaid={isPartiallyPaid}
+        paid_amount={form.getFieldValue("paid_amount") || 0}
+      />
 
-            {isPartiallyPaid && (
-              <Form.Item
-                name="paid_amount"
-                rules={[
-                  { required: true, message: "Please enter paid amount" },
-                  {
-                    validator: (_, value) => {
-                      if (value > total_amount) {
-                        return Promise.reject(
-                          "Paid amount cannot be greater than total amount"
-                        );
-                      }
-                      return Promise.resolve();
-                    },
-                  },
-                ]}
-                style={{ marginBottom: 0, width: "210px" }}
-              >
-                <InputNumber
-                  style={{ width: "100%" }}
-                  min={0}
-                  max={total_amount}
-                  formatter={(value) =>
-                    `₹ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-                  }
-                  parser={(value) => Number(value!.replace(/₹\s?|(,*)/g, ""))}
-                  placeholder="Enter paid amount"
-                />
-              </Form.Item>
-            )}
-          </div>
-        </Col>
-      </Row>
+      <PaymentStatus
+        isPaid={isPaid}
+        isPartiallyPaid={isPartiallyPaid}
+        onPaidChange={(checked) => {
+          setIsPaid(checked);
+          if (checked) setIsPartiallyPaid(false);
+        }}
+        onPartiallyPaidChange={(checked) => {
+          setIsPartiallyPaid(checked);
+          if (checked) setIsPaid(false);
+        }}
+        total_amount={total_amount}
+      />
 
       <div
         style={{
@@ -694,13 +361,22 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
         </Button>
       </div>
 
+      <Drawer
+        title="Add New Customer"
+        open={customerDrawerVisible}
+        onClose={() => setCustomerDrawerVisible(false)}
+        width={500}
+        destroyOnClose
+      >
+        <CustomerCrud />
+      </Drawer>
+
       <style>
         {`
           .custom-row:hover {
             background-color: #bae7ff !important;
             transition: background-color 0.3s ease;
           }
-          /* Scrollbar for select dropdown */
           .ant-select-dropdown {
             scrollbar-width: thin;
             scrollbar-color: #1890ff #f0f5ff;
@@ -714,15 +390,6 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
           }
         `}
       </style>
-      <Drawer
-        title="Add New Customer"
-        open={customerDrawerVisible}
-        onClose={() => setCustomerDrawerVisible(false)}
-        width={500}
-        destroyOnClose
-      >
-        <CustomerCrud />
-      </Drawer>
     </Form>
   );
 };

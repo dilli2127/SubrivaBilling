@@ -134,7 +134,7 @@ const BillListPage = () => {
         loading={loading}
         bordered
         rowKey="key"
-        pagination={{ pageSize: 10 }}
+        // pagination={{ pageSize: 10 }}
       />
 
       <GlobalDrawer
