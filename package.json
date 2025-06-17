@@ -3,7 +3,6 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@ant-design/charts": "^2.4.0",
     "@ant-design/icons": "^6.0.0",
     "@ant-design/v5-patch-for-react-19": "^1.0.3",
     "@emotion/react": "^11.14.0",
@@ -28,6 +27,7 @@
     "react-redux": "^9.2.0",
     "react-router-dom": "^7.6.1",
     "react-scripts": "5.0.1",
+    "recharts": "^2.15.3",
     "redux": "^5.0.1",
     "swiper": "^11.2.8",
     "typescript": "^5.8.3",
