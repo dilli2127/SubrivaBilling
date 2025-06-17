@@ -34,7 +34,19 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
   const { ProductsApi, StockAuditApi, CustomerApi, SalesRecord } =
     useApiActions();
 
-  const [dataSource, setDataSource] = useState([
+  interface DataSourceItem {
+    key: number;
+    name: string;
+    qty: number;
+    price: number;
+    amount: number;
+    product: any;
+    stock: any;
+    loose_qty: number;
+    _id?: string;
+  }
+
+  const [dataSource, setDataSource] = useState<DataSourceItem[]>([
     {
       key: 0,
       name: "",
@@ -135,6 +147,7 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
 
       const transformedItems = billdata?.Items?.map(
         (item: any, index: number) => ({
+          _id: item._id,
           key: index,
           name: "",
           qty: item.qty,
@@ -157,6 +170,7 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
   }, [billdata, form, StockAuditApi]);
 
   const handleSubmit = async (values: any) => {
+    console.log("Form Values:", dataSource);
     const items = dataSource.map((item) => ({
       product_id: item.product,
       stock_id: item.stock,
@@ -164,6 +178,7 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
       loose_qty: item.loose_qty,
       price: item.price,
       amount: item.amount,
+      _id: item._id
     }));
 
     const payload = {
