@@ -83,24 +83,9 @@ const BillListPage = () => {
   };
 
   const handlePrint = (record: any) => {
+    console.log("record",record)
     const formattedBill = {
       ...record,
-      items:
-        record.Items?.map((item: any) => ({
-          ...item,
-          product: record.productDetails?.find(
-            (p: any) => p._id === item.product_id
-          ),
-          qty: item.qty,
-          price: item.price,
-          amount: item.amount,
-          loose_qty: item.loose_qty || 0,
-        })) || [],
-      customer: record.customerDetails,
-      total_amount: record.total_amount,
-      is_paid: record.is_paid,
-      is_partially_paid: record.is_partially_paid,
-      paid_amount: record.paid_amount,
     };
 
     setSelectedBill(formattedBill);

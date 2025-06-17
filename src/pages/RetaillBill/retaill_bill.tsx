@@ -233,7 +233,6 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
   };
 
   const handleSubmit = async (values: any) => {
-    console.log("Form Values:", dataSource);
     const items = dataSource.map((item) => ({
       product_id: item.product,
       stock_id: item.stock,

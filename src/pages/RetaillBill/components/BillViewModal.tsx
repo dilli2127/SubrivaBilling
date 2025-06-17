@@ -10,9 +10,9 @@ interface BillViewModalProps {
   billData: {
     invoice_no: string;
     date: string;
-    customer: any;
+    customerDetails: any;
     payment_mode: string;
-    items: any[];
+    Items: any[];
     subtotal_amount: number;
     total_gst: number;
     total_amount: number;
@@ -37,7 +37,7 @@ const BillViewModal: React.FC<BillViewModalProps> = ({
     const numAmount = Number(amount) || 0;
     return numAmount.toFixed(2);
   };
-
+console.log("billData",billData)
   const shopDetails = {
     name: 'Focuz Medicals',
     address: '123 MG Road, Bangalore, Karnataka - 560001',
@@ -119,7 +119,7 @@ const BillViewModal: React.FC<BillViewModalProps> = ({
               <p><strong>Date:</strong> ${new Date(billData.date).toLocaleDateString()}</p>
             </div>
             <div style="text-align: right;">
-              <p><strong>Customer:</strong> ${billData.customer?.full_name || ''}</p>
+              <p><strong>Customer:</strong> ${billData.customerDetails?.full_name || ''}</p>
               <p><strong>Payment Mode:</strong> ${billData.payment_mode || ''}</p>
             </div>
           </div>
@@ -135,7 +135,7 @@ const BillViewModal: React.FC<BillViewModalProps> = ({
               </tr>
             </thead>
             <tbody>
-              ${billData.items.map(item => {
+              ${billData.Items.map(item => {
                 const product = item.productItems;
                 const itemName = product
                   ? `${product.name}${product.VariantItem?.variant_name ? ` - ${product.VariantItem.variant_name}` : ''}`
@@ -221,13 +221,13 @@ const BillViewModal: React.FC<BillViewModalProps> = ({
             <Text strong>Date:</Text> {new Date(billData.date).toLocaleDateString()}
           </div>
           <div style={{ textAlign: 'right' }}>
-            <Text strong>Customer:</Text> {billData.customer?.full_name}<br />
+            <Text strong>Customer:</Text> {billData.customerDetails?.full_name}<br />
             <Text strong>Payment Mode:</Text> {billData.payment_mode}
           </div>
         </div>
 
         <Table
-          dataSource={billData.items}
+          dataSource={billData.Items}
           columns={columns}
           pagination={false}
           bordered
