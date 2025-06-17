@@ -84,7 +84,7 @@ const BillViewModal: React.FC<BillViewModalProps> = ({
     const content = `
       <html>
         <head>
-          <title>Bill - ${billData.invoice_no}</title>
+          <title>Sale - ${billData.invoice_no}</title>
           <style>
             body { font-family: Arial, sans-serif; padding: 20px; color: #222; }
             .shop-info { text-align: center; margin-bottom: 20px; }
@@ -187,13 +187,13 @@ const BillViewModal: React.FC<BillViewModalProps> = ({
   return (
     <>
       <Modal
-        title={<Title level={4} style={{ margin: 0, color: '#1890ff' }}>Bill Details</Title>}
+        title={<Title level={4} style={{ margin: 0, color: '#1890ff' }}>Sale Details</Title>}
         open={visible}
         onCancel={onClose}
         width={800}
         footer={[
           <Button key="print" type="primary" icon={<PrinterOutlined />} onClick={handlePrint}>
-            Print Bill
+            Print Sale
           </Button>,
           <Button key="close" onClick={onClose}>
             Close

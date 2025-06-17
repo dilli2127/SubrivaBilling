@@ -31,7 +31,7 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
   const deleteRoute = getApiRouteRetailBill("Delete");
 
   const dispatch: Dispatch<any> = useDispatch();
-  const { ProductsApi, StockAuditApi, CustomerApi, RetailBill } =
+  const { ProductsApi, StockAuditApi, CustomerApi, SalesRecord } =
     useApiActions();
 
   const [dataSource, setDataSource] = useState([
@@ -184,12 +184,12 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
 
     try {
       if (billdata) {
-        await RetailBill("Update", { ...payload }, billdata._id);
+        await SalesRecord("Update", { ...payload }, billdata._id);
       } else {
-        await RetailBill("Create", payload);
+        await SalesRecord("Create", payload);
       }
     } catch (error) {
-      console.error("Bill submission failed:", error);
+      console.error("Sale submission failed:", error);
     }
   };
 
@@ -263,7 +263,7 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
   const handleDelete = async (key: number) => {
     try {
       if (billdata) {
-        await RetailBill("Delete", { id: billdata._id });
+        await SalesRecord("Delete", { id: billdata._id });
         handleApiResponse("delete", true);
       }
       const newData = dataSource.filter((item) => item.key !== key);
@@ -278,7 +278,7 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
     action: "create" | "update" | "delete",
     success: boolean
   ) => {
-    const title = "Retail Bill";
+    const title = "Sale";
     if (success) {
       message.success(`${title} ${action}d successfully`);
       if (action === "create") {
@@ -290,7 +290,7 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
       }
       const actionRoute = getApiRouteRetailBill(
         (action.charAt(0).toUpperCase() +
-          action.slice(1)) as keyof typeof API_ROUTES.RetailBill
+          action.slice(1)) as keyof typeof API_ROUTES.SalesRecord
       );
       dispatch(dynamic_clear(actionRoute.identifier));
     } else {
@@ -339,7 +339,7 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
         }}
       >
         <Title level={3} style={{ color: "#1890ff", textAlign: "center" }}>
-          {billdata ? "Edit Bill" : "Create Bill"}
+          {billdata ? "Edit Sale" : "Create Sale"}
         </Title>
 
         <BillForm
@@ -394,7 +394,7 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
               minWidth: 140,
             }}
           >
-            {billdata ? "Update Bill" : "Submit Bill"}
+            {billdata ? "Update Sale" : "Submit Sale"}
           </Button>
         </div>
       </Form>

@@ -23,44 +23,26 @@ export const menuItems = [
     path: "/dashboard",
   },
   {
-    key: "Retail Bills",
-    label: "Retail Bills",
+    key: "SalesRecords",
+    label: "Sales Records",
     icon: <FileTextOutlined />,
     children: [
       {
-        key: "create-retail-bill",
-        label: "Retail Bill",
+        key: "create-sales-record",
+        label: "Sales Record",
         icon: <PlusCircleOutlined />,
         path: "/retaill_billing",
       },
       {
-        key: "all-retail-bills",
-        label: "Retail Bills List",
+        key: "sales-records-list",
+        label: "Sales Records List",
         icon: <UnorderedListOutlined />,
         path: "/retaill_bill_list",
       },
     ],
   },
+
   {
-    key: "invoices",
-    label: "Invoices",
-    icon: <FileTextOutlined />,
-    children: [
-      {
-        key: "invoice_create",
-        label: "Invoice Create",
-        icon: <PlusCircleOutlined />,
-        path: "/invoice_create",
-      },
-      {
-        key: "all-invoices",
-        label: "All Invoices",
-        icon: <UnorderedListOutlined />,
-        path: "/invoice_list",
-      },
-    ],
-  },
-   {
     key: "Stock Audit",
     label: "Stock Audit",
     icon: <FileTextOutlined />,
@@ -84,13 +66,12 @@ export const menuItems = [
         icon: <UserAddOutlined />,
         path: "/customer_crud",
       },
-       {
+      {
         key: "vendor",
         label: "Vendor",
         icon: <TeamOutlined />,
         path: "/vendor_crud",
       },
-    
     ],
   },
   {
@@ -110,7 +91,7 @@ export const menuItems = [
         icon: <DatabaseOutlined />,
         path: "/unit_crud",
       },
-        {
+      {
         key: "category",
         label: "Category",
         icon: <DatabaseOutlined />,
@@ -122,7 +103,7 @@ export const menuItems = [
         icon: <DatabaseOutlined />,
         path: "/variant_crud",
       },
-       {
+      {
         key: "warehouse",
         label: "Warehouse",
         icon: <DatabaseOutlined />,
@@ -156,7 +137,7 @@ export const menuItems = [
     children: [
       {
         key: "sales-report",
-        label: "Sales Report",
+        label: "Sale Report",
         icon: <LineChartOutlined />,
         path: "/reports/sales",
       },

@@ -88,6 +88,6 @@ export const useApiActions = () => {
     WarehouseApi: createFetcher<Action>(getApiRouteWareHouse)(dispatch),
     StockAuditApi: createFetcher<Action>(getApiRouteStockAudit)(dispatch),
     CustomerApi: createFetcher<Action>(getApiRouteCustomer)(dispatch),
-    RetailBill: createFetcher<Action>(getApiRouteRetailBill)(dispatch),
+    SalesRecord: createFetcher<Action>(getApiRouteRetailBill)(dispatch),
   };
 };

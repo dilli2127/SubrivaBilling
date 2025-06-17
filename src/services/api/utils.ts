@@ -318,31 +318,31 @@ export const API_ROUTES = {
       endpoint: "/stock_audit",
     },
   },
-    RetailBill: {
+    SalesRecord: {
     Create: {
       identifier: "AddRetailBill",
       method: API_METHODS.PUT,
-      endpoint: "/retail_bill",
+      endpoint: "/sales_record",
     },
     Update: {
       identifier: "UpdatRetailBill",
       method: API_METHODS.PATCH,
-      endpoint: "/retail_bill",
+      endpoint: "/sales_record",
     },
     Get: {
       identifier: "GetRetailBill",
       method: API_METHODS.GET,
-      endpoint: "/retail_bill",
+      endpoint: "/sales_record",
     },
     GetAll: {
       identifier: "GetAllRetailBill",
       method: API_METHODS.POST,
-      endpoint: "/retail_bill",
+      endpoint: "/sales_record",
     },
     Delete: {
       identifier: "DeleteRetailBill",
       method: API_METHODS.DELETE,
-      endpoint: "/retail_bill",
+      endpoint: "/sales_record",
     },
   },
 };

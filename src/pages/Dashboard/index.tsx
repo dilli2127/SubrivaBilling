@@ -117,7 +117,7 @@ const Dashboard: React.FC = () => {
 
       <Row gutter={[16, 16]} style={{ marginTop: 24 }}>
         <Col span={12}>
-          <Card title="📈 Sales Overview" style={{ borderRadius: 16 }}>
+          <Card title="📈 Sale Overview" style={{ borderRadius: 16 }}>
             <ResponsiveContainer width="100%" height={250}>
               <AreaChart data={salesData}>
                 <defs>

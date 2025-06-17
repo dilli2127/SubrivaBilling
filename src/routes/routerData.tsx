@@ -12,17 +12,12 @@ const CategoryCrud = lazy(() => import("../pages/Category/crud"));
 const VariantCrud = lazy(() => import("../pages/Variant/crud"));
 const RetailBillForm = lazy(() => import("../pages/RetaillBill/retaill_bill"));
 const BillListPage = lazy(() => import("../pages/RetaillBill/BillListPage"));
-const InvoiceCreatePage = lazy(
-  () => import("../pages/Invoice/InvoiceCreatePage")
-);
-const InvoiceListPage = lazy(() => import("../pages/Invoice/InvoiceListPage"));
 const CustomerCrud = lazy(() => import("../pages/Customer/crud"));
 const PaymentHistory = lazy(() => import("../pages/Payment/PaymentHistory"));
 const ExpensesPage = lazy(() => import("../pages/Payment/ExpensesPage"));
 const StockAudit = lazy(() => import("../pages/StockAudit/crud"));
 const VendorCrud = lazy(() => import("../pages/Vendor/crud"));
 const Warehouse = lazy(() => import("../pages/Warehouse/crud"));
-
 
 const routerData: RouteConfig[] = [
   {
@@ -123,7 +118,7 @@ const routerData: RouteConfig[] = [
         path: "retaill_billing",
         element: (
           <Suspense fallback={<Loader />}>
-            <RetailBillForm billdata={""}  />
+            <RetailBillForm billdata={""} />
           </Suspense>
         ),
         children: [],
@@ -138,26 +133,7 @@ const routerData: RouteConfig[] = [
         ),
         children: [],
       },
-      {
-        key: "invoice_create",
-        path: "invoice_create",
-        element: (
-          <Suspense fallback={<Loader />}>
-            <InvoiceCreatePage />
-          </Suspense>
-        ),
-        children: [],
-      },
-      {
-        key: "invoice_list",
-        path: "invoice_list",
-        element: (
-          <Suspense fallback={<Loader />}>
-            <InvoiceListPage />
-          </Suspense>
-        ),
-        children: [],
-      },
+
       {
         key: "customer_crud",
         path: "customer_crud",
@@ -208,7 +184,7 @@ const routerData: RouteConfig[] = [
         ),
         children: [],
       },
-        {
+      {
         key: "warehouse_crud",
         path: "warehouse_crud",
         element: (

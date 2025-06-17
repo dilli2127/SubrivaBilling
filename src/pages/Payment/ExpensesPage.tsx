@@ -117,7 +117,7 @@ const  ExpensesCrud: React.FC = () => {
     component: (
       <Input
         prefix={<FileTextOutlined />}
-        placeholder="e.g., Electricity Bill"
+        placeholder="e.g., Electricity Sale"
       />
     ),
   },

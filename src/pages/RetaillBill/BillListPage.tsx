@@ -33,12 +33,12 @@ const { Title } = Typography;
 const { Option } = Select;
 
 const BillListPage = () => {
-  const { RetailBill } = useApiActions();
+  const { SalesRecord } = useApiActions();
   const { items: RetailBillList, loading } = useDynamicSelector(
-    RetailBill.getIdentifier("GetAll")
+    SalesRecord.getIdentifier("GetAll")
   );
   const { items: deleteItems, loading: deleteLoading } = useDynamicSelector(
-    RetailBill.getIdentifier("GetAll")
+    SalesRecord.getIdentifier("GetAll")
   );
 
   const [selectedBill, setSelectedBill] = useState<any>(null);
@@ -52,14 +52,14 @@ const BillListPage = () => {
 
   const handleDelete = async (id: string) => {
     try {
-      await RetailBill("Delete", {}, id);
+      await SalesRecord("Delete", {}, id);
       const success = deleteItems?.statusCode === "200";
       handleApiResponse({
         action: "delete",
         success,
-        title: "Retail Bill",
+        title: "Sale",
         getAllItems: () =>
-          RetailBill("GetAll", {
+          SalesRecord("GetAll", {
             pageNumber: pagination.current,
             pageLimit: pagination.pageSize,
           }),
@@ -68,7 +68,7 @@ const BillListPage = () => {
       handleApiResponse({
         action: "delete",
         success: false,
-        title: "Bill",
+        title: "Sale",
       });
     }
   };
@@ -109,7 +109,7 @@ const BillListPage = () => {
 
   const handlePaginationChange = (page: number, pageSize: number) => {
     setPagination({ current: page, pageSize });
-    RetailBill("GetAll", { pageNumber: page, pageLimit: pageSize });
+    SalesRecord("GetAll", { pageNumber: page, pageLimit: pageSize });
   };
 
   const columns = [
@@ -184,11 +184,11 @@ const BillListPage = () => {
   ];
 
   useEffect(() => {
-    RetailBill("GetAll", {
+    SalesRecord("GetAll", {
       pageNumber: pagination.current,
       pageLimit: pagination.pageSize,
     });
-  }, [RetailBill]);
+  }, [SalesRecord]);
 
   return (
     <div style={{ padding: 24 }}>
@@ -201,7 +201,7 @@ const BillListPage = () => {
         }}
       >
         <Title level={3} style={{ color: "#1890ff", margin: 0 }}>
-          Bill List
+          Sales List
         </Title>
         <Button
           type="primary"
@@ -211,7 +211,7 @@ const BillListPage = () => {
             setIsDrawerOpen(true);
           }}
         >
-          Create New Bill
+          Create New Sale
         </Button>
       </div>
 
@@ -227,16 +227,16 @@ const BillListPage = () => {
       />
 
       <GlobalDrawer
-        title={selectedBill ? "Edit Bill" : "Create New Bill"}
+        title={selectedBill ? "Edit Sale" : "Create New Sale"}
         onClose={() => setIsDrawerOpen(false)}
         open={isDrawerOpen}
-        width={1600}
+        width={1200}
       >
         <RetailBillingTable
           billdata={selectedBill}
           onSuccess={() => {
             setIsDrawerOpen(false);
-            RetailBill("GetAll");
+            SalesRecord("GetAll");
           }}
         />
       </GlobalDrawer>
