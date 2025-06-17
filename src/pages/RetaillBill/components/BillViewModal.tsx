@@ -22,6 +22,7 @@ interface BillViewModalProps {
     discount: number;
     discount_type: string;
     is_gst_included: boolean;
+    sale_type: 'retail' | 'wholesale';
   };
 }
 
@@ -153,12 +154,9 @@ const BillViewModal: React.FC<BillViewModalProps> = ({
           </table>
 
           <div class="total">
-            <p>Subtotal: ₹ ${formatAmount(billData.subtotal_amount)}</p>
-            ${billData.discount > 0 ? `
-              <p>Discount: ${billData.discount_type === 'percentage' ? billData.discount + '%' : '₹ ' + formatAmount(billData.discount)}</p>
-            ` : ''}
+            <p>Value of Goods: ₹ ${formatAmount(billData.subtotal_amount)}</p>
             <p>Total GST: ₹ ${formatAmount(billData.total_gst)}</p>
-            <p><strong>Total Amount: ₹ ${formatAmount(billData.total_amount)}</strong></p>
+            <p><strong>${billData.sale_type === 'retail' ? 'Bill Value' : 'Invoice Value'}: ₹ ${formatAmount(billData.total_amount)}</strong></p>
             ${billData.is_partially_paid ? `
               <p>Paid Amount: ₹ ${formatAmount(billData.paid_amount)}</p>
               <p>Remaining Amount: ₹ ${formatAmount(Number(billData.total_amount) - Number(billData.paid_amount))}</p>
@@ -242,6 +240,18 @@ const BillViewModal: React.FC<BillViewModalProps> = ({
         />
 
         <div style={{ marginTop: 20, textAlign: 'right' }}>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginBottom: '8px' }}>
+            <Text strong>Value of Goods:</Text>
+            <Text>₹ {formatAmount(billData.subtotal_amount)}</Text>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginBottom: '8px' }}>
+            <Text strong>Total GST:</Text>
+            <Text>₹ {formatAmount(billData.total_gst)}</Text>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginBottom: '8px' }}>
+            <Text strong>{billData.sale_type === 'retail' ? 'Bill Value' : 'Invoice Value'}:</Text>
+            <Text>₹ {formatAmount(billData.total_amount)}</Text>
+          </div>
           <Text strong>Payment Status: </Text>
           {billData.is_paid ? (
             <Text type="success">Fully Paid</Text>

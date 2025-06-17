@@ -475,6 +475,7 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
           isPartiallyPaid={isPartiallyPaid}
           paid_amount={form.getFieldValue("paid_amount") || 0}
           isGstIncluded={isGstIncluded}
+          isRetail={isRetail}
         />
 
         <div style={{ 
