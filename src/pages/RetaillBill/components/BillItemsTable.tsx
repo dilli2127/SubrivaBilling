@@ -16,6 +16,8 @@ interface BillItemsTableProps {
   paid_amount: number;
   isGstIncluded: boolean;
   isRetail: boolean;
+  discount: number;
+  discountType: 'percentage' | 'amount';
 }
 
 const BillItemsTable: React.FC<BillItemsTableProps> = ({
@@ -32,6 +34,8 @@ const BillItemsTable: React.FC<BillItemsTableProps> = ({
   paid_amount,
   isGstIncluded,
   isRetail,
+  discount,
+  discountType,
 }) => {
   const columns = [
     {
@@ -231,6 +235,9 @@ const BillItemsTable: React.FC<BillItemsTableProps> = ({
           }}
         >
           <div>Value of Goods: ₹ {Number(total_amount - total_gst).toFixed(2)}</div>
+          {discount > 0 && (
+            <div>Discount: {discountType === 'percentage' ? `${discount}%` : `₹ ${discount.toFixed(2)}`}</div>
+          )}
           <div>Total GST: ₹ {total_gst.toFixed(2)}</div>
           <div>{isRetail ? 'Bill Value' : 'Invoice Value'}: ₹ {Number(total_amount).toFixed(2)}</div>
           {isPartiallyPaid && (

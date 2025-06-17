@@ -155,6 +155,9 @@ console.log("billData",billData)
 
           <div class="total">
             <p>Value of Goods: ₹ ${formatAmount(billData.subtotal_amount)}</p>
+            ${billData.discount > 0 ? `
+              <p>Discount: ${billData.discount_type === 'percentage' ? billData.discount + '%' : '₹ ' + formatAmount(billData.discount)}</p>
+            ` : ''}
             <p>Total GST: ₹ ${formatAmount(billData.total_gst)}</p>
             <p><strong>${billData.sale_type === 'retail' ? 'Bill Value' : 'Invoice Value'}: ₹ ${formatAmount(billData.total_amount)}</strong></p>
             ${billData.is_partially_paid ? `
@@ -244,6 +247,16 @@ console.log("billData",billData)
             <Text strong>Value of Goods:</Text>
             <Text>₹ {formatAmount(billData.subtotal_amount)}</Text>
           </div>
+          {billData.discount > 0 && (
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginBottom: '8px' }}>
+              <Text strong>Discount:</Text>
+              <Text>
+                {billData.discount_type === 'percentage' 
+                  ? `${billData.discount}%` 
+                  : `₹ ${formatAmount(billData.discount)}`}
+              </Text>
+            </div>
+          )}
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginBottom: '8px' }}>
             <Text strong>Total GST:</Text>
             <Text>₹ {formatAmount(billData.total_gst)}</Text>

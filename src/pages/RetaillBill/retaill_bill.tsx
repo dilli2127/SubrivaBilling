@@ -296,8 +296,8 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
       if (createItems?.result) {
         const formattedBill = {
           ...createItems.result,
-          customer: customerList?.result?.find((c: any) => c._id === form.getFieldValue("customer")),
-          items: dataSource.map((item) => {
+          customerDetails: customerList?.result?.find((c: any) => c._id === createItems?.result?.customer_id),
+          Items: dataSource.map((item) => {
             const product = productList?.result?.find((p: any) => p._id === item.product);
             return {
               ...item,
@@ -475,6 +475,8 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
           paid_amount={form.getFieldValue("paid_amount") || 0}
           isGstIncluded={isGstIncluded}
           isRetail={isRetail}
+          discount={discount}
+          discountType={discountType}
         />
 
         <div style={{ 
