@@ -1,6 +1,6 @@
-import React from 'react';
-import { Table, Button, InputNumber, Select } from 'antd';
-import { DeleteOutlined } from '@ant-design/icons';
+import React from "react";
+import { Table, Button, InputNumber, Select } from "antd";
+import { DeleteOutlined } from "@ant-design/icons";
 
 interface BillItemsTableProps {
   dataSource: any[];
@@ -11,8 +11,10 @@ interface BillItemsTableProps {
   onChange: (value: any, key: number, column: string) => void;
   onStockAuditFetch: (productId: string) => void;
   total_amount: number;
+  total_gst: number;
   isPartiallyPaid: boolean;
   paid_amount: number;
+  isGstIncluded: boolean;
 }
 
 const BillItemsTable: React.FC<BillItemsTableProps> = ({
@@ -24,8 +26,10 @@ const BillItemsTable: React.FC<BillItemsTableProps> = ({
   onChange,
   onStockAuditFetch,
   total_amount,
+  total_gst,
   isPartiallyPaid,
   paid_amount,
+  isGstIncluded,
 }) => {
   const columns = [
     {
@@ -193,6 +197,21 @@ const BillItemsTable: React.FC<BillItemsTableProps> = ({
     },
   ];
 
+  const calculateTotalGST = () => {
+    return dataSource.reduce((sum, item) => {
+      const baseAmount = Number(item.amount);
+      const taxPercentage = item.tax_percentage || 0;
+      
+      if (isGstIncluded) {
+        // If GST is included, calculate the tax amount from the total
+        return sum + (baseAmount * taxPercentage) / (100 + taxPercentage);
+      } else {
+        // If GST is excluded, calculate the tax amount directly
+        return sum + (baseAmount * taxPercentage / 100);
+      }
+    }, 0);
+  };
+
   return (
     <Table
       dataSource={dataSource}
@@ -209,7 +228,8 @@ const BillItemsTable: React.FC<BillItemsTableProps> = ({
             paddingRight: 16,
           }}
         >
-          Total: ₹ {Number(total_amount).toFixed(2)}
+          <div>Total GST: ₹ {total_gst.toFixed(2)}</div>
+          <div>Total Amount: ₹ {Number(total_amount).toFixed(2)}</div>
           {isPartiallyPaid && (
             <div style={{ fontSize: 14, color: "#52c41a" }}>
               Paid: ₹ {paid_amount || 0}
@@ -224,4 +244,4 @@ const BillItemsTable: React.FC<BillItemsTableProps> = ({
   );
 };
 
-export default BillItemsTable; 
+export default BillItemsTable;

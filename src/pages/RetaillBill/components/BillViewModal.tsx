@@ -13,10 +13,15 @@ interface BillViewModalProps {
     customer: any;
     payment_mode: string;
     items: any[];
+    subtotal_amount: number;
+    total_gst: number;
     total_amount: number;
     is_paid: boolean;
     is_partially_paid: boolean;
     paid_amount: number;
+    discount: number;
+    discount_type: string;
+    is_gst_included: boolean;
   };
 }
 
@@ -148,12 +153,18 @@ const BillViewModal: React.FC<BillViewModalProps> = ({
           </table>
 
           <div class="total">
-            <p>Total Amount: ₹ ${formatAmount(billData.total_amount)}</p>
+            <p>Subtotal: ₹ ${formatAmount(billData.subtotal_amount)}</p>
+            ${billData.discount > 0 ? `
+              <p>Discount: ${billData.discount_type === 'percentage' ? billData.discount + '%' : '₹ ' + formatAmount(billData.discount)}</p>
+            ` : ''}
+            <p>Total GST: ₹ ${formatAmount(billData.total_gst)}</p>
+            <p><strong>Total Amount: ₹ ${formatAmount(billData.total_amount)}</strong></p>
             ${billData.is_partially_paid ? `
               <p>Paid Amount: ₹ ${formatAmount(billData.paid_amount)}</p>
               <p>Remaining Amount: ₹ ${formatAmount(Number(billData.total_amount) - Number(billData.paid_amount))}</p>
             ` : ''}
             <p><strong>Payment Status:</strong> ${billData.is_paid ? 'Fully Paid' : billData.is_partially_paid ? 'Partially Paid' : 'Unpaid'}</p>
+            <p><strong>GST Status:</strong> ${billData.is_gst_included ? 'Included' : 'Excluded'}</p>
           </div>
 
           <div class="thank-you">
