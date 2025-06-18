@@ -351,6 +351,8 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
         setCount(1);
         setIsPaid(true);
         setIsPartiallyPaid(false);
+        setDiscount(0);
+        setDiscountType('percentage');
       }
     }
     if (createError) handleApiResponse("create", false);
