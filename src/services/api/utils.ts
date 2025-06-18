@@ -372,4 +372,31 @@ export const API_ROUTES = {
       endpoint: "/payment_history",
     },
   },
+   Expenses: {
+    Create: {
+      identifier: "AddExpenses",
+      method: API_METHODS.PUT,
+      endpoint: "/expenses",
+    },
+    Update: {
+      identifier: "UpdatExpenses",
+      method: API_METHODS.PATCH,
+      endpoint: "/expenses",
+    },
+    Get: {
+      identifier: "GetPExpenses",
+      method: API_METHODS.GET,
+      endpoint: "/expenses",
+    },
+    GetAll: {
+      identifier: "GetAllExpenses",
+      method: API_METHODS.POST,
+      endpoint: "/expenses",
+    },
+    Delete: {
+      identifier: "DeleteExpenses",
+      method: API_METHODS.DELETE,
+      endpoint: "/expenses",
+    },
+  },
 };

@@ -5,11 +5,16 @@ import { Button, Row, Input, Tooltip, Form } from "antd";
 import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import { useDispatch } from "react-redux";
 import { Dispatch } from "redux";
-import { dynamic_clear, dynamic_request, useDynamicSelector } from "../../services/redux";
+import {
+  dynamic_clear,
+  dynamic_request,
+  useDynamicSelector,
+} from "../../services/redux";
 import GlobalDrawer from "../antd/GlobalDrawer";
 import AntdForm from "../antd/form/form";
 import { showToast } from "../../helpers/Common_functions";
 import GlobalTable from "../antd/GlobalTable";
+import dayjs from "dayjs";
 
 const CrudModule = ({
   title,
@@ -20,7 +25,7 @@ const CrudModule = ({
   drawerWidth,
 }: {
   title: string;
-  columns: any[]; 
+  columns: any[];
   formItems: any[];
   apiRoutes: {
     get: any;
@@ -36,17 +41,33 @@ const CrudModule = ({
   const [searchText, setSearchText] = useState("");
   const [form] = Form.useForm();
   const [initialValues, setInitialValues] = useState<any>({});
-  const { items: updateItems, error: updateError } = useDynamicSelector(apiRoutes.update.identifier);
-  const { items: deleteItems, error: deleteError } = useDynamicSelector(apiRoutes.delete.identifier);
-  const { items: createItems, error: createError } = useDynamicSelector(apiRoutes.create.identifier);
+  const { items: updateItems, error: updateError } = useDynamicSelector(
+    apiRoutes.update.identifier
+  );
+  const { items: deleteItems, error: deleteError } = useDynamicSelector(
+    apiRoutes.delete.identifier
+  );
+  const { items: createItems, error: createError } = useDynamicSelector(
+    apiRoutes.create.identifier
+  );
   const { loading, items } = useDynamicSelector(apiRoutes.get.identifier);
 
-  const callBackServer = useCallback((variables: any, key: string) => {
-    dispatch(dynamic_request(variables, key));
-  }, [dispatch]);
+  const callBackServer = useCallback(
+    (variables: any, key: string) => {
+      dispatch(dynamic_request(variables, key));
+    },
+    [dispatch]
+  );
 
   const getAllItems = () => {
-    callBackServer({ method: apiRoutes.get.method, endpoint: apiRoutes.get.endpoint, data: {} }, apiRoutes.get.identifier);
+    callBackServer(
+      {
+        method: apiRoutes.get.method,
+        endpoint: apiRoutes.get.endpoint,
+        data: {},
+      },
+      apiRoutes.get.identifier
+    );
   };
 
   useEffect(() => {
@@ -54,16 +75,34 @@ const CrudModule = ({
   }, []);
 
   const handleEdit = (record: any) => {
-    setInitialValues(record);
+    const newRecord: any = {};
+
+    for (const key in record) {
+      const value = record[key];
+      if (
+        value &&
+        typeof value === "string" &&
+        key.toLowerCase().includes("date")
+      ) {
+        newRecord[key] = dayjs(value);
+      } else {
+        newRecord[key] = value;
+      }
+    }
+
+    setInitialValues(newRecord);
     setDrawerVisible(true);
   };
 
   const handleDelete = (record: any) => {
-    callBackServer({
-      method: apiRoutes.delete.method,
-      endpoint: `${apiRoutes.delete.endpoint}/${record._id}`,
-      data: { _id: record._id },
-    }, apiRoutes.delete.identifier);
+    callBackServer(
+      {
+        method: apiRoutes.delete.method,
+        endpoint: `${apiRoutes.delete.endpoint}/${record._id}`,
+        data: { _id: record._id },
+      },
+      apiRoutes.delete.identifier
+    );
   };
 
   const resetForm = () => {
@@ -106,17 +145,23 @@ const CrudModule = ({
   const FormValue = (values: any) => {
     const finalData = { ...values };
     if (initialValues?._id) {
-      callBackServer({
-        method: apiRoutes.update.method,
-        endpoint: `${apiRoutes.update.endpoint}/${initialValues._id}`,
-        data: finalData,
-      }, apiRoutes.update.identifier);
+      callBackServer(
+        {
+          method: apiRoutes.update.method,
+          endpoint: `${apiRoutes.update.endpoint}/${initialValues._id}`,
+          data: finalData,
+        },
+        apiRoutes.update.identifier
+      );
     } else {
-      callBackServer({
-        method: apiRoutes.create.method,
-        endpoint: apiRoutes.create.endpoint,
-        data: finalData,
-      }, apiRoutes.create.identifier);
+      callBackServer(
+        {
+          method: apiRoutes.create.method,
+          endpoint: apiRoutes.create.endpoint,
+          data: finalData,
+        },
+        apiRoutes.create.identifier
+      );
     }
     form.resetFields();
   };
@@ -151,10 +196,16 @@ const CrudModule = ({
             render: (_: any, record: any) => (
               <div style={{ display: "flex", gap: "10px" }}>
                 <Tooltip title="Edit">
-                  <EditOutlined style={{ cursor: "pointer", color: "#1890ff" }} onClick={() => handleEdit(record)} />
+                  <EditOutlined
+                    style={{ cursor: "pointer", color: "#1890ff" }}
+                    onClick={() => handleEdit(record)}
+                  />
                 </Tooltip>
                 <Tooltip title="Delete">
-                  <DeleteOutlined style={{ cursor: "pointer", color: "red" }} onClick={() => handleDelete(record)} />
+                  <DeleteOutlined
+                    style={{ cursor: "pointer", color: "red" }}
+                    onClick={() => handleDelete(record)}
+                  />
                 </Tooltip>
               </div>
             ),
@@ -167,7 +218,12 @@ const CrudModule = ({
         pagination={{ pageSize: 10 }}
       />
 
-      <GlobalDrawer title={`Add New ${title}`} onClose={resetForm} open={drawerVisible} width={drawerWidth || 600}>
+      <GlobalDrawer
+        title={`Add New ${title}`}
+        onClose={resetForm}
+        open={drawerVisible}
+        width={drawerWidth || 600}
+      >
         <AntdForm
           form={form}
           initialValues={initialValues}

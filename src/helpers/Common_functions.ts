@@ -106,3 +106,12 @@ export const getApiRoutePaymentHistory = (action: keyof typeof API_ROUTES.Paymen
   }
   return route;
 };
+
+export const getApiRouteExpenses = (action: keyof typeof API_ROUTES.Expenses) => {
+  const route = API_ROUTES?.Expenses?.[action];
+  if (!route) {
+    console.error(`API_ROUTES.Expenses.${action} is undefined.`);
+    throw new Error(`API route for Expenses.${action} is not defined.`);
+  }
+  return route;
+};

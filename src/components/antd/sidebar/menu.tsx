@@ -124,7 +124,7 @@ export const menuItems = [
       },
       {
         key: " expenses",
-        label: "expenses",
+        label: "Expenses",
         icon: <PieChartOutlined />,
         path: "/expenses",
       },
