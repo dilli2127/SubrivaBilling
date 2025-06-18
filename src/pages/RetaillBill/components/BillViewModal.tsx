@@ -13,7 +13,6 @@ interface BillViewModalProps {
     customerDetails: any;
     payment_mode: string;
     Items: any[];
-    subtotal_amount: number;
     total_gst: number;
     total_amount: number;
     is_paid: boolean;
@@ -23,6 +22,7 @@ interface BillViewModalProps {
     discount_type: string;
     is_gst_included: boolean;
     sale_type: 'retail' | 'wholesale';
+    value_of_goods:number
   };
 }
 
@@ -154,7 +154,7 @@ console.log("billData",billData)
           </table>
 
           <div class="total">
-            <p>Value of Goods: ₹ ${formatAmount(billData.subtotal_amount)}</p>
+            <p>Value of Goods: ₹ ${formatAmount(billData.value_of_goods)}</p>
             ${billData.discount > 0 ? `
               <p>Discount: ${billData.discount_type === 'percentage' ? billData.discount + '%' : '₹ ' + formatAmount(billData.discount)}</p>
             ` : ''}
@@ -165,7 +165,6 @@ console.log("billData",billData)
               <p>Remaining Amount: ₹ ${formatAmount(Number(billData.total_amount) - Number(billData.paid_amount))}</p>
             ` : ''}
             <p><strong>Payment Status:</strong> ${billData.is_paid ? 'Fully Paid' : billData.is_partially_paid ? 'Partially Paid' : 'Unpaid'}</p>
-            <p><strong>GST Status:</strong> ${billData.is_gst_included ? 'Included' : 'Excluded'}</p>
           </div>
 
           <div class="thank-you">
@@ -245,7 +244,7 @@ console.log("billData",billData)
         <div style={{ marginTop: 20, textAlign: 'right' }}>
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginBottom: '8px' }}>
             <Text strong>Value of Goods:</Text>
-            <Text>₹ {formatAmount(billData.subtotal_amount)}</Text>
+            <Text>₹ {formatAmount(billData.value_of_goods)}</Text>
           </div>
           {billData.discount > 0 && (
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginBottom: '8px' }}>

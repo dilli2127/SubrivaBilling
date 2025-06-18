@@ -248,6 +248,21 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
     const subtotal = dataSource.reduce((sum, item) => sum + Number(item.amount), 0);
     let total = subtotal;
 
+    // Calculate value of goods (subtotal before GST)
+    const valueOfGoods = dataSource.reduce((sum, item) => {
+      const baseAmount = Number(item.amount);
+      const product = productList?.result?.find((p: any) => p._id === item.product);
+      const taxPercentage = product?.CategoryItem?.tax_percentage || 0;
+      
+      if (isGstIncluded) {
+        // If GST is included, calculate the base amount by removing GST
+        return sum + (baseAmount * 100) / (100 + taxPercentage);
+      } else {
+        // If GST is excluded, the amount is already the base amount
+        return sum + baseAmount;
+      }
+    }, 0);
+
     // Apply discount
     if (discount > 0) {
       if (discountType === 'percentage') {
@@ -265,6 +280,7 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
       items,
       subtotal_amount: subtotal,
       total_gst: totalGST,
+      value_of_goods: valueOfGoods,
       total_amount: total,
       is_paid: isPaid,
       is_partially_paid: isPartiallyPaid,

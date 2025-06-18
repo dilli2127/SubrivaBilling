@@ -17,7 +17,7 @@ interface BillItemsTableProps {
   isGstIncluded: boolean;
   isRetail: boolean;
   discount: number;
-  discountType: 'percentage' | 'amount';
+  discountType: "percentage" | "amount";
 }
 
 const BillItemsTable: React.FC<BillItemsTableProps> = ({
@@ -203,21 +203,6 @@ const BillItemsTable: React.FC<BillItemsTableProps> = ({
     },
   ];
 
-  const calculateTotalGST = () => {
-    return dataSource.reduce((sum, item) => {
-      const baseAmount = Number(item.amount);
-      const taxPercentage = item.tax_percentage || 0;
-      
-      if (isGstIncluded) {
-        // If GST is included, calculate the tax amount from the total
-        return sum + (baseAmount * taxPercentage) / (100 + taxPercentage);
-      } else {
-        // If GST is excluded, calculate the tax amount directly
-        return sum + (baseAmount * taxPercentage / 100);
-      }
-    }, 0);
-  };
-
   return (
     <Table
       dataSource={dataSource}
@@ -234,17 +219,28 @@ const BillItemsTable: React.FC<BillItemsTableProps> = ({
             paddingRight: 16,
           }}
         >
-          <div>Value of Goods: ₹ {Number(total_amount - total_gst).toFixed(2)}</div>
+          <div>
+            Value of Goods: ₹ {Number(total_amount - total_gst).toFixed(2)}
+          </div>
           {discount > 0 && (
-            <div>Discount: {discountType === 'percentage' ? `${discount}%` : `₹ ${discount.toFixed(2)}`}</div>
+            <div>
+              Discount:{" "}
+              {discountType === "percentage"
+                ? `${discount}%`
+                : `₹ ${discount.toFixed(2)}`}
+            </div>
           )}
           <div>Total GST: ₹ {total_gst.toFixed(2)}</div>
-          <div>{isRetail ? 'Bill Value' : 'Invoice Value'}: ₹ {Number(total_amount).toFixed(2)}</div>
+          <div>
+            {isRetail ? "Bill Value" : "Invoice Value"}: ₹{" "}
+            {Number(total_amount).toFixed(2)}
+          </div>
           {isPartiallyPaid && (
             <div style={{ fontSize: 14, color: "#52c41a" }}>
               Paid: ₹ {paid_amount || 0}
               <br />
-              Remaining: ₹ {Number(total_amount - (paid_amount || 0)).toFixed(2)}
+              Remaining: ₹{" "}
+              {Number(total_amount - (paid_amount || 0)).toFixed(2)}
             </div>
           )}
         </div>
