@@ -1,113 +1,78 @@
-import React, { useEffect, useState } from "react";
-import { Table, Tag, Select, Typography } from "antd";
-import type { ColumnsType } from "antd/es/table";
-import dayjs from "dayjs";
-
-const { Title } = Typography;
-const { Option } = Select;
-
-type PaymentStatus = "paid" | "pending" | "failed";
-
-interface Payment {
-  id: string;
-  amount: number;
-  status: PaymentStatus;
-  payment_date: string | null;
-  payment_method: string;
-  transaction_id: string | null;
-}
-
-interface Props {
-  customerId: string;
-}
-
-const statusColor = {
-  paid: "green",
-  pending: "orange",
-  failed: "red",
-};
-
-const PaymentHistory: React.FC<Props> = ({ customerId }) => {
-  const [payments, setPayments] = useState<Payment[]>([]);
-  const [filtered, setFiltered] = useState<Payment[]>([]);
-  const [statusFilter, setStatusFilter] = useState<string | undefined>();
-
-  useEffect(() => {
-    fetch(`/payments/history/${customerId}`)
-      .then((res) => res.json())
-      .then((data) => {
-        setPayments(data);
-        setFiltered(data);
-      });
-  }, [customerId]);
-
-  const handleFilterChange = (value: string) => {
-    setStatusFilter(value);
-    if (value) {
-      setFiltered(payments.filter((p) => p.status === value));
-    } else {
-      setFiltered(payments);
-    }
-  };
-
-  const columns: ColumnsType<Payment> = [
+import React from "react";
+import CrudModule from "../../components/common/CrudModule";
+import { getApiRoutePaymentHistory, getApiRouteVariant } from "../../helpers/Common_functions";
+import { DatePicker, Input, Select } from "antd";
+import { Option } from "antd/es/mentions";
+const VariantCrud = () => {
+  const formItems = [
+    // {
+    //   label: "Sales Record",
+    //   name: "sales_record_id",
+    //   rules: [{ required: true, message: "Please select a sales record" }],
+    //   component: (
+    //     <Select placeholder="Select sales record">
+    //       {salesRecords.map((record) => (
+    //         <Select.Option key={record._id} value={record._id}>
+    //           {record.invoice_no || record._id}
+    //         </Select.Option>
+    //       ))}
+    //     </Select>
+    //   ),
+    // },
     {
-      title: "Amount",
-      dataIndex: "amount",
-      render: (amount) => `₹ ${amount.toFixed(2)}`,
+      label: "Payment Date",
+      name: "payment_date",
+      rules: [{ required: true, message: "Please select a payment date" }],
+      component: <DatePicker style={{ width: "100%" }} />,
     },
     {
-      title: "Status",
-      dataIndex: "status",
-      render: (status: PaymentStatus) => (
-        <Tag color={statusColor[status]}>{status.toUpperCase()}</Tag>
+      label: "Amount Paid",
+      name: "amount_paid",
+      rules: [{ required: true, message: "Please enter amount paid" }],
+      component: <Input type="number" prefix="₹" placeholder="Enter amount" />,
+    },
+    {
+      label: "Payment Mode",
+      name: "payment_mode",
+      rules: [{ required: true, message: "Please select a payment mode" }],
+      component: (
+        <Select placeholder="Select mode">
+          <Select.Option value="cash">Cash</Select.Option>
+          <Select.Option value="upi">UPI</Select.Option>
+          <Select.Option value="card">Card</Select.Option>
+          <Select.Option value="bank">Bank Transfer</Select.Option>
+        </Select>
       ),
     },
     {
-      title: "Date",
-      dataIndex: "payment_date",
-      render: (date) =>
-        date ? dayjs(date).format("DD MMM YYYY, hh:mm A") : "-",
-    },
-    {
-      title: "Method",
-      dataIndex: "payment_method",
-      render: (method) => method || "-",
-    },
-    {
-      title: "Transaction ID",
-      dataIndex: "transaction_id",
-      render: (id) => id || "-",
+      label: "Note",
+      name: "note",
+      rules: [],
+      component: <Input.TextArea rows={3} placeholder="Optional notes" />,
     },
   ];
+  const columns = [
+    { title: "Amount Paid", dataIndex: "amount_paid", key: "amount_paid" },
+    { title: "Payment Pode", dataIndex: "payment_mode", key: "payment_mode" },
+    { title: "Note", dataIndex: "note", key: "note" },
+  ];
+
+  const apiRoutes = {
+    get: getApiRoutePaymentHistory("GetAll"),
+    create: getApiRoutePaymentHistory("Create"),
+    update: getApiRoutePaymentHistory("Update"),
+    delete: getApiRoutePaymentHistory("Delete"),
+  };
 
   return (
-    <div style={{ padding: "24px" }}>
-      <Title level={3} style={{ color: "#1890ff", }}>
-        Payment History
-      </Title>
-      <div style={{ marginBottom: 16, justifyContent: "flex-end", display: "flex" }}>
-        <Select
-          allowClear
-          style={{ width: 200 ,}}
-          placeholder="Filter by Status"
-          onChange={handleFilterChange}
-          value={statusFilter}
-        >
-          <Option value="paid">Paid</Option>
-          <Option value="pending">Pending</Option>
-          <Option value="failed">Failed</Option>
-        </Select>
-      </div>
-
-      <Table
-        dataSource={filtered}
-        columns={columns}
-        rowKey="id"
-        pagination={{ pageSize: 5 }}
-      />
-    </div>
+    <CrudModule
+      title="Payment History"
+      formItems={formItems}
+      columns={columns}
+      apiRoutes={apiRoutes}
+      formColumns={2}
+    />
   );
 };
 
-export default PaymentHistory;
+export default VariantCrud;

@@ -97,3 +97,12 @@ export const getApiRouteRetailBill = (action: keyof typeof API_ROUTES.SalesRecor
   }
   return route;
 };
+
+export const getApiRoutePaymentHistory = (action: keyof typeof API_ROUTES.PaymentHistory) => {
+  const route = API_ROUTES?.PaymentHistory?.[action];
+  if (!route) {
+    console.error(`API_ROUTES.PaymentHistory.${action} is undefined.`);
+    throw new Error(`API route for PaymentHistory.${action} is not defined.`);
+  }
+  return route;
+};

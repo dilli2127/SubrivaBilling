@@ -237,7 +237,7 @@ export const API_ROUTES = {
       endpoint: "/products",
     },
   },
-   Vendor: {
+  Vendor: {
     Create: {
       identifier: "AddVendor",
       method: API_METHODS.PUT,
@@ -264,7 +264,7 @@ export const API_ROUTES = {
       endpoint: "/vendor",
     },
   },
-   Warehouse: {
+  Warehouse: {
     Create: {
       identifier: "AddWarehouse",
       method: API_METHODS.PUT,
@@ -291,7 +291,7 @@ export const API_ROUTES = {
       endpoint: "/warehouse",
     },
   },
-   StockAudit: {
+  StockAudit: {
     Create: {
       identifier: "AddStockAudit",
       method: API_METHODS.PUT,
@@ -318,7 +318,7 @@ export const API_ROUTES = {
       endpoint: "/stock_audit",
     },
   },
-    SalesRecord: {
+  SalesRecord: {
     Create: {
       identifier: "AddRetailBill",
       method: API_METHODS.PUT,
@@ -343,6 +343,33 @@ export const API_ROUTES = {
       identifier: "DeleteRetailBill",
       method: API_METHODS.DELETE,
       endpoint: "/sales_record",
+    },
+  },
+  PaymentHistory: {
+    Create: {
+      identifier: "AddPaymentHistory",
+      method: API_METHODS.PUT,
+      endpoint: "/payment_history",
+    },
+    Update: {
+      identifier: "UpdatPaymentHistory",
+      method: API_METHODS.PATCH,
+      endpoint: "/payment_history",
+    },
+    Get: {
+      identifier: "GetPaymentHistory",
+      method: API_METHODS.GET,
+      endpoint: "/payment_history",
+    },
+    GetAll: {
+      identifier: "GetAllPaymentHistory",
+      method: API_METHODS.POST,
+      endpoint: "/payment_history",
+    },
+    Delete: {
+      identifier: "DeletePaymentHistory",
+      method: API_METHODS.DELETE,
+      endpoint: "/payment_history",
     },
   },
 };

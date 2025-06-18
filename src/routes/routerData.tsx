@@ -149,7 +149,7 @@ const routerData: RouteConfig[] = [
         path: "payment_history",
         element: (
           <Suspense fallback={<Loader />}>
-            <PaymentHistory customerId="" />
+            <PaymentHistory />
           </Suspense>
         ),
         children: [],
