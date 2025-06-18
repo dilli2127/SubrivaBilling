@@ -193,35 +193,6 @@ const StockAudit = () => {
       ),
     },
     {
-      label: "Stock Type",
-      name: "stock_type",
-      rules: [{ required: true, message: "Select stock movement type!" }],
-      component: (
-        <Select placeholder="In or Out">
-          <Option value="in">Stock In</Option>
-          <Option value="out">Stock Out</Option>
-        </Select>
-      ),
-    },
-    {
-      label: "In / Out Reason",
-      name: "out_reason",
-      dependencies: ["stock_type"],
-      rules: [
-        ({ getFieldValue }: { getFieldValue: (name: string) => any }) => ({
-          validator(_: any, value: any) {
-            if (getFieldValue("stock_type") === "out" && !value) {
-              return Promise.reject(
-                new Error("Reason required for stock out!")
-              );
-            }
-            return Promise.resolve();
-          },
-        }),
-      ],
-      component: <Input.TextArea placeholder="Reason for stock out" rows={2} />,
-    },
-    {
       label: "Warehouse / Location",
       name: "location",
       rules: [],
@@ -265,13 +236,12 @@ const StockAudit = () => {
       title: "Product",
       dataIndex: "product_name",
       key: "product_name",
-      render: (_: any, record: any) => (
-        `${record.ProductItem?.name} - ${record.ProductItem?.VariantItem?.variant_name}`
-      ),
+      render: (_: any, record: any) =>
+        `${record.ProductItem?.name} - ${record.ProductItem?.VariantItem?.variant_name}`,
     },
     {
       title: "Variant",
-      dataIndex: "variant_name", 
+      dataIndex: "variant_name",
       key: "variant_name",
       render: (_: any, record: any) =>
         record.ProductItem?.VariantItem?.variant_name || "-",
@@ -326,7 +296,7 @@ const StockAudit = () => {
     },
     // {
     //   title: "Vendor",
-    //   dataIndex: "vendor_name", 
+    //   dataIndex: "vendor_name",
     //   key: "vendor_name",
     // },
     // {
