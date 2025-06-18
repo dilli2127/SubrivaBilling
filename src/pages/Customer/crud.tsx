@@ -98,7 +98,7 @@ const CustomerCrud: React.FC = () => {
       name: "email",
       label: "Email Address",
       rules: [
-        { required: true, message: "Please enter email" },
+        { required: false, message: "Please enter email" },
         { type: "email", message: "Please enter valid email" },
       ],
       component: <Input prefix={<MailOutlined />} placeholder="Enter email" />,
@@ -121,7 +121,7 @@ const CustomerCrud: React.FC = () => {
     {
       name: "address",
       label: "Address",
-      rules: [{ required: true, message: "Please enter address" }],
+      rules: [{ required: false, message: "Please enter address" }],
       component: <Input.TextArea placeholder="Enter address" rows={3} />,
     },
     {
