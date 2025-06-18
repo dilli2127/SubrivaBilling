@@ -19,6 +19,7 @@ import {
   DeleteOutlined,
   PrinterOutlined,
   PlusOutlined,
+  SearchOutlined,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
 import GlobalDrawer from "../../components/antd/GlobalDrawer";
@@ -45,6 +46,7 @@ const BillListPage = () => {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [billViewVisible, setBillViewVisible] = useState(false);
   const [form] = Form.useForm();
+  const [searchText, setSearchText] = useState("");
   const [pagination, setPagination] = useState({
     current: 1,
     pageSize: 10,
@@ -92,9 +94,23 @@ const BillListPage = () => {
     setBillViewVisible(true);
   };
 
-  const handlePaginationChange = (page: number, pageSize: number) => {
-    setPagination({ current: page, pageSize });
-    SalesRecord("GetAll", { pageNumber: page, pageLimit: pageSize });
+  const handleSearch = (value: string) => {
+    setSearchText(value);
+    setPagination({ ...pagination, current: 1 }); // Reset to first page on search
+    SalesRecord("GetAll", {
+      pageNumber: 1,
+      pageLimit: pagination.pageSize,
+      searchString: value,
+    });
+  };
+
+  const handlePaginationChange = (pageNumber: number, pageLimit: number) => {
+    setPagination({ current: pageNumber, pageSize: pageLimit });
+    SalesRecord("GetAll", {
+      pageNumber,
+      pageLimit,
+      searchString: searchText,
+    });
   };
 
   const columns = [
@@ -172,6 +188,7 @@ const BillListPage = () => {
     SalesRecord("GetAll", {
       pageNumber: pagination.current,
       pageLimit: pagination.pageSize,
+      searchString: searchText,
     });
   }, [SalesRecord]);
 
@@ -188,16 +205,25 @@ const BillListPage = () => {
         <Title level={3} style={{ color: "#1890ff", margin: 0 }}>
           Sales List
         </Title>
-        <Button
-          type="primary"
-          icon={<PlusOutlined />}
-          onClick={() => {
-            setSelectedBill(null);
-            setIsDrawerOpen(true);
-          }}
-        >
-          Create New Sale
-        </Button>
+        <Space>
+          <Input
+            placeholder="Search by invoice no, customer name or mobile"
+            prefix={<SearchOutlined />}
+            allowClear
+            style={{ width: 300 }}
+            onChange={(e) => handleSearch(e.target.value)}
+          />
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            onClick={() => {
+              setSelectedBill(null);
+              setIsDrawerOpen(true);
+            }}
+          >
+            Create New Sale
+          </Button>
+        </Space>
       </div>
 
       <GlobalTable
