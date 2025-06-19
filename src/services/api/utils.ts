@@ -452,5 +452,12 @@ export const API_ROUTES = {
       method: API_METHODS.DELETE,
       endpoint: "/invoice_numbers",
     },
+  },
+  DashBoard:{
+    GetCount: {
+      identifier: "GetCount",
+      method: API_METHODS.POST,
+      endpoint: "/dashboard/stats",
+    },
   }
 };

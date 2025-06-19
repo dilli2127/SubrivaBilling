@@ -133,3 +133,12 @@ export const getApiRouteInvoiceNumber = (action: keyof typeof API_ROUTES.Invoice
   }
   return route;
 };
+
+export const getApiRouteDashBoard = (action: keyof typeof API_ROUTES.DashBoard) => {
+  const route = API_ROUTES?.DashBoard?.[action];
+  if (!route) {
+    console.error(`API_ROUTES.DashBoard.${action} is undefined.`);
+    throw new Error(`API route for DashBoard.${action} is not defined.`);
+  }
+  return route;
+};
