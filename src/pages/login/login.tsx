@@ -1,12 +1,9 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect } from "react";
 import {
   Form,
   Input,
   Button,
   message,
-  Row,
-  Col,
-  Card,
   Typography,
 } from "antd";
 import { UserOutlined, LockOutlined } from "@ant-design/icons";
@@ -65,63 +62,61 @@ const Login: React.FC = () => {
     }
   }, [items]);
   return (
-    <Row className="login-container">
-      <Col span={12} className="login-background" />
-      <Col span={12} className="login-content">
-        <Card className="login-card">
-          <Title level={2} className="login-title">
-            Welcome Back
-          </Title>
-          <Text className="login-subtitle">Sign in to continue</Text>
-          <Form
-            name="login_form"
-            className="login-form"
-            onFinish={onFinish}
+    <div className="login-background">
+      <div className="login-form-container">
+        <Title level={2} className="login-title" style={{ color: '#222', marginBottom: 8 }}>
+          Welcome Back
+        </Title>
+        <Text className="login-subtitle" style={{ color: '#444', marginBottom: 20, display: 'block' }}>Sign in to continue</Text>
+        <Form
+          name="login_form"
+          className="login-form"
+          onFinish={onFinish}
+          style={{ width: 300 }}
+        >
+          <Form.Item
+            name="username"
+            rules={[{ required: true, message: "Please input your Username!" }]}
           >
-            <Form.Item
-              name="username"
-              rules={[{ required: true, message: "Please input your Username!" }]}
+            <Input prefix={<UserOutlined />} placeholder="Username" />
+          </Form.Item>
+
+          <Form.Item
+            name="password"
+            rules={[{ required: true, message: "Please input your Password!" }]}
+          >
+            <Input.Password
+              prefix={<LockOutlined />}
+              placeholder="Password"
+            />
+          </Form.Item>
+
+          <Form.Item className="login-options">
+            <a href="#" className="forgot-password">
+              Forgot password?
+            </a>
+          </Form.Item>
+
+          <Form.Item>
+            <Button
+              type="primary"
+              htmlType="submit"
+              className="login-button"
+              loading={loading}
             >
-              <Input prefix={<UserOutlined />} placeholder="Username" />
-            </Form.Item>
+              Log in
+            </Button>
+          </Form.Item>
 
-            <Form.Item
-              name="password"
-              rules={[{ required: true, message: "Please input your Password!" }]}
-            >
-              <Input.Password
-                prefix={<LockOutlined />}
-                placeholder="Password"
-              />
-            </Form.Item>
-
-            <Form.Item className="login-options">
-              <a href="#" className="forgot-password">
-                Forgot password?
-              </a>
-            </Form.Item>
-
-            <Form.Item>
-              <Button
-                type="primary"
-                htmlType="submit"
-                className="login-button"
-                loading={loading}
-              >
-                Log in
-              </Button>
-            </Form.Item>
-
-            <Form.Item className="signup-link">
-              <Text className="auth-switch">
-                Don't have an account?{" "}
-                <a onClick={() => navigate("/signup")}>Sign up</a>
-              </Text>
-            </Form.Item>
-          </Form>
-        </Card>
-      </Col>
-    </Row>
+          <Form.Item className="signup-link">
+            <Text className="auth-switch">
+              Don't have an account?{" "}
+              <a onClick={() => navigate("/signup")}>Sign up</a>
+            </Text>
+          </Form.Item>
+        </Form>
+      </div>
+    </div>
   );
 };
 

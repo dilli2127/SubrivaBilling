@@ -5,41 +5,13 @@
 }
 
 .login-background {
-  background: url("../../assets/img/ffslogo.png") no-repeat center center;
+  min-height: 100vh;
+  width: 100vw;
+  background: url("../../assets/img/icon.jpg") no-repeat center center fixed;
   background-size: cover;
-  filter: brightness(0.8);
-  flex: 1; /* Take up 50% of the container */
-}
-
-.login-content {
   display: flex;
-  justify-content: center;
   align-items: center;
-  background: linear-gradient(to right, #ff4e50, #fc913a);
-  flex: 1; /* Take up 50% of the container */
-}
-
-.login-card {
-  width: 90%; /* Adjust card width for smaller screens */
-  max-width: 400px; /* Limit card width on larger screens */
-  padding: 30px;
-  text-align: center;
-  border-radius: 15px;
-  background: rgba(255, 255, 255, 0.2);
-  backdrop-filter: blur(10px);
-  box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.2);
-}
-
-.login-title {
-  font-size: 24px;
-  font-weight: bold;
-  color: #fff;
-}
-
-.login-subtitle {
-  color: #ddd;
-  margin-bottom: 20px;
-  display: block;
+  justify-content: center;
 }
 
 .login-options {
@@ -48,7 +20,7 @@
 }
 
 .forgot-password {
-  color: #f0f0f0;
+  color: #000536;
 }
 
 .login-button {
@@ -72,7 +44,7 @@
 /* Media queries for responsiveness */
 @media (max-width: 768px) {
   .login-container {
-    flex-direction: column; 
+    flex-direction: column;
   }
 
   .login-background,
@@ -82,12 +54,25 @@
   }
   .ant-col-12 {
     max-width: 100% !important;
+  }
 }
-}
-
 
 @media (max-width: 480px) {
-    .login-card {
-        /* padding: 20px; */
-    }
+  .login-card {
+    /* padding: 20px; */
+  }
+}
+
+/* Centered yellow box for the form */
+.login-form-container {
+  padding: 40px 32px;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.459);
+  background-color: #ff18183b;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  right: 30px;
+  top: 60px;
 }
