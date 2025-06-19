@@ -459,5 +459,15 @@ export const API_ROUTES = {
       method: API_METHODS.POST,
       endpoint: "/dashboard/stats",
     },
+    SalesChartData: {
+      identifier: "GetSalesData",
+      method: API_METHODS.POST,
+      endpoint: "/dashboard/sales_chart",
+    },
+    PurchaseChartData: {
+      identifier: "GetPurchaseChartData",
+      method: API_METHODS.POST,
+      endpoint: "/dashboard/purchased_chart",
+    },
   }
 };

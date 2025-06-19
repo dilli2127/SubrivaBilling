@@ -38,26 +38,27 @@ const Dashboard: React.FC = () => {
   const dispatch: Dispatch<any> = useDispatch();
   const today = new Date().toLocaleDateString();
   const dashboardCount = getApiRouteDashBoard("GetCount");
+  const SalesChartData = getApiRouteDashBoard("SalesChartData");
+  const PurchaseChartData = getApiRouteDashBoard("PurchaseChartData");
+
   const { loading: dashboard_loading, items: DashBoardItems } =
     useDynamicSelector(dashboardCount.identifier);
-    console.log("DashBoardItems",DashBoardItems)
-  const salesData = [
-    { date: "2025-06-11", sales: 12000 },
-    { date: "2025-06-12", sales: 9000 },
-    { date: "2025-06-13", sales: 16000 },
-    { date: "2025-06-14", sales: 14000 },
-    { date: "2025-06-15", sales: 11000 },
-    { date: today, sales: 18000 },
-  ];
 
-  const purchaseData = [
-    { date: "2025-06-11", amount: 7000 },
-    { date: "2025-06-12", amount: 5000 },
-    { date: "2025-06-13", amount: 8000 },
-    { date: "2025-06-14", amount: 6500 },
-    { date: "2025-06-15", amount: 9000 },
-    { date: today, amount: 7200 },
-  ];
+  const { loading: sales_data_loading, items: SalesChartDataItems } =
+    useDynamicSelector(SalesChartData.identifier);
+    const { loading: purchase_data_loading, items: purchaseData } =
+    useDynamicSelector(PurchaseChartData.identifier);
+
+  
+
+  // const purchaseData = [
+  //   { date: "2025-06-11", amount: 7000 },
+  //   { date: "2025-06-12", amount: 5000 },
+  //   { date: "2025-06-13", amount: 8000 },
+  //   { date: "2025-06-14", amount: 6500 },
+  //   { date: "2025-06-15", amount: 9000 },
+  //   { date: today, amount: 7200 },
+  // ];
 
   const recentInvoices = [
     { invoice: "INV-0012", customer: "John", amount: 4500, status: "Paid" },
@@ -82,7 +83,7 @@ const Dashboard: React.FC = () => {
     boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
   });
   const fetchData = useCallback(() => {
-    [dashboardCount].forEach((route) => {
+    [dashboardCount, SalesChartData,PurchaseChartData].forEach((route) => {
       dispatch(
         dynamic_request(
           { method: route.method, endpoint: route.endpoint, data: {} },
@@ -112,7 +113,7 @@ const Dashboard: React.FC = () => {
                 Today’s Sale
               </Title>
               <Text strong style={{ fontSize: 20, color: "#fff" }}>
-                {DashBoardItems?.results?.todaysSales}
+                {DashBoardItems?.result?.todaysSales}
               </Text>
             </Space>
           </Card>
@@ -130,7 +131,7 @@ const Dashboard: React.FC = () => {
                 Pending Receivables
               </Title>
               <Text strong style={{ fontSize: 20, color: "#fff" }}>
-                {DashBoardItems?.results?.pendingReceivables}
+                {DashBoardItems?.result?.pendingReceivables}
               </Text>
             </Space>
           </Card>
@@ -168,7 +169,7 @@ const Dashboard: React.FC = () => {
                 Total Customers
               </Title>
               <Text strong style={{ fontSize: 20, color: "#fff" }}>
-                325
+                {DashBoardItems?.result?.totalCustomers}
               </Text>
             </Space>
           </Card>
@@ -179,7 +180,7 @@ const Dashboard: React.FC = () => {
         <Col span={12}>
           <Card title="📈 Sale Overview" style={{ borderRadius: 16 }}>
             <ResponsiveContainer width="100%" height={250}>
-              <AreaChart data={salesData}>
+              <AreaChart data={SalesChartDataItems?.result}>
                 <defs>
                   <linearGradient
                     id="salesGradient"
@@ -211,7 +212,7 @@ const Dashboard: React.FC = () => {
         <Col span={12}>
           <Card title="📊 Purchase Overview" style={{ borderRadius: 16 }}>
             <ResponsiveContainer width="100%" height={250}>
-              <BarChart data={purchaseData}>
+              <BarChart data={purchaseData?.result}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="date" />
                 <YAxis />
