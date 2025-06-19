@@ -189,10 +189,10 @@ const BillItemsTable: React.FC<BillItemsTableProps> = ({
           selectedStock &&
           selectedStock.available_quantity === 0 &&
           selectedStock.available_loose_quantity >= 0;
-          console.log("selectedStock",selectedStock)
+          console.log("selectedStock",record.qty)
         return (
           <InputNumber
-            min={1}
+            min={0}
             max={selectedStock?.available_quantity}
             value={record.qty}
             onChange={(value) => onChange(value, record.key, "qty")}
@@ -221,7 +221,7 @@ const BillItemsTable: React.FC<BillItemsTableProps> = ({
           (selectedStock?.available_quantity || 0) * packSize;
         return (
           <InputNumber
-            min={1}
+            min={0}
             max={totalLooseAvailable}
             value={record.loose_qty}
             onChange={(value) => onChange(value, record.key, "loose_qty")}

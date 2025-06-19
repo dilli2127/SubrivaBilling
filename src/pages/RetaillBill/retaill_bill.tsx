@@ -195,12 +195,12 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
           _id: item._id,
           key: index,
           name: "",
-          qty: item.qty,
+          qty: item.qty ?? 0,
           price: item.price,
           amount: item.amount,
           product: item.product_id,
           stock: item.stock_id,
-          loose_qty: item.loose_qty || 0,
+          loose_qty: item.loose_qty ?? 0,
         })
       );
 
