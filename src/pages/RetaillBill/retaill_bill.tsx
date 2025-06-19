@@ -218,13 +218,14 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
   // Calculate total GST amount
   const calculateTotalGST = () => {
     return dataSource.reduce((sum, item) => {
+      console.log("item.amount",item.amount,isGstIncluded)
       const baseAmount = Number(item.amount);
       const product = productList?.result?.find((p: any) => p._id === item.product);
       const taxPercentage = product?.CategoryItem?.tax_percentage || 0;
       
       if (isGstIncluded) {
         // If GST is included, calculate the tax amount from the total
-        return sum + (baseAmount * taxPercentage) / (100 + taxPercentage);
+        return sum + (baseAmount * taxPercentage) / (100);
       } else {
         // If GST is excluded, calculate the tax amount directly
         return sum + (baseAmount * taxPercentage / 100);

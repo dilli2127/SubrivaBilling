@@ -220,7 +220,10 @@ const BillItemsTable: React.FC<BillItemsTableProps> = ({
           }}
         >
           <div>
-            Value of Goods: ₹ {Number(total_amount - total_gst).toFixed(2)}
+            Value of Goods: ₹{" "}
+            {isGstIncluded
+              ? Number(total_amount - total_gst).toFixed(2)
+              : Number(total_amount).toFixed(2)}
           </div>
           {discount > 0 && (
             <div>
@@ -233,8 +236,11 @@ const BillItemsTable: React.FC<BillItemsTableProps> = ({
           <div>Total GST: ₹ {total_gst.toFixed(2)}</div>
           <div>
             {isRetail ? "Bill Value" : "Invoice Value"}: ₹{" "}
-            {Number(total_amount).toFixed(2)}
+            {isGstIncluded
+              ? Number(total_amount).toFixed(2)
+              : Number(total_amount + (total_gst)).toFixed(2)}
           </div>
+
           {isPartiallyPaid && (
             <div style={{ fontSize: 14, color: "#52c41a" }}>
               Paid: ₹ {paid_amount || 0}
