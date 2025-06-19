@@ -123,6 +123,8 @@ const BillItemsTable: React.FC<BillItemsTableProps> = ({
           value={record.product}
           onChange={(productId) => {
             onChange(productId, record.key, "product");
+            onChange(undefined, record.key, "qty");
+            onChange(undefined, record.key, "loose_qty");
             onStockAuditFetch(productId);
           }}
           showSearch
@@ -150,7 +152,7 @@ const BillItemsTable: React.FC<BillItemsTableProps> = ({
         <span style={{ color: "#1890ff", fontWeight: "bold" }}>Stock</span>
       ),
       dataIndex: "stock",
-      width: 250,
+      width: 350,
       render: (_: any, record: any) => (
         <Select
           value={record.stock}
@@ -186,11 +188,12 @@ const BillItemsTable: React.FC<BillItemsTableProps> = ({
         const disableQty =
           selectedStock &&
           selectedStock.available_quantity === 0 &&
-          selectedStock.available_loose_quantity > 0;
+          selectedStock.available_loose_quantity >= 0;
+          console.log("selectedStock",selectedStock)
         return (
           <InputNumber
             min={1}
-            max={selectedStock?.available_quantity || 1}
+            max={selectedStock?.available_quantity}
             value={record.qty}
             onChange={(value) => onChange(value, record.key, "qty")}
             style={{ width: "100%" }}
