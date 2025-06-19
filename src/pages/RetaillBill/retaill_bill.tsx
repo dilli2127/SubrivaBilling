@@ -1,10 +1,20 @@
 import React, { useEffect, useState } from "react";
-import { Form, Button, Typography, Drawer, message, Switch, InputNumber, Space } from "antd";
+import {
+  Form,
+  Button,
+  Typography,
+  Drawer,
+  message,
+  Switch,
+  InputNumber,
+  Space,
+} from "antd";
 import dayjs from "dayjs";
 import { useApiActions } from "../../services/api/useApiActions";
 import { dynamic_clear, useDynamicSelector } from "../../services/redux";
 import CustomerCrud from "../../pages/Customer/crud";
 import { getApiRouteRetailBill } from "../../helpers/Common_functions";
+import { calculateBillTotals } from "../../helpers/amount_calculations";
 import { useDispatch } from "react-redux";
 import { Dispatch } from "redux";
 import { API_ROUTES } from "../../services/api/utils";
@@ -67,9 +77,13 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
     billdata?.is_partially_paid ?? false
   );
   const [isRetail, setIsRetail] = useState(billdata?.is_retail ?? true);
-  const [isGstIncluded, setIsGstIncluded] = useState(billdata?.is_gst_included ?? true);
+  const [isGstIncluded, setIsGstIncluded] = useState(
+    billdata?.is_gst_included ?? true
+  );
   const [discount, setDiscount] = useState(billdata?.discount ?? 0);
-  const [discountType, setDiscountType] = useState<'percentage' | 'amount'>(billdata?.discount_type ?? 'percentage');
+  const [discountType, setDiscountType] = useState<"percentage" | "amount">(
+    billdata?.discount_type ?? "percentage"
+  );
 
   const { items: createItems, error: createError } = useDynamicSelector(
     addRoute.identifier
@@ -99,9 +113,10 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
       stockAuditList?.result?.find((s: any) => s._id === item.stock);
 
     const getProductCategory = () => {
-      const product = productList?.result?.find((p: any) => p._id === item.product);
-      return product?.CategoryItem
-      ;
+      const product = productList?.result?.find(
+        (p: any) => p._id === item.product
+      );
+      return product?.CategoryItem;
     };
 
     const calculateAmount = () => {
@@ -109,7 +124,8 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
       const sellPrice = selectedStock?.sell_price || 0;
       const packQty = selectedStock?.quantity || 1;
       const looseRate = sellPrice / packQty;
-      const baseAmount = (item.qty || 0) * sellPrice + (item.loose_qty || 0) * looseRate;
+      const baseAmount =
+        (item.qty || 0) * sellPrice + (item.loose_qty || 0) * looseRate;
 
       // Get category tax percentage
       const category = getProductCategory();
@@ -195,46 +211,17 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
     }
   }, [billdata, form, StockAuditApi]);
 
-  const calculateTotalWithTaxAndDiscount = () => {
-    const subtotal = dataSource.reduce((sum, item) => {
-      const baseAmount = Number(item.amount);
-      return sum + baseAmount;
-    }, 0);
-
-    let total = subtotal;
-
-    // Apply discount
-    if (discount > 0) {
-      if (discountType === 'percentage') {
-        total = total - (total * (discount / 100));
-      } else {
-        total = total - discount;
-      }
-    }
-
-    return total;
-  };
-
-  // Calculate total GST amount
-  const calculateTotalGST = () => {
-    return dataSource.reduce((sum, item) => {
-      console.log("item.amount",item.amount,isGstIncluded)
-      const baseAmount = Number(item.amount- discount);
-      const product = productList?.result?.find((p: any) => p._id === item.product);
-      const taxPercentage = product?.CategoryItem?.tax_percentage || 0;
-      
-      if (isGstIncluded) {
-        // If GST is included, calculate the tax amount from the total
-        return sum + (baseAmount * taxPercentage) / (100);
-      } else {
-        // If GST is excluded, calculate the tax amount directly
-        return sum + (baseAmount * taxPercentage / 100);
-      }
-    }, 0);
-  };
+  // Centralized calculation using utility
+  const billCalc = calculateBillTotals({
+    items: dataSource,
+    productList: productList?.result || [],
+    isGstIncluded,
+    discount,
+    discountType,
+  });
 
   const handleSubmit = async (values: any) => {
-    const items = dataSource.map((item) => ({
+    const items = billCalc.itemsWithTax.map((item) => ({
       product_id: item.product,
       stock_id: item.stock,
       qty: item.qty,
@@ -242,36 +229,8 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
       price: item.price,
       amount: item.amount,
       _id: item._id,
-      tax_percentage: productList?.result?.find((p: any) => p._id === item.product)?.CategoryItem?.tax_percentage || 0
+      tax_percentage: item.tax_percentage,
     }));
-
-    const totalGST = calculateTotalGST();
-    const subtotal = dataSource.reduce((sum, item) => sum + Number(item.amount), 0);
-    let total = subtotal;
-
-    // Calculate value of goods (subtotal before GST)
-    const valueOfGoods = dataSource.reduce((sum, item) => {
-      const baseAmount = Number(item.amount);
-      const product = productList?.result?.find((p: any) => p._id === item.product);
-      const taxPercentage = product?.CategoryItem?.tax_percentage || 0;
-      
-      if (isGstIncluded) {
-        // If GST is included, calculate the base amount by removing GST
-        return sum + (baseAmount * 100) / (100 + taxPercentage);
-      } else {
-        // If GST is excluded, the amount is already the base amount
-        return sum + baseAmount;
-      }
-    }, 0);
-
-    // Apply discount
-    if (discount > 0) {
-      if (discountType === 'percentage') {
-        total = total - (total * (discount / 100));
-      } else {
-        total = total - discount;
-      }
-    }
 
     const payload = {
       invoice_no: values.invoice_no,
@@ -279,22 +238,24 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
       customer_id: values.customer,
       payment_mode: values.payment_mode,
       items,
-      subtotal_amount: subtotal,
-      total_gst: totalGST,
-      value_of_goods: valueOfGoods,
-      total_amount: total,
+      sub_total: billCalc.sub_total,
+      value_of_goods: billCalc.value_of_goods,
+      total_gst: billCalc.total_gst,
+      total_amount: billCalc.total_amount,
+      discount: discount,
+      discount_type: discountType,
+      discount_value: billCalc.discountValue,
       is_paid: isPaid,
       is_partially_paid: isPartiallyPaid,
       sale_type: isRetail ? "retail" : "wholesale",
       is_gst_included: isGstIncluded,
-      discount: discount,
-      discount_type: discountType,
       paid_amount: isPartiallyPaid
         ? values.paid_amount
         : isPaid
-        ? total
+        ? billCalc.total_amount
         : 0,
     };
+    console.log("payload", payload);
 
     try {
       if (billdata) {
@@ -313,47 +274,57 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
       if (createItems?.result) {
         const formattedBill = {
           ...createItems.result,
-          customerDetails: customerList?.result?.find((c: any) => c._id === createItems?.result?.customer_id),
+          customerDetails: customerList?.result?.find(
+            (c: any) => c._id === createItems?.result?.customer_id
+          ),
           Items: dataSource.map((item) => {
-            const product = productList?.result?.find((p: any) => p._id === item.product);
+            const product = productList?.result?.find(
+              (p: any) => p._id === item.product
+            );
             return {
               ...item,
               productItems: {
                 ...product,
-                name: product?.name || '',
-                VariantItem: product?.VariantItem || null
+                name: product?.name || "",
+                VariantItem: product?.VariantItem || null,
               },
               qty: item.qty || 0,
               price: item.price || 0,
               amount: item.amount || 0,
-              loose_qty: item.loose_qty || 0
+              loose_qty: item.loose_qty || 0,
             };
           }),
-          total_amount: calculateTotalWithTaxAndDiscount(),
+          total_amount: billCalc.total_amount,
           is_paid: isPaid,
           is_partially_paid: isPartiallyPaid,
-          paid_amount: isPartiallyPaid ? form.getFieldValue("paid_amount") : isPaid ? calculateTotalWithTaxAndDiscount() : 0
+          paid_amount: isPartiallyPaid
+            ? form.getFieldValue("paid_amount")
+            : isPaid
+            ? billCalc.total_amount
+            : 0,
         };
         setCurrentBill(formattedBill);
         setBillViewVisible(true);
 
         // Reset form and data after successful submission
         form.resetFields();
-        setDataSource([{
-          key: 0,
-          name: "",
-          qty: 0,
-          price: 0,
-          amount: 0,
-          product: undefined,
-          stock: undefined,
-          loose_qty: 0,
-        }]);
+        setDataSource([
+          {
+            key: 0,
+            name: "",
+            qty: 0,
+            price: 0,
+            amount: 0,
+            product: undefined,
+            stock: undefined,
+            loose_qty: 0,
+          },
+        ]);
         setCount(1);
         setIsPaid(true);
         setIsPartiallyPaid(false);
         setDiscount(0);
-        setDiscountType('percentage');
+        setDiscountType("percentage");
       }
     }
     if (createError) handleApiResponse("create", false);
@@ -450,12 +421,18 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
         }}
       >
         <Title level={3} style={{ color: "#1890ff", textAlign: "center" }}>
-          {billdata 
+          {billdata
             ? `Edit ${isRetail ? "Bill" : "Invoice"}`
             : `Create ${isRetail ? "Bill" : "Invoice"}`}
         </Title>
 
-        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 16 }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "flex-end",
+            marginBottom: 16,
+          }}
+        >
           <Space>
             <Switch
               checkedChildren="Retail"
@@ -479,7 +456,7 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
         />
 
         <BillItemsTable
-          dataSource={dataSource}
+          dataSource={billCalc.itemsWithTax}
           productList={productList}
           stockAuditList={stockAuditList}
           onAdd={handleAdd}
@@ -488,8 +465,11 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
           onStockAuditFetch={(productId) =>
             StockAuditApi("GetAll", { product: productId })
           }
-          total_amount={calculateTotalWithTaxAndDiscount()}
-          total_gst={calculateTotalGST()}
+          sub_total={billCalc.sub_total}
+          value_of_goods={billCalc.value_of_goods}
+          total_gst={billCalc.total_gst}
+          total_amount={billCalc.total_amount}
+          discount_value={billCalc.discountValue}
           isPartiallyPaid={isPartiallyPaid}
           paid_amount={form.getFieldValue("paid_amount") || 0}
           isGstIncluded={isGstIncluded}
@@ -498,28 +478,32 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
           discountType={discountType}
         />
 
-        <div style={{ 
-          marginTop: 16, 
-          marginBottom: 16,
-          display: 'flex',
-          justifyContent: 'flex-end',
-          alignItems: 'center',
-          gap: '8px'
-        }}>
+        <div
+          style={{
+            marginTop: 16,
+            marginBottom: 16,
+            display: "flex",
+            justifyContent: "flex-end",
+            alignItems: "center",
+            gap: "8px",
+          }}
+        >
           <InputNumber
             min={0}
-            max={discountType === 'percentage' ? 100 : undefined}
+            max={discountType === "percentage" ? 100 : undefined}
             value={discount}
             onChange={(value) => setDiscount(value || 0)}
             addonBefore="Discount"
-            addonAfter={discountType === 'percentage' ? '%' : '₹'}
+            addonAfter={discountType === "percentage" ? "%" : "₹"}
             style={{ width: 200 }}
           />
           <Switch
             checkedChildren="%"
             unCheckedChildren="₹"
-            checked={discountType === 'percentage'}
-            onChange={(checked) => setDiscountType(checked ? 'percentage' : 'amount')}
+            checked={discountType === "percentage"}
+            onChange={(checked) =>
+              setDiscountType(checked ? "percentage" : "amount")
+            }
           />
         </div>
 
@@ -534,7 +518,7 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
             setIsPartiallyPaid(checked);
             if (checked) setIsPaid(false);
           }}
-          total_amount={calculateTotalWithTaxAndDiscount()}
+          total_amount={billCalc.total_amount}
         />
 
         <div
@@ -555,11 +539,11 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
               minWidth: 140,
             }}
           >
-            {billdata 
-              ? "Update Sale" 
-              : isRetail 
-                ? "Create Bill" 
-                : "Create Invoice"}
+            {billdata
+              ? "Update Sale"
+              : isRetail
+              ? "Create Bill"
+              : "Create Invoice"}
           </Button>
         </div>
       </Form>

@@ -11,7 +11,10 @@ interface BillItemsTableProps {
   onChange: (value: any, key: number, column: string) => void;
   onStockAuditFetch: (productId: string) => void;
   total_amount: number;
+  sub_total: number;
+  value_of_goods: number;
   total_gst: number;
+  discount_value: number;
   isPartiallyPaid: boolean;
   paid_amount: number;
   isGstIncluded: boolean;
@@ -29,7 +32,10 @@ const BillItemsTable: React.FC<BillItemsTableProps> = ({
   onChange,
   onStockAuditFetch,
   total_amount,
+  sub_total,
+  value_of_goods,
   total_gst,
+  discount_value,
   isPartiallyPaid,
   paid_amount,
   isGstIncluded,
@@ -219,27 +225,18 @@ const BillItemsTable: React.FC<BillItemsTableProps> = ({
             paddingRight: 16,
           }}
         >
-          <div>
-            Value of Goods: ₹{" "}
-            {isGstIncluded
-              ? Number(total_amount - total_gst).toFixed(2)
-              : Number(total_amount).toFixed(2)}
-          </div>
+          <div>Sub Total: ₹ {Number(sub_total).toFixed(2)}</div>
+          <div>Value of Goods: ₹ {Number(value_of_goods).toFixed(2)}</div>
           {discount > 0 && (
             <div>
               Discount:{" "}
               {discountType === "percentage"
                 ? `${discount}%`
-                : `₹ ${discount.toFixed(2)}`}
+                : `₹ ${discount_value.toFixed(2)}`}
             </div>
           )}
-          <div>Total GST: ₹ {total_gst.toFixed(2)}</div>
-          <div>
-            {isRetail ? "Bill Value" : "Invoice Value"}: ₹{" "}
-            {isGstIncluded
-              ? Number(total_amount).toFixed(2)
-              : Number(total_amount + (total_gst)).toFixed(2)}
-          </div>
+          <div>GST: ₹ {total_gst.toFixed(2)}</div>
+          <div>Net Payable: ₹ {Number(total_amount).toFixed(2)}</div>
 
           {isPartiallyPaid && (
             <div style={{ fontSize: 14, color: "#52c41a" }}>

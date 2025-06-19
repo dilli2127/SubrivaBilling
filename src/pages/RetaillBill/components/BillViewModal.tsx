@@ -10,6 +10,7 @@ interface BillViewModalProps {
   billData: {
     invoice_no: string;
     date: string;
+    sub_total:number
     customerDetails: any;
     payment_mode: string;
     Items: any[];
@@ -227,7 +228,7 @@ console.log("billData",billData)
             <Text strong>Payment Mode:</Text> {billData.payment_mode}
           </div>
         </div>
-
+console.log("billData",billData)
         <Table
           dataSource={billData.Items}
           columns={columns}
@@ -236,7 +237,7 @@ console.log("billData",billData)
           summary={() => (
             <Table.Summary.Row>
               <Table.Summary.Cell index={0} colSpan={4}><Text strong>Total Amount:</Text></Table.Summary.Cell>
-              <Table.Summary.Cell index={1}><Text strong>₹ {formatAmount(billData.total_amount)}</Text></Table.Summary.Cell>
+              <Table.Summary.Cell index={1}><Text strong>₹ {formatAmount(billData.sub_total)}</Text></Table.Summary.Cell>
             </Table.Summary.Row>
           )}
         />
