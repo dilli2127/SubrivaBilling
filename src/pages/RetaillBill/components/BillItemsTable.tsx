@@ -1,5 +1,5 @@
 import React from "react";
-import { Table, Button, InputNumber, Select } from "antd";
+import { Table, Button, InputNumber, Select, Tooltip } from "antd";
 import { DeleteOutlined } from "@ant-design/icons";
 
 interface BillItemsTableProps {
@@ -48,41 +48,70 @@ const BillItemsTable: React.FC<BillItemsTableProps> = ({
       ),
       dataIndex: "additem",
       width: 180,
-      render: (_: any, record: any, index: number) => (
-        <div style={{ display: "flex", gap: 8 }}>
-          {dataSource.length > 1 && (
-            <Button
-              type="text"
-              danger
-              icon={<DeleteOutlined />}
-              onClick={() => onDelete(record.key)}
-            />
-          )}
-          {index === dataSource.length - 1 && (
-            <Button
-              type="dashed"
-              onClick={onAdd}
-              style={{
-                borderColor: "#1890ff",
-                color: "#1890ff",
-                fontWeight: "bold",
-                fontSize: 16,
-                minWidth: 100,
-              }}
-              onMouseEnter={(e) => {
-                (e.currentTarget as HTMLButtonElement).style.backgroundColor =
-                  "#e6f7ff";
-              }}
-              onMouseLeave={(e) => {
-                (e.currentTarget as HTMLButtonElement).style.backgroundColor =
-                  "transparent";
-              }}
-            >
-              + Add
-            </Button>
-          )}
-        </div>
-      ),
+      render: (_: any, record: any, index: number) => {
+        // Find the selected stockAudit for the current record
+        const selectedStock = stockAuditList?.result?.find(
+          (s: any) => s._id === record.stock
+        );
+        const isStockUnavailable =
+          selectedStock &&
+          selectedStock.available_quantity === 0 &&
+          selectedStock.available_loose_quantity === 0;
+        return (
+          <div style={{ display: "flex", gap: 8 }}>
+            {dataSource.length > 1 && (
+              <Button
+                type="text"
+                danger
+                icon={<DeleteOutlined />}
+                onClick={() => onDelete(record.key)}
+              />
+            )}
+            {index === dataSource.length - 1 &&
+              (isStockUnavailable ? (
+                <Tooltip title="Cannot add item: Stock and loose quantity are both zero.">
+                  <Button
+                    type="dashed"
+                    disabled
+                    style={{
+                      borderColor: "#ccc",
+                      color: "#ccc",
+                      fontWeight: "bold",
+                      fontSize: 16,
+                      minWidth: 100,
+                    }}
+                  >
+                    + Add
+                  </Button>
+                </Tooltip>
+              ) : (
+                <Button
+                  type="dashed"
+                  onClick={onAdd}
+                  style={{
+                    borderColor: "#1890ff",
+                    color: "#1890ff",
+                    fontWeight: "bold",
+                    fontSize: 16,
+                    minWidth: 100,
+                  }}
+                  onMouseEnter={(e) => {
+                    (
+                      e.currentTarget as HTMLButtonElement
+                    ).style.backgroundColor = "#e6f7ff";
+                  }}
+                  onMouseLeave={(e) => {
+                    (
+                      e.currentTarget as HTMLButtonElement
+                    ).style.backgroundColor = "transparent";
+                  }}
+                >
+                  + Add
+                </Button>
+              ))}
+          </div>
+        );
+      },
     },
     {
       title: (
@@ -121,7 +150,7 @@ const BillItemsTable: React.FC<BillItemsTableProps> = ({
         <span style={{ color: "#1890ff", fontWeight: "bold" }}>Stock</span>
       ),
       dataIndex: "stock",
-      width: 180,
+      width: 250,
       render: (_: any, record: any) => (
         <Select
           value={record.stock}
@@ -140,7 +169,7 @@ const BillItemsTable: React.FC<BillItemsTableProps> = ({
         >
           {stockAuditList?.result?.map((stockAudit: any) => (
             <Select.Option key={stockAudit?._id} value={stockAudit?._id}>
-              {`${stockAudit.batch_no} - ${stockAudit?.buy_price}`}
+              {`B#${stockAudit.batch_no} | ₹ ${stockAudit.buy_price} | AQ: ${stockAudit.available_quantity} | LQ: ${stockAudit.available_loose_quantity}`}
             </Select.Option>
           ))}
         </Select>
@@ -150,14 +179,25 @@ const BillItemsTable: React.FC<BillItemsTableProps> = ({
       title: <span style={{ color: "#1890ff", fontWeight: "bold" }}>Qty</span>,
       dataIndex: "qty",
       width: 100,
-      render: (_: any, record: any) => (
-        <InputNumber
-          min={1}
-          value={record.qty}
-          onChange={(value) => onChange(value, record.key, "qty")}
-          style={{ width: "100%" }}
-        />
-      ),
+      render: (_: any, record: any) => {
+        const selectedStock = stockAuditList?.result?.find(
+          (s: any) => s._id === record.stock
+        );
+        const disableQty =
+          selectedStock &&
+          selectedStock.available_quantity === 0 &&
+          selectedStock.available_loose_quantity > 0;
+        return (
+          <InputNumber
+            min={1}
+            max={selectedStock?.available_quantity || 1}
+            value={record.qty}
+            onChange={(value) => onChange(value, record.key, "qty")}
+            style={{ width: "100%" }}
+            disabled={disableQty}
+          />
+        );
+      },
     },
     {
       title: (
@@ -165,14 +205,28 @@ const BillItemsTable: React.FC<BillItemsTableProps> = ({
       ),
       dataIndex: "loose_qty",
       width: 100,
-      render: (_: any, record: any) => (
-        <InputNumber
-          min={1}
-          value={record.loose_qty}
-          onChange={(value) => onChange(value, record.key, "loose_qty")}
-          style={{ width: "100%" }}
-        />
-      ),
+      render: (_: any, record: any) => {
+        const selectedStock = stockAuditList?.result?.find(
+          (s: any) => s._id === record.stock
+        );
+        const disableLooseQty =
+          selectedStock && selectedStock.available_loose_quantity === 0;
+        const packSize =
+          selectedStock?.ProductItem?.VariantItem?.pack_size || 1;
+        const totalLooseAvailable =
+          (selectedStock?.available_loose_quantity || 0) +
+          (selectedStock?.available_quantity || 0) * packSize;
+        return (
+          <InputNumber
+            min={1}
+            max={totalLooseAvailable}
+            value={record.loose_qty}
+            onChange={(value) => onChange(value, record.key, "loose_qty")}
+            style={{ width: "100%" }}
+            disabled={disableLooseQty}
+          />
+        );
+      },
     },
     {
       title: (

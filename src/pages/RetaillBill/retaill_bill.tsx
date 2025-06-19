@@ -97,7 +97,6 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
     InvoiceNumberApi.getIdentifier("GetAll")
   );
   let invoice_no_auto_generated = invoice_no_item?.result?.invoice_no
-  console.log("fdfdf",invoice_no_auto_generated)
   const { items: stockAuditList } = useDynamicSelector(
     StockAuditApi.getIdentifier("GetAll")
   );
@@ -225,6 +224,17 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
   });
 
   const handleSubmit = async (values: any) => {
+   debugger
+    // Validation: Prevent submission if any item's stock is not available
+    const unavailableStockItem = billCalc.itemsWithTax.find(item => {
+      const stock = stockAuditList?.result?.find((s: any) => s._id === item.stock);
+      return stock && stock.available_quantity === 0 && stock.available_loose_quantity === 0;
+    });
+    if (unavailableStockItem) {
+      message.error('Cannot submit bill: One or more items have no available stock.');
+      return;
+    }
+
     const items = billCalc.itemsWithTax.map((item) => ({
       product_id: item.product,
       stock_id: item.stock,
