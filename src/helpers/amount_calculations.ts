@@ -23,15 +23,16 @@ export function calculateBillTotals({
   // Calculate item base amounts
   const itemsWithTax = items.map((item) => {
     const product = productList?.find((p: any) => p._id === item.product);
+    console.log("product",product)
     const taxPercentage = product?.CategoryItem?.tax_percentage || 0;
     let amount =
       Number(item.qty || 0) * Number(item.price || 0) +
       Number(item.loose_qty || 0) *
-        (Number(item.price || 0) / (product?.pack_qty || 1) || 0);
+        (Number(item.price || 0) / (product?.VariantItem?.pack_size || 1) || 0);
     let baseAmount =
       Number(item.qty || 0) * Number(item.price || 0) +
       Number(item.loose_qty || 0) *
-        (Number(item.price || 0) / (product?.pack_qty || 1) || 0);
+        (Number(item.price || 0) / (product?.VariantItem?.pack_size || 1) || 0);
     return {
       ...item,
       tax_percentage: taxPercentage,
