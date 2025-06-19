@@ -392,12 +392,18 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
     ProductsApi("GetAll");
     CustomerApi("GetAll");
     InvoiceNumberApi("GetAll")
-  }, [ProductsApi, CustomerApi]);
+  }, [ProductsApi, CustomerApi,InvoiceNumberApi]);
 
   useEffect(() => {
     if (updateItems?.statusCode === "200") handleApiResponse("update", true);
     if (updateError) handleApiResponse("update", false);
   }, [updateItems, updateError]);
+
+  useEffect(() => {
+    if (invoice_no_auto_generated && !billdata) {
+      form.setFieldsValue({ invoice_no: invoice_no_auto_generated });
+    }
+  }, [invoice_no_auto_generated, billdata, form]);
 
   return (
     <>
@@ -406,7 +412,6 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
         layout="vertical"
         onFinish={handleSubmit}
         initialValues={{
-          invoice_no: invoice_no_auto_generated,
           date: dayjs(),
           payment_mode: "cash",
           ...(billdata && {
