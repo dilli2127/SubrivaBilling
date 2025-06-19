@@ -219,7 +219,7 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
   const calculateTotalGST = () => {
     return dataSource.reduce((sum, item) => {
       console.log("item.amount",item.amount,isGstIncluded)
-      const baseAmount = Number(item.amount);
+      const baseAmount = Number(item.amount- discount);
       const product = productList?.result?.find((p: any) => p._id === item.product);
       const taxPercentage = product?.CategoryItem?.tax_percentage || 0;
       
