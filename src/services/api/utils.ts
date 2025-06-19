@@ -426,4 +426,31 @@ export const API_ROUTES = {
       endpoint: "/stock_out",
     },
   },
+  InvoiceNumber: {
+    Create: {
+      identifier: "AddInvoiceNumber",
+      method: API_METHODS.PUT,
+      endpoint: "/invoice_numbers",
+    },
+    Update: {
+      identifier: "UpdatInvoiceNumber",
+      method: API_METHODS.PATCH,
+      endpoint: "/invoice_numbers",
+    },
+    Get: {
+      identifier: "GetInvoiceNumber",
+      method: API_METHODS.GET,
+      endpoint: "/invoice_numbers",
+    },
+    GetAll: {
+      identifier: "GetAllInvoiceNumber",
+      method: API_METHODS.POST,
+      endpoint: "/invoice_numbers",
+    },
+    Delete: {
+      identifier: "DeleteInvoiceNumber",
+      method: API_METHODS.DELETE,
+      endpoint: "/invoice_numbers",
+    },
+  }
 };

@@ -35,13 +35,11 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
   onSuccess,
 }) => {
   const [form] = Form.useForm();
-  const getRoute = getApiRouteRetailBill("GetAll");
   const addRoute = getApiRouteRetailBill("Create");
   const updateRoute = getApiRouteRetailBill("Update");
-  const deleteRoute = getApiRouteRetailBill("Delete");
 
   const dispatch: Dispatch<any> = useDispatch();
-  const { ProductsApi, StockAuditApi, CustomerApi, SalesRecord } =
+  const { ProductsApi, StockAuditApi, CustomerApi, SalesRecord ,InvoiceNumberApi} =
     useApiActions();
 
   interface DataSourceItem {
@@ -88,12 +86,18 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
   const { items: createItems, error: createError } = useDynamicSelector(
     addRoute.identifier
   );
+  
   const { items: updateItems, error: updateError } = useDynamicSelector(
     updateRoute.identifier
   );
   const { items: productList } = useDynamicSelector(
     ProductsApi.getIdentifier("GetAll")
   );
+  const { items: invoice_no_item } = useDynamicSelector(
+    InvoiceNumberApi.getIdentifier("GetAll")
+  );
+  let invoice_no_auto_generated = invoice_no_item?.result?.invoice_no
+  console.log("fdfdf",invoice_no_auto_generated)
   const { items: stockAuditList } = useDynamicSelector(
     StockAuditApi.getIdentifier("GetAll")
   );
@@ -255,7 +259,6 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
         ? billCalc.total_amount
         : 0,
     };
-    console.log("payload", payload);
 
     try {
       if (billdata) {
@@ -305,7 +308,7 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
         };
         setCurrentBill(formattedBill);
         setBillViewVisible(true);
-
+        InvoiceNumberApi("Create")
         // Reset form and data after successful submission
         form.resetFields();
         setDataSource([
@@ -388,6 +391,7 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
   useEffect(() => {
     ProductsApi("GetAll");
     CustomerApi("GetAll");
+    InvoiceNumberApi("GetAll")
   }, [ProductsApi, CustomerApi]);
 
   useEffect(() => {
@@ -402,6 +406,7 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
         layout="vertical"
         onFinish={handleSubmit}
         initialValues={{
+          invoice_no: invoice_no_auto_generated,
           date: dayjs(),
           payment_mode: "cash",
           ...(billdata && {

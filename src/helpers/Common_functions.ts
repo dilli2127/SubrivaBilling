@@ -124,3 +124,12 @@ export const getApiRouteStockOut = (action: keyof typeof API_ROUTES.StockOut) =>
   }
   return route;
 };
+
+export const getApiRouteInvoiceNumber = (action: keyof typeof API_ROUTES.InvoiceNumber) => {
+  const route = API_ROUTES?.InvoiceNumber?.[action];
+  if (!route) {
+    console.error(`API_ROUTES.InvoiceNumber.${action} is undefined.`);
+    throw new Error(`API route for InvoiceNumber.${action} is not defined.`);
+  }
+  return route;
+};
