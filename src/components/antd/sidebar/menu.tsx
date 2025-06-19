@@ -53,6 +53,12 @@ export const menuItems = [
         icon: <PlusCircleOutlined />,
         path: "/stock_audit",
       },
+       {
+        key: "stock-out",
+        label: "Stock Out",
+        icon: <PlusCircleOutlined />,
+        path: "/stock_out",
+      },
     ],
   },
   {

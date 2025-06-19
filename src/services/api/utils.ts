@@ -372,7 +372,7 @@ export const API_ROUTES = {
       endpoint: "/payment_history",
     },
   },
-   Expenses: {
+  Expenses: {
     Create: {
       identifier: "AddExpenses",
       method: API_METHODS.PUT,
@@ -397,6 +397,33 @@ export const API_ROUTES = {
       identifier: "DeleteExpenses",
       method: API_METHODS.DELETE,
       endpoint: "/expenses",
+    },
+  },
+  StockOut: {
+    Create: {
+      identifier: "AddStockOut",
+      method: API_METHODS.PUT,
+      endpoint: "/stock_out",
+    },
+    Update: {
+      identifier: "UpdatStockOut",
+      method: API_METHODS.PATCH,
+      endpoint: "/stock_out",
+    },
+    Get: {
+      identifier: "GetPStockOut",
+      method: API_METHODS.GET,
+      endpoint: "/stock_out",
+    },
+    GetAll: {
+      identifier: "GetAllStockOut",
+      method: API_METHODS.POST,
+      endpoint: "/stock_out",
+    },
+    Delete: {
+      identifier: "DeleteStockOut",
+      method: API_METHODS.DELETE,
+      endpoint: "/stock_out",
     },
   },
 };

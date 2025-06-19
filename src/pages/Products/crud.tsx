@@ -6,7 +6,6 @@ import {
   getApiRouteVariant,
 } from "../../helpers/Common_functions";
 import { Input, Select, Switch, Tag } from "antd";
-import { ApiRequest } from "../../services/api/apiService";
 import { dynamic_request, useDynamicSelector } from "../../services/redux";
 import { useDispatch } from "react-redux";
 import { Dispatch } from "redux";

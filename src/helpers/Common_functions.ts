@@ -115,3 +115,12 @@ export const getApiRouteExpenses = (action: keyof typeof API_ROUTES.Expenses) =>
   }
   return route;
 };
+
+export const getApiRouteStockOut = (action: keyof typeof API_ROUTES.StockOut) => {
+  const route = API_ROUTES?.StockOut?.[action];
+  if (!route) {
+    console.error(`API_ROUTES.StockOut.${action} is undefined.`);
+    throw new Error(`API route for StockOut.${action} is not defined.`);
+  }
+  return route;
+};

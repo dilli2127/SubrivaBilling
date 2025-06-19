@@ -14,6 +14,7 @@ import {
   getApiRouteRetailBill,
   getApiRoutePaymentHistory,
   getApiRouteExpenses,
+  getApiRouteStockOut,
 } from "../../helpers/Common_functions";
 
 // Define supported actions
@@ -92,6 +93,7 @@ export const useApiActions = () => {
     CustomerApi: createFetcher<Action>(getApiRouteCustomer)(dispatch),
     SalesRecord: createFetcher<Action>(getApiRouteRetailBill)(dispatch),
     PaymentHistory: createFetcher<Action>(getApiRoutePaymentHistory)(dispatch),
-    Expenses: createFetcher<Action>(getApiRouteExpenses)(dispatch),
+    ExpensesApi: createFetcher<Action>(getApiRouteExpenses)(dispatch),
+    StockOutApi: createFetcher<Action>(getApiRouteStockOut)(dispatch),
   };
 };

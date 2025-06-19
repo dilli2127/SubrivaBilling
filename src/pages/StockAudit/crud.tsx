@@ -76,6 +76,14 @@ const StockAudit = () => {
         <InputNumber min={1} placeholder="e.g., 10" style={{ width: "100%" }} />
       ),
     },
+     {
+      label: "Available Quantity",
+      name: "available_quantity",
+      rules: [{ required: true, message: "Enter available quantity!" }],
+      component: (
+        <InputNumber min={1} placeholder="e.g., 10" style={{ width: "100%" }} />
+      ),
+    },
     {
       label: "Buying Price (per unit)",
       name: "buy_price",
