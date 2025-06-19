@@ -85,7 +85,6 @@ const BillListPage = () => {
   };
 
   const handlePrint = (record: any) => {
-    console.log("record",record)
     const formattedBill = {
       ...record,
     };

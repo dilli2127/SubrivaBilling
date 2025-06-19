@@ -38,7 +38,6 @@ const BillViewModal: React.FC<BillViewModalProps> = ({
     const numAmount = Number(amount) || 0;
     return numAmount.toFixed(2);
   };
-console.log("billData",billData)
   const shopDetails = {
     name: 'Focuz Medicals',
     address: '123 MG Road, Bangalore, Karnataka - 560001',
@@ -228,7 +227,6 @@ console.log("billData",billData)
             <Text strong>Payment Mode:</Text> {billData.payment_mode}
           </div>
         </div>
-console.log("billData",billData)
         <Table
           dataSource={billData.Items}
           columns={columns}

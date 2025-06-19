@@ -38,8 +38,6 @@ const BillItemsTable: React.FC<BillItemsTableProps> = ({
   discount_value,
   isPartiallyPaid,
   paid_amount,
-  isGstIncluded,
-  isRetail,
   discount,
   discountType,
 }) => {
