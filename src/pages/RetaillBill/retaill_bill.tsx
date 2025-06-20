@@ -39,8 +39,13 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
   const updateRoute = getApiRouteRetailBill("Update");
 
   const dispatch: Dispatch<any> = useDispatch();
-  const { ProductsApi, StockAuditApi, CustomerApi, SalesRecord ,InvoiceNumberApi} =
-    useApiActions();
+  const {
+    ProductsApi,
+    StockAuditApi,
+    CustomerApi,
+    SalesRecord,
+    InvoiceNumberApi,
+  } = useApiActions();
 
   interface DataSourceItem {
     key: number;
@@ -86,7 +91,7 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
   const { items: createItems, error: createError } = useDynamicSelector(
     addRoute.identifier
   );
-  
+
   const { items: updateItems, error: updateError } = useDynamicSelector(
     updateRoute.identifier
   );
@@ -96,7 +101,7 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
   const { items: invoice_no_item } = useDynamicSelector(
     InvoiceNumberApi.getIdentifier("GetAll")
   );
-  let invoice_no_auto_generated = invoice_no_item?.result?.invoice_no
+  let invoice_no_auto_generated = invoice_no_item?.result?.invoice_no;
   const { items: stockAuditList } = useDynamicSelector(
     StockAuditApi.getIdentifier("GetAll")
   );
@@ -224,14 +229,22 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
   });
 
   const handleSubmit = async (values: any) => {
-   debugger
+    debugger;
     // Validation: Prevent submission if any item's stock is not available
-    const unavailableStockItem = billCalc.itemsWithTax.find(item => {
-      const stock = stockAuditList?.result?.find((s: any) => s._id === item.stock);
-      return stock && stock.available_quantity === 0 && stock.available_loose_quantity === 0;
+    const unavailableStockItem = billCalc.itemsWithTax.find((item) => {
+      const stock = stockAuditList?.result?.find(
+        (s: any) => s._id === item.stock
+      );
+      return (
+        stock &&
+        stock.available_quantity === 0 &&
+        stock.available_loose_quantity === 0
+      );
     });
     if (unavailableStockItem) {
-      message.error('Cannot submit bill: One or more items have no available stock.');
+      message.error(
+        "Cannot submit bill: One or more items have no available stock."
+      );
       return;
     }
 
@@ -346,7 +359,30 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
     if (createError) handleApiResponse("create", false);
   }, [createItems, createError]);
 
+  const validateRows = () => {
+    for (let item of dataSource) {
+      const hasQty = Number(item.qty) > 0;
+      const hasLooseQty = Number(item.loose_qty) > 0;
+
+      if (
+        !item.product ||
+        !item.stock ||
+        (!hasQty && !hasLooseQty) ||
+        !item.price
+      ) {
+        return false;
+      }
+    }
+    return true;
+  };
+
   const handleAdd = () => {
+    if (!validateRows()) {
+      message.warning(
+        "Please fill all required fields before adding a new item."
+      );
+      return;
+    }
     setDataSource([
       ...dataSource,
       {
@@ -404,8 +440,8 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
   useEffect(() => {
     ProductsApi("GetAll");
     CustomerApi("GetAll");
-    InvoiceNumberApi("GetAll")
-  }, [ProductsApi, CustomerApi,InvoiceNumberApi]);
+    InvoiceNumberApi("GetAll");
+  }, [ProductsApi, CustomerApi, InvoiceNumberApi]);
 
   useEffect(() => {
     if (updateItems?.statusCode === "200") handleApiResponse("update", true);

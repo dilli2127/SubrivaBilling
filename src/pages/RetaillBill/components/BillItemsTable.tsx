@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Table, Button, InputNumber, Select, Tooltip } from "antd";
 import { DeleteOutlined } from "@ant-design/icons";
 
@@ -263,6 +263,19 @@ const BillItemsTable: React.FC<BillItemsTableProps> = ({
       ),
     },
   ];
+  
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.shiftKey && e.key.toLowerCase() === "a") {
+        e.preventDefault();
+        onAdd(); // use the new validated add
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [dataSource]);
+  
+  
   return (
     <Table
       dataSource={dataSource}
