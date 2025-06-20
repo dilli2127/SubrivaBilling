@@ -318,7 +318,10 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
         };
         setCurrentBill(formattedBill);
         setBillViewVisible(true);
-        InvoiceNumberApi("Create")
+        InvoiceNumberApi("Create");
+        setTimeout(() => {
+          InvoiceNumberApi("GetAll");
+        }, 500);
         // Reset form and data after successful submission
         form.resetFields();
         setDataSource([

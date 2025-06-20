@@ -217,7 +217,7 @@ const BillItemsTable: React.FC<BillItemsTableProps> = ({
           (selectedStock?.available_loose_quantity || 0) +
           (selectedStock?.available_quantity || 0) * packSize;
           const disableLooseQty =
-          selectedStock && selectedStock.totalLooseAvailable === 0;
+          selectedStock && selectedStock?.totalLooseAvailable === 0 || selectedStock?.available_loose_quantity === 0;
         return (
           <InputNumber
             min={0}
