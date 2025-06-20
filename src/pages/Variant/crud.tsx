@@ -1,9 +1,15 @@
-import React from "react";
+import React, { useEffect } from "react";
 import CrudModule from "../../components/common/CrudModule";
 import { getApiRouteVariant } from "../../helpers/Common_functions";
 import { Input, Select } from "antd";
 import { Option } from "antd/es/mentions";
+import { useApiActions } from "../../services/api/useApiActions";
+import { useDynamicSelector } from "../../services/redux";
 const VariantCrud = () => {
+  const { UnitsApi } = useApiActions();
+  const { items: unitItems, loading: unit_get_loading } = useDynamicSelector(
+    UnitsApi.getIdentifier("GetAll")
+  );
   const formItems = [
     {
       label: "Variant Name",
@@ -16,14 +22,17 @@ const VariantCrud = () => {
       name: "unit",
       rules: [{ required: true, message: "Please select unit" }],
       component: (
-        <Select placeholder="Select unit">
-          <Option value="tablet">Tablet</Option>
-          <Option value="kg">Kilogram (kg)</Option>
-          <Option value="g">Gram (g)</Option>
-          <Option value="l">Litre (L)</Option>
-          <Option value="ml">Millilitre (ml)</Option>
-          <Option value="pcs">Pieces (pcs)</Option>
-          <Option value="box">Box</Option>
+        <Select
+          placeholder="Select unit"
+          loading={unit_get_loading}
+          showSearch
+          allowClear
+        >
+          {(unitItems?.result || []).map((unit: any) => (
+            <Option key={unit._id} value={unit.unit_code}>
+              {unit.unit_name}
+            </Option>
+          ))}
         </Select>
       ),
     },
@@ -53,18 +62,6 @@ const VariantCrud = () => {
         />
       ),
     },
-    {
-      label: "Applicable Category",
-      name: "category",
-      rules: [{ required: true, message: "Please select category" }],
-      component: (
-        <Select placeholder="Select category">
-          <Option value="medical">Medical</Option>
-          <Option value="grocery">Grocery</Option>
-          <Option value="general">All Shops</Option>
-        </Select>
-      ),
-    },
   ];
   const columns = [
     { title: "Name", dataIndex: "variant_name", key: "variant_name" },
@@ -73,7 +70,9 @@ const VariantCrud = () => {
     { title: "Pack Size", dataIndex: "pack_size", key: "pack_size" },
     { title: "Pack Type", dataIndex: "pack_type", key: "pack_type" },
   ];
-
+  useEffect(() => {
+    UnitsApi("GetAll");
+  }, []);
   const apiRoutes = {
     get: getApiRouteVariant("GetAll"),
     create: getApiRouteVariant("Create"),
