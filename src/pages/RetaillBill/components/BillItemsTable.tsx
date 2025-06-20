@@ -189,7 +189,6 @@ const BillItemsTable: React.FC<BillItemsTableProps> = ({
           selectedStock &&
           selectedStock.available_quantity === 0 &&
           selectedStock.available_loose_quantity >= 0;
-          console.log("selectedStock",record.qty)
         return (
           <InputNumber
             min={0}
@@ -215,7 +214,7 @@ const BillItemsTable: React.FC<BillItemsTableProps> = ({
         const disableLooseQty =
           selectedStock && selectedStock.available_loose_quantity === 0;
         const packSize =
-          selectedStock?.ProductItem?.VariantItem?.pack_size || 1;
+          selectedStock?.ProductItem?.VariantItem?.pack_size;
         const totalLooseAvailable =
           (selectedStock?.available_loose_quantity || 0) +
           (selectedStock?.available_quantity || 0) * packSize;
@@ -263,7 +262,6 @@ const BillItemsTable: React.FC<BillItemsTableProps> = ({
       ),
     },
   ];
-
   return (
     <Table
       dataSource={dataSource}
