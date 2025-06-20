@@ -144,6 +144,7 @@ const StockCrudModule = ({
     if (finalData.mfg_date) {
       finalData.mfg_date = dayjs(finalData.mfg_date).format("YYYY-MM-DD");
     }
+    finalData.total_cost = values.buy_price * values.quantity
     if (initialValues?._id) {
       callBackServer(
         {

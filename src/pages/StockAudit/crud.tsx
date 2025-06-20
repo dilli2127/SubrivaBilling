@@ -102,7 +102,6 @@ const StockAudit = () => {
       label: "Total Cost",
       name: "total_cost",
       rules: [],
-      disabled: true,
       component: (
         <InputNumber
           placeholder="Auto-calculated"
