@@ -5,6 +5,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import routerData from './routerData';
 import { RouteConfig } from './types/routeConfig';
 import NotFound from '../pages/notFound';
+import GlobalShortcutsProvider from '../helpers/GlobalShortcutsProvider';
 
 const renderRoutes = (routes: RouteConfig[]) =>
 {
@@ -19,6 +20,7 @@ const AppRouter: React.FC = () =>
 {
   return (
     <Router>
+      <GlobalShortcutsProvider />
       <Routes>
         {renderRoutes(routerData)}
         <Route path="*" element={<NotFound />} />
