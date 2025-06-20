@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { Table, Button, InputNumber, Select, Tooltip } from "antd";
 import { DeleteOutlined } from "@ant-design/icons";
 
@@ -21,6 +21,7 @@ interface BillItemsTableProps {
   isRetail: boolean;
   discount: number;
   discountType: "percentage" | "amount";
+  firstTableCellRef?: React.RefObject<any>;
 }
 
 const BillItemsTable: React.FC<BillItemsTableProps> = ({
@@ -40,7 +41,67 @@ const BillItemsTable: React.FC<BillItemsTableProps> = ({
   paid_amount,
   discount,
   discountType,
+  firstTableCellRef,
 }) => {
+  // Define the editable columns in order
+  const editableColumns = ["product", "stock", "qty", "loose_qty", "price"];
+
+  // Create a 2D array of refs: rows x columns
+  const inputRefs = useRef<any[][]>([]);
+  if (inputRefs.current.length !== dataSource.length) {
+    inputRefs.current = dataSource.map(() => editableColumns.map(() => React.createRef()));
+  }
+
+  // Helper to focus a cell
+  const focusCell = (rowIdx: number, colIdx: number) => {
+    const ref = inputRefs.current?.[rowIdx]?.[colIdx];
+    if (ref && ref.current) {
+      // For Antd Select, focus() is on rc-select instance
+      if (ref.current.focus) {
+        ref.current.focus();
+      } else if (ref.current.input) {
+        ref.current.input.focus();
+      }
+    }
+  };
+
+  // Keydown handler for navigation
+  const handleCellKeyDown = (rowIdx: number, colIdx: number) => (e: React.KeyboardEvent) => {
+    if (["ArrowRight", "ArrowLeft", "ArrowUp", "ArrowDown"].includes(e.key)) {
+      e.preventDefault();
+      let nextRow = rowIdx;
+      let nextCol = colIdx;
+      if (e.key === "ArrowRight") {
+        if (colIdx < editableColumns.length - 1) {
+          nextCol++;
+        } else if (rowIdx < dataSource.length - 1) {
+          nextCol = 0;
+          nextRow++;
+        }
+      } else if (e.key === "ArrowLeft") {
+        if (colIdx > 0) {
+          nextCol--;
+        } else if (rowIdx > 0) {
+          nextCol = editableColumns.length - 1;
+          nextRow--;
+        }
+      } else if (e.key === "ArrowDown") {
+        if (rowIdx < dataSource.length - 1) {
+          nextRow++;
+        }
+      } else if (e.key === "ArrowUp") {
+        if (rowIdx > 0) {
+          nextRow--;
+        } else if (rowIdx === 0 && colIdx === 0 && firstTableCellRef && firstTableCellRef.current && firstTableCellRef.current.focusPrev) {
+          // Focus Payment Mode if ArrowUp on first cell
+          firstTableCellRef.current.focusPrev();
+          return;
+        }
+      }
+      focusCell(nextRow, nextCol);
+    }
+  };
+
   const columns = [
     {
       title: (
@@ -118,8 +179,12 @@ const BillItemsTable: React.FC<BillItemsTableProps> = ({
         <span style={{ color: "#1890ff", fontWeight: "bold" }}>Item Name</span>
       ),
       dataIndex: "product",
-      render: (_: any, record: any) => (
+      render: (_: any, record: any, rowIdx: number) => (
         <Select
+          ref={rowIdx === 0 ? (el => {
+            inputRefs.current[rowIdx][0].current = el;
+            if (firstTableCellRef) firstTableCellRef.current = el;
+          }) : inputRefs.current[rowIdx][0]}
           value={record.product}
           onChange={(productId) => {
             onChange(productId, record.key, "product");
@@ -127,6 +192,7 @@ const BillItemsTable: React.FC<BillItemsTableProps> = ({
             onChange(undefined, record.key, "loose_qty");
             onStockAuditFetch(productId);
           }}
+          onKeyDown={handleCellKeyDown(rowIdx, 0)}
           showSearch
           style={{ width: "100%" }}
           placeholder="Select Product"
@@ -152,11 +218,13 @@ const BillItemsTable: React.FC<BillItemsTableProps> = ({
         <span style={{ color: "#1890ff", fontWeight: "bold" }}>Stock</span>
       ),
       dataIndex: "stock",
-      width: 350,
-      render: (_: any, record: any) => (
+      width: 250,
+      render: (_: any, record: any, rowIdx: number) => (
         <Select
+          ref={inputRefs.current?.[rowIdx]?.[1]}
           value={record.stock}
           onChange={(value) => onChange(value, record.key, "stock")}
+          onKeyDown={handleCellKeyDown(rowIdx, 1)}
           showSearch
           style={{ width: "100%" }}
           placeholder="Select Stock"
@@ -181,7 +249,7 @@ const BillItemsTable: React.FC<BillItemsTableProps> = ({
       title: <span style={{ color: "#1890ff", fontWeight: "bold" }}>Qty</span>,
       dataIndex: "qty",
       width: 100,
-      render: (_: any, record: any) => {
+      render: (_: any, record: any, rowIdx: number) => {
         const selectedStock = stockAuditList?.result?.find(
           (s: any) => s._id === record.stock
         );
@@ -191,10 +259,12 @@ const BillItemsTable: React.FC<BillItemsTableProps> = ({
           selectedStock.available_loose_quantity >= 0;
         return (
           <InputNumber
+            ref={inputRefs.current?.[rowIdx]?.[2]}
             min={0}
             max={selectedStock?.available_quantity}
             value={record.qty}
             onChange={(value) => onChange(value, record.key, "qty")}
+            onKeyDown={handleCellKeyDown(rowIdx, 2)}
             style={{ width: "100%" }}
             disabled={disableQty}
           />
@@ -207,7 +277,7 @@ const BillItemsTable: React.FC<BillItemsTableProps> = ({
       ),
       dataIndex: "loose_qty",
       width: 100,
-      render: (_: any, record: any) => {
+      render: (_: any, record: any, rowIdx: number) => {
         const selectedStock = stockAuditList?.result?.find(
           (s: any) => s._id === record.stock
         );
@@ -221,10 +291,12 @@ const BillItemsTable: React.FC<BillItemsTableProps> = ({
             selectedStock?.available_loose_quantity === 0);
         return (
           <InputNumber
+            ref={inputRefs.current?.[rowIdx]?.[3]}
             min={0}
             max={totalLooseAvailable}
             value={record.loose_qty}
             onChange={(value) => onChange(value, record.key, "loose_qty")}
+            onKeyDown={handleCellKeyDown(rowIdx, 3)}
             style={{ width: "100%" }}
             disabled={disableLooseQty}
           />
@@ -237,11 +309,13 @@ const BillItemsTable: React.FC<BillItemsTableProps> = ({
       ),
       dataIndex: "price",
       width: 120,
-      render: (_: any, record: any) => (
+      render: (_: any, record: any, rowIdx: number) => (
         <InputNumber
+          ref={inputRefs.current?.[rowIdx]?.[4]}
           min={0}
           value={record.price}
           onChange={(value) => onChange(value, record.key, "price")}
+          onKeyDown={handleCellKeyDown(rowIdx, 4)}
           style={{ width: "100%" }}
           formatter={(value) =>
             `₹ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
