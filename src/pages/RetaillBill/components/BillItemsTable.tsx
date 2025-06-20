@@ -211,13 +211,14 @@ const BillItemsTable: React.FC<BillItemsTableProps> = ({
         const selectedStock = stockAuditList?.result?.find(
           (s: any) => s._id === record.stock
         );
-        const packSize =
-          selectedStock?.ProductItem?.VariantItem?.pack_size;
+        const packSize = selectedStock?.ProductItem?.VariantItem?.pack_size;
         const totalLooseAvailable =
           (selectedStock?.available_loose_quantity || 0) +
           (selectedStock?.available_quantity || 0) * packSize;
-          const disableLooseQty =
-          selectedStock && selectedStock?.totalLooseAvailable === 0 || selectedStock?.available_loose_quantity === 0;
+        const disableLooseQty =
+          (selectedStock && selectedStock?.totalLooseAvailable === 0) ||
+          (selectedStock?.available_quantity === 0 &&
+            selectedStock?.available_loose_quantity === 0);
         return (
           <InputNumber
             min={0}

@@ -1,6 +1,6 @@
-import React, { useRef } from 'react';
-import { Modal, Button, Table, Typography } from 'antd';
-import { PrinterOutlined } from '@ant-design/icons';
+import React, { useRef } from "react";
+import { Modal, Button, Table, Typography } from "antd";
+import { PrinterOutlined } from "@ant-design/icons";
 
 const { Title, Text } = Typography;
 
@@ -10,7 +10,7 @@ interface BillViewModalProps {
   billData: {
     invoice_no: string;
     date: string;
-    sub_total:number
+    sub_total: number;
     customerDetails: any;
     payment_mode: string;
     Items: any[];
@@ -22,8 +22,8 @@ interface BillViewModalProps {
     discount: number;
     discount_type: string;
     is_gst_included: boolean;
-    sale_type: 'retail' | 'wholesale';
-    value_of_goods:number
+    sale_type: "retail" | "wholesale";
+    value_of_goods: number;
   };
 }
 
@@ -33,54 +33,53 @@ const BillViewModal: React.FC<BillViewModalProps> = ({
   billData,
 }) => {
   const printFrameRef = useRef<HTMLIFrameElement>(null);
-
   const formatAmount = (amount: any) => {
     const numAmount = Number(amount) || 0;
     return numAmount.toFixed(2);
   };
   const shopDetails = {
-    name: 'Focuz Medicals',
-    address: '123 MG Road, Bangalore, Karnataka - 560001',
-    gst: '29ABCDE1234F1Z5',
+    name: "Focuz Medicals",
+    address: "123 MG Road, Bangalore, Karnataka - 560001",
+    gst: "29ABCDE1234F1Z5",
   };
 
   const columns = [
     {
-      title: 'Item',
-      dataIndex: 'productItems',
-      key: 'name',
+      title: "Item",
+      dataIndex: "productItems",
+      key: "name",
       render: (_: any, record: any) => {
         const product = record.productItems;
-        if (!product) return '';
+        if (!product) return "";
         const variantName = product.VariantItem?.variant_name;
         return variantName ? `${product.name} - ${variantName}` : product.name;
       },
     },
     {
-      title: 'Qty',
-      dataIndex: 'qty',
-      key: 'qty',
+      title: "Qty",
+      dataIndex: "qty",
+      key: "qty",
       width: 100,
       render: (qty: any) => qty || 0,
     },
     {
-      title: 'Loose Qty',
-      dataIndex: 'loose_qty',
-      key: 'loose_qty',
+      title: "Loose Qty",
+      dataIndex: "loose_qty",
+      key: "loose_qty",
       width: 100,
       render: (loose_qty: any) => loose_qty || 0,
     },
     {
-      title: 'Price',
-      dataIndex: 'price',
-      key: 'price',
+      title: "Price",
+      dataIndex: "price",
+      key: "price",
       width: 120,
       render: (price: any) => `₹ ${formatAmount(price)}`,
     },
     {
-      title: 'Amount',
-      dataIndex: 'amount',
-      key: 'amount',
+      title: "Amount",
+      dataIndex: "amount",
+      key: "amount",
       width: 120,
       render: (amount: any) => `₹ ${formatAmount(amount)}`,
     },
@@ -116,11 +115,17 @@ const BillViewModal: React.FC<BillViewModalProps> = ({
           <div class="info-flex">
             <div>
               <p><strong>Invoice No:</strong> ${billData.invoice_no}</p>
-              <p><strong>Date:</strong> ${new Date(billData.date).toLocaleDateString()}</p>
+              <p><strong>Date:</strong> ${new Date(
+                billData.date
+              ).toLocaleDateString()}</p>
             </div>
             <div style="text-align: right;">
-              <p><strong>Customer:</strong> ${billData.customerDetails?.full_name || ''}</p>
-              <p><strong>Payment Mode:</strong> ${billData.payment_mode || ''}</p>
+              <p><strong>Customer:</strong> ${
+                billData.customerDetails?.full_name || ""
+              }</p>
+              <p><strong>Payment Mode:</strong> ${
+                billData.payment_mode || ""
+              }</p>
             </div>
           </div>
 
@@ -135,11 +140,15 @@ const BillViewModal: React.FC<BillViewModalProps> = ({
               </tr>
             </thead>
             <tbody>
-              ${billData.Items.map(item => {
+              ${billData.Items.map((item) => {
                 const product = item.productItems;
                 const itemName = product
-                  ? `${product.name}${product.VariantItem?.variant_name ? ` - ${product.VariantItem.variant_name}` : ''}`
-                  : '';
+                  ? `${product.name}${
+                      product.VariantItem?.variant_name
+                        ? ` - ${product.VariantItem.variant_name}`
+                        : ""
+                    }`
+                  : "";
                 return `
                   <tr>
                     <td>${itemName}</td>
@@ -149,22 +158,44 @@ const BillViewModal: React.FC<BillViewModalProps> = ({
                     <td>₹ ${formatAmount(item.amount)}</td>
                   </tr>
                 `;
-              }).join('')}
+              }).join("")}
             </tbody>
           </table>
 
           <div class="total">
             <p>Value of Goods: ₹ ${formatAmount(billData.value_of_goods)}</p>
-            ${billData.discount > 0 ? `
-              <p>Discount: ${billData.discount_type === 'percentage' ? billData.discount + '%' : '₹ ' + formatAmount(billData.discount)}</p>
-            ` : ''}
+            ${
+              billData.discount > 0
+                ? `
+              <p>Discount: ${
+                billData.discount_type === "percentage"
+                  ? billData.discount + "%"
+                  : "₹ " + formatAmount(billData.discount)
+              }</p>
+            `
+                : ""
+            }
             <p>Total GST: ₹ ${formatAmount(billData.total_gst)}</p>
-            <p><strong>${billData.sale_type === 'retail' ? 'Bill Value' : 'Invoice Value'}: ₹ ${formatAmount(billData.total_amount)}</strong></p>
-            ${billData.is_partially_paid ? `
+            <p><strong>${
+              billData.sale_type === "retail" ? "Bill Value" : "Invoice Value"
+            }: ₹ ${formatAmount(billData.total_amount)}</strong></p>
+            ${
+              billData.is_partially_paid
+                ? `
               <p>Paid Amount: ₹ ${formatAmount(billData.paid_amount)}</p>
-              <p>Remaining Amount: ₹ ${formatAmount(Number(billData.total_amount) - Number(billData.paid_amount))}</p>
-            ` : ''}
-            <p><strong>Payment Status:</strong> ${billData.is_paid ? 'Fully Paid' : billData.is_partially_paid ? 'Partially Paid' : 'Unpaid'}</p>
+              <p>Remaining Amount: ₹ ${formatAmount(
+                Number(billData.total_amount) - Number(billData.paid_amount)
+              )}</p>
+            `
+                : ""
+            }
+            <p><strong>Payment Status:</strong> ${
+              billData.is_paid
+                ? "Fully Paid"
+                : billData.is_partially_paid
+                ? "Partially Paid"
+                : "Unpaid"
+            }</p>
           </div>
 
           <div class="thank-you">
@@ -188,8 +219,8 @@ const BillViewModal: React.FC<BillViewModalProps> = ({
     iframe!.contentWindow!.document.write(content);
     iframe!.contentWindow!.document.close();
 
-    window.addEventListener('message', (event) => {
-      if (event.data === 'printComplete') {
+    window.addEventListener("message", (event) => {
+      if (event.data === "printComplete") {
         onClose();
       }
     });
@@ -198,12 +229,21 @@ const BillViewModal: React.FC<BillViewModalProps> = ({
   return (
     <>
       <Modal
-        title={<Title level={4} style={{ margin: 0, color: '#1890ff' }}>Sale Details</Title>}
+        title={
+          <Title level={4} style={{ margin: 0, color: "#1890ff" }}>
+            Sale Details
+          </Title>
+        }
         open={visible}
         onCancel={onClose}
         width={800}
         footer={[
-          <Button key="print" type="primary" icon={<PrinterOutlined />} onClick={handlePrint}>
+          <Button
+            key="print"
+            type="primary"
+            icon={<PrinterOutlined />}
+            onClick={handlePrint}
+          >
             Print Sale
           </Button>,
           <Button key="close" onClick={onClose}>
@@ -211,19 +251,33 @@ const BillViewModal: React.FC<BillViewModalProps> = ({
           </Button>,
         ]}
       >
-        <div style={{ textAlign: 'center', marginBottom: 16 }}>
-          <Title level={4} style={{ marginBottom: 0, color: '#1890ff' }}>{shopDetails.name}</Title>
-          <Text>{shopDetails.address}</Text><br />
-          <Text><strong>GST No:</strong> <Text code>{shopDetails.gst}</Text></Text>
+        <div style={{ textAlign: "center", marginBottom: 16 }}>
+          <Title level={4} style={{ marginBottom: 0, color: "#1890ff" }}>
+            {shopDetails.name}
+          </Title>
+          <Text>{shopDetails.address}</Text>
+          <br />
+          <Text>
+            <strong>GST No:</strong> <Text code>{shopDetails.gst}</Text>
+          </Text>
         </div>
 
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 20 }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            marginBottom: 20,
+          }}
+        >
           <div>
-            <Text strong>Invoice No:</Text> {billData.invoice_no}<br />
-            <Text strong>Date:</Text> {new Date(billData.date).toLocaleDateString()}
+            <Text strong>Invoice No:</Text> {billData.invoice_no}
+            <br />
+            <Text strong>Date:</Text>{" "}
+            {new Date(billData.date).toLocaleDateString()}
           </div>
-          <div style={{ textAlign: 'right' }}>
-            <Text strong>Customer:</Text> {billData.customerDetails?.full_name}<br />
+          <div style={{ textAlign: "right" }}>
+            <Text strong>Customer:</Text> {billData.customerDetails?.full_name}
+            <br />
             <Text strong>Payment Mode:</Text> {billData.payment_mode}
           </div>
         </div>
@@ -234,33 +288,68 @@ const BillViewModal: React.FC<BillViewModalProps> = ({
           bordered
           summary={() => (
             <Table.Summary.Row>
-              <Table.Summary.Cell index={0} colSpan={4}><Text strong>Total Amount:</Text></Table.Summary.Cell>
-              <Table.Summary.Cell index={1}><Text strong>₹ {formatAmount(billData.sub_total)}</Text></Table.Summary.Cell>
+              <Table.Summary.Cell index={0} colSpan={4}>
+                <Text strong>Total Amount:</Text>
+              </Table.Summary.Cell>
+              <Table.Summary.Cell index={1}>
+                <Text strong>₹ {formatAmount(billData.sub_total)}</Text>
+              </Table.Summary.Cell>
             </Table.Summary.Row>
           )}
         />
 
-        <div style={{ marginTop: 20, textAlign: 'right' }}>
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginBottom: '8px' }}>
+        <div style={{ marginTop: 20, textAlign: "right" }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "flex-end",
+              gap: "8px",
+              marginBottom: "8px",
+            }}
+          >
             <Text strong>Value of Goods:</Text>
             <Text>₹ {formatAmount(billData.value_of_goods)}</Text>
           </div>
           {billData.discount > 0 && (
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginBottom: '8px' }}>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "flex-end",
+                gap: "8px",
+                marginBottom: "8px",
+              }}
+            >
               <Text strong>Discount:</Text>
               <Text>
-                {billData.discount_type === 'percentage' 
-                  ? `${billData.discount}%` 
+                {billData.discount_type === "percentage"
+                  ? `${billData.discount}%`
                   : `₹ ${formatAmount(billData.discount)}`}
               </Text>
             </div>
           )}
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginBottom: '8px' }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "flex-end",
+              gap: "8px",
+              marginBottom: "8px",
+            }}
+          >
             <Text strong>Total GST:</Text>
             <Text>₹ {formatAmount(billData.total_gst)}</Text>
           </div>
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginBottom: '8px' }}>
-            <Text strong>{billData.sale_type === 'retail' ? 'Bill Value' : 'Invoice Value'}:</Text>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "flex-end",
+              gap: "8px",
+              marginBottom: "8px",
+            }}
+          >
+            <Text strong>
+              {billData.sale_type === "retail" ? "Bill Value" : "Invoice Value"}
+              :
+            </Text>
             <Text>₹ {formatAmount(billData.total_amount)}</Text>
           </div>
           <Text strong>Payment Status: </Text>
@@ -268,21 +357,34 @@ const BillViewModal: React.FC<BillViewModalProps> = ({
             <Text type="success">Fully Paid</Text>
           ) : billData.is_partially_paid ? (
             <>
-              <Text type="warning">Partially Paid</Text><br />
-              <Text>Paid Amount: ₹ {formatAmount(billData.paid_amount)}</Text><br />
-              <Text>Remaining Amount: ₹ {formatAmount(Number(billData.total_amount) - Number(billData.paid_amount))}</Text>
+              <Text type="warning">Partially Paid</Text>
+              <br />
+              <Text>Paid Amount: ₹ {formatAmount(billData.paid_amount)}</Text>
+              <br />
+              <Text>
+                Remaining Amount: ₹{" "}
+                {formatAmount(
+                  Number(billData.total_amount) - Number(billData.paid_amount)
+                )}
+              </Text>
             </>
           ) : (
             <Text type="danger">Unpaid</Text>
           )}
         </div>
 
-        <div style={{ textAlign: 'center', marginTop: 40 }}>
-          <Text style={{ color: '#1890ff', fontWeight: 500 }}>Thank you for shopping with us!</Text>
+        <div style={{ textAlign: "center", marginTop: 40 }}>
+          <Text style={{ color: "#1890ff", fontWeight: 500 }}>
+            Thank you for shopping with us!
+          </Text>
         </div>
       </Modal>
 
-      <iframe ref={printFrameRef} style={{ display: 'none' }} title="print-frame" />
+      <iframe
+        ref={printFrameRef}
+        style={{ display: "none" }}
+        title="print-frame"
+      />
     </>
   );
 };
