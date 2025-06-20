@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { getApiRouteStockAudit } from "../../helpers/Common_functions";
-import { DatePicker, Input, InputNumber, Select, Tag } from "antd";
+import { DatePicker, Input, InputNumber, Select, Tag, Tooltip } from "antd";
 
 import dayjs from "dayjs";
 import { Form } from "antd";
 import { useApiActions } from "../../services/api/useApiActions";
 import { useDynamicSelector } from "../../services/redux";
 import StockCrudModule from "../../components/common/StockCrudModule";
+import { AppstoreAddOutlined, BarcodeOutlined, CalendarOutlined, DollarCircleOutlined, TagsOutlined } from "@ant-design/icons";
 
 const { Option } = Select;
 
@@ -76,7 +77,7 @@ const StockAudit = () => {
         <InputNumber min={1} placeholder="e.g., 10" style={{ width: "100%" }} />
       ),
     },
-     {
+    {
       label: "Available Quantity",
       name: "available_quantity",
       rules: [{ required: true, message: "Enter available quantity!" }],
@@ -236,110 +237,122 @@ const StockAudit = () => {
 
   const columns = [
     {
-      title: "Invoice ID",
+      title: "🧾 Invoice ID",
       dataIndex: "invoice_id",
       key: "invoice_id",
+      render: (text:string) => <Tag color="blue">{text}</Tag>,
     },
     {
       title: "Product",
-      dataIndex: "product_name",
       key: "product_name",
-      render: (_: any, record: any) =>
-        `${record.ProductItem?.name} - ${record.ProductItem?.VariantItem?.variant_name}`,
+      render: (_:any, record:any) => (
+        <span>
+          <strong>{record.ProductItem?.name}</strong>
+          <br />
+          <small style={{ color: "#888" }}>
+            {record.ProductItem?.VariantItem?.variant_name || "-"}
+          </small>
+        </span>
+      ),
     },
     {
-      title: "Variant",
-      dataIndex: "variant_name",
-      key: "variant_name",
-      render: (_: any, record: any) =>
-        record.ProductItem?.VariantItem?.variant_name || "-",
-    },
-    {
-      title: "Quantity",
+      title: "Qty (Buyed)",
       dataIndex: "quantity",
       key: "quantity",
+      render: (qty:number) => (
+        <Tag color="cyan">
+          <AppstoreAddOutlined /> {qty}
+        </Tag>
+      ),
     },
     {
       title: "Buy Price",
       dataIndex: "buy_price",
       key: "buy_price",
-      render: (value: any) => {
+      render: (value:any) => {
         const num = Number(value);
-        return isNaN(num) ? "-" : `₹${num.toFixed(2)}`;
+        return isNaN(num) ? "-" : (
+          <span style={{ color: "#3f8600" }}>
+            <DollarCircleOutlined /> ₹{num.toFixed(2)}
+          </span>
+        );
       },
     },
     {
-      title: "Total Cost",
-      dataIndex: "total_cost",
-      key: "total_cost",
-      render: (value: any) => {
-        const num = Number(value);
-        return isNaN(num) ? "-" : `₹${num.toFixed(2)}`;
+      title: "Avail Qty",
+      key: "available_quantity",
+      render: (_:any, record:any) => {
+        const qty = record.available_quantity || 0;
+        const loose = record.available_loose_quantity || 0;
+        return (
+          <Tag color="green">
+            <AppstoreAddOutlined /> {qty} + {loose}
+            <small style={{ marginLeft: 4, color: "#fff" }}>(loose)</small>
+          </Tag>
+        );
       },
     },
     {
       title: "Sell Price",
       dataIndex: "sell_price",
       key: "sell_price",
-      render: (value: any) => {
+      render: (value:any) => {
         const num = Number(value);
-        return isNaN(num) ? "-" : `₹${num.toFixed(2)}`;
+        return isNaN(num) ? "-" : (
+          <span style={{ color: "#d48806" }}>
+            <DollarCircleOutlined /> ₹{num.toFixed(2)}
+          </span>
+        );
       },
     },
-
     {
-      title: "Batch No",
+      title: "Batch",
       dataIndex: "batch_no",
       key: "batch_no",
+      render: (text:string) => (
+        <Tag color="volcano">
+          <BarcodeOutlined /> {text}
+        </Tag>
+      ),
     },
     {
       title: "MFG Date",
       dataIndex: "mfg_date",
       key: "mfg_date",
+      render: (value:any) =>
+        value ? (
+          <Tooltip title={dayjs(value).format("MMMM D, YYYY")}>
+            <CalendarOutlined /> {dayjs(value).format("DD-MM-YYYY")}
+          </Tooltip>
+        ) : (
+          "-"
+        ),
     },
     {
-      title: "Expiry Date",
+      title: "Expiry",
       dataIndex: "expiry_date",
       key: "expiry_date",
+      render: (value:any) =>
+        value ? (
+          <Tooltip title={dayjs(value).format("MMMM D, YYYY")}>
+            <TagsOutlined style={{ color: "red" }} />{" "}
+            {dayjs(value).format("DD-MM-YYYY")}
+          </Tooltip>
+        ) : (
+          "-"
+        ),
     },
-    // {
-    //   title: "Vendor",
-    //   dataIndex: "vendor_name",
-    //   key: "vendor_name",
-    // },
-    // {
-    //   title: "Buyed Date",
-    //   dataIndex: "buyed_date",
-    //   key: "buyed_date",
-    // },
-    // {
-    //   title: "Payment Status",
-    //   dataIndex: "payment_status",
-    //   key: "payment_status",
-    //   render: (status: string) =>
-    //     status.charAt(0).toUpperCase() + status.slice(1),
-    // },
-    // {
-    //   title: "Stock Type",
-    //   dataIndex: "stock_type",
-    //   key: "stock_type",
-    //   render: (type: string) => (type === "in" ? "Stock In" : "Stock Out"),
-    // },
-    // {
-    //   title: "Out Reason",
-    //   dataIndex: "out_reason",
-    //   key: "out_reason",
-    // },
-    // {
-    //   title: "Warehouse",
-    //   dataIndex: "location_name",
-    //   key: "location_name",
-    // },
-    // {
-    //   title: "Note",
-    //   dataIndex: "note",
-    //   key: "note",
-    // },
+    {
+      title: "Total Cost",
+      dataIndex: "total_cost",
+      key: "total_cost",
+      render: (value:number) => {
+        const num = Number(value);
+        return isNaN(num) ? "-" : (
+          <strong style={{ color: "#722ed1" }}>₹{num.toFixed(2)}</strong>
+        );
+      },
+    },
   ];
 
   const apiRoutes = {
