@@ -286,7 +286,7 @@ const StockAudit = () => {
         const loose = record.available_loose_quantity || 0;
         return (
           <Tag color="green">
-            <AppstoreAddOutlined /> {qty} + {loose}
+            <AppstoreAddOutlined /> {qty} + LQ-{loose}
             <small style={{ marginLeft: 4, color: "#fff" }}>(loose)</small>
           </Tag>
         );

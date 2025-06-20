@@ -5,10 +5,11 @@ import {
   getApiRouteProduct,
   getApiRouteVariant,
 } from "../../helpers/Common_functions";
-import { Input, Select, Switch, Tag } from "antd";
+import { Input, Select, Space, Switch, Tag } from "antd";
 import { dynamic_request, useDynamicSelector } from "../../services/redux";
 import { useDispatch } from "react-redux";
 import { Dispatch } from "redux";
+import { AppstoreOutlined, BarcodeOutlined, CheckCircleTwoTone, CloseCircleTwoTone, TagOutlined, TagsOutlined } from "@ant-design/icons";
 
 const { Option } = Select;
 
@@ -115,32 +116,66 @@ const ProductCrud = () => {
     },
   ];
 
-  const columns = [
-    { title: "Name", dataIndex: "name", key: "name" },
-    {
-      title: "Category",
-      dataIndex: "category",
-      key: "category",
-      render: (id: string) => categoryMap[id] || "-",
-    },
-    { title: "SKU", dataIndex: "sku", key: "sku" },
-    {
-      title: "Variant",
-      dataIndex: "variant",
-      key: "variant",
-      render: (id: string) => variantMap[id] || "-",
-    },
-    {
-      title: "Status",
-      dataIndex: "status",
-      key: "status",
-      render: (status: boolean) => (
-        <Tag color={status ? "green" : "volcano"}>
-          {status ? "Active" : "Inactive"}
+  
+const columns = [
+  {
+    title: "Name",
+    dataIndex: "name",
+    key: "name",
+    render: (text: string) => (
+      <Space>
+        <TagsOutlined style={{ color: "#1890ff" }} />
+        <strong>{text}</strong>
+      </Space>
+    ),
+  },
+  {
+    title: "Category",
+    dataIndex: "category",
+    key: "category",
+    render: (id: string) => (
+      <Tag icon={<AppstoreOutlined />} color="geekblue">
+        {categoryMap[id] || "-"}
+      </Tag>
+    ),
+  },
+  {
+    title: "SKU",
+    dataIndex: "sku",
+    key: "sku",
+    render: (sku: string) => (
+      <Space>
+        <BarcodeOutlined style={{ color: "#722ed1" }} />
+        <span>{sku || "-"}</span>
+      </Space>
+    ),
+  },
+  {
+    title: "Variant",
+    dataIndex: "variant",
+    key: "variant",
+    render: (id: string) => (
+      <Tag icon={<TagOutlined />} color="purple">
+        {variantMap[id] || "-"}
+      </Tag>
+    ),
+  },
+  {
+    title: "Status",
+    dataIndex: "status",
+    key: "status",
+    render: (status: boolean) =>
+      status ? (
+        <Tag icon={<CheckCircleTwoTone twoToneColor="#52c41a" />} color="success">
+          Active
+        </Tag>
+      ) : (
+        <Tag icon={<CloseCircleTwoTone twoToneColor="#ff4d4f" />} color="error">
+          Inactive
         </Tag>
       ),
-    },
-  ];
+  },
+];
 
   const apiRoutes = {
     get: getApiRouteProduct("GetAll"),

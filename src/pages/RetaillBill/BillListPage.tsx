@@ -13,6 +13,7 @@ import {
   Select,
   DatePicker,
   Result,
+  Tooltip,
 } from "antd";
 import {
   EyeOutlined,
@@ -20,6 +21,11 @@ import {
   PrinterOutlined,
   PlusOutlined,
   SearchOutlined,
+  DollarOutlined,
+  CreditCardOutlined,
+  UserOutlined,
+  CalendarOutlined,
+  FileTextOutlined,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
 import GlobalDrawer from "../../components/antd/GlobalDrawer";
@@ -114,69 +120,94 @@ const BillListPage = () => {
 
   const columns = [
     {
-      title: "Invoice No",
+      title: "Invoice",
       dataIndex: "invoice_no",
-      key: "invoiceNo",
-      render: (text: string) => <strong>{text}</strong>,
+      key: "invoice_no",
+      render: (text: string) => (
+        <Tag icon={<FileTextOutlined />} color="blue">
+          {text}
+        </Tag>
+      ),
     },
     {
       title: "Date",
       dataIndex: "date",
       key: "date",
-      render: (text: string) => dayjs(text).format("DD MMM YYYY"),
+      render: (text: string) => (
+        <Tooltip title={dayjs(text).format("MMMM D, YYYY")}>
+          <Tag icon={<CalendarOutlined />} color="purple">
+            {dayjs(text).format("DD MMM YY")}
+          </Tag>
+        </Tooltip>
+      ),
     },
     {
       title: "Customer",
       dataIndex: "customerDetails",
       key: "customerDetails",
       render: (customerDetails: any) => (
-        <>{`${customerDetails?.full_name} - ${customerDetails?.mobile}`}</>
+        <Space>
+          <UserOutlined />
+          <span>
+            <strong>{customerDetails?.full_name}</strong>
+            <br />
+            <small style={{ color: "#999" }}>{customerDetails?.mobile}</small>
+          </span>
+        </Space>
       ),
     },
     {
       title: "Payment Mode",
       dataIndex: "payment_mode",
-      key: "paymentMode",
+      key: "payment_mode",
       render: (mode: string) => {
         const color =
           mode === "cash" ? "green" : mode === "upi" ? "geekblue" : "orange";
-        return <Tag color={color}>{mode.toUpperCase()}</Tag>;
+        return (
+          <Tag icon={<CreditCardOutlined />} color={color}>
+            {mode.toUpperCase()}
+          </Tag>
+        );
       },
     },
     {
-      title: "Total Amount",
+      title: "Total",
       dataIndex: "total_amount",
       key: "total_amount",
-      render: (total_amount: any) => `₹ ${Number(total_amount).toFixed(2)}`,
+      render: (amount: number) => (
+        <Tag icon={<DollarOutlined />} color="gold">
+          ₹ {Number(amount).toFixed(2)}
+        </Tag>
+      ),
     },
     {
       title: "Actions",
       key: "actions",
       render: (_: any, record: any) => (
-        <Space>
-          <Button
-            type="link"
-            icon={<EyeOutlined />}
-            onClick={() => handleView(record)}
-          >
-            View
-          </Button>
-          <Button
-            type="link"
-            icon={<PrinterOutlined />}
-            onClick={() => handlePrint(record)}
-          >
-            Print
-          </Button>
+        <Space size="middle">
+          <Tooltip title="View Bill">
+            <Button
+              type="link"
+              icon={<EyeOutlined />}
+              onClick={() => handleView(record)}
+            />
+          </Tooltip>
+          <Tooltip title="Print">
+            <Button
+              type="link"
+              icon={<PrinterOutlined />}
+              onClick={() => handlePrint(record)}
+            />
+          </Tooltip>
           <Popconfirm
             title="Are you sure to delete this bill?"
             onConfirm={() => handleDelete(record._id)}
             okText="Yes"
             cancelText="No"
           >
-            <Button type="link" icon={<DeleteOutlined />} danger>
-              Delete
-            </Button>
+            <Tooltip title="Delete">
+              <Button type="link" icon={<DeleteOutlined />} danger />
+            </Tooltip>
           </Popconfirm>
         </Space>
       ),

@@ -7,10 +7,13 @@ import {
   Tooltip,
   Select,
   Typography,
+  Space,
+  Tag,
 } from "antd";
 import {
   DeleteOutlined,
   EditOutlined,
+  HomeOutlined,
   MailOutlined,
   PhoneOutlined,
   UserOutlined,
@@ -61,27 +64,71 @@ const CustomerCrud: React.FC = () => {
   );
   const { loading, items } = useDynamicSelector(getRoute.identifier);
   const columns = [
-    { title: "Name", dataIndex: "full_name", key: "full_name" },
-    { title: "Email", dataIndex: "email", key: "email" },
-    { title: "Mobile", dataIndex: "mobile", key: "mobile" },
+    {
+      title: "Name",
+      dataIndex: "full_name",
+      key: "full_name",
+      render: (name: string) => (
+        <Tag icon={<UserOutlined />} color="geekblue">
+          {name}
+        </Tag>
+      ),
+    },
+    {
+      title: "Email",
+      dataIndex: "email",
+      key: "email",
+      render: (email: string) => (
+        <Space>
+          <MailOutlined style={{ color: "#13c2c2" }} />
+          <span>{email || "-"}</span>
+        </Space>
+      ),
+    },
+    {
+      title: "Mobile",
+      dataIndex: "mobile",
+      key: "mobile",
+      render: (mobile: string) => (
+        <Space>
+          <PhoneOutlined style={{ color: "#52c41a" }} />
+          <span>{mobile || "-"}</span>
+        </Space>
+      ),
+    },
+    {
+      title: "Address",
+      dataIndex: "address",
+      key: "address",
+      render: (address: string) => (
+        <Space>
+          <HomeOutlined style={{ color: "#fa8c16" }} />
+          <span>{address || "-"}</span>
+        </Space>
+      ),
+    },
     {
       title: "Actions",
       key: "actions",
       render: (_: any, record: any) => (
-        <div style={{ display: "flex", gap: "10px" }}>
-          <Tooltip title="Edit">
-            <EditOutlined
-              style={{ cursor: "pointer", color: "#1890ff" }}
+        <Space>
+          <Tooltip title="Edit Customer">
+            <Button
+              type="text"
+              icon={<EditOutlined />}
               onClick={() => handleEdit(record)}
+              style={{ color: "#1890ff" }}
             />
           </Tooltip>
-          <Tooltip title="Delete">
-            <DeleteOutlined
-              style={{ cursor: "pointer", color: "red" }}
+          <Tooltip title="Delete Customer">
+            <Button
+              type="text"
+              danger
+              icon={<DeleteOutlined />}
               onClick={() => handleDelete(record)}
             />
           </Tooltip>
-        </div>
+        </Space>
       ),
     },
   ];
