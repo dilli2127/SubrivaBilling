@@ -290,7 +290,7 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
           customerDetails: customerList?.result?.find(
             (c: any) => c._id === createItems?.result?.customer_id
           ),
-          Items: dataSource.map((item) => {
+          Items: billCalc.itemsWithTax.map((item) => {
             const product = productList?.result?.find(
               (p: any) => p._id === item.product
             );
