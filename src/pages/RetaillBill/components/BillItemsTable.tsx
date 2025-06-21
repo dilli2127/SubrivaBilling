@@ -114,10 +114,14 @@ const BillItemsTable: React.FC<BillItemsTableProps> = ({
         const selectedStock = stockAuditList?.result?.find(
           (s: any) => s._id === record.stock
         );
+        const currentDate = new Date();
+        const isStockExpired = selectedStock && new Date(selectedStock.expiry_date) <= currentDate;
         const isStockUnavailable =
           selectedStock &&
           selectedStock.available_quantity === 0 &&
           selectedStock.available_loose_quantity === 0;
+        const cannotAdd = isStockUnavailable || isStockExpired;
+        
         return (
           <div style={{ display: "flex", gap: 8 }}>
             {dataSource.length > 1 && (
@@ -129,8 +133,8 @@ const BillItemsTable: React.FC<BillItemsTableProps> = ({
               />
             )}
             {index === dataSource.length - 1 &&
-              (isStockUnavailable ? (
-                <Tooltip title="Cannot add item: Stock and loose quantity are both zero.">
+              (cannotAdd ? (
+                <Tooltip title={isStockExpired ? "Cannot add item: Stock has expired." : "Cannot add item: Stock and loose quantity are both zero."}>
                   <Button
                     type="dashed"
                     disabled
@@ -219,31 +223,39 @@ const BillItemsTable: React.FC<BillItemsTableProps> = ({
       ),
       dataIndex: "stock",
       width: 250,
-      render: (_: any, record: any, rowIdx: number) => (
-        <Select
-          ref={inputRefs.current?.[rowIdx]?.[1]}
-          value={record.stock}
-          onChange={(value) => onChange(value, record.key, "stock")}
-          onKeyDown={handleCellKeyDown(rowIdx, 1)}
-          showSearch
-          style={{ width: "100%" }}
-          placeholder="Select Stock"
-          optionFilterProp="children"
-          allowClear
-          filterOption={(input, option) =>
-            String(option?.children)
-              .toLowerCase()
-              .indexOf(input.toLowerCase()) >= 0
-          }
-          dropdownStyle={{ maxHeight: 150, overflowY: "auto" }}
-        >
-          {stockAuditList?.result?.map((stockAudit: any) => (
-            <Select.Option key={stockAudit?._id} value={stockAudit?._id}>
-              {`B#${stockAudit.batch_no} | ₹ ${stockAudit.buy_price} | AQ: ${stockAudit.available_quantity} | LQ: ${stockAudit.available_loose_quantity}`}
-            </Select.Option>
-          ))}
-        </Select>
-      ),
+      render: (_: any, record: any, rowIdx: number) => {
+        const currentDate = new Date();
+        const validStockAudits = stockAuditList?.result?.filter((stockAudit: any) => {
+          const expiryDate = new Date(stockAudit.expiry_date);
+          return expiryDate > currentDate;
+        }) || [];
+
+        return (
+          <Select
+            ref={inputRefs.current?.[rowIdx]?.[1]}
+            value={record.stock}
+            onChange={(value) => onChange(value, record.key, "stock")}
+            onKeyDown={handleCellKeyDown(rowIdx, 1)}
+            showSearch
+            style={{ width: "100%" }}
+            placeholder="Select Stock"
+            optionFilterProp="children"
+            allowClear
+            filterOption={(input, option) =>
+              String(option?.children)
+                .toLowerCase()
+                .indexOf(input.toLowerCase()) >= 0
+            }
+            dropdownStyle={{ maxHeight: 150, overflowY: "auto" }}
+          >
+            {validStockAudits.map((stockAudit: any) => (
+              <Select.Option key={stockAudit?._id} value={stockAudit?._id}>
+                {`B#${stockAudit.batch_no} | ₹ ${stockAudit.buy_price} | AQ: ${stockAudit.available_quantity} | LQ: ${stockAudit.available_loose_quantity} | Exp: ${new Date(stockAudit.expiry_date).toLocaleDateString()}`}
+              </Select.Option>
+            ))}
+          </Select>
+        );
+      },
     },
     {
       title: <span style={{ color: "#1890ff", fontWeight: "bold" }}>Qty</span>,
