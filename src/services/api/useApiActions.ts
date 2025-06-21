@@ -17,10 +17,13 @@ import {
   getApiRouteStockOut,
   getApiRouteInvoiceNumber,
   getApiRouteDashBoard,
+  getApiRouteStockAvailable,
 } from "../../helpers/Common_functions";
 
 // Define supported actions
 type Action = "GetAll" | "Create" | "Update" | "Delete";
+type DashboardAction = "GetCount" | "SalesChartData" | "PurchaseChartData";
+type StockAction = "GetProductStockCount";
 
 // Define the structure of a route
 type ApiRoute = {
@@ -98,6 +101,7 @@ export const useApiActions = () => {
     ExpensesApi: createFetcher<Action>(getApiRouteExpenses)(dispatch),
     StockOutApi: createFetcher<Action>(getApiRouteStockOut)(dispatch),
     InvoiceNumberApi:createFetcher<Action>(getApiRouteInvoiceNumber)(dispatch),
-    // DashBoard:createFetcher<Action>(getApiRouteDashBoard)(dispatch)
+    DashBoard:createFetcher<DashboardAction>(getApiRouteDashBoard)(dispatch),
+    StockAvailable:createFetcher<StockAction>(getApiRouteStockAvailable)(dispatch)
   };
 };

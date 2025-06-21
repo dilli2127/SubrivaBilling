@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { Table, TableProps } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import './GlobalTable.css'; // Optional for custom styles
@@ -45,4 +45,4 @@ function GlobalTable<T extends object>({
   );
 }
 
-export default GlobalTable;
+export default memo(GlobalTable);
