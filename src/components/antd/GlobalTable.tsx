@@ -39,6 +39,7 @@ function GlobalTable<T extends object>({
         }}
         className="custom-table"
         {...rest}
+        scroll={{ x: 'max-content' }}
       />
     </div>
   );

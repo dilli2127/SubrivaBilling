@@ -48,8 +48,8 @@ export const menuItems = [
     icon: <FileTextOutlined />,
     children: [
       {
-        key: "stock-audit",
-        label: "Stock Audit",
+        key: "stock-in",
+        label: "Stock In",
         icon: <PlusCircleOutlined />,
         path: "/stock_audit",
       },
@@ -58,6 +58,12 @@ export const menuItems = [
         label: "Stock Out",
         icon: <PlusCircleOutlined />,
         path: "/stock_out",
+      },
+      {
+        key: "stock-available",
+        label: "Stock Available",
+        icon: <PlusCircleOutlined />,
+        path: "/stock_available",
       },
     ],
   },

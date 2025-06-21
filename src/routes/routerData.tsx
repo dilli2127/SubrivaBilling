@@ -19,6 +19,7 @@ const StockAudit = lazy(() => import("../pages/StockAudit/crud"));
 const VendorCrud = lazy(() => import("../pages/Vendor/crud"));
 const Warehouse = lazy(() => import("../pages/Warehouse/crud"));
 const StockOutCrud = lazy(() => import("../pages/StockOut/crud"));
+const StockAvailable = lazy(() => import("../pages/ProductStocks/List"));
 
 const routerData: RouteConfig[] = [
   {
@@ -171,6 +172,16 @@ const routerData: RouteConfig[] = [
         element: (
           <Suspense fallback={<Loader />}>
             <StockAudit />
+          </Suspense>
+        ),
+        children: [],
+      },
+      {
+        key: "stock_available",
+        path: "stock_available",
+        element: (
+          <Suspense fallback={<Loader />}>
+            <StockAvailable />
           </Suspense>
         ),
         children: [],

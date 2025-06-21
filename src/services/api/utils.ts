@@ -453,7 +453,7 @@ export const API_ROUTES = {
       endpoint: "/invoice_numbers",
     },
   },
-  DashBoard:{
+  DashBoard: {
     GetCount: {
       identifier: "GetCount",
       method: API_METHODS.POST,
@@ -469,5 +469,12 @@ export const API_ROUTES = {
       method: API_METHODS.POST,
       endpoint: "/dashboard/purchased_chart",
     },
-  }
+  },
+  StockAvailable: {
+    GetProductStockCount: {
+      identifier: "GetCount",
+      method: API_METHODS.POST,
+      endpoint: "/product_stocks",
+    },
+  },
 };

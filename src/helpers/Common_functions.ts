@@ -142,3 +142,12 @@ export const getApiRouteDashBoard = (action: keyof typeof API_ROUTES.DashBoard) 
   }
   return route;
 };
+
+export const getApiRouteStockAvailable = (action: keyof typeof API_ROUTES.StockAvailable) => {
+  const route = API_ROUTES?.StockAvailable?.[action];
+  if (!route) {
+    console.error(`API_ROUTES.StockAvailable.${action} is undefined.`);
+    throw new Error(`API route for StockAvailable.${action} is not defined.`);
+  }
+  return route;
+};
