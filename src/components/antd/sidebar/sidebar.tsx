@@ -22,6 +22,12 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
   const [openKeys, setOpenKeys] = useState<string[]>([]);
 
   const navigate = useNavigate();
+  
+  // Get user data from sessionStorage
+  const userItem = sessionStorage.getItem("user")
+    ? JSON.parse(sessionStorage.getItem("user")!)
+    : null;
+
   const handleOpenChange = (keys: string[]) => {
     const latestOpenKey = keys.find((key) => !openKeys.includes(key));
     setOpenKeys(latestOpenKey ? [latestOpenKey] : []);
@@ -66,14 +72,21 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
         <h2 style={{ margin: 0, flex: 1, textAlign: "center" }}>
           Fresh Focuz Billing
         </h2>
-        <Button
-          icon={<LogoutOutlined />}
-          type="primary"
-          danger
-          onClick={showLogoutConfirm}
-        >
-          Logout
-        </Button>
+        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+          {userItem && (
+            <span style={{ fontSize: "14px", fontWeight: "500" }}>
+              Welcome, {(userItem.name || userItem.username)?.toUpperCase()}
+            </span>
+          )}
+          <Button
+            icon={<LogoutOutlined />}
+            type="primary"
+            danger
+            onClick={showLogoutConfirm}
+          >
+            Logout
+          </Button>
+        </div>
       </Header>
 
       <Layout>

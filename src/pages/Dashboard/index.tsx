@@ -46,19 +46,8 @@ const Dashboard: React.FC = () => {
 
   const { loading: sales_data_loading, items: SalesChartDataItems } =
     useDynamicSelector(SalesChartData.identifier);
-    const { loading: purchase_data_loading, items: purchaseData } =
+  const { loading: purchase_data_loading, items: purchaseData } =
     useDynamicSelector(PurchaseChartData.identifier);
-
-  
-
-  // const purchaseData = [
-  //   { date: "2025-06-11", amount: 7000 },
-  //   { date: "2025-06-12", amount: 5000 },
-  //   { date: "2025-06-13", amount: 8000 },
-  //   { date: "2025-06-14", amount: 6500 },
-  //   { date: "2025-06-15", amount: 9000 },
-  //   { date: today, amount: 7200 },
-  // ];
 
   const recentInvoices = [
     { invoice: "INV-0012", customer: "John", amount: 4500, status: "Paid" },
@@ -67,6 +56,7 @@ const Dashboard: React.FC = () => {
 
   const stockAlerts = [
     { item: "Paracetamol", quantity: 5 },
+    { item: "Amoxicillin", quantity: 2 },
     { item: "Amoxicillin", quantity: 2 },
   ];
 
@@ -83,7 +73,7 @@ const Dashboard: React.FC = () => {
     boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
   });
   const fetchData = useCallback(() => {
-    [dashboardCount, SalesChartData,PurchaseChartData].forEach((route) => {
+    [dashboardCount, SalesChartData, PurchaseChartData].forEach((route) => {
       dispatch(
         dynamic_request(
           { method: route.method, endpoint: route.endpoint, data: {} },

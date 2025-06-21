@@ -55,7 +55,7 @@ const Login: React.FC = () => {
       if (items?.result?.UserItem?.usertype === "admin") {
         navigate("/admin/einvite_crud");
       } else {
-        navigate("/");
+        navigate("/dashboard");
       }
     } else if (items?.statusCode && items.statusCode !== "200") {
         message.error(items?.message || "Login failed, please try again");
