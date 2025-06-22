@@ -1,6 +1,5 @@
 import React, { useEffect } from "react";
 import CrudModule from "../../components/common/CrudModule";
-import { getApiRouteVariant } from "../../helpers/Common_functions";
 import { Input, Select } from "antd";
 import { Option } from "antd/es/mentions";
 import { useApiActions } from "../../services/api/useApiActions";

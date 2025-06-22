@@ -1,10 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import CrudModule from "../../components/common/CrudModule";
-import {
-  getApiRouteCategory,
-  getApiRouteProduct,
-  getApiRouteVariant,
-} from "../../helpers/Common_functions";
+import { createApiRouteGetter } from "../../helpers/Common_functions";
 import { Input, Select, Space, Switch, Tag } from "antd";
 import { dynamic_request, useDynamicSelector } from "../../services/redux";
 import { useDispatch } from "react-redux";
@@ -29,6 +25,9 @@ type Category = {
 
 const ProductCrud = () => {
   const dispatch: Dispatch<any> = useDispatch();
+
+  const getApiRouteVariant = createApiRouteGetter("Variant");
+  const getApiRouteCategory = createApiRouteGetter("Category");
 
   const variantRoute = getApiRouteVariant("Get");
   const categoryRoute = getApiRouteCategory("Get");

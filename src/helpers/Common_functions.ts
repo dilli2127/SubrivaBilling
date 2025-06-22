@@ -34,41 +34,8 @@ export const createCrudOperations = <T extends keyof typeof API_ROUTES>(entityNa
   };
 };
 
-// Auto-generated CRUD operations for all entities
+// Auto-generated CRUD operations for all entities (minimal - only for fallback)
 export const CrudOperations = {
-  CmsImage: createCrudOperations("CmsImage"),
-  Customer: createCrudOperations("Customer"),
-  Unit: createCrudOperations("Unit"),
-  Variant: createCrudOperations("Variant"),
-  Category: createCrudOperations("Category"),
-  Product: createCrudOperations("Product"),
-  Vendor: createCrudOperations("Vendor"),
-  Warehouse: createCrudOperations("Warehouse"),
-  StockAudit: createCrudOperations("StockAudit"),
-  SalesRecord: createCrudOperations("SalesRecord"),
-  PaymentHistory: createCrudOperations("PaymentHistory"),
-  Expenses: createCrudOperations("Expenses"),
-  StockOut: createCrudOperations("StockOut"),
-  InvoiceNumber: createCrudOperations("InvoiceNumber"),
-  Organisations: createCrudOperations("Organisations"),
   // Note: DashBoard and StockAvailable are handled specially in useApiActions
   // because they don't follow the standard CRUD pattern
 } as const;
-// Legacy individual functions (keeping for backward compatibility)
-export const getApiRouteCmsImage = createApiRouteGetter("CmsImage");
-export const getApiRouteCustomer = createApiRouteGetter("Customer");
-export const getApiRouteUnit = createApiRouteGetter("Unit");
-export const getApiRouteVariant = createApiRouteGetter("Variant");
-export const getApiRouteCategory = createApiRouteGetter("Category");
-export const getApiRouteProduct = createApiRouteGetter("Product");
-export const getApiRouteVendor = createApiRouteGetter("Vendor");
-export const getApiRouteWareHouse = createApiRouteGetter("Warehouse");
-export const getApiRouteStockAudit = createApiRouteGetter("StockAudit");
-export const getApiRouteRetailBill = createApiRouteGetter("SalesRecord");
-export const getApiRoutePaymentHistory = createApiRouteGetter("PaymentHistory");
-export const getApiRouteExpenses = createApiRouteGetter("Expenses");
-export const getApiRouteStockOut = createApiRouteGetter("StockOut");
-export const getApiRouteInvoiceNumber = createApiRouteGetter("InvoiceNumber");
-export const getApiRouteDashBoard = createApiRouteGetter("DashBoard");
-export const getApiRouteStockAvailable = createApiRouteGetter("StockAvailable");
-export const getApiRouteOrganisations = createApiRouteGetter("Organisations");

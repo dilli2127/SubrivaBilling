@@ -1,10 +1,5 @@
 import React from "react";
 import CrudModule from "../../components/common/CrudModule";
-import {
-  getApiRouteExpenses,
-  getApiRoutePaymentHistory,
-  getApiRouteVariant,
-} from "../../helpers/Common_functions";
 import { DatePicker, Input, InputNumber, Select } from "antd";
 import { Option } from "antd/es/mentions";
 import {

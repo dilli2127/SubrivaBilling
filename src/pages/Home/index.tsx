@@ -3,9 +3,10 @@ import { ApiRequest } from "../../services/api/apiService";
 import { dynamic_request, useDynamicSelector } from "../../services/redux";
 import { useDispatch } from "react-redux";
 import { Dispatch } from "redux";
-import { getApiRouteCmsImage } from "../../helpers/Common_functions";
+import { createApiRouteGetter } from "../../helpers/Common_functions";
 
 const LandingBanner: React.FC = () => {
+  const getApiRouteCmsImage = createApiRouteGetter("CmsImage");
   const getImageRoute = getApiRouteCmsImage("GetAll");
   const { loading, items } = useDynamicSelector(getImageRoute.identifier);
   const dispatch: Dispatch<any> = useDispatch();

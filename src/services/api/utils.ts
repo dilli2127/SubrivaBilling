@@ -138,5 +138,4 @@ export const API_ROUTES = {
   StockOut: createCrudRoutes("/stock_out", "StockOut"),
   InvoiceNumber: createCrudRoutes("/invoice_numbers", "InvoiceNumber"),
   Organisations: createCrudRoutes("/organisations", "Organisations"),
- 
 };

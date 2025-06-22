@@ -27,7 +27,7 @@ import {
   dynamic_request,
   useDynamicSelector,
 } from "../../services/redux";
-import { getApiRouteCustomer, showToast } from "../../helpers/Common_functions";
+import { createApiRouteGetter, showToast } from "../../helpers/Common_functions";
 import { API_ROUTES } from "../../services/api/utils";
 import GlobalDrawer from "../../components/antd/GlobalDrawer";
 import GlobalTable from "../../components/antd/GlobalTable";
@@ -35,6 +35,7 @@ const { Title } = Typography;
 const formColumns = 2;
 const { Option } = Select;
 const CustomerCrud: React.FC = () => {
+  const getApiRouteCustomer = createApiRouteGetter("Customer");
   const getRoute = getApiRouteCustomer("GetAll");
   const addRoute = getApiRouteCustomer("Create");
   const updateRoute = getApiRouteCustomer("Update");

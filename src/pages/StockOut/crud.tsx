@@ -1,6 +1,5 @@
 import React, { useEffect } from "react";
 import CrudModule from "../../components/common/CrudModule";
-import { getApiRouteStockOut } from "../../helpers/Common_functions";
 import { DatePicker, Input, InputNumber, Select } from "antd";
 import { useApiActions } from "../../services/api/useApiActions";
 import { useDynamicSelector } from "../../services/redux";

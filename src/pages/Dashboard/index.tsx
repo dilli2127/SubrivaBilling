@@ -27,16 +27,17 @@ import {
   BarChart,
   Bar,
 } from "recharts";
-import { getApiRouteDashBoard } from "../../helpers/Common_functions";
 import { useDispatch } from "react-redux";
 import { Dispatch } from "redux";
 import { dynamic_request, useDynamicSelector } from "../../services/redux";
+import { createApiRouteGetter } from "../../helpers/Common_functions";
 
 const { Title, Text } = Typography;
 
 const Dashboard: React.FC = () => {
   const dispatch: Dispatch<any> = useDispatch();
   const today = new Date().toLocaleDateString();
+  const getApiRouteDashBoard = createApiRouteGetter("DashBoard");
   const dashboardCount = getApiRouteDashBoard("GetCount");
   const SalesChartData = getApiRouteDashBoard("SalesChartData");
   const PurchaseChartData = getApiRouteDashBoard("PurchaseChartData");
@@ -100,7 +101,7 @@ const Dashboard: React.FC = () => {
             <Space direction="vertical" align="center">
               <DollarOutlined style={{ fontSize: 32, color: "#fff" }} />
               <Title level={5} style={{ color: "#fff", margin: 0 }}>
-                Today’s Sale
+                Today's Sale
               </Title>
               <Text strong style={{ fontSize: 20, color: "#fff" }}>
                 {DashBoardItems?.result?.todaysSales}

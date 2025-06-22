@@ -1,64 +1,183 @@
-import React, { useEffect } from "react";
-import { useDispatch } from "react-redux";
-import { useDynamicSelector } from "../../services/redux";
-import { getEntityApiRoutes } from "../../helpers/CrudFactory";
-import { Table, Button, Space, Tag } from "antd";
-import { EyeOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
+import React, { useEffect, useState } from "react";
+import {
+  Table,
+  Button,
+  Space,
+  Popconfirm,
+  message,
+  Tag,
+  Typography,
+  Form,
+  Input,
+  InputNumber,
+  Select,
+  DatePicker,
+  Result,
+  Tooltip,
+} from "antd";
+import {
+  EyeOutlined,
+  DeleteOutlined,
+  PrinterOutlined,
+  PlusOutlined,
+  SearchOutlined,
+  DollarOutlined,
+  CreditCardOutlined,
+  UserOutlined,
+  CalendarOutlined,
+  FileTextOutlined,
+} from "@ant-design/icons";
 import dayjs from "dayjs";
+import GlobalDrawer from "../../components/antd/GlobalDrawer";
+import { useApiActions } from "../../services/api/useApiActions";
+import { useDynamicSelector } from "../../services/redux";
+import RetailBillingTable from "./retaill_bill";
+import BillViewModal from "./components/BillViewModal";
+import GlobalTable from "../../components/antd/GlobalTable";
+import { handleApiResponse } from "../../components/common/handleApiResponse";
+
+const { Title } = Typography;
+const { Option } = Select;
 
 const BillListPage = () => {
-  const dispatch = useDispatch();
-  
-  // 🎯 Use the new automated system
-  const SalesRecordApi = getEntityApiRoutes("SalesRecord");
-  
-  const { items: RetailBillList, loading } = useDynamicSelector(
-    SalesRecordApi.get.identifier
+  const { getEntityApi } = useApiActions();
+  const SalesRecord = getEntityApi("SalesRecord");
+  const { items: SalesRecordList, loading } = useDynamicSelector(
+    SalesRecord.getIdentifier("GetAll")
+  );
+  const { items: deleteItems, loading: deleteLoading } = useDynamicSelector(
+    SalesRecord.getIdentifier("GetAll")
   );
 
-  useEffect(() => {
-    // Fetch all sales records
-    dispatch({
-      type: "dynamic_request",
-      payload: {
-        method: SalesRecordApi.get.method,
-        endpoint: SalesRecordApi.get.endpoint,
-        data: {},
-      },
-      meta: SalesRecordApi.get.identifier,
+  const [selectedBill, setSelectedBill] = useState<any>(null);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [billViewVisible, setBillViewVisible] = useState(false);
+  const [form] = Form.useForm();
+  const [searchText, setSearchText] = useState("");
+  const [pagination, setPagination] = useState({
+    current: 1,
+    pageSize: 10,
+  });
+
+  const handleDelete = async (id: string) => {
+    try {
+      await SalesRecord("Delete", {}, id);
+      const success = deleteItems?.statusCode === "200";
+      handleApiResponse({
+        action: "delete",
+        success,
+        title: "Sale",
+        getAllItems: () =>
+          SalesRecord("GetAll", {
+            pageNumber: pagination.current,
+            pageLimit: pagination.pageSize,
+          }),
+      });
+    } catch (error) {
+      handleApiResponse({
+        action: "delete",
+        success: false,
+        title: "Sale",
+      });
+    }
+  };
+
+  const handleView = (record: any) => {
+    setSelectedBill(record);
+    form.setFieldsValue({
+      ...record,
+      date: dayjs(record.date),
     });
-  }, [dispatch]);
+    setIsDrawerOpen(true);
+  };
+
+  const handlePrint = (record: any) => {
+    const formattedBill = {
+      ...record,
+    };
+
+    setSelectedBill(formattedBill);
+    setBillViewVisible(true);
+  };
+
+  const handleSearch = (value: string) => {
+    setSearchText(value);
+    setPagination({ ...pagination, current: 1 }); // Reset to first page on search
+    SalesRecord("GetAll", {
+      pageNumber: 1,
+      pageLimit: pagination.pageSize,
+      searchString: value,
+    });
+  };
+
+  const handlePaginationChange = (pageNumber: number, pageLimit: number) => {
+    setPagination({ current: pageNumber, pageSize: pageLimit });
+    SalesRecord("GetAll", {
+      pageNumber,
+      pageLimit,
+      searchString: searchText,
+    });
+  };
 
   const columns = [
     {
-      title: "Bill Number",
-      dataIndex: "bill_number",
-      key: "bill_number",
-    },
-    {
-      title: "Customer",
-      dataIndex: "customer_name",
-      key: "customer_name",
-    },
-    {
-      title: "Total Amount",
-      dataIndex: "total_amount",
-      key: "total_amount",
-      render: (amount: number) => `₹${amount?.toFixed(2) || 0}`,
+      title: "Invoice",
+      dataIndex: "invoice_no",
+      key: "invoice_no",
+      render: (text: string) => (
+        <Tag icon={<FileTextOutlined />} color="blue">
+          {text}
+        </Tag>
+      ),
     },
     {
       title: "Date",
-      dataIndex: "created_at",
-      key: "created_at",
-      render: (date: string) => dayjs(date).format("DD/MM/YYYY"),
+      dataIndex: "date",
+      key: "date",
+      render: (text: string) => (
+        <Tooltip title={dayjs(text).format("MMMM D, YYYY")}>
+          <Tag icon={<CalendarOutlined />} color="purple">
+            {dayjs(text).format("DD MMM YY")}
+          </Tag>
+        </Tooltip>
+      ),
     },
     {
-      title: "Status",
-      dataIndex: "status",
-      key: "status",
-      render: (status: string) => (
-        <Tag color={status === "paid" ? "green" : "orange"}>
-          {status?.toUpperCase() || "PENDING"}
+      title: "Customer",
+      dataIndex: "customerDetails",
+      key: "customerDetails",
+      render: (customerDetails: any) => (
+        <Space>
+          <UserOutlined />
+          <span>
+            <strong>{customerDetails?.full_name}</strong>
+            <br />
+            <small style={{ color: "#999" }}>{customerDetails?.mobile}</small>
+          </span>
+        </Space>
+      ),
+    },
+    {
+      title: "Payment Mode",
+      dataIndex: "payment_mode",
+      key: "payment_mode",
+      render: (mode: string) => {
+        const color =
+          mode === "cash" ? "green" : mode === "upi" ? "geekblue" : "orange";
+        return (
+          <Tag icon={<CreditCardOutlined />} color={color}>
+            {mode.toUpperCase()}
+          </Tag>
+        );
+      },
+    },
+    {
+      title: "Total",
+      dataIndex: "total_amount",
+      key: "total_amount",
+      render: (amount: number) => (
+        <Tag icon={<DollarOutlined />} color="gold">
+          ₹ {Number(amount).toFixed(2)}
         </Tag>
       ),
     },
@@ -66,64 +185,111 @@ const BillListPage = () => {
       title: "Actions",
       key: "actions",
       render: (_: any, record: any) => (
-        <Space>
-          <Button
-            type="primary"
-            icon={<EyeOutlined />}
-            size="small"
-            onClick={() => handleView(record)}
+        <Space size="middle">
+          <Tooltip title="View Bill">
+            <Button
+              type="link"
+              icon={<EyeOutlined />}
+              onClick={() => handleView(record)}
+            />
+          </Tooltip>
+          <Tooltip title="Print">
+            <Button
+              type="link"
+              icon={<PrinterOutlined />}
+              onClick={() => handlePrint(record)}
+            />
+          </Tooltip>
+          <Popconfirm
+            title="Are you sure to delete this bill?"
+            onConfirm={() => handleDelete(record._id)}
+            okText="Yes"
+            cancelText="No"
           >
-            View
-          </Button>
-          <Button
-            icon={<EditOutlined />}
-            size="small"
-            onClick={() => handleEdit(record)}
-          >
-            Edit
-          </Button>
-          <Button
-            danger
-            icon={<DeleteOutlined />}
-            size="small"
-            onClick={() => handleDelete(record)}
-          >
-            Delete
-          </Button>
+            <Tooltip title="Delete">
+              <Button type="link" icon={<DeleteOutlined />} danger />
+            </Tooltip>
+          </Popconfirm>
         </Space>
       ),
     },
   ];
 
-  const handleView = (record: any) => {
-    // Handle view logic
-    console.log("View record:", record);
-  };
-
-  const handleEdit = (record: any) => {
-    // Handle edit logic
-    console.log("Edit record:", record);
-  };
-
-  const handleDelete = (record: any) => {
-    // Handle delete logic
-    console.log("Delete record:", record);
-  };
+  useEffect(() => {
+    SalesRecord("GetAll", {
+      pageNumber: pagination.current,
+      pageLimit: pagination.pageSize,
+      searchString: searchText,
+    });
+  }, [SalesRecord]);
 
   return (
-    <div>
-      <h2>Retail Bills</h2>
-      <Table
-        columns={columns}
-        dataSource={RetailBillList?.result || []}
-        loading={loading}
-        rowKey="_id"
-        pagination={{
-          pageSize: 10,
-          showSizeChanger: true,
-          showQuickJumper: true,
+    <div style={{ padding: 24 }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: 16,
         }}
+      >
+        <Title level={3} style={{ color: "#1890ff", margin: 0 }}>
+          Sales List
+        </Title>
+        <Space>
+          <Input
+            placeholder="Search by invoice no, customer name or mobile"
+            prefix={<SearchOutlined />}
+            allowClear
+            style={{ width: 300 }}
+            onChange={(e) => handleSearch(e.target.value)}
+          />
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            onClick={() => {
+              setSelectedBill(null);
+              setIsDrawerOpen(true);
+            }}
+          >
+            Create New Sale
+          </Button>
+        </Space>
+      </div>
+
+      <GlobalTable
+        data={SalesRecordList?.result}
+        columns={columns}
+        loading={loading}
+        bordered
+        rowKey="_id"
+        totalCount={SalesRecordList?.pagination?.totalCount || 0}
+        pageLimit={SalesRecordList?.pagination?.pageLimit || 0}
+        onPaginationChange={handlePaginationChange}
       />
+
+      <GlobalDrawer
+        title={selectedBill ? "Edit Sale" : "Create New Sale"}
+        onClose={() => setIsDrawerOpen(false)}
+        open={isDrawerOpen}
+        width={1200}
+      >
+        <RetailBillingTable
+          billdata={selectedBill}
+          onSuccess={() => {
+            setIsDrawerOpen(false);
+            SalesRecord("GetAll");
+          }}
+        />
+      </GlobalDrawer>
+
+      {selectedBill && (
+        <BillViewModal
+          visible={billViewVisible}
+          onClose={() => setBillViewVisible(false)}
+          billData={selectedBill}
+        />
+      )}
     </div>
   );
 };

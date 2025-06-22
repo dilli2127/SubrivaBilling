@@ -13,7 +13,7 @@ import dayjs from "dayjs";
 import { useApiActions } from "../../services/api/useApiActions";
 import { dynamic_clear, useDynamicSelector } from "../../services/redux";
 import CustomerCrud from "../../pages/Customer/crud";
-import { getApiRouteRetailBill } from "../../helpers/Common_functions";
+import { createApiRouteGetter } from "../../helpers/Common_functions";
 import { calculateBillTotals } from "../../helpers/amount_calculations";
 import { useDispatch } from "react-redux";
 import { Dispatch } from "redux";
@@ -35,8 +35,7 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
   onSuccess,
 }) => {
   const [form] = Form.useForm();
-  const addRoute = getApiRouteRetailBill("Create");
-  const updateRoute = getApiRouteRetailBill("Update");
+  const getApiRouteSalesRecord = createApiRouteGetter("SalesRecord");
 
   const dispatch: Dispatch<any> = useDispatch();
   const { getEntityApi } = useApiActions();
@@ -88,11 +87,11 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
   );
 
   const { items: createItems, error: createError } = useDynamicSelector(
-    addRoute.identifier
+    getApiRouteSalesRecord("Create").identifier
   );
 
   const { items: updateItems, error: updateError } = useDynamicSelector(
-    updateRoute.identifier
+    getApiRouteSalesRecord("Update").identifier
   );
   const { items: productList } = useDynamicSelector(
     ProductsApi.getIdentifier("GetAll")
@@ -426,7 +425,7 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
       if (action === "update" || action === "delete") {
         onSuccess?.();
       }
-      const actionRoute = getApiRouteRetailBill(
+      const actionRoute = getApiRouteSalesRecord(
         (action.charAt(0).toUpperCase() +
           action.slice(1)) as keyof typeof API_ROUTES.SalesRecord
       );
