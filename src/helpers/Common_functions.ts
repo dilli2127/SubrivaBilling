@@ -36,6 +36,7 @@ export const createCrudOperations = <T extends keyof typeof API_ROUTES>(entityNa
 
 // Auto-generated CRUD operations for all entities (minimal - only for fallback)
 export const CrudOperations = {
+  Unit: createCrudOperations("Unit"),
   // Note: DashBoard and StockAvailable are handled specially in useApiActions
   // because they don't follow the standard CRUD pattern
 } as const;
