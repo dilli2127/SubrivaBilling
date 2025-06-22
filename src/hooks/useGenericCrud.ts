@@ -5,6 +5,7 @@ import { dynamic_request, useDynamicSelector } from '../services/redux';
 import { showToast } from '../helpers/Common_functions';
 import { BaseEntity } from '../types/entities';
 import { Dispatch } from 'redux';
+import dayjs from 'dayjs';
 
 export interface CrudConfig<T extends BaseEntity> {
   title: string;
@@ -95,7 +96,23 @@ export const useGenericCrud = <T extends BaseEntity>(config: CrudConfig<T>) => {
 
   // Event handlers
   const handleEdit = useCallback((record: T) => {
-    setInitialValues(record);
+    const newRecord: any = {};
+
+    // Convert date strings to dayjs objects for DatePicker components
+    for (const key in record) {
+      const value = record[key];
+      if (
+        value &&
+        typeof value === 'string' &&
+        (key.toLowerCase().includes('date') || key.toLowerCase().includes('mfg') || key.toLowerCase().includes('expiry'))
+      ) {
+        newRecord[key] = dayjs(value);
+      } else {
+        newRecord[key] = value;
+      }
+    }
+
+    setInitialValues(newRecord);
     setDrawerVisible(true);
   }, []);
 
