@@ -1,0 +1,187 @@
+import { useCallback, useEffect, useState } from 'react';
+import { useDispatch } from 'react-redux';
+import { Form } from 'antd';
+import { dynamic_request, useDynamicSelector } from '../services/redux';
+import { showToast } from '../helpers/Common_functions';
+import { BaseEntity } from '../types/entities';
+import { Dispatch } from 'redux';
+
+export interface CrudConfig<T extends BaseEntity> {
+  title: string;
+  columns: any[];
+  formItems: any[];
+  apiRoutes: {
+    get: { method: string; endpoint: string; identifier: string };
+    create: { method: string; endpoint: string; identifier: string };
+    update: { method: string; endpoint: string; identifier: string };
+    delete: { method: string; endpoint: string; identifier: string };
+  };
+  formColumns?: number;
+  drawerWidth?: number;
+}
+
+export const useGenericCrud = <T extends BaseEntity>(config: CrudConfig<T>) => {
+  const dispatch: Dispatch<any> = useDispatch();
+  const [form] = Form.useForm();
+  const [drawerVisible, setDrawerVisible] = useState(false);
+  const [searchText, setSearchText] = useState('');
+  const [initialValues, setInitialValues] = useState<Partial<T>>({});
+
+  // Selectors
+  const { loading, items } = useDynamicSelector(config.apiRoutes.get.identifier);
+  const { items: createItems, error: createError } = useDynamicSelector(
+    config.apiRoutes.create.identifier
+  );
+  const { items: updateItems, error: updateError } = useDynamicSelector(
+    config.apiRoutes.update.identifier
+  );
+  const { items: deleteItems, error: deleteError } = useDynamicSelector(
+    config.apiRoutes.delete.identifier
+  );
+
+  // API call function
+  const callApi = useCallback(
+    (method: string, endpoint: string, data: any, identifier: string) => {
+      dispatch(dynamic_request({ method, endpoint, data }, identifier) as any);
+    },
+    [dispatch]
+  );
+
+  // CRUD operations
+  const getAll = useCallback(() => {
+    callApi(
+      config.apiRoutes.get.method,
+      config.apiRoutes.get.endpoint,
+      {},
+      config.apiRoutes.get.identifier
+    );
+  }, [callApi, config.apiRoutes.get]);
+
+  const create = useCallback(
+    (data: Partial<T>) => {
+      callApi(
+        config.apiRoutes.create.method,
+        config.apiRoutes.create.endpoint,
+        data,
+        config.apiRoutes.create.identifier
+      );
+    },
+    [callApi, config.apiRoutes.create]
+  );
+
+  const update = useCallback(
+    (id: string, data: Partial<T>) => {
+      callApi(
+        config.apiRoutes.update.method,
+        `${config.apiRoutes.update.endpoint}/${id}`,
+        data,
+        config.apiRoutes.update.identifier
+      );
+    },
+    [callApi, config.apiRoutes.update]
+  );
+
+  const remove = useCallback(
+    (id: string) => {
+      callApi(
+        config.apiRoutes.delete.method,
+        `${config.apiRoutes.delete.endpoint}/${id}`,
+        { _id: id },
+        config.apiRoutes.delete.identifier
+      );
+    },
+    [callApi, config.apiRoutes.delete]
+  );
+
+  // Event handlers
+  const handleEdit = useCallback((record: T) => {
+    setInitialValues(record);
+    setDrawerVisible(true);
+  }, []);
+
+  const handleDelete = useCallback((record: T) => {
+    remove(record._id);
+  }, [remove]);
+
+  const handleDrawerOpen = useCallback(() => {
+    setDrawerVisible(true);
+  }, []);
+
+  const resetForm = useCallback(() => {
+    setDrawerVisible(false);
+    setInitialValues({});
+    form.resetFields();
+  }, [form]);
+
+  const handleSubmit = useCallback(
+    (values: Partial<T>) => {
+      if (initialValues._id) {
+        update(initialValues._id, values);
+      } else {
+        create(values);
+      }
+    },
+    [initialValues._id, create, update]
+  );
+
+  // Filter items based on search
+  const filteredItems = items?.result?.filter((item: T) =>
+    JSON.stringify(item).toLowerCase().includes(searchText.toLowerCase())
+  );
+
+  // API response handlers
+  useEffect(() => {
+    if (createItems?.statusCode === '200') {
+      showToast('success', `${config.title} created successfully`);
+      getAll();
+      resetForm();
+    } else if (createError) {
+      showToast('error', `Failed to create ${config.title}`);
+    }
+  }, [createItems, createError, config.title, getAll, resetForm]);
+
+  useEffect(() => {
+    if (updateItems?.statusCode === '200') {
+      showToast('success', `${config.title} updated successfully`);
+      getAll();
+      resetForm();
+    } else if (updateError) {
+      showToast('error', `Failed to update ${config.title}`);
+    }
+  }, [updateItems, updateError, config.title, getAll, resetForm]);
+
+  useEffect(() => {
+    if (deleteItems?.statusCode === '200') {
+      showToast('success', `${config.title} deleted successfully`);
+      getAll();
+    } else if (deleteError) {
+      showToast('error', `Failed to delete ${config.title}`);
+    }
+  }, [deleteItems, deleteError, config.title, getAll]);
+
+  // Load data on mount
+  useEffect(() => {
+    getAll();
+  }, [getAll]);
+
+  return {
+    // State
+    loading,
+    items: filteredItems,
+    drawerVisible,
+    searchText,
+    initialValues,
+    form,
+
+    // Actions
+    setSearchText,
+    handleEdit,
+    handleDelete,
+    handleDrawerOpen,
+    resetForm,
+    handleSubmit,
+
+    // Config
+    ...config,
+  };
+}; 

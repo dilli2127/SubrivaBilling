@@ -5,6 +5,8 @@ import { useEffect } from "react";
 const AntdForm = (props) => {
   const {
     FormValue,
+    onSubmit,
+    onCancel,
     formItems,
     onChildCancel,
     formColumns,
@@ -18,19 +20,33 @@ const AntdForm = (props) => {
     form,
   } = props;
   const columns = formColumns || 1;
+  
   const handleCancel = () => {
-    onChildCancel(false);
+    // Support both old and new cancel handlers
+    if (onCancel) {
+      onCancel();
+    } else if (onChildCancel) {
+      onChildCancel(false);
+    }
     form?.resetFields();
   };
+  
   const onFinish = (values) => {
-    FormValue(values);
+    // Support both old FormValue and new onSubmit
+    if (onSubmit) {
+      onSubmit(values);
+    } else if (FormValue) {
+      FormValue(values);
+    }
     form?.resetFields();
   };
+  
   useEffect(() => {
     if (initialValues) {
       form?.setFieldsValue(initialValues);
     }
   }, [initialValues, form]);
+  
   return (
     <div style={{ position: "relative", height: "100%" }}>
       <div
@@ -50,7 +66,6 @@ const AntdForm = (props) => {
       <Form
         form={form}
         onFinish={onFinish}
-        // initialValues={initialValues}
         layout="vertical"
       >
         <Row gutter={[16, 16]}>

@@ -1,39 +1,35 @@
-import React from "react";
-import CrudModule from "../../components/common/CrudModule";
-import { getEntityApiRoutes } from "../../helpers/CrudFactory";
-import { Input } from "antd";
+import React from 'react';
+import { Input } from 'antd';
+import { GenericCrudPage } from '../../components/common/GenericCrudPage';
+import { Unit } from '../../types/entities';
+import { getEntityApiRoutes } from '../../helpers/CrudFactory';
 
-const UnitCrud = () => {
-  const formItems = [
+const unitConfig = {
+  title: 'Units',
+  columns: [
+    { title: 'Unit Name', dataIndex: 'unit_name', key: 'unit_name' },
+    { title: 'Unit Code', dataIndex: 'unit_code', key: 'unit_code' },
+  ],
+  formItems: [
     {
-      label: "Unit Name",
-      name: "unit_name",
-      rules: [{ required: true, message: "Please enter the unit name!" }],
+      label: 'Unit Name',
+      name: 'unit_name',
+      rules: [{ required: true, message: 'Please enter the unit name!' }],
       component: <Input placeholder="e.g. Piece, Kg, Box" />,
     },
     {
-      label: "Short Code",
-      name: "unit_code",
-      rules: [{ required: true, message: "Please enter unit short code!" }],
+      label: 'Short Code',
+      name: 'unit_code',
+      rules: [{ required: true, message: 'Please enter unit short code!' }],
       component: <Input placeholder="e.g. pcs, kg, box" />,
     },
-  ];
-  const columns = [
-    { title: "Unit Name", dataIndex: "unit_name", key: "unit_name" },
-    { title: "Unit Code", dataIndex: "unit_code", key: "unit_code" },
-  ];
+  ],
+  apiRoutes: getEntityApiRoutes('Unit'),
+  formColumns: 2,
+};
 
-  const apiRoutes = getEntityApiRoutes("Unit");
-
-  return (
-    <CrudModule
-      title="Units"
-      formItems={formItems}
-      columns={columns}
-      apiRoutes={apiRoutes}
-      formColumns={2}
-    />
-  );
+const UnitCrud: React.FC = () => {
+  return <GenericCrudPage config={unitConfig} />;
 };
 
 export default UnitCrud;
