@@ -2,10 +2,7 @@ import {
   DashboardOutlined,
   FileTextOutlined,
   PlusCircleOutlined,
-  UnorderedListOutlined,
   UserOutlined,
-  UserAddOutlined,
-  TeamOutlined,
   ShoppingCartOutlined,
   DatabaseOutlined,
   DollarCircleOutlined,
@@ -13,6 +10,15 @@ import {
   LineChartOutlined,
   PieChartOutlined,
   SettingOutlined,
+  HomeOutlined,
+  ContainerOutlined,
+  AppstoreAddOutlined,
+  FolderOpenOutlined,
+  IdcardOutlined,
+  SolutionOutlined,
+  FileSearchOutlined,
+  BankOutlined,
+  MinusCircleOutlined,
 } from "@ant-design/icons";
 
 export const menuItems = [
@@ -30,22 +36,21 @@ export const menuItems = [
       {
         key: "create-sales-record",
         label: "Sales Record",
-        icon: <PlusCircleOutlined />,
+        icon: <AppstoreAddOutlined />,
         path: "/retaill_billing",
       },
       {
         key: "sales-records-list",
         label: "Sales Records List",
-        icon: <UnorderedListOutlined />,
+        icon: <FileSearchOutlined />,
         path: "/retaill_bill_list",
       },
     ],
   },
-
   {
     key: "Stock Audit",
     label: "Stock Audit",
-    icon: <FileTextOutlined />,
+    icon: <ContainerOutlined />,
     children: [
       {
         key: "stock-in",
@@ -53,16 +58,16 @@ export const menuItems = [
         icon: <PlusCircleOutlined />,
         path: "/stock_audit",
       },
-       {
+      {
         key: "stock-out",
         label: "Stock Out",
-        icon: <PlusCircleOutlined />,
+        icon: <MinusCircleOutlined />,
         path: "/stock_out",
       },
       {
         key: "stock-available",
         label: "Stock Available",
-        icon: <PlusCircleOutlined />,
+        icon: <DatabaseOutlined />,
         path: "/stock_available",
       },
     ],
@@ -75,13 +80,13 @@ export const menuItems = [
       {
         key: "add-customer",
         label: "Customer",
-        icon: <UserAddOutlined />,
+        icon: <IdcardOutlined />,
         path: "/customer_crud",
       },
       {
         key: "vendor",
         label: "Vendor",
-        icon: <TeamOutlined />,
+        icon: <SolutionOutlined />,
         path: "/vendor_crud",
       },
     ],
@@ -94,31 +99,31 @@ export const menuItems = [
       {
         key: "add-product",
         label: "Product",
-        icon: <PlusCircleOutlined />,
+        icon: <AppstoreAddOutlined />,
         path: "/prduct_crud",
       },
       {
         key: "unit",
         label: "Unit",
-        icon: <DatabaseOutlined />,
+        icon: <FolderOpenOutlined />,
         path: "/unit_crud",
       },
       {
         key: "category",
         label: "Category",
-        icon: <DatabaseOutlined />,
+        icon: <FolderOpenOutlined />,
         path: "/category_crud",
       },
       {
         key: "variant",
         label: "Variant",
-        icon: <DatabaseOutlined />,
+        icon: <FolderOpenOutlined />,
         path: "/variant_crud",
       },
       {
         key: "warehouse",
         label: "Warehouse",
-        icon: <DatabaseOutlined />,
+        icon: <HomeOutlined />,
         path: "/warehouse_crud",
       },
     ],
@@ -131,11 +136,11 @@ export const menuItems = [
       {
         key: "payment-history",
         label: "Payment History",
-        icon: <LineChartOutlined />,
+        icon: <BarChartOutlined />,
         path: "payment_history",
       },
       {
-        key: " expenses",
+        key: "expenses",
         label: "Expenses",
         icon: <PieChartOutlined />,
         path: "/expenses",
@@ -162,9 +167,16 @@ export const menuItems = [
     ],
   },
   {
-    key: "settings",
-    label: "Settings",
+    key: "master_settings",
+    label: "Master Settings",
     icon: <SettingOutlined />,
-    path: "/settings",
+    children: [
+      {
+        key: "organisation",
+        label: "Organisation",
+        icon: <BankOutlined />,
+        path: "/organisation",
+      },
+    ],
   },
 ];
