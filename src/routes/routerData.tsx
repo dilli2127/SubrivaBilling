@@ -21,6 +21,7 @@ const Warehouse = lazy(() => import("../pages/Warehouse/crud"));
 const StockOutCrud = lazy(() => import("../pages/StockOut/crud"));
 const StockAvailable = lazy(() => import("../pages/ProductStocks/List"));
 const OrganisationsCrud = lazy(() => import("../pages/Organisations/crud"));
+const BrachesCrud = lazy(() => import("../pages/Branches/crud"));
 
 const routerData: RouteConfig[] = [
   {
@@ -223,6 +224,16 @@ const routerData: RouteConfig[] = [
         element: (
           <Suspense fallback={<Loader />}>
             <OrganisationsCrud />
+          </Suspense>
+        ),
+        children: [],
+      },
+      {
+        key: "branches",
+        path: "branches",
+        element: (
+          <Suspense fallback={<Loader />}>
+            <BrachesCrud />
           </Suspense>
         ),
         children: [],

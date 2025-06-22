@@ -177,6 +177,12 @@ export const menuItems = [
         icon: <BankOutlined />,
         path: "/organisation",
       },
+      {
+        key: "braches",
+        label: "Braches",
+        icon: <BankOutlined />,
+        path: "/branches",
+      },
     ],
   },
 ];

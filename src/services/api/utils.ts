@@ -1,3 +1,5 @@
+import BrachesCrud from "../../pages/Branches/crud";
+
 export const API_METHODS = {
   GET: "GET",
   POST: "POST",
@@ -138,4 +140,5 @@ export const API_ROUTES = {
   StockOut: createCrudRoutes("/stock_out", "StockOut"),
   InvoiceNumber: createCrudRoutes("/invoice_numbers", "InvoiceNumber"),
   Organisations: createCrudRoutes("/organisations", "Organisations"),
+  Braches: createCrudRoutes("/branches", "Branches"),
 };
