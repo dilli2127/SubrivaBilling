@@ -9,145 +9,67 @@ export const showToast = (type: "success" | "error", content: string) => {
   }
 };
 
-export const getApiRouteCmsImage = (action: keyof typeof API_ROUTES.CmsImage) => {
-  const route = API_ROUTES?.CmsImage?.[action];
-  if (!route) {
-    console.error(`API_ROUTES.CmsImage.${action} is undefined.`);
-    throw new Error(`API route for CmsImage.${action} is not defined.`);
-  }
-  return route;
+// Generic function to generate API route getters for any entity
+export const createApiRouteGetter = <T extends keyof typeof API_ROUTES>(entityName: T) => {
+  return (action: keyof typeof API_ROUTES[T]) => {
+    const route = API_ROUTES?.[entityName]?.[action];
+    if (!route) {
+      console.error(`API_ROUTES.${String(entityName)}.${String(action)} is undefined.`);
+      throw new Error(`API route for ${String(entityName)}.${String(action)} is not defined.`);
+    }
+    return route;
+  };
 };
 
-export const getApiRouteCustomer = (action: keyof typeof API_ROUTES.Customer) => {
-  const route = API_ROUTES?.Customer?.[action];
-  if (!route) {
-    console.error(`API_ROUTES.Customer.${action} is undefined.`);
-    throw new Error(`API route for Customer.${action} is not defined.`);
-  }
-  return route;
+// Generic CRUD factory that creates all CRUD operations for an entity
+export const createCrudOperations = <T extends keyof typeof API_ROUTES>(entityName: T) => {
+  const getRoute = createApiRouteGetter(entityName);
+  
+  return {
+    getAll: () => getRoute("GetAll" as keyof typeof API_ROUTES[T]),
+    create: () => getRoute("Create" as keyof typeof API_ROUTES[T]),
+    update: () => getRoute("Update" as keyof typeof API_ROUTES[T]),
+    delete: () => getRoute("Delete" as keyof typeof API_ROUTES[T]),
+    get: () => getRoute("Get" as keyof typeof API_ROUTES[T]),
+  };
 };
 
-export const getApiRouteUnit = (action: keyof typeof API_ROUTES.Unit) => {
-  const route = API_ROUTES?.Unit?.[action];
-  if (!route) {
-    console.error(`API_ROUTES.Unit.${action} is undefined.`);
-    throw new Error(`API route for Unit.${action} is not defined.`);
-  }
-  return route;
-};
-export const getApiRouteVariant = (action: keyof typeof API_ROUTES.Variant) => {
-  const route = API_ROUTES?.Variant?.[action];
-  if (!route) {
-    console.error(`API_ROUTES.Variant.${action} is undefined.`);
-    throw new Error(`API route for Variant.${action} is not defined.`);
-  }
-  return route;
-};
+// Auto-generated CRUD operations for all entities
+export const CrudOperations = {
+  CmsImage: createCrudOperations("CmsImage"),
+  Customer: createCrudOperations("Customer"),
+  Unit: createCrudOperations("Unit"),
+  Variant: createCrudOperations("Variant"),
+  Category: createCrudOperations("Category"),
+  Product: createCrudOperations("Product"),
+  Vendor: createCrudOperations("Vendor"),
+  Warehouse: createCrudOperations("Warehouse"),
+  StockAudit: createCrudOperations("StockAudit"),
+  SalesRecord: createCrudOperations("SalesRecord"),
+  PaymentHistory: createCrudOperations("PaymentHistory"),
+  Expenses: createCrudOperations("Expenses"),
+  StockOut: createCrudOperations("StockOut"),
+  InvoiceNumber: createCrudOperations("InvoiceNumber"),
+  Organisations: createCrudOperations("Organisations"),
+  // Note: DashBoard and StockAvailable are handled specially in useApiActions
+  // because they don't follow the standard CRUD pattern
+} as const;
 
-export const getApiRouteCategory = (action: keyof typeof API_ROUTES.Category) => {
-  const route = API_ROUTES?.Category?.[action];
-  if (!route) {
-    console.error(`API_ROUTES.Category.${action} is undefined.`);
-    throw new Error(`API route for Category.${action} is not defined.`);
-  }
-  return route;
-};
-
-export const getApiRouteProduct = (action: keyof typeof API_ROUTES.Product) => {
-  const route = API_ROUTES?.Product?.[action];
-  if (!route) {
-    console.error(`API_ROUTES.Product.${action} is undefined.`);
-    throw new Error(`API route for Product.${action} is not defined.`);
-  }
-  return route;
-};
-
-export const getApiRouteVendor = (action: keyof typeof API_ROUTES.Vendor) => {
-  const route = API_ROUTES?.Vendor?.[action];
-  if (!route) {
-    console.error(`API_ROUTES.Vendor.${action} is undefined.`);
-    throw new Error(`API route for Vendor.${action} is not defined.`);
-  }
-  return route;
-};
-
-export const getApiRouteWareHouse = (action: keyof typeof API_ROUTES.Warehouse) => {
-  const route = API_ROUTES?.Warehouse?.[action];
-  if (!route) {
-    console.error(`API_ROUTES.Warehouse.${action} is undefined.`);
-    throw new Error(`API route for Warehouse.${action} is not defined.`);
-  }
-  return route;
-};
-
-export const getApiRouteStockAudit = (action: keyof typeof API_ROUTES.StockAudit) => {
-  const route = API_ROUTES?.StockAudit?.[action];
-  if (!route) {
-    console.error(`API_ROUTES.StockAudit.${action} is undefined.`);
-    throw new Error(`API route for StockAudit.${action} is not defined.`);
-  }
-  return route;
-};
-
-export const getApiRouteRetailBill = (action: keyof typeof API_ROUTES.SalesRecord) => {
-  const route = API_ROUTES?.SalesRecord?.[action];
-  if (!route) {
-    console.error(`API_ROUTES.SalesRecord.${action} is undefined.`);
-    throw new Error(`API route for SalesRecord.${action} is not defined.`);
-  }
-  return route;
-};
-
-export const getApiRoutePaymentHistory = (action: keyof typeof API_ROUTES.PaymentHistory) => {
-  const route = API_ROUTES?.PaymentHistory?.[action];
-  if (!route) {
-    console.error(`API_ROUTES.PaymentHistory.${action} is undefined.`);
-    throw new Error(`API route for PaymentHistory.${action} is not defined.`);
-  }
-  return route;
-};
-
-export const getApiRouteExpenses = (action: keyof typeof API_ROUTES.Expenses) => {
-  const route = API_ROUTES?.Expenses?.[action];
-  if (!route) {
-    console.error(`API_ROUTES.Expenses.${action} is undefined.`);
-    throw new Error(`API route for Expenses.${action} is not defined.`);
-  }
-  return route;
-};
-
-export const getApiRouteStockOut = (action: keyof typeof API_ROUTES.StockOut) => {
-  const route = API_ROUTES?.StockOut?.[action];
-  if (!route) {
-    console.error(`API_ROUTES.StockOut.${action} is undefined.`);
-    throw new Error(`API route for StockOut.${action} is not defined.`);
-  }
-  return route;
-};
-
-export const getApiRouteInvoiceNumber = (action: keyof typeof API_ROUTES.InvoiceNumber) => {
-  const route = API_ROUTES?.InvoiceNumber?.[action];
-  if (!route) {
-    console.error(`API_ROUTES.InvoiceNumber.${action} is undefined.`);
-    throw new Error(`API route for InvoiceNumber.${action} is not defined.`);
-  }
-  return route;
-};
-
-export const getApiRouteDashBoard = (action: keyof typeof API_ROUTES.DashBoard) => {
-  const route = API_ROUTES?.DashBoard?.[action];
-  if (!route) {
-    console.error(`API_ROUTES.DashBoard.${action} is undefined.`);
-    throw new Error(`API route for DashBoard.${action} is not defined.`);
-  }
-  return route;
-};
-
-export const getApiRouteStockAvailable = (action: keyof typeof API_ROUTES.StockAvailable) => {
-  const route = API_ROUTES?.StockAvailable?.[action];
-  if (!route) {
-    console.error(`API_ROUTES.StockAvailable.${action} is undefined.`);
-    throw new Error(`API route for StockAvailable.${action} is not defined.`);
-  }
-  return route;
-};
+// Legacy individual functions (keeping for backward compatibility)
+export const getApiRouteCmsImage = createApiRouteGetter("CmsImage");
+export const getApiRouteCustomer = createApiRouteGetter("Customer");
+export const getApiRouteUnit = createApiRouteGetter("Unit");
+export const getApiRouteVariant = createApiRouteGetter("Variant");
+export const getApiRouteCategory = createApiRouteGetter("Category");
+export const getApiRouteProduct = createApiRouteGetter("Product");
+export const getApiRouteVendor = createApiRouteGetter("Vendor");
+export const getApiRouteWareHouse = createApiRouteGetter("Warehouse");
+export const getApiRouteStockAudit = createApiRouteGetter("StockAudit");
+export const getApiRouteRetailBill = createApiRouteGetter("SalesRecord");
+export const getApiRoutePaymentHistory = createApiRouteGetter("PaymentHistory");
+export const getApiRouteExpenses = createApiRouteGetter("Expenses");
+export const getApiRouteStockOut = createApiRouteGetter("StockOut");
+export const getApiRouteInvoiceNumber = createApiRouteGetter("InvoiceNumber");
+export const getApiRouteDashBoard = createApiRouteGetter("DashBoard");
+export const getApiRouteStockAvailable = createApiRouteGetter("StockAvailable");
+export const getApiRouteOrganisations = createApiRouteGetter("Organisations");

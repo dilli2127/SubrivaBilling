@@ -5,6 +5,8 @@ import { Input, Select } from "antd";
 import { Option } from "antd/es/mentions";
 import { useApiActions } from "../../services/api/useApiActions";
 import { useDynamicSelector } from "../../services/redux";
+import { getEntityApiRoutes } from "../../helpers/CrudFactory";
+
 const VariantCrud = () => {
   const { UnitsApi } = useApiActions();
   const { items: unitItems, loading: unit_get_loading } = useDynamicSelector(
@@ -73,12 +75,7 @@ const VariantCrud = () => {
   useEffect(() => {
     UnitsApi("GetAll");
   }, []);
-  const apiRoutes = {
-    get: getApiRouteVariant("GetAll"),
-    create: getApiRouteVariant("Create"),
-    update: getApiRouteVariant("Update"),
-    delete: getApiRouteVariant("Delete"),
-  };
+  const apiRoutes = getEntityApiRoutes("Variant");
 
   return (
     <CrudModule
