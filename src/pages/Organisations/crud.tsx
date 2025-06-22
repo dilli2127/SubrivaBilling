@@ -1,7 +1,6 @@
 import React from 'react';
 import { Input, Switch } from 'antd';
 import { GenericCrudPage } from '../../components/common/GenericCrudPage';
-import type { Organization } from '../../types/entities';
 import { getEntityApiRoutes } from '../../helpers/CrudFactory';
 
 const organisationsConfig = {
