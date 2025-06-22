@@ -99,7 +99,7 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
   const { items: invoice_no_item } = useDynamicSelector(
     InvoiceNumberApi.getIdentifier("GetAll")
   );
-  let invoice_no_auto_generated = invoice_no_item?.result?.invoice_no;
+  const invoice_no_auto_generated = invoice_no_item?.result?.invoice_no;
   const { items: stockAuditList } = useDynamicSelector(
     StockAuditApi.getIdentifier("GetAll")
   );
@@ -358,7 +358,7 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
   }, [createItems, createError]);
 
   const validateRows = () => {
-    for (let item of dataSource) {
+    for (const item of dataSource) {
       const hasQty = Number(item.qty) > 0;
       const hasLooseQty = Number(item.loose_qty) > 0;
 
