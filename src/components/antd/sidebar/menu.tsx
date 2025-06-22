@@ -183,6 +183,12 @@ export const menuItems = [
         icon: <BankOutlined />,
         path: "/branches",
       },
+      {
+        key: "sales_account",
+        label: "Sales Account",
+        icon: <BankOutlined />,
+        path: "/sales_account",
+      },
     ],
   },
 ];

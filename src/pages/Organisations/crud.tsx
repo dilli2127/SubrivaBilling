@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { GenericCrudPage } from '../../components/common/GenericCrudPage';
 import { getEntityApiRoutes } from '../../helpers/CrudFactory';
 import { organisationFormItems } from './formItems';
@@ -10,11 +10,11 @@ const organisationsConfig = {
   formItems: organisationFormItems,
   apiRoutes: getEntityApiRoutes('Organisations'),
   formColumns: 3,
-  drawerWidth:800
+  drawerWidth: 800,
 };
 
 const OrganisationsCrud: React.FC = () => {
   return <GenericCrudPage config={organisationsConfig} />;
 };
 
-export default OrganisationsCrud;
+export default memo(OrganisationsCrud);
