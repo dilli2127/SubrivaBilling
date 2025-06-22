@@ -22,9 +22,9 @@ export const organisationFormItems = [
       <Select
         placeholder="Select license type"
         options={[
-          { label: 'Basic', value: 'basic' },
+          { label: 'Basic', value: 'starter' },
           { label: 'Standard', value: 'standard' },
-          { label: 'Premium', value: 'premium' },
+          { label: 'Premium', value: 'pro' },
         ]}
       />
     ),
@@ -57,6 +57,7 @@ export const organisationFormItems = [
     name: 'gst_number',
     component: <Input placeholder="Enter GST number" />,
   },
+  
   {
     label: 'PAN Number',
     name: 'pan_number',
@@ -114,6 +115,26 @@ export const organisationFormItems = [
     name: 'max_sales_users',
     rules: [{ required: true, message: 'Please enter max sales users!' }],
     component: <InputNumber min={1} style={{ width: '100%' }} />,
+  },
+  {
+    label: 'Owner Name',
+    name: 'owner_name',
+    component: <Input placeholder="Enter Owner Name" />,
+  },
+  {
+    label: 'Owner Email',
+    name: 'owner_email',
+    component: <Input placeholder="Enter Owner Email" />,
+  },
+  {
+    label: 'Owner Phone',
+    name: 'owner_phone',
+    component: <Input placeholder="Enter Owner Email" />,
+  },
+  {
+    label: 'Owner Designation',
+    name: 'owner_designation',
+    component: <Input placeholder="Enter Owner Designation" />,
   },
   {
     label: 'Status',

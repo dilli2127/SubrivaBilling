@@ -9,7 +9,8 @@ const organisationsConfig = {
   columns: organisationColumns,
   formItems: organisationFormItems,
   apiRoutes: getEntityApiRoutes('Organisations'),
-  formColumns: 2,
+  formColumns: 3,
+  drawerWidth:800
 };
 
 const OrganisationsCrud: React.FC = () => {
