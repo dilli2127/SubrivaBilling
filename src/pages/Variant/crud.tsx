@@ -8,7 +8,8 @@ import { useDynamicSelector } from "../../services/redux";
 import { getEntityApiRoutes } from "../../helpers/CrudFactory";
 
 const VariantCrud = () => {
-  const { UnitsApi } = useApiActions();
+  const { getEntityApi } = useApiActions();
+  const UnitsApi = getEntityApi("Unit");
   const { items: unitItems, loading: unit_get_loading } = useDynamicSelector(
     UnitsApi.getIdentifier("GetAll")
   );

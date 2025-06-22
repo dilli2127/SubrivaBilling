@@ -1,6 +1,6 @@
 import React from "react";
 import CrudModule from "../../components/common/CrudModule";
-import { getApiRouteCategory } from "../../helpers/Common_functions";
+import { getEntityApiRoutes } from "../../helpers/CrudFactory";
 import { Input, InputNumber } from "antd";
 const CategoryCrud = () => {
   const formItems = [
@@ -36,12 +36,7 @@ const CategoryCrud = () => {
      { title: "Tax Percentage", dataIndex: "tax_percentage", key: "tax_percentage" },
   ];
 
-  const apiRoutes = {
-    get: getApiRouteCategory("GetAll"),
-    create: getApiRouteCategory("Create"),
-    update: getApiRouteCategory("Update"),
-    delete: getApiRouteCategory("Delete"),
-  };
+  const apiRoutes = getEntityApiRoutes("Category");
 
   return (
     <CrudModule

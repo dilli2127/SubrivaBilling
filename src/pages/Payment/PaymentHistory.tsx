@@ -3,6 +3,8 @@ import CrudModule from "../../components/common/CrudModule";
 import { getApiRoutePaymentHistory, getApiRouteVariant } from "../../helpers/Common_functions";
 import { DatePicker, Input, Select } from "antd";
 import { Option } from "antd/es/mentions";
+import { getEntityApiRoutes } from "../../helpers/CrudFactory";
+
 const VariantCrud = () => {
   const formItems = [
     // {
@@ -57,12 +59,7 @@ const VariantCrud = () => {
     { title: "Note", dataIndex: "note", key: "note" },
   ];
 
-  const apiRoutes = {
-    get: getApiRoutePaymentHistory("GetAll"),
-    create: getApiRoutePaymentHistory("Create"),
-    update: getApiRoutePaymentHistory("Update"),
-    delete: getApiRoutePaymentHistory("Delete"),
-  };
+  const apiRoutes = getEntityApiRoutes("PaymentHistory");
 
   return (
     <CrudModule

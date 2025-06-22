@@ -10,6 +10,7 @@ import { dynamic_request, useDynamicSelector } from "../../services/redux";
 import { useDispatch } from "react-redux";
 import { Dispatch } from "redux";
 import { AppstoreOutlined, BarcodeOutlined, CheckCircleTwoTone, CloseCircleTwoTone, TagOutlined, TagsOutlined } from "@ant-design/icons";
+import { getEntityApiRoutes } from "../../helpers/CrudFactory";
 
 const { Option } = Select;
 
@@ -177,12 +178,7 @@ const columns = [
   },
 ];
 
-  const apiRoutes = {
-    get: getApiRouteProduct("GetAll"),
-    create: getApiRouteProduct("Create"),
-    update: getApiRouteProduct("Update"),
-    delete: getApiRouteProduct("Delete"),
-  };
+  const apiRoutes = getEntityApiRoutes("Product");
 
   return (
     <CrudModule

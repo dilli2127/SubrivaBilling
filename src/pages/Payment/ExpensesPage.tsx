@@ -13,6 +13,8 @@ import {
   FileTextOutlined,
   TagsOutlined,
 } from "@ant-design/icons";
+import { getEntityApiRoutes } from "../../helpers/CrudFactory";
+
 const ExpensesCrud = () => {
   const formItems = [
     {
@@ -84,12 +86,7 @@ const ExpensesCrud = () => {
      { title: "Notes", dataIndex: "notes", key: "notes" },
   ];
 
-  const apiRoutes = {
-    get: getApiRouteExpenses("GetAll"),
-    create: getApiRouteExpenses("Create"),
-    update: getApiRouteExpenses("Update"),
-    delete: getApiRouteExpenses("Delete"),
-  };
+  const apiRoutes = getEntityApiRoutes("Expenses");
 
   return (
     <CrudModule

@@ -8,12 +8,16 @@ import { useApiActions } from "../../services/api/useApiActions";
 import { useDynamicSelector } from "../../services/redux";
 import StockCrudModule from "../../components/common/StockCrudModule";
 import { AppstoreAddOutlined, BarcodeOutlined, CalendarOutlined, DollarCircleOutlined, TagsOutlined } from "@ant-design/icons";
+import { getEntityApiRoutes } from "../../helpers/CrudFactory";
 
 const { Option } = Select;
 
 const StockAudit = () => {
   const [form] = Form.useForm();
-  const { ProductsApi, VendorApi, WarehouseApi } = useApiActions();
+  const { getEntityApi } = useApiActions();
+  const ProductsApi = getEntityApi("Product");
+  const VendorApi = getEntityApi("Vendor");
+  const WarehouseApi = getEntityApi("Warehouse");
 
   const { items: productList, loading } = useDynamicSelector(
     ProductsApi.getIdentifier("GetAll")
@@ -354,12 +358,7 @@ const StockAudit = () => {
     },
   ];
 
-  const apiRoutes = {
-    get: getApiRouteStockAudit("GetAll"),
-    create: getApiRouteStockAudit("Create"),
-    update: getApiRouteStockAudit("Update"),
-    delete: getApiRouteStockAudit("Delete"),
-  };
+  const apiRoutes = getEntityApiRoutes("StockAudit");
 
   return (
     <StockCrudModule

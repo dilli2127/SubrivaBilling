@@ -1,6 +1,6 @@
 import React from "react";
 import CrudModule from "../../components/common/CrudModule";
-import { getApiRouteWareHouse } from "../../helpers/Common_functions";
+import { getEntityApiRoutes } from "../../helpers/CrudFactory";
 import { Input, Switch } from "antd";
 
 const Warehouse = () => {
@@ -115,12 +115,7 @@ const Warehouse = () => {
     },
   ];
 
-  const apiRoutes = {
-    get: getApiRouteWareHouse("GetAll"),
-    create: getApiRouteWareHouse("Create"),
-    update: getApiRouteWareHouse("Update"),
-    delete: getApiRouteWareHouse("Delete"),
-  };
+  const apiRoutes = getEntityApiRoutes("Warehouse");
 
   return (
     <CrudModule

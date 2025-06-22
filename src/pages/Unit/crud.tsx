@@ -1,6 +1,6 @@
 import React from "react";
 import CrudModule from "../../components/common/CrudModule";
-import { getApiRouteUnit } from "../../helpers/Common_functions";
+import { getEntityApiRoutes } from "../../helpers/CrudFactory";
 import { Input } from "antd";
 
 const UnitCrud = () => {
@@ -23,12 +23,7 @@ const UnitCrud = () => {
     { title: "Unit Code", dataIndex: "unit_code", key: "unit_code" },
   ];
 
-  const apiRoutes = {
-    get: getApiRouteUnit("GetAll"),
-    create: getApiRouteUnit("Create"),
-    update: getApiRouteUnit("Update"),
-    delete: getApiRouteUnit("Delete"),
-  };
+  const apiRoutes = getEntityApiRoutes("Unit");
 
   return (
     <CrudModule

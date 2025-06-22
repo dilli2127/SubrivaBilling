@@ -1,7 +1,10 @@
 import { useCallback } from "react";
 import { useDispatch } from "react-redux";
 import { callApi } from "./callApi";
-import { CrudOperations, createCrudOperations } from "../../helpers/Common_functions";
+import {
+  CrudOperations,
+  createCrudOperations,
+} from "../../helpers/Common_functions";
 import { dynamic_request } from "../redux/slices";
 import { API_ROUTES } from "./utils";
 
@@ -29,40 +32,44 @@ const getApiRoute = (entityName: string, action: string): ApiRoute => {
   if (entityName === "DashBoard" || entityName === "StockAvailable") {
     // For these entities, use the direct API_ROUTES access
     const route = (API_ROUTES as any)[entityName]?.[action];
-    
+
     if (!route) {
       console.error(`API route for ${entityName}.${action} is not defined.`);
       throw new Error(`API route for ${entityName}.${action} is not defined.`);
     }
-    
+
     return route;
   }
-  
+
   // For standard CRUD entities
-  const operations = (CrudOperations as any)[entityName] || createCrudOperations(entityName as any);
-  
+  const operations =
+    (CrudOperations as any)[entityName] ||
+    createCrudOperations(entityName as any);
+
   // Map action names to the correct function names
   const actionMap: Record<string, string> = {
-    'GetAll': 'getAll',
-    'Create': 'create', 
-    'Update': 'update',
-    'Delete': 'delete',
-    'Get': 'get'
+    GetAll: "getAll",
+    Create: "create",
+    Update: "update",
+    Delete: "delete",
+    Get: "get",
   };
-  
+
   const functionName = actionMap[action];
   if (!functionName || !operations[functionName]) {
     console.error(`API route for ${entityName}.${action} is not defined.`);
     throw new Error(`API route for ${entityName}.${action} is not defined.`);
   }
-  
+
   const route = operations[functionName]();
-  
+
   if (!route) {
     console.error(`API route for ${entityName}.${action} returned undefined.`);
-    throw new Error(`API route for ${entityName}.${action} returned undefined.`);
+    throw new Error(
+      `API route for ${entityName}.${action} returned undefined.`
+    );
   }
-  
+
   return route;
 };
 
@@ -102,7 +109,9 @@ function createFetcher<T extends string>(
 
     // Add helper to retrieve the route's identifier
     fetcher.getIdentifier = (action: T) => {
-      return identifierMap[action] || getApiRoute(entityName, action).identifier;
+      return (
+        identifierMap[action] || getApiRoute(entityName, action).identifier
+      );
     };
 
     return fetcher;
@@ -116,46 +125,35 @@ export const useApiActions = () => {
   const dispatch = useDispatch();
 
   return {
-    // Legacy individual entity actions (maintaining backward compatibility)
-    ProductsApi: createFetcher<Action>("Product")(dispatch),
-    VariantsApi: createFetcher<Action>("Variant")(dispatch),
-    CategoriesApi: createFetcher<Action>("Category")(dispatch),
-    UnitsApi: createFetcher<Action>("Unit")(dispatch),
-    VendorApi: createFetcher<Action>("Vendor")(dispatch),
-    WarehouseApi: createFetcher<Action>("Warehouse")(dispatch),
-    StockAuditApi: createFetcher<Action>("StockAudit")(dispatch),
-    CustomerApi: createFetcher<Action>("Customer")(dispatch),
-    SalesRecord: createFetcher<Action>("SalesRecord")(dispatch),
-    PaymentHistory: createFetcher<Action>("PaymentHistory")(dispatch),
-    ExpensesApi: createFetcher<Action>("Expenses")(dispatch),
-    StockOutApi: createFetcher<Action>("StockOut")(dispatch),
-    InvoiceNumberApi: createFetcher<Action>("InvoiceNumber")(dispatch),
+    // Generic function for any entity (recommended for new code)
+    getEntityApi: (entityName: string) =>
+      createFetcher<Action>(entityName)(dispatch),
+
+    // Generic function to call API for any entity
+    callEntityApi: useCallback(
+      (entityName: string, action: Action, data?: any, id?: string) => {
+        const route = getApiRoute(entityName, action);
+
+        let endpoint = route.endpoint;
+        if (id && (action === "Update" || action === "Delete")) {
+          endpoint = `${route.endpoint}/${id}`;
+        }
+
+        dispatch(
+          dynamic_request(
+            {
+              method: route.method,
+              endpoint,
+              data: data || {},
+            },
+            route.identifier
+          ) as any
+        );
+      },
+      [dispatch]
+    ),
+    // Keep only special entities that don't follow standard CRUD pattern
     DashBoard: createFetcher<DashboardAction>("DashBoard")(dispatch),
     StockAvailable: createFetcher<StockAction>("StockAvailable")(dispatch),
-    OrganisationsApi: createFetcher<Action>("Organisations")(dispatch),
-    
-    // Generic function for any entity
-    getEntityApi: (entityName: string) => createFetcher<Action>(entityName)(dispatch),
-    
-    // Generic function to call API for any entity
-    callEntityApi: useCallback((entityName: string, action: Action, data?: any, id?: string) => {
-      const route = getApiRoute(entityName, action);
-      
-      let endpoint = route.endpoint;
-      if (id && (action === "Update" || action === "Delete")) {
-        endpoint = `${route.endpoint}/${id}`;
-      }
-      
-      dispatch(
-        dynamic_request(
-          {
-            method: route.method,
-            endpoint,
-            data: data || {},
-          },
-          route.identifier
-        ) as any
-      );
-    }, [dispatch]),
   };
 };

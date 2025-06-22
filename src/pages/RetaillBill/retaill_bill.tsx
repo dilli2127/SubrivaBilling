@@ -39,13 +39,12 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
   const updateRoute = getApiRouteRetailBill("Update");
 
   const dispatch: Dispatch<any> = useDispatch();
-  const {
-    ProductsApi,
-    StockAuditApi,
-    CustomerApi,
-    SalesRecord,
-    InvoiceNumberApi,
-  } = useApiActions();
+  const { getEntityApi } = useApiActions();
+  const ProductsApi = getEntityApi("Product");
+  const StockAuditApi = getEntityApi("StockAudit");
+  const CustomerApi = getEntityApi("Customer");
+  const SalesRecord = getEntityApi("SalesRecord");
+  const InvoiceNumberApi = getEntityApi("InvoiceNumber");
 
   interface DataSourceItem {
     key: number;

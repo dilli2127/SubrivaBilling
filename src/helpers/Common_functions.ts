@@ -54,7 +54,6 @@ export const CrudOperations = {
   // Note: DashBoard and StockAvailable are handled specially in useApiActions
   // because they don't follow the standard CRUD pattern
 } as const;
-
 // Legacy individual functions (keeping for backward compatibility)
 export const getApiRouteCmsImage = createApiRouteGetter("CmsImage");
 export const getApiRouteCustomer = createApiRouteGetter("Customer");

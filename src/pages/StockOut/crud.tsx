@@ -4,6 +4,7 @@ import { getApiRouteStockOut } from "../../helpers/Common_functions";
 import { DatePicker, Input, InputNumber, Select } from "antd";
 import { useApiActions } from "../../services/api/useApiActions";
 import { useDynamicSelector } from "../../services/redux";
+import { getEntityApiRoutes } from "../../helpers/CrudFactory";
 const { Option } = Select;
 type StockAudit = {
   _id: string;
@@ -17,7 +18,8 @@ type StockAudit = {
   };
 };
 const StockOutCrud = () => {
-  const { StockAuditApi } = useApiActions();
+  const { getEntityApi } = useApiActions();
+  const StockAuditApi = getEntityApi("StockAudit");
   const { items: StockAuditList, loading: stockAuditLoading } =
     useDynamicSelector(StockAuditApi.getIdentifier("GetAll"));
   const formItems = [
@@ -132,12 +134,7 @@ const StockOutCrud = () => {
   useEffect(() => {
     StockAuditApi("GetAll");
   }, []);
-  const apiRoutes = {
-    get: getApiRouteStockOut("GetAll"),
-    create: getApiRouteStockOut("Create"),
-    update: getApiRouteStockOut("Update"),
-    delete: getApiRouteStockOut("Delete"),
-  };
+  const apiRoutes = getEntityApiRoutes("StockOut");
 
   return (
     <CrudModule

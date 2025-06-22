@@ -1,6 +1,6 @@
 import React from "react";
 import CrudModule from "../../components/common/CrudModule";
-import { getApiRouteVendor } from "../../helpers/Common_functions";
+import { getEntityApiRoutes } from "../../helpers/CrudFactory";
 import { Input, Switch } from "antd";
 
 const VendorCrud = () => {
@@ -8,41 +8,43 @@ const VendorCrud = () => {
     {
       label: "Vendor Name",
       name: "vendor_name",
-      rules: [{ required: true, message: "Please enter vendor name" }],
+      rules: [{ required: true, message: "Please enter vendor name!" }],
       component: <Input placeholder="Enter vendor name" />,
     },
     {
       label: "Company Name",
       name: "company_name",
+      rules: [{ required: true, message: "Please enter company name!" }],
       component: <Input placeholder="Enter company name" />,
     },
     {
       label: "Contact Person",
       name: "contact_person",
+      rules: [{ required: true, message: "Please enter contact person!" }],
       component: <Input placeholder="Enter contact person name" />,
     },
     {
       label: "Phone",
       name: "phone",
-      rules: [
-        { required: true, message: "Please enter phone number" },
-        { pattern: /^\d{10}$/, message: "Phone number must be 10 digits" },
-      ],
-      component: <Input placeholder="Enter phone number" maxLength={10} />,
+      rules: [{ required: true, message: "Please enter phone number!" }],
+      component: <Input placeholder="Enter phone number" />,
     },
     {
       label: "Email",
       name: "email",
-      rules: [{ type: "email", message: "Enter a valid email" }],
+      rules: [
+        { required: true, message: "Please enter email!" },
+        { type: "email", message: "Please enter a valid email!" }
+      ],
       component: <Input placeholder="Enter email address" />,
     },
     {
-      label: "GST Number",
+      label: "GST No",
       name: "gst_no",
       component: <Input placeholder="Enter GST number" />,
     },
     {
-      label: "PAN Number",
+      label: "PAN No",
       name: "pan_no",
       component: <Input placeholder="Enter PAN number" />,
     },
@@ -69,7 +71,7 @@ const VendorCrud = () => {
     {
       label: "Status",
       name: "status",
-      valuePropName: "checked", // for Switch
+      valuePropName: "checked",
       component: (
         <Switch
           checkedChildren="Active"
@@ -129,12 +131,7 @@ const VendorCrud = () => {
     },
   ];
 
-  const apiRoutes = {
-    get: getApiRouteVendor("GetAll"),
-    create: getApiRouteVendor("Create"),
-    update: getApiRouteVendor("Update"),
-    delete: getApiRouteVendor("Delete"),
-  };
+  const apiRoutes = getEntityApiRoutes("Vendor");
 
   return (
     <CrudModule
