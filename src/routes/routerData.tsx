@@ -22,7 +22,7 @@ const StockOutCrud = lazy(() => import("../pages/StockOut/crud"));
 const StockAvailable = lazy(() => import("../pages/ProductStocks/List"));
 const OrganisationsCrud = lazy(() => import("../pages/Organisations/crud"));
 const BrachesCrud = lazy(() => import("../pages/Branches/crud"));
-const SalesAccountCrud = lazy(() => import("../pages/SalesAccount/crud"));
+const SalesAccountCrud = lazy(() => import("../pages/UserAccount/crud"));
 
 const routerData: RouteConfig[] = [
   {

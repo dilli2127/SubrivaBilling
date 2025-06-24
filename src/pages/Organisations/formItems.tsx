@@ -129,7 +129,7 @@ export const organisationFormItems = [
   {
     label: 'Owner Phone',
     name: 'owner_phone',
-    component: <Input placeholder="Enter Owner Email" />,
+    component: <Input placeholder="Enter Owner Phone" />,
   },
   {
     label: 'Owner Designation',

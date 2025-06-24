@@ -1,5 +1,5 @@
 import React from 'react';
-import {  Input,  Switch } from 'antd';
+import {  Input,  Select,  Switch } from 'antd';
 
 export const branchesFormItems = [
   {
@@ -62,4 +62,4 @@ export const branchesFormItems = [
     valuePropName: "checked",
     component: <Switch />,
   },
-]; 
+];
