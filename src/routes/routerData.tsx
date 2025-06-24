@@ -241,7 +241,7 @@ const routerData: RouteConfig[] = [
       },
       {
         key: "sales_account",
-        path: "sales_account",
+        path: "users",
         element: (
           <Suspense fallback={<Loader />}>
             <SalesAccountCrud />

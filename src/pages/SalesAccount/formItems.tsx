@@ -1,7 +1,7 @@
 import React from 'react';
 import {  Input,  Select,  Switch } from 'antd';
 
-export const salesAccountFormItems = [
+export const usersAccountFormItems = [
   {
     label: "Full Name",
     name: "full_name",

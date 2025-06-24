@@ -5,7 +5,7 @@ import { MailOutlined, PhoneOutlined, UserOutlined } from '@ant-design/icons';
 
 const { Text } = Typography;
 
-export const salesAccountColumns = [
+export const usersAccountColumns = [
   {
     title: 'Organization',
     dataIndex: 'org_name',
