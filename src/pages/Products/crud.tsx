@@ -15,6 +15,7 @@ import {
 import { GenericCrudPage } from '../../components/common/GenericCrudPage';
 import type { Product } from '../../types/entities';
 import { getEntityApiRoutes } from '../../helpers/CrudFactory';
+import { useGenericCrud } from '../../hooks/useGenericCrud';
 
 const { Option } = Select;
 
@@ -215,7 +216,14 @@ const ProductCrud: React.FC = () => {
     formColumns: 2,
   };
 
-  return <GenericCrudPage config={productConfig} />;
+  const crud = useGenericCrud(productConfig);
+
+  return (
+    <GenericCrudPage
+      config={productConfig}
+      onFilterChange={crud.setFilterValues}
+    />
+  );
 };
 
 export default ProductCrud;

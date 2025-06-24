@@ -154,8 +154,8 @@ export const GenericCrudPage = <T extends BaseEntity>({
             <Col>
               <Input
                 placeholder={`Search ${config.title}`}
-                value={filterValues['searchText'] || ''}
-                onChange={e => handleFilterChange('searchText', e.target.value)}
+                value={filterValues['searchString'] || ''}
+                onChange={e => handleFilterChange('searchString', e.target.value)}
                 style={{ width: 300 }}
               />
             </Col>
