@@ -23,7 +23,6 @@ const VariantCrud: React.FC = () => {
     columns: [
       { title: "Name", dataIndex: "variant_name", key: "variant_name" },
       { title: "Unit Type", dataIndex: "unit", key: "unit" },
-      { title: "Category", dataIndex: "category", key: "category" },
       { title: "Pack Size", dataIndex: "pack_size", key: "pack_size" },
       { title: "Pack Type", dataIndex: "pack_type", key: "pack_type" },
     ],

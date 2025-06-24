@@ -1,7 +1,13 @@
 import React from 'react';
 import { Input, Select, Switch } from 'antd';
+const { Option } = Select;
 
-export const branchesFormItems = [
+interface Organisation {
+  _id: string;
+  org_name: string;
+}
+
+export const branchesFormItems = (organisationsItems: Organisation[] = []) => [
   {
     label: 'Branch Name',
     name: 'branch_name',
@@ -9,16 +15,19 @@ export const branchesFormItems = [
     component: <Input placeholder="Enter branch name" />,
   },
   {
-    label: 'Orgnisation',
-    name: 'orgnisation_id',
-    rules: [{ required: true, message: 'Please select a orgnisation!' }],
+    label: 'Organisation',
+    name: 'organisation_id',
+    rules: [{ required: true, message: 'Please select a organisation!' }],
     component: (
       <Select placeholder="Select orgnisation">
-        {/* This makes sense only if branches are hierarchical */}
+        {(organisationsItems || []).map(org => (
+          <Option key={org._id} value={org._id}>
+            {org.org_name}
+          </Option>
+        ))}
       </Select>
     ),
   },
-
   {
     label: 'Branch Code',
     name: 'branch_code',
