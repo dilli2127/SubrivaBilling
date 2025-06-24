@@ -23,6 +23,7 @@ export type FilterConfig = {
   type: 'input' | 'select' | 'date';
   options?: { label: string; value: any }[]; // for select
   placeholder?: string;
+  width?: string | number;
 };
 
 export type CustomButtonConfig = {
@@ -121,7 +122,7 @@ export const GenericCrudPage = <T extends BaseEntity>({
                     onChange={e =>
                       handleFilterChange(filter.key, e.target.value)
                     }
-                    style={{ width: 160 }}
+                    style={{ width: filter.width || 200 }}
                   />
                 )}
                 {filter.type === 'select' && (
@@ -130,7 +131,7 @@ export const GenericCrudPage = <T extends BaseEntity>({
                     value={filterValues[filter.key]}
                     onChange={val => handleFilterChange(filter.key, val)}
                     allowClear
-                    style={{ width: 160 }}
+                    style={{ width: filter.width || 200 }}
                   >
                     {filter.options?.map(opt => (
                       <Select.Option key={opt.value} value={opt.value}>
@@ -144,7 +145,7 @@ export const GenericCrudPage = <T extends BaseEntity>({
                     placeholder={filter.placeholder || filter.label}
                     value={filterValues[filter.key]}
                     onChange={date => handleFilterChange(filter.key, date)}
-                    style={{ width: 160 }}
+                    style={{ width: filter.width || 200 }}
                   />
                 )}
               </Col>
@@ -156,7 +157,7 @@ export const GenericCrudPage = <T extends BaseEntity>({
                 placeholder={`Search ${config.title}`}
                 value={filterValues['searchString'] || ''}
                 onChange={e => handleFilterChange('searchString', e.target.value)}
-                style={{ width: 300 }}
+                style={{ width: 200 }}
               />
             </Col>
 

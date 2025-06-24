@@ -41,6 +41,17 @@ const BrachesCrud: React.FC = () => {
       placeholder: 'Select Organisation',
     },
     {
+      key: 'area_id',
+      label: 'Area',
+      type: 'select' as const,
+      options:
+        organisationItems?.result?.map((org: any) => ({
+          label: org.org_name,
+          value: org._id,
+        })) || [],
+      placeholder: 'Select Organisation',
+    },
+    {
       key: 'branchName',
       label: 'Branch Name',
       type: 'input' as const,
@@ -52,7 +63,7 @@ const BrachesCrud: React.FC = () => {
     {
       key: 'export',
       label: 'Export',
-      type: 'default' as const,
+      type: 'primary' as const,
       onClick: () => {
         // Implement export logic here
         alert('Export clicked!');
