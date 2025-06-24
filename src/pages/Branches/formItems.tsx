@@ -53,13 +53,13 @@ export const branchesFormItems = [
   {
     label: "Head Office",
     name: "is_head_office",
-    valuePropName: "checked",
-    component: <Switch />,
+    valuePropName: "unchecked",
+    component: <Switch checkedChildren="True" unCheckedChildren="False"  />,
   },
   {
     label: "Status",
     name: "status",
     valuePropName: "checked",
-    component: <Switch />,
+    component: <Switch checkedChildren="Active" unCheckedChildren="Inactive" defaultChecked />,
   },
 ];

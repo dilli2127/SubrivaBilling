@@ -52,9 +52,9 @@ export const usersAccountFormItems = [
     ),
   },
   {
-    label: "Active Status",
+    label: "Status",
     name: "status",
     valuePropName: "checked",
-    component: <Switch />,
+    component: <Switch checkedChildren="Active" unCheckedChildren="Inactive" defaultChecked />,
   },
 ]; 
