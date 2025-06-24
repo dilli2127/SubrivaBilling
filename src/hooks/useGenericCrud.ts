@@ -27,6 +27,7 @@ export const useGenericCrud = <T extends BaseEntity>(config: CrudConfig<T>) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [searchText, setSearchText] = useState('');
   const [initialValues, setInitialValues] = useState<Partial<T>>({});
+  const [filterValues, setFilterValues] = useState<Record<string, any>>({});
 
   // Selectors
   const { loading, items } = useDynamicSelector(config.apiRoutes.get.identifier);
@@ -53,10 +54,10 @@ export const useGenericCrud = <T extends BaseEntity>(config: CrudConfig<T>) => {
     callApi(
       config.apiRoutes.get.method,
       config.apiRoutes.get.endpoint,
-      {},
+      filterValues,
       config.apiRoutes.get.identifier
     );
-  }, [callApi, config.apiRoutes.get]);
+  }, [callApi, config.apiRoutes.get, filterValues]);
 
   const create = useCallback(
     (data: Partial<T>) => {
@@ -141,10 +142,7 @@ export const useGenericCrud = <T extends BaseEntity>(config: CrudConfig<T>) => {
     [initialValues._id, create, update]
   );
 
-  // Filter items based on search
-  const filteredItems = items?.result?.filter((item: T) =>
-    JSON.stringify(item).toLowerCase().includes(searchText.toLowerCase())
-  );
+  // No local filtering; all filtering is server-side
 
   // API response handlers
   useEffect(() => {
@@ -176,7 +174,7 @@ export const useGenericCrud = <T extends BaseEntity>(config: CrudConfig<T>) => {
     }
   }, [deleteItems, deleteError, config.title, getAll]);
 
-  // Load data on mount
+  // Load data on mount and when filters change
   useEffect(() => {
     getAll();
   }, [getAll]);
@@ -184,11 +182,13 @@ export const useGenericCrud = <T extends BaseEntity>(config: CrudConfig<T>) => {
   return {
     // State
     loading,
-    items: filteredItems,
+    items: items?.result,
     drawerVisible,
     searchText,
     initialValues,
     form,
+    filterValues,
+    setFilterValues,
 
     // Actions
     setSearchText,

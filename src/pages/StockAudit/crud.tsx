@@ -57,7 +57,7 @@ const StockAuditCrud: React.FC = () => {
       },
       {
         title: "Product",
-        dataIndex: "product",
+        dataIndex: "ProductItem",
         key: "product",
         render: (product: any) => (
           <Tooltip title={product?.name}>
