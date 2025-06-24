@@ -5,12 +5,18 @@ import { MailOutlined, PhoneOutlined, UserOutlined } from '@ant-design/icons';
 
 const { Text } = Typography;
 
-export const organisationColumns = [
+export const brancheColumns = [
+  {
+    title: 'Branch',
+    dataIndex: 'branch_name',
+    key: 'branch_name',
+    render: (text: string) => <Text strong>{text}</Text>,
+  },
   {
     title: 'Organization',
-    dataIndex: 'org_name',
-    key: 'org_name',
-    render: (text: string) => <Text strong>{text}</Text>,
+    dataIndex: 'OrganisationItem',
+    key: 'OrganisationItem',
+    render: (org: { org_name: string }) => <Text strong>{org?.org_name}</Text>,
   },
   {
     title: 'Contact Person',
