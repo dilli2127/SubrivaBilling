@@ -24,6 +24,8 @@ export type FilterConfig = {
   options?: { label: string; value: any }[]; // for select
   placeholder?: string;
   width?: string | number;
+  disabled?: boolean;
+  onChange?: (value: any) => void;
 };
 
 export type CustomButtonConfig = {
@@ -129,9 +131,13 @@ export const GenericCrudPage = <T extends BaseEntity>({
                   <Select
                     placeholder={filter.placeholder || filter.label}
                     value={filterValues[filter.key]}
-                    onChange={val => handleFilterChange(filter.key, val)}
+                    onChange={val => {
+                      handleFilterChange(filter.key, val);
+                      if (filter.onChange) filter.onChange(val);
+                    }}
                     allowClear
                     style={{ width: filter.width || 200 }}
+                    disabled={filter.disabled}
                   >
                     {filter.options?.map(opt => (
                       <Select.Option key={opt.value} value={opt.value}>

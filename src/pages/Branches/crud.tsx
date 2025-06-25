@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { GenericCrudPage } from '../../components/common/GenericCrudPage';
 import { getEntityApiRoutes } from '../../helpers/CrudFactory';
 import { branchesFormItems } from './formItems';
@@ -9,14 +9,30 @@ import { useDynamicSelector } from '../../services/redux/selector';
 const BranchesCrud: React.FC = () => {
   const { getEntityApi } = useApiActions();
   const OrganisationsApi = getEntityApi('Organisations');
+  const BranchesApi = getEntityApi('Braches');
   const { items: organisationItems } = useDynamicSelector(
     OrganisationsApi.getIdentifier('GetAll')
   );
+  const { items: branchItems } = useDynamicSelector(
+    BranchesApi.getIdentifier('GetAll')
+  );
 
+  // Fetch organisations and branches data when component mounts
   useEffect(() => {
     OrganisationsApi('GetAll');
-  }, [OrganisationsApi]);
+    BranchesApi('GetAll');
+  }, [OrganisationsApi, BranchesApi]);
 
+  // State for selected organisation
+  const [selectedOrg, setSelectedOrg] = useState<string | undefined>(undefined);
+
+  // Filter branch options based on selected organisation
+  const filteredBranches =
+    branchItems?.result?.filter(
+      (branch: any) => !selectedOrg || branch.organisation_id === selectedOrg
+    ) || [];
+
+  // Define filters inside the component so disabled updates with selectedOrg
   const filters = [
     {
       key: 'organisation_id',
@@ -28,6 +44,18 @@ const BranchesCrud: React.FC = () => {
           value: org._id,
         })) || [],
       placeholder: 'Select Organisation',
+      onChange: (value: string) => setSelectedOrg(value),
+    },
+    {
+      key: 'branch_id',
+      label: 'Branch',
+      type: 'select' as const,
+      options: filteredBranches.map((branch: any) => ({
+        label: branch.branch_name,
+        value: branch._id,
+      })),
+      placeholder: 'Select Branch',
+      disabled: !selectedOrg, // This will now update on every render
     },
   ];
 
