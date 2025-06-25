@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { Form } from 'antd';
-import { dynamic_request, useDynamicSelector } from '../services/redux';
+import { dynamic_request, useDynamicSelector, dynamic_clear } from '../services/redux';
 import { showToast } from '../helpers/Common_functions';
 import { BaseEntity } from '../types/entities';
 import { Dispatch } from 'redux';
@@ -150,29 +150,32 @@ export const useGenericCrud = <T extends BaseEntity>(config: CrudConfig<T>) => {
       showToast('success', `${config.title} created successfully`);
       getAll();
       resetForm();
+      dispatch(dynamic_clear(config.apiRoutes.create.identifier));
     } else if (createError) {
       showToast('error', `Failed to create ${config.title}`);
     }
-  }, [createItems, createError, config.title, getAll, resetForm]);
+  }, [createItems, createError, config.title, getAll, resetForm, dispatch, config.apiRoutes.create.identifier]);
 
   useEffect(() => {
     if (updateItems?.statusCode === '200') {
       showToast('success', `${config.title} updated successfully`);
       getAll();
       resetForm();
+      dispatch(dynamic_clear(config.apiRoutes.update.identifier));
     } else if (updateError) {
       showToast('error', `Failed to update ${config.title}`);
     }
-  }, [updateItems, updateError, config.title, getAll, resetForm]);
+  }, [updateItems, updateError, config.title, getAll, resetForm, dispatch, config.apiRoutes.update.identifier]);
 
   useEffect(() => {
     if (deleteItems?.statusCode === '200') {
       showToast('success', `${config.title} deleted successfully`);
       getAll();
+      dispatch(dynamic_clear(config.apiRoutes.delete.identifier));
     } else if (deleteError) {
       showToast('error', `Failed to delete ${config.title}`);
     }
-  }, [deleteItems, deleteError, config.title, getAll]);
+  }, [deleteItems, deleteError, config.title, getAll, dispatch, config.apiRoutes.delete.identifier]);
 
   // Load data on mount and when filters change
   useEffect(() => {
