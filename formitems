@@ -110,3 +110,14 @@
       },
     },
   ];
+
+
+  const crud = useGenericCrud({
+    title: 'Branches',
+    columns: brancheColumns,
+    formItems: branchesFormItems(organisationItems?.result),
+    apiRoutes: getEntityApiRoutes('Braches'),
+    formColumns: 2,
+  });
+
+  onFilterChange={crud.setFilterValues}
