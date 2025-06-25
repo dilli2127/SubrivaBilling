@@ -39,6 +39,34 @@ export const usersAccountFormItems = (roles: {label: string; value: string}[] = 
     component: <Input.Password placeholder="Enter password" />,
   },
   {
+    label: "Organisation",
+    name: "organisation_id",
+    rules: [{ required: true, message: "Please select a role" }],
+    component: (
+      <Select placeholder="Select role" allowClear showSearch>
+        {roles.map((role) => (
+          <Select.Option key={role.value} value={role.value}>
+            {role.label}
+          </Select.Option>
+        ))}
+      </Select>
+    ),
+  },
+  {
+    label: "Branch",
+    name: "branch_id",
+    rules: [{ required: true, message: "Please select a role" }],
+    component: (
+      <Select placeholder="Select role" allowClear showSearch>
+        {roles.map((role) => (
+          <Select.Option key={role.value} value={role.value}>
+            {role.label}
+          </Select.Option>
+        ))}
+      </Select>
+    ),
+  },
+  {
     label: "Role",
     name: "role_id",
     rules: [{ required: true, message: "Please select a role" }],

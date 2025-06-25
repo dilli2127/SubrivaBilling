@@ -9,10 +9,14 @@ import { useDynamicSelector } from '../../services/redux/selector';
 const UserAccountCrud: React.FC = () => {
   const { getEntityApi } = useApiActions();
   const RolesApi = getEntityApi('Roles');
+  const Organisations = getEntityApi('Organisations');
+  const Braches = getEntityApi('Braches');
   const { items: rolesItems } = useDynamicSelector(RolesApi.getIdentifier('GetAll'));
 
   useEffect(() => {
     RolesApi('GetAll');
+    Organisations("GetAll");
+    Braches('GetAll');
   }, [RolesApi]);
 
   // Prepare roles for the select
