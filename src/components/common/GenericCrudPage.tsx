@@ -62,9 +62,9 @@ export const GenericCrudPage = <T extends BaseEntity>({
     formItems,
     formColumns = 2,
     drawerWidth,
+    filterValues,
+    setFilterValues,
   } = useGenericCrud(config);
-
-  const [filterValues, setFilterValues] = useState<Record<string, any>>({});
 
   const handleFilterChange = (key: string, value: any) => {
     const newValues = { ...filterValues, [key]: value };
