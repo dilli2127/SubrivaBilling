@@ -111,11 +111,62 @@
     },
   ];
 
+  // disabled with filter
+  const filters = [
+    {
+      key: 'organisation_id',
+      label: 'Organisation',
+      type: 'select' as const,
+      options:
+        organisationItems?.result?.map((org: any) => ({
+          label: org.org_name,
+          value: org._id,
+        })) || [],
+      placeholder: 'Select Organisation',
+      onChange: (value: string) => setSelectedOrg(value),
+    },
+    {
+      key: 'branch_id',
+      label: 'Branch',
+      type: 'select' as const,
+      options: filteredBranches.map((branch: any) => ({
+        label: branch.branch_name,
+        value: branch._id,
+      })),
+      placeholder: 'Select Branch',
+      disabled: !selectedOrg, 
+    },
+  ];
 
-  const crud = useGenericCrud({
-    title: 'Branches',
-    columns: brancheColumns,
-    formItems: branchesFormItems(organisationItems?.result),
-    apiRoutes: getEntityApiRoutes('Braches'),
-    formColumns: 2,
-  });
+
+  const filters = [
+    {
+      key: 'organisation_id',
+      label: 'Organisation',
+      type: 'select' as const,
+      options:
+        organisationItems?.result?.map((org: any) => ({
+          label: org.org_name,
+          value: org._id,
+        })) || [],
+      placeholder: 'Select Organisation',
+      onChange: (value: string) => setSelectedOrg(value),
+    },
+    // Only include Branch filter if an organisation is selected
+    ...(
+      selectedOrg
+        ? [
+            {
+              key: 'branch_id',
+              label: 'Branch',
+              type: 'select' as const,
+              options: filteredBranches.map((branch: any) => ({
+                label: branch.branch_name,
+                value: branch._id,
+              })),
+              placeholder: 'Select Branch',
+            },
+          ]
+        : []
+    ),
+  ];

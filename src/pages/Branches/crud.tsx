@@ -55,7 +55,7 @@ const BranchesCrud: React.FC = () => {
         value: branch._id,
       })),
       placeholder: 'Select Branch',
-      disabled: !selectedOrg, // This will now update on every render
+      disabled: !selectedOrg, 
     },
   ];
 
