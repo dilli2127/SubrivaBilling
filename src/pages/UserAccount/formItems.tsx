@@ -5,10 +5,12 @@ export const usersAccountFormItems = ({
   roles = [],
   organisation = [],
   branches = [],
+  selectedOrganisationId = null,
 }: {
   roles?: { label: string; value: string }[];
   organisation?: { label: string; value: string }[];
-  branches?: { label: string; value: string }[];
+  branches?: { label: string; value: string; organisation_id?: string | number }[];
+  selectedOrganisationId?: string | number | null;
 } = {}) => [
   {
     label: "Full Name",
@@ -65,10 +67,10 @@ export const usersAccountFormItems = ({
     name: "organisation_id",
     rules: [{ required: true, message: "Please select a organisation" }],
     component: (
-      <Select placeholder="Select role" allowClear showSearch>
-        {organisation.map((organisation) => (
-          <Select.Option key={organisation.value} value={organisation.value}>
-            {organisation.label}
+      <Select placeholder="Select organisation" allowClear showSearch>
+        {organisation.map((org) => (
+          <Select.Option key={org.value} value={org.value}>
+            {org.label}
           </Select.Option>
         ))}
       </Select>
@@ -79,12 +81,23 @@ export const usersAccountFormItems = ({
     name: "branch_id",
     rules: [{ required: true, message: "Please select a branch" }],
     component: (
-      <Select placeholder="Select branch" allowClear showSearch>
-        {branches.map((branch) => (
-          <Select.Option key={branch.value} value={branch.value}>
-            {branch.label}
-          </Select.Option>
-        ))}
+      <Select
+        placeholder="Select branch"
+        allowClear
+        showSearch
+        disabled={!selectedOrganisationId}
+      >
+        {branches
+          .filter(
+            (branch) =>
+              (typeof selectedOrganisationId === 'string' || typeof selectedOrganisationId === 'number') &&
+              branch.organisation_id === selectedOrganisationId
+          )
+          .map((branch) => (
+            <Select.Option key={branch.value} value={branch.value}>
+              {branch.label}
+            </Select.Option>
+          ))}
       </Select>
     ),
   },

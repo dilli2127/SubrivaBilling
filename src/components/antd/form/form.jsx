@@ -18,6 +18,7 @@ const AntdForm = (props) => {
     initialValues,
     loading,
     form,
+    onValuesChange,
   } = props;
   const columns = formColumns || 1;
   
@@ -67,6 +68,7 @@ const AntdForm = (props) => {
         form={form}
         onFinish={onFinish}
         layout="vertical"
+        onValuesChange={onValuesChange}
       >
         <Row gutter={[16, 16]}>
           {formItems?.map((item, index) => (

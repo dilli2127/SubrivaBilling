@@ -60,6 +60,7 @@ interface GenericCrudPageProps<T extends BaseEntity> {
   filters?: FilterConfig[];
   onFilterChange?: (values: Record<string, any>) => void;
   customButtons?: CustomButtonConfig[];
+  onValuesChange?: (changed: any, all: any) => void;
 }
 
 // Extract actions column to a helper
@@ -91,6 +92,7 @@ export const GenericCrudPage = <T extends BaseEntity>({
   filters = [],
   onFilterChange,
   customButtons = [],
+  onValuesChange,
 }: GenericCrudPageProps<T>) => {
   const {
     loading,
@@ -234,6 +236,7 @@ export const GenericCrudPage = <T extends BaseEntity>({
           initialValues={initialValues}
           onSubmit={handleSubmit}
           onCancel={resetForm}
+          onValuesChange={onValuesChange}
         />
       </GlobalDrawer>
     </div>
