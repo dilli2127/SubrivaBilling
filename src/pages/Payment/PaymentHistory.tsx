@@ -1,5 +1,5 @@
 import React from "react";
-import CrudModule from "../../components/common/CrudModule";
+import { GenericCrudPage } from "../../components/common/GenericCrudPage";
 import { DatePicker, Input, Select } from "antd";
 import { Option } from "antd/es/mentions";
 import { getEntityApiRoutes } from "../../helpers/CrudFactory";
@@ -60,15 +60,14 @@ const VariantCrud = () => {
 
   const apiRoutes = getEntityApiRoutes("PaymentHistory");
 
-  return (
-    <CrudModule
-      title="Payment History"
-      formItems={formItems}
-      columns={columns}
-      apiRoutes={apiRoutes}
-      formColumns={2}
-    />
-  );
+  const config = {
+    title: "Payment History",
+    columns,
+    formItems,
+    apiRoutes,
+    formColumns: 2,
+  };
+  return <GenericCrudPage config={config} />;
 };
 
 export default VariantCrud;

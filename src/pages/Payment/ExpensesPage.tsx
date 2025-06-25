@@ -1,5 +1,5 @@
 import React from "react";
-import CrudModule from "../../components/common/CrudModule";
+import { GenericCrudPage } from "../../components/common/GenericCrudPage";
 import { DatePicker, Input, InputNumber, Select } from "antd";
 import { Option } from "antd/es/mentions";
 import {
@@ -83,15 +83,14 @@ const ExpensesCrud = () => {
 
   const apiRoutes = getEntityApiRoutes("Expenses");
 
-  return (
-    <CrudModule
-      title="Expenses"
-      formItems={formItems}
-      columns={columns}
-      apiRoutes={apiRoutes}
-      formColumns={2}
-    />
-  );
+  const config = {
+    title: "Expenses",
+    columns,
+    formItems,
+    apiRoutes,
+    formColumns: 2,
+  };
+  return <GenericCrudPage config={config} />;
 };
 
 export default ExpensesCrud;

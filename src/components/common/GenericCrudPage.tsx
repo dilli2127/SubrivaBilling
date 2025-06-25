@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   Button,
   Row,
@@ -36,11 +36,50 @@ export type CustomButtonConfig = {
   icon?: React.ReactNode;
 };
 
+// Add type definitions for columns and formItems
+interface CrudColumn {
+  title: string;
+  dataIndex: string;
+  key: string;
+  render?: (value: any, record: any) => React.ReactNode;
+}
+interface CrudFormItem {
+  label: string;
+  name: string;
+  rules?: any[];
+  component: React.ReactNode;
+  valuePropName?: string;
+}
+
 interface GenericCrudPageProps<T extends BaseEntity> {
   config: CrudConfig<T>;
   filters?: FilterConfig[];
   onFilterChange?: (values: Record<string, any>) => void;
   customButtons?: CustomButtonConfig[];
+}
+
+// Extract actions column to a helper
+function getActionsColumn(title: string, handleEdit: (record: any) => void, handleDelete: (record: any) => void) {
+  return {
+    title: 'Actions',
+    key: 'actions',
+    render: (_: any, record: object) => (
+      <div style={{ display: 'flex', gap: '10px' }}>
+        <Tooltip title={`Edit ${title}`}>
+          <EditOutlined
+            style={{ cursor: 'pointer', color: '#1890ff' }}
+            onClick={() => handleEdit(record)}
+          />
+        </Tooltip>
+        <Tooltip title={`Delete ${title}`}>
+          <DeleteOutlined
+            style={{ cursor: 'pointer', color: '#ff4d4f' }}
+            onClick={() => handleDelete(record)}
+          />
+        </Tooltip>
+      </div>
+    ),
+  };
 }
 
 export const GenericCrudPage = <T extends BaseEntity>({
@@ -74,29 +113,10 @@ export const GenericCrudPage = <T extends BaseEntity>({
     if (onFilterChange) onFilterChange(newValues);
   };
 
-  const tableColumns = [
+  const tableColumns = useMemo(() => [
     ...columns,
-    {
-      title: 'Actions',
-      key: 'actions',
-      render: (_: any, record: T) => (
-        <div style={{ display: 'flex', gap: '10px' }}>
-          <Tooltip title={`Edit ${config.title}`}>
-            <EditOutlined
-              style={{ cursor: 'pointer', color: '#1890ff' }}
-              onClick={() => handleEdit(record)}
-            />
-          </Tooltip>
-          <Tooltip title={`Delete ${config.title}`}>
-            <DeleteOutlined
-              style={{ cursor: 'pointer', color: '#ff4d4f' }}
-              onClick={() => handleDelete(record)}
-            />
-          </Tooltip>
-        </div>
-      ),
-    },
-  ];
+    getActionsColumn(config.title, handleEdit, handleDelete)
+  ], [columns, config.title, handleEdit, handleDelete]);
 
   return (
     <div>

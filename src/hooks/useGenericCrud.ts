@@ -25,7 +25,6 @@ export const useGenericCrud = <T extends BaseEntity>(config: CrudConfig<T>) => {
   const dispatch: Dispatch<any> = useDispatch();
   const [form] = Form.useForm();
   const [drawerVisible, setDrawerVisible] = useState(false);
-  const [searchText, setSearchText] = useState('');
   const [initialValues, setInitialValues] = useState<Partial<T>>({});
   const [filterValues, setFilterValues] = useState<Record<string, any>>({});
 
@@ -187,14 +186,12 @@ export const useGenericCrud = <T extends BaseEntity>(config: CrudConfig<T>) => {
     loading,
     items: items?.result,
     drawerVisible,
-    searchText,
     initialValues,
     form,
     filterValues,
     setFilterValues,
 
     // Actions
-    setSearchText,
     handleEdit,
     handleDelete,
     handleDrawerOpen,
