@@ -23,54 +23,6 @@ const BrachesCrud: React.FC = () => {
     formColumns: 2,
   });
 
-  useEffect(() => {
-    OrganisationsApi('GetAll');
-  }, [OrganisationsApi]);
-
-  // Example filter and button configs
-  const filters = [
-    {
-      key: 'organisation_id',
-      label: 'Organisation',
-      type: 'select' as const,
-      options:
-        organisationItems?.result?.map((org: any) => ({
-          label: org.org_name,
-          value: org._id,
-        })) || [],
-      placeholder: 'Select Organisation',
-    },
-    {
-      key: 'area_id',
-      label: 'Area',
-      type: 'select' as const,
-      options:
-        organisationItems?.result?.map((org: any) => ({
-          label: org.org_name,
-          value: org._id,
-        })) || [],
-      placeholder: 'Select Organisation',
-    },
-    {
-      key: 'branchName',
-      label: 'Branch Name',
-      type: 'input' as const,
-      placeholder: 'Branch Name',
-    },
-  ];
-
-  const customButtons = [
-    {
-      key: 'export',
-      label: 'Export',
-      type: 'primary' as const,
-      onClick: () => {
-        // Implement export logic here
-        alert('Export clicked!');
-      },
-    },
-  ];
-
   return (
     <GenericCrudPage
       config={{
@@ -80,9 +32,7 @@ const BrachesCrud: React.FC = () => {
         apiRoutes: getEntityApiRoutes('Braches'),
         formColumns: 2,
       }}
-      filters={filters}
       onFilterChange={crud.setFilterValues}
-      customButtons={customButtons}
     />
   );
 };
