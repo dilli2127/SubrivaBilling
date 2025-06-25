@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { Form } from 'antd';
 import { dynamic_request, useDynamicSelector, dynamic_clear } from '../services/redux';
+import { CrudColumn, CrudFormItem } from '../components/common/GenericCrudPage';
 import { showToast } from '../helpers/Common_functions';
 import { BaseEntity } from '../types/entities';
 import { Dispatch } from 'redux';
@@ -9,8 +10,8 @@ import dayjs from 'dayjs';
 
 export interface CrudConfig<T extends BaseEntity> {
   title: string;
-  columns: any[];
-  formItems: any[];
+  columns: CrudColumn[];
+  formItems: CrudFormItem[];
   apiRoutes: {
     get: { method: string; endpoint: string; identifier: string };
     create: { method: string; endpoint: string; identifier: string };

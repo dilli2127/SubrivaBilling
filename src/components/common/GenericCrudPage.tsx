@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import {
   Button,
   Row,
@@ -37,13 +37,14 @@ export type CustomButtonConfig = {
 };
 
 // Add type definitions for columns and formItems
-interface CrudColumn {
+export interface CrudColumn {
   title: string;
-  dataIndex: string;
+  dataIndex?: string;
   key: string;
   render?: (value: any, record: any) => React.ReactNode;
 }
-interface CrudFormItem {
+
+export interface CrudFormItem {
   label: string;
   name: string;
   rules?: any[];
@@ -52,7 +53,10 @@ interface CrudFormItem {
 }
 
 interface GenericCrudPageProps<T extends BaseEntity> {
-  config: CrudConfig<T>;
+  config: Omit<CrudConfig<T>, 'columns' | 'formItems'> & {
+    columns: CrudColumn[];
+    formItems: CrudFormItem[];
+  };
   filters?: FilterConfig[];
   onFilterChange?: (values: Record<string, any>) => void;
   customButtons?: CustomButtonConfig[];
@@ -107,11 +111,11 @@ export const GenericCrudPage = <T extends BaseEntity>({
     setFilterValues,
   } = useGenericCrud(config);
 
-  const handleFilterChange = (key: string, value: any) => {
+  const handleFilterChange = useCallback((key: string, value: any) => {
     const newValues = { ...filterValues, [key]: value };
     setFilterValues(newValues);
     if (onFilterChange) onFilterChange(newValues);
-  };
+  }, [filterValues, setFilterValues, onFilterChange]);
 
   const tableColumns = useMemo(() => [
     ...columns,
