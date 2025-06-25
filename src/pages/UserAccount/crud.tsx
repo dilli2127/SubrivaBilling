@@ -8,16 +8,15 @@ import { useDynamicSelector } from '../../services/redux/selector';
 
 const UserAccountCrud: React.FC = () => {
   const { getEntityApi } = useApiActions();
-  const RolesApi = getEntityApi('Roles');
-  const Organisations = getEntityApi('Organisations');
-  const Braches = getEntityApi('Braches');
+  const apis = ['Roles', 'Organisations', 'Braches'].map(getEntityApi);
+  const [RolesApi, OrganisationsApi, BrachesApi] = apis;
   const { items: rolesItems } = useDynamicSelector(RolesApi.getIdentifier('GetAll'));
+  const { items: orgaisationItems } = useDynamicSelector(OrganisationsApi.getIdentifier('GetAll'));
+  const { items: branchesItems } = useDynamicSelector(BrachesApi.getIdentifier('GetAll'));
 
   useEffect(() => {
-    RolesApi('GetAll');
-    Organisations("GetAll");
-    Braches('GetAll');
-  }, [RolesApi]);
+    [RolesApi, OrganisationsApi, BrachesApi].forEach(api => api('GetAll'));
+  }, [RolesApi, OrganisationsApi, BrachesApi]);
 
   // Prepare roles for the select
   const roles =
@@ -25,13 +24,23 @@ const UserAccountCrud: React.FC = () => {
       label: role.name,
       value: role._id,
     })) || [];
-
+    const organisation =
+    orgaisationItems?.result?.map((organisation: any) => ({
+      label: organisation.org_name,
+      value: organisation._id,
+    })) || [];
+    
+    const branches =
+    branchesItems?.result?.map((branch: any) => ({
+      label: branch.branch_name,
+      value: branch._id,
+    })) || [];
   return (
     <GenericCrudPage
       config={{
         title: 'Users',
         columns: usersAccountColumns,
-        formItems: usersAccountFormItems(roles),
+        formItems: usersAccountFormItems({ roles, organisation, branches }),
         apiRoutes: getEntityApiRoutes('BillingUsers'),
         formColumns: 2,
       }}

@@ -1,7 +1,15 @@
 import React from 'react';
 import {  Input,  Select,  Switch } from 'antd';
 
-export const usersAccountFormItems = (roles: {label: string; value: string}[] = []) => [
+export const usersAccountFormItems = ({
+  roles = [],
+  organisation = [],
+  branches = [],
+}: {
+  roles?: { label: string; value: string }[];
+  organisation?: { label: string; value: string }[];
+  branches?: { label: string; value: string }[];
+} = {}) => [
   {
     label: "Full Name",
     name: "name",
@@ -39,34 +47,6 @@ export const usersAccountFormItems = (roles: {label: string; value: string}[] = 
     component: <Input.Password placeholder="Enter password" />,
   },
   {
-    label: "Organisation",
-    name: "organisation_id",
-    rules: [{ required: true, message: "Please select a role" }],
-    component: (
-      <Select placeholder="Select role" allowClear showSearch>
-        {roles.map((role) => (
-          <Select.Option key={role.value} value={role.value}>
-            {role.label}
-          </Select.Option>
-        ))}
-      </Select>
-    ),
-  },
-  {
-    label: "Branch",
-    name: "branch_id",
-    rules: [{ required: true, message: "Please select a role" }],
-    component: (
-      <Select placeholder="Select role" allowClear showSearch>
-        {roles.map((role) => (
-          <Select.Option key={role.value} value={role.value}>
-            {role.label}
-          </Select.Option>
-        ))}
-      </Select>
-    ),
-  },
-  {
     label: "Role",
     name: "role_id",
     rules: [{ required: true, message: "Please select a role" }],
@@ -75,6 +55,34 @@ export const usersAccountFormItems = (roles: {label: string; value: string}[] = 
         {roles.map((role) => (
           <Select.Option key={role.value} value={role.value}>
             {role.label}
+          </Select.Option>
+        ))}
+      </Select>
+    ),
+  },
+  {
+    label: "Organisation",
+    name: "organisation_id",
+    rules: [{ required: true, message: "Please select a organisation" }],
+    component: (
+      <Select placeholder="Select role" allowClear showSearch>
+        {organisation.map((organisation) => (
+          <Select.Option key={organisation.value} value={organisation.value}>
+            {organisation.label}
+          </Select.Option>
+        ))}
+      </Select>
+    ),
+  },
+  {
+    label: "Branch",
+    name: "branch_id",
+    rules: [{ required: true, message: "Please select a branch" }],
+    component: (
+      <Select placeholder="Select branch" allowClear showSearch>
+        {branches.map((branch) => (
+          <Select.Option key={branch.value} value={branch.value}>
+            {branch.label}
           </Select.Option>
         ))}
       </Select>
