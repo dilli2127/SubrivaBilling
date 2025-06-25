@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { GenericCrudPage } from '../../components/common/GenericCrudPage';
 import { getEntityApiRoutes } from '../../helpers/CrudFactory';
 import { branchesFormItems } from './formItems';
@@ -13,6 +13,36 @@ const BranchesCrud: React.FC = () => {
     OrganisationsApi.getIdentifier('GetAll')
   );
 
+  useEffect(() => {
+    OrganisationsApi('GetAll');
+  }, [OrganisationsApi]);
+
+  const filters = [
+    {
+      key: 'organisation_id',
+      label: 'Organisation',
+      type: 'select' as const,
+      options:
+        organisationItems?.result?.map((org: any) => ({
+          label: org.org_name,
+          value: org._id,
+        })) || [],
+      placeholder: 'Select Organisation',
+    },
+  ];
+
+  const customButtons = [
+    {
+      key: 'export',
+      label: 'Export',
+      type: 'primary' as const,
+      onClick: () => {
+        // Implement export logic here
+        alert('Export clicked!');
+      },
+    },
+  ];
+
   return (
     <GenericCrudPage
       config={{
@@ -22,6 +52,8 @@ const BranchesCrud: React.FC = () => {
         apiRoutes: getEntityApiRoutes('Braches'),
         formColumns: 2,
       }}
+      filters={filters}
+      customButtons={customButtons}
     />
   );
 };

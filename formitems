@@ -119,5 +119,3 @@
     apiRoutes: getEntityApiRoutes('Braches'),
     formColumns: 2,
   });
-
-  onFilterChange={crud.setFilterValues}
