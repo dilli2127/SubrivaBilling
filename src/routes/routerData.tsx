@@ -23,6 +23,8 @@ const StockAvailable = lazy(() => import("../pages/ProductStocks/List"));
 const OrganisationsCrud = lazy(() => import("../pages/Organisations/crud"));
 const BrachesCrud = lazy(() => import("../pages/Branches/crud"));
 const SalesAccountCrud = lazy(() => import("../pages/UserAccount/crud"));
+const RolesCrud = lazy(() => import("../pages/Roles/crud"));
+
 
 const routerData: RouteConfig[] = [
   {
@@ -245,6 +247,16 @@ const routerData: RouteConfig[] = [
         element: (
           <Suspense fallback={<Loader />}>
             <SalesAccountCrud />
+          </Suspense>
+        ),
+        children: [],
+      },
+      {
+        key: "roles",
+        path: "roles",
+        element: (
+          <Suspense fallback={<Loader />}>
+            <RolesCrud />
           </Suspense>
         ),
         children: [],

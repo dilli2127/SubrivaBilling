@@ -1,48 +1,34 @@
-import React from 'react';
-
-import { Tag, Typography, Space } from 'antd';
-import { MailOutlined, PhoneOutlined, UserOutlined } from '@ant-design/icons';
-
-const { Text } = Typography;
+import { Tag } from 'antd';
 
 export const usersAccountColumns = [
   {
-    title: 'Organization',
-    dataIndex: 'org_name',
-    key: 'org_name',
-    render: (text: string) => <Text strong>{text}</Text>,
+    title: 'Name',
+    dataIndex: 'name',
+    key: 'name',
+    render: (text: string) => <strong>{text}</strong>,
   },
   {
-    title: 'Contact Person',
-    dataIndex: 'owner_name',
-    key: 'owner_name',
-    render: (name: string) => (
-      <Space>
-        <UserOutlined />
-        <Text>{name}</Text>
-      </Space>
-    ),
-  },
-  {
-    title: 'Phone',
-    dataIndex: 'phone',
-    key: 'phone',
-    render: (phone: string) => (
-      <Space>
-        <PhoneOutlined style={{ color: '#1890ff' }} />
-        <Text>{phone}</Text>
-      </Space>
-    ),
+    title: 'Username',
+    dataIndex: 'user_name',
+    key: 'user_name',
+    render: (text: string) => <span style={{ color: '#1890ff' }}>{text}</span>,
   },
   {
     title: 'Email',
     dataIndex: 'email',
     key: 'email',
-    render: (email: string) => (
-      <Space>
-        <MailOutlined style={{ color: '#722ed1' }} />
-        <Text type="secondary">{email}</Text>
-      </Space>
+  },
+  {
+    title: 'Mobile',
+    dataIndex: 'mobile',
+    key: 'mobile',
+  },
+  {
+    title: 'Role',
+    dataIndex: 'roleItems',
+    key: 'role_id',
+    render: (roleItems: { name: string }) => (
+      <Tag color="geekblue">{roleItems?.name}</Tag>
     ),
   },
   {

@@ -189,6 +189,12 @@ export const menuItems = [
         icon: <BankOutlined />,
         path: "/users",
       },
+      {
+        key: "roles",
+        label: "Roles",
+        icon: <BankOutlined />,
+        path: "/roles",
+      },
     ],
   },
 ];

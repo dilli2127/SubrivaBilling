@@ -141,4 +141,6 @@ export const API_ROUTES = {
   InvoiceNumber: createCrudRoutes("/invoice_numbers", "InvoiceNumber"),
   Organisations: createCrudRoutes("/organisations", "Organisations"),
   Braches: createCrudRoutes("/branches", "Branches"),
+  Roles: createCrudRoutes("/roles", "Roles"),
+  BillingUsers: createCrudRoutes("/billing_users", "BillingUsers"),
 };

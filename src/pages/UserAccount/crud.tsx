@@ -1,20 +1,38 @@
-import React, { memo } from 'react';
+import React, { memo, useEffect } from 'react';
 import { GenericCrudPage } from '../../components/common/GenericCrudPage';
 import { getEntityApiRoutes } from '../../helpers/CrudFactory';
 import { usersAccountColumns } from './columns';
 import { usersAccountFormItems } from './formItems';
+import { useApiActions } from '../../services/api/useApiActions';
+import { useDynamicSelector } from '../../services/redux/selector';
 
-const usersConfig = {
-  title: 'Users',
-  columns: usersAccountColumns,
-  formItems: usersAccountFormItems,
-  apiRoutes: getEntityApiRoutes('Braches'),
-  formColumns: 2,
-  drawerWidth:800
+const UserAccountCrud: React.FC = () => {
+  const { getEntityApi } = useApiActions();
+  const RolesApi = getEntityApi('Roles');
+  const { items: rolesItems } = useDynamicSelector(RolesApi.getIdentifier('GetAll'));
+
+  useEffect(() => {
+    RolesApi('GetAll');
+  }, [RolesApi]);
+
+  // Prepare roles for the select
+  const roles =
+    rolesItems?.result?.map((role: any) => ({
+      label: role.name,
+      value: role._id,
+    })) || [];
+
+  return (
+    <GenericCrudPage
+      config={{
+        title: 'Users',
+        columns: usersAccountColumns,
+        formItems: usersAccountFormItems(roles),
+        apiRoutes: getEntityApiRoutes('BillingUsers'),
+        formColumns: 2,
+      }}
+    />
+  );
 };
 
-const SalesAccountCrud: React.FC = () => {
-  return <GenericCrudPage config={usersConfig} />;
-};
-
-export default  memo(SalesAccountCrud);
+export default memo(UserAccountCrud);
