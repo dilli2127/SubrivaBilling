@@ -4,7 +4,10 @@ import {
   MenuFoldOutlined,
   MenuUnfoldOutlined,
 } from "@ant-design/icons";
-import { Layout, Menu, Modal, Button } from "antd";
+import Layout from "antd/es/layout";
+import Menu from "antd/es/menu";
+import Modal from "antd/es/modal";
+import Button from "antd/es/button";
 import { useNavigate } from "react-router-dom";
 import { menuItems as originalMenuItems } from "./menu";
 import "./Sidebar.css";
