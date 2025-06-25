@@ -1,4 +1,4 @@
-import React, { ReactNode, useState } from "react";
+import React, { ReactNode, useState, useMemo, useCallback } from "react";
 import {
   LogoutOutlined,
   MenuFoldOutlined,
@@ -6,7 +6,7 @@ import {
 } from "@ant-design/icons";
 import { Layout, Menu, Modal, Button } from "antd";
 import { useNavigate } from "react-router-dom";
-import { menuItems } from "./menu";
+import { menuItems as originalMenuItems } from "./menu";
 import "./Sidebar.css";
 
 const { Header, Content, Sider } = Layout;
@@ -23,28 +23,70 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
 
   const navigate = useNavigate();
   
-  // Get user data from sessionStorage
-  const userItem = sessionStorage.getItem("user")
-    ? JSON.parse(sessionStorage.getItem("user")!)
-    : null;
+  // Memoize user data parsing to avoid parsing on every render
+  const userItem = useMemo(() => {
+    const userData = sessionStorage.getItem("user");
+    return userData ? JSON.parse(userData) : null;
+  }, []);
 
-  const handleOpenChange = (keys: string[]) => {
+  const handleOpenChange = useCallback((keys: string[]) => {
     const latestOpenKey = keys.find((key) => !openKeys.includes(key));
     setOpenKeys(latestOpenKey ? [latestOpenKey] : []);
-  };
+  }, [openKeys]);
 
-  const showLogoutConfirm = () => setIsModalVisible(true);
-  const handleOk = () => {
+  const showLogoutConfirm = useCallback(() => setIsModalVisible(true), []);
+  const handleOk = useCallback(() => {
     sessionStorage.removeItem("token");
     sessionStorage.removeItem("user");
     setIsModalVisible(false);
     navigate("/login");
-  };
-  const handleCancel = () => setIsModalVisible(false);
-  const handleMenuClick = (key: string, path?: string) => {
+  }, [navigate]);
+  const handleCancel = useCallback(() => setIsModalVisible(false), []);
+  const handleMenuClick = useCallback((key: string, path?: string) => {
     setSelectedKey(key);
     if (path) navigate(path);
-  };
+  }, [navigate]);
+
+  // Memoize menu items to prevent unnecessary re-renders
+  const memoizedMenuItems = useMemo(() => {
+    return originalMenuItems.map((item: any) =>
+      item.children ? (
+        <React.Fragment key={item.key}>
+          {item?.key === "EMemories" && "Produce"}
+          <Menu.SubMenu
+            key={item.key}
+            icon={item.icon}
+            title={item.label}
+            popupClassName="custom-submenu-popup"
+          >
+            {item.children.map((child: any) => (
+              <Menu.Item
+                key={child.key}
+                icon={child.icon}
+                onClick={() => handleMenuClick(child.key, child.path)}
+                className={`custom-subitem ${
+                  selectedKey === child.key ? "active" : ""
+                }`}
+              >
+                {child.label}
+              </Menu.Item>
+            ))}
+          </Menu.SubMenu>
+        </React.Fragment>
+      ) : (
+        <Menu.Item
+          key={item.key}
+          icon={item.icon}
+          onClick={() => handleMenuClick(item.key, item.path)}
+          className={`custom-menuitem ${
+            selectedKey === item.key ? "active" : ""
+          }`}
+        >
+          {item.label}
+        </Menu.Item>
+      )
+    );
+  }, [selectedKey, handleMenuClick]);
 
   return (
     <Layout style={{ minHeight: "100vh" }}>
@@ -119,43 +161,7 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
                 fontWeight: 500,
               }}
             >
-              {menuItems.map((item) =>
-                item.children ? (
-                  <>
-                    {item?.key === "EMemories" && "Produce"}
-                    <Menu.SubMenu
-                      key={item.key}
-                      icon={item.icon}
-                      title={item.label}
-                      popupClassName="custom-submenu-popup"
-                    >
-                      {item.children.map((child) => (
-                        <Menu.Item
-                          key={child.key}
-                          icon={child.icon}
-                          onClick={() => handleMenuClick(child.key, child.path)}
-                          className={`custom-subitem ${
-                            selectedKey === child.key ? "active" : ""
-                          }`}
-                        >
-                          {child.label}
-                        </Menu.Item>
-                      ))}
-                    </Menu.SubMenu>
-                  </>
-                ) : (
-                  <Menu.Item
-                    key={item.key}
-                    icon={item.icon}
-                    onClick={() => handleMenuClick(item.key, item.path)}
-                    className={`custom-menuitem ${
-                      selectedKey === item.key ? "active" : ""
-                    }`}
-                  >
-                    {item.label}
-                  </Menu.Item>
-                )
-              )}
+              {memoizedMenuItems}
             </Menu>
           </div>
         </Sider>

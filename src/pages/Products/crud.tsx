@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState, useMemo } from 'react';
 import { Input, Select, Space, Switch, Tag } from 'antd';
 import { createApiRouteGetter } from '../../helpers/Common_functions';
 import { dynamic_request, useDynamicSelector } from '../../services/redux';
@@ -78,7 +78,7 @@ const ProductCrud: React.FC = () => {
     setCategoryMap(createMap(categoryItems?.result || [], 'category_name'));
   }, [categoryItems]);
 
-  const productConfig = {
+  const productConfig = useMemo(() => ({
     title: 'Products',
     columns: [
       {
@@ -212,7 +212,7 @@ const ProductCrud: React.FC = () => {
     ],
     apiRoutes: getEntityApiRoutes('Product'),
     formColumns: 2,
-  };
+  }), [variantMap, categoryMap, variantItems, categoryItems, variantLoading, categoryLoading]);
 
   return (
     <GenericCrudPage
