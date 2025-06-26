@@ -52,9 +52,16 @@ export const API_ROUTES = {
       endpoint: "login",
     },
   },
+  TenantLogin: {
+    Create: {
+      identifier: "TeantLogin",
+      method: API_METHODS.POST,
+      endpoint: "tentant_login",
+    },
+  },
   BillingLogin: {
     Create: {
-      identifier: "CreateBillingLogin",
+      identifier: "BillingLogin",
       method: API_METHODS.POST,
       endpoint: "billing_login",
     },
