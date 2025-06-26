@@ -42,7 +42,7 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
     sessionStorage.removeItem("token");
     sessionStorage.removeItem("user");
     setIsModalVisible(false);
-    navigate("/login");
+    navigate("/billing_login");
   }, [navigate]);
   const handleCancel = useCallback(() => setIsModalVisible(false), []);
   const handleMenuClick = useCallback((key: string, path?: string) => {

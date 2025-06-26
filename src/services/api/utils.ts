@@ -52,6 +52,13 @@ export const API_ROUTES = {
       endpoint: "login",
     },
   },
+  BillingLogin: {
+    Create: {
+      identifier: "CreateBillingLogin",
+      method: API_METHODS.POST,
+      endpoint: "billing_login",
+    },
+  },
   GetEivite: {
     Create: {
       identifier: "CreateEinvite",

@@ -6,6 +6,7 @@ import Login from "../pages/login/login";
 import Signup from "../pages/login/Signup";
 import Dashboard from "../pages/Dashboard";
 import Loader from "../components/common/Loader";
+import BillingLogin from "../pages/login/billing_login";
 const ProductCrud = lazy(() => import("../pages/Products/crud"));
 const UnitCrud = lazy(() => import("../pages/Unit/crud"));
 const CategoryCrud = lazy(() => import("../pages/Category/crud"));
@@ -33,6 +34,16 @@ const routerData: RouteConfig[] = [
     element: (
       <Suspense fallback={<Loader />}>
         <Login />
+      </Suspense>
+    ),
+    children: [],
+  },
+  {
+    key: "billing_login",
+    path: "/billing_login",
+    element: (
+      <Suspense fallback={<Loader />}>
+        <BillingLogin />
       </Suspense>
     ),
     children: [],
