@@ -197,4 +197,17 @@ export const menuItems = [
       },
     ],
   },
+  {
+    key: "tenant_manage",
+    label: "Tenant Manage",
+    icon: <SettingOutlined />,
+    children: [
+      {
+        key: "tenant_account_list",
+        label: "Tenant List",
+        icon: <BankOutlined />,
+        path: "/tenant_account",
+      },
+    ],
+  },
 ];

@@ -25,6 +25,7 @@ const OrganisationsCrud = lazy(() => import("../pages/Organisations/crud"));
 const BrachesCrud = lazy(() => import("../pages/Branches/crud"));
 const SalesAccountCrud = lazy(() => import("../pages/UserAccount/crud"));
 const RolesCrud = lazy(() => import("../pages/Roles/crud"));
+const TenantAccount = lazy(() => import("../pages/TentantAccount/crud"));
 
 
 const routerData: RouteConfig[] = [
@@ -268,6 +269,16 @@ const routerData: RouteConfig[] = [
         element: (
           <Suspense fallback={<Loader />}>
             <RolesCrud />
+          </Suspense>
+        ),
+        children: [],
+      },
+      {
+        key: "tenant_account",
+        path: "tenant_account",
+        element: (
+          <Suspense fallback={<Loader />}>
+            <TenantAccount />
           </Suspense>
         ),
         children: [],

@@ -150,4 +150,5 @@ export const API_ROUTES = {
   Braches: createCrudRoutes("/branches", "Branches"),
   Roles: createCrudRoutes("/roles", "Roles"),
   BillingUsers: createCrudRoutes("/billing_users", "BillingUsers"),
+  Tenant: createCrudRoutes("/tenant_accounts", "TenantAccounts"),
 };
