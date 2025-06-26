@@ -50,9 +50,44 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
     if (path) navigate(path);
   }, [navigate]);
 
+  // Role-based menu permissions mapping
+  const roleMenuPermissions: Record<string, string[]> = {
+    Admin: [
+      "dashboard", "SalesRecords", "Stock Audit", "customers", "products", "payments", "reports", "master_settings"
+    ],
+    Manager: [
+      "dashboard", "SalesRecords", "Stock Audit", "customers", "products", "payments", "reports"
+    ],
+    Staff: [
+      "dashboard", "SalesRecords", "customers", "products"
+    ],
+    // Add more roles as needed
+  };
+
   // Memoize menu items to prevent unnecessary re-renders
   const memoizedMenuItems = useMemo(() => {
-    return originalMenuItems.map((item: any) =>
+    // Get user role from userItem
+    const userRole = userItem?.roleItems?.name || userItem?.usertype;
+    let allowedKeys: string[];
+    if (userRole && roleMenuPermissions[userRole]) {
+      allowedKeys = roleMenuPermissions[userRole];
+    } else {
+      // Default: show all top-level menu keys
+      allowedKeys = originalMenuItems.map((item: any) => item.key);
+    }
+    // Filter menu items based on allowed keys
+    const filterMenu = (items: any[]) =>
+      items
+        .filter((item) => allowedKeys.includes(item.key))
+        .map((item) => {
+          if (item.children) {
+            // Optionally filter children here if you want more granular control
+            return { ...item };
+          }
+          return item;
+        });
+    const filteredMenuItems = filterMenu(originalMenuItems);
+    return filteredMenuItems.map((item: any) =>
       item.children ? (
         <React.Fragment key={item.key}>
           {item?.key === "EMemories" && "Produce"}
@@ -89,7 +124,7 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
         </Menu.Item>
       )
     );
-  }, [selectedKey, handleMenuClick]);
+  }, [selectedKey, handleMenuClick, userItem]);
 
   return (
     <Layout style={{ minHeight: "100vh" }}>
