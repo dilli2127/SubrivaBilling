@@ -99,13 +99,13 @@ export const useGenericCrud = <T extends BaseEntity>(config: CrudConfig<T>) => {
   const handleEdit = useCallback((record: T) => {
     const newRecord: any = {};
 
-    // Convert date strings to dayjs objects for DatePicker components
+    // Convert any string value that is a valid date to a dayjs object
     for (const key in record) {
       const value = record[key];
       if (
         value &&
         typeof value === 'string' &&
-        (key.toLowerCase().includes('date') || key.toLowerCase().includes('mfg') || key.toLowerCase().includes('expiry'))
+        dayjs(value, undefined, true).isValid()
       ) {
         newRecord[key] = dayjs(value);
       } else {
