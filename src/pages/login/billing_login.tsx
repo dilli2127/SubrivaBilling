@@ -37,18 +37,32 @@ const BillingLogin: React.FC = () => {
   const { loading, items } = useDynamicSelector(
     API_ROUTES.BillingLogin.Create.identifier
   );
+  const { loading:TenantLoading, items:TenantItems } = useDynamicSelector(
+    API_ROUTES.TenantLogin.Create.identifier
+  );
   const onFinish = (values: {
     username: string;
     password: string;
   }) => {
-    callBackServer(
-      {
-        method: API_ROUTES.BillingLogin.Create.method,
-        endpoint: API_ROUTES.BillingLogin.Create.endpoint,
-        data: { ...values, loginType },
-      },
-      API_ROUTES.BillingLogin.Create.identifier
-    );
+    if (loginType === 'tenant') {
+      callBackServer(
+        {
+          method: API_ROUTES.TenantLogin.Create.method,
+          endpoint: API_ROUTES.TenantLogin.Create.endpoint,
+          data: { ...values, loginType },
+        },
+        API_ROUTES.TenantLogin.Create.identifier
+      );
+    } else {
+      callBackServer(
+        {
+          method: API_ROUTES.BillingLogin.Create.method,
+          endpoint: API_ROUTES.BillingLogin.Create.endpoint,
+          data: { ...values, loginType },
+        },
+        API_ROUTES.BillingLogin.Create.identifier
+      );
+    }
   };
   useEffect(() => {
     if (items?.statusCode === "200") {
@@ -65,6 +79,21 @@ const BillingLogin: React.FC = () => {
         message.error(items?.message || "Login failed, please try again");
     }
   }, [items]);
+  useEffect(() => {
+    if (TenantItems?.statusCode === "200") {
+      message.success("Login successful! Welcome back.");
+      sessionStorage.setItem("token", TenantItems?.result?.token);
+      sessionStorage.setItem("user", JSON.stringify(TenantItems?.result?.UserItem));
+      dispatch(dynamic_clear(API_ROUTES.TenantLogin.Create.identifier));
+      if (TenantItems?.result?.UserItem?.roleItems?.name === "Admin") {
+        navigate("/dashboard");
+      } else {
+        navigate("/dashboard");
+      }
+    } else if (TenantItems?.statusCode && items.statusCode !== "200") {
+        message.error(items?.message || "Login failed, please try again");
+    }
+  }, [TenantItems]);
   return (
     <div className="login-background-rich">
       <div className="login-form-card-rich">

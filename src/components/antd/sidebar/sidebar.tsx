@@ -61,13 +61,16 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
     Staff: [
       "dashboard", "SalesRecords", "customers", "products"
     ],
+    tenant: [
+      "dashboard", "SalesRecords", "Stock Audit", "customers", "products", "payments", "reports", "master_settings"
+    ],
     // Add more roles as needed
   };
 
   // Memoize menu items to prevent unnecessary re-renders
   const memoizedMenuItems = useMemo(() => {
     // Get user role from userItem
-    const userRole = userItem?.roleItems?.name || userItem?.usertype;
+    const userRole = userItem?.roleItems?.name || userItem?.usertype || userItem?.user_role;
     let allowedKeys: string[];
     if (userRole && roleMenuPermissions[userRole]) {
       allowedKeys = roleMenuPermissions[userRole];
@@ -155,7 +158,7 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
           {userItem && (
             <span style={{ fontSize: "14px", fontWeight: "500" }}>
-              Welcome, {(userItem.name || userItem.username)?.toUpperCase()}
+              Welcome, {(userItem?.name || userItem?.username)?.toUpperCase()}
             </span>
           )}
           <Button
