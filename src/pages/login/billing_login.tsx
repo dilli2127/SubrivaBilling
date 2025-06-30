@@ -70,8 +70,8 @@ const BillingLogin: React.FC = () => {
       <div className="login-form-card-rich">
         <div className="login-header-rich">
           <img src={require('../../assets/img/ffslogo.png')} alt="Logo" className="login-logo-rich" />
-          <Title level={2} className="login-title-rich">Welcome Back</Title>
-          <Text className="login-subtitle-rich">Sign in to continue</Text>
+          <span className="login-appname-rich">Focuz Billing</span>
+          <span className="login-title-rich">Welcome Back</span>
         </div>
         <Tabs
           defaultActiveKey="user"

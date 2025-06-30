@@ -95,20 +95,20 @@
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   border-radius: 24px;
-  padding: 40px 32px 32px 32px;
+  padding: 24px 20px 18px 20px;
   max-width: 380px;
   width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin: 32px 16px;
+  margin: 16px 8px;
 }
 
 .login-header-rich {
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-bottom: 16px;
+  margin-bottom: 10px;
 }
 
 .login-logo-rich {
@@ -122,7 +122,7 @@
 .login-title-rich {
   color: #222;
   font-weight: 700;
-  margin-bottom: 4px !important;
+  /* margin-bottom: 4px !important; */
   text-align: center;
 }
 
@@ -250,4 +250,16 @@
     padding: 12px 2px 8px 2px;
     border-radius: 10px;
   }
+}
+
+.login-appname-rich {
+  color: #f6881a;
+  font-weight: 900;
+  font-size: 2.1rem;
+  letter-spacing: 1.5px;
+  margin-bottom: 8px;
+  text-align: center;
+  text-shadow: 0 4px 16px rgba(67, 198, 172, 0.13);
+  font-family: 'Segoe UI', 'Roboto', 'Arial', sans-serif;
+  text-transform: uppercase;
 }
