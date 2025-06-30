@@ -1,10 +1,11 @@
-import React, { useCallback, useEffect } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   Form,
   Input,
   Button,
   message,
   Typography,
+  Tabs,
 } from "antd";
 import { UserOutlined, LockOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
@@ -21,9 +22,12 @@ import { API_ROUTES } from "../../services/api/utils";
 
 const { Title, Text } = Typography;
 
-const   BillingLogin: React.FC = () => {
+const { TabPane } = Tabs;
+
+const BillingLogin: React.FC = () => {
   const navigate = useNavigate();
   const dispatch: Dispatch<any> = useDispatch();
+  const [loginType, setLoginType] = useState<'tenant' | 'user'>('user');
   const callBackServer = useCallback(
     (variables: ApiRequest, key: string) => {
       dispatch(dynamic_request(variables, key));
@@ -41,7 +45,7 @@ const   BillingLogin: React.FC = () => {
       {
         method: API_ROUTES.BillingLogin.Create.method,
         endpoint: API_ROUTES.BillingLogin.Create.endpoint,
-        data: values,
+        data: { ...values, loginType },
       },
       API_ROUTES.BillingLogin.Create.identifier
     );
@@ -62,55 +66,60 @@ const   BillingLogin: React.FC = () => {
     }
   }, [items]);
   return (
-    <div className="login-background">
-      <div className="login-form-container">
-        <Title level={2} className="login-title" style={{ color: '#222', marginBottom: 8 }}>
-          Welcome Back
-        </Title>
-        <Text className="login-subtitle" style={{ color: '#444', marginBottom: 20, display: 'block' }}>Sign in to continue</Text>
+    <div className="login-background-rich">
+      <div className="login-form-card-rich">
+        <div className="login-header-rich">
+          <img src={require('../../assets/img/ffslogo.png')} alt="Logo" className="login-logo-rich" />
+          <Title level={2} className="login-title-rich">Welcome Back</Title>
+          <Text className="login-subtitle-rich">Sign in to continue</Text>
+        </div>
+        <Tabs
+          defaultActiveKey="user"
+          onChange={(key) => setLoginType(key as 'tenant' | 'user')}
+          className="login-tabs-rich"
+        >
+          <TabPane tab="User" key="user" />
+          <TabPane tab="Tenant" key="tenant" />
+        </Tabs>
         <Form
           name="login_form"
-          className="login-form"
+          className="login-form-rich"
           onFinish={onFinish}
-          style={{ width: 300 }}
+          layout="vertical"
         >
           <Form.Item
             name="username"
             rules={[{ required: true, message: "Please input your Username!" }]}
           >
-            <Input prefix={<UserOutlined />} placeholder="Username" />
+            <Input prefix={<UserOutlined />} placeholder="Username" size="large" />
           </Form.Item>
-
           <Form.Item
             name="password"
             rules={[{ required: true, message: "Please input your Password!" }]}
           >
             <Input.Password
-              prefix={<LockOutlined />}
-              placeholder="Password"
-            />
+              prefix={<LockOutlined />} placeholder="Password" size="large" />
           </Form.Item>
-
-          <Form.Item className="login-options">
-            <a href="#" className="forgot-password">
+          <Form.Item className="login-options-rich">
+            <a href="#" className="forgot-password-rich">
               Forgot password?
             </a>
           </Form.Item>
-
           <Form.Item>
             <Button
               type="primary"
               htmlType="submit"
-              className="login-button"
+              className="login-button-rich"
               loading={loading}
+              size="large"
+              block
             >
               Log in
             </Button>
           </Form.Item>
-
-          <Form.Item className="signup-link">
-            <Text className="auth-switch">
-              Don't have an account?{" "}
+          <Form.Item className="signup-link-rich">
+            <Text className="auth-switch-rich">
+              Don't have an account?{' '}
               <a onClick={() => navigate("/signup")}>Sign up</a>
             </Text>
           </Form.Item>
