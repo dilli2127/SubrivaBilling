@@ -50,6 +50,16 @@ const routerData: RouteConfig[] = [
     children: [],
   },
   {
+    key: "billing_login",
+    path: "/",
+    element: (
+      <Suspense fallback={<Loader />}>
+        <BillingLogin />
+      </Suspense>
+    ),
+    children: [],
+  },
+  {
     key: "admin",
     path: "/admin",
     element: (

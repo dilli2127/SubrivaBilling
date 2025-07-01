@@ -1,7 +1,6 @@
 import React from 'react';
 import { Input, Switch } from 'antd';
 import { GenericCrudPage } from '../../components/common/GenericCrudPage';
-import type { Warehouse } from '../../types/entities';
 import { getEntityApiRoutes } from '../../helpers/CrudFactory';
 
 const warehouseConfig = {
@@ -120,8 +119,8 @@ const warehouseConfig = {
   formColumns: 2,
 };
 
-const Warehouse: React.FC = () => {
+const WarehouseCrud: React.FC = () => {
   return <GenericCrudPage config={warehouseConfig} />;
 };
 
-export default Warehouse;
+export default WarehouseCrud;
