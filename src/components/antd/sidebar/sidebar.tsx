@@ -4,10 +4,7 @@ import {
   MenuFoldOutlined,
   MenuUnfoldOutlined,
 } from '@ant-design/icons';
-import Layout from 'antd/es/layout';
-import Menu from 'antd/es/menu';
-import Modal from 'antd/es/modal';
-import Button from 'antd/es/button';
+import { Layout, Menu, Modal, Button } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { menuItems as originalMenuItems } from './menu';
 import './Sidebar.css';
@@ -18,45 +15,46 @@ interface SidebarProps {
   children: ReactNode;
 }
 
-// Helper to collect all keys except tenant_manage and its children
-function getAllKeysExceptTenantManage(items: any[]): string[] {
-  return items.reduce((acc: string[], item: any) => {
+const getAllowedMenuKeys = (user: any): string[] => {
+  const role =
+    user?.roleItems?.name?.toLowerCase() ||
+    user?.usertype?.toLowerCase() ||
+    user?.user_role?.toLowerCase();
+
+  const allowed = Array.isArray(user?.roleItems?.allowedMenuKeys)
+    ? user.roleItems.allowedMenuKeys
+    : [];
+
+  if (role === 'tenant') {
+    return getAllKeysExcludingTenantManage(originalMenuItems);
+  }
+
+  return allowed;
+};
+
+const getAllKeysExcludingTenantManage = (items: any[]): string[] =>
+  items.reduce((acc: string[], item: any) => {
     if (item.key === 'tenant_manage') return acc;
     acc.push(item.key);
     if (item.children) {
-      acc = acc.concat(getAllKeysExceptTenantManage(item.children));
+      acc.push(...getAllKeysExcludingTenantManage(item.children));
     }
     return acc;
   }, []);
-}
 
 const Sidebar: React.FC<SidebarProps> = ({ children }) => {
   const [collapsed, setCollapsed] = useState(false);
   const [selectedKey, setSelectedKey] = useState('dashboard');
   const [openKeys, setOpenKeys] = useState<string[]>([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
-
   const navigate = useNavigate();
 
   const userItem = useMemo(() => {
-    const userData = sessionStorage.getItem('user');
-    return userData ? JSON.parse(userData) : null;
+    const data = sessionStorage.getItem('user');
+    return data ? JSON.parse(data) : null;
   }, []);
 
-  const userRole =
-    (userItem?.roleItems?.name && userItem.roleItems.name.toLowerCase()) ||
-    (userItem?.usertype && userItem.usertype.toLowerCase()) ||
-    (userItem?.user_role && userItem.user_role.toLowerCase());
-
-  let allowedKeys: string[] =
-    Array.isArray(userItem?.roleItems?.allowedMenuKeys) &&
-    userItem.roleItems.allowedMenuKeys.length > 0
-      ? userItem.roleItems.allowedMenuKeys
-      : [];
-
-  if (userRole === 'tenant') {
-    allowedKeys = getAllKeysExceptTenantManage(originalMenuItems);
-  }
+  const allowedKeys = useMemo(() => getAllowedMenuKeys(userItem), [userItem]);
 
   const handleOpenChange = useCallback(
     (keys: string[]) => {
@@ -66,13 +64,6 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
     [openKeys]
   );
 
-  const showLogoutConfirm = useCallback(() => setIsModalVisible(true), []);
-  const handleOk = useCallback(() => {
-    sessionStorage.clear();
-    setIsModalVisible(false);
-    navigate('/billing_login');
-  }, [navigate]);
-  const handleCancel = useCallback(() => setIsModalVisible(false), []);
   const handleMenuClick = useCallback(
     (key: string, path?: string) => {
       setSelectedKey(key);
@@ -81,33 +72,34 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
     [navigate]
   );
 
-  const memoizedMenuItems = useMemo(() => {
-    // Only use allowedMenuKeys and the tenant special case for menu filtering
-    // (Remove all fallback logic for collectAllKeys and roleMenuPermissions)
+  const handleLogout = useCallback(() => {
+    sessionStorage.clear();
+    setIsModalVisible(false);
+    navigate('/billing_login');
+  }, [navigate]);
+
+  const filteredMenuItems = useMemo(() => {
     const filterMenu = (items: any[]): any[] =>
       items
         .filter(
           (item: any) =>
-            allowedKeys!.includes(item.key) ||
-            (item.children &&
-              item.children.some((child: any) =>
-                allowedKeys!.includes(child.key)
-              ))
+            allowedKeys.includes(item.key) ||
+            item.children?.some((child: any) => allowedKeys.includes(child.key))
         )
         .map((item: any) => {
           if (item.children) {
-            const filteredChildren = filterMenu(item.children);
-            return filteredChildren.length > 0
-              ? { ...item, children: filteredChildren }
-              : null;
+            const children = filterMenu(item.children);
+            return children.length > 0 ? { ...item, children } : null;
           }
           return item;
         })
         .filter(Boolean);
 
-    const filteredMenuItems = filterMenu(originalMenuItems);
+    return filterMenu(originalMenuItems);
+  }, [allowedKeys]);
 
-    return filteredMenuItems.map((item: any) =>
+  const renderMenuItems = (items: any[]) =>
+    items.map(item =>
       item.children ? (
         <Menu.SubMenu
           key={item.key}
@@ -137,15 +129,15 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
         </Menu.Item>
       )
     );
-  }, [selectedKey, handleMenuClick, userItem]);
 
   return (
     <Layout style={{ minHeight: '100vh' }}>
+      {/* Header */}
       <Header
         style={{
           display: 'flex',
-          alignItems: 'center',
           justifyContent: 'space-between',
+          alignItems: 'center',
           background: 'linear-gradient(90deg, #ff6a00, #ee0979)',
           color: '#fff',
           padding: '0 16px',
@@ -167,21 +159,22 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
         </h2>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           {userItem && (
-            <span style={{ fontSize: '14px', fontWeight: '500' }}>
-              Welcome, {(userItem?.name || userItem?.username)?.toUpperCase()}
+            <span style={{ fontSize: 14, fontWeight: 500 }}>
+              Welcome, {(userItem.name || userItem.username)?.toUpperCase()}
             </span>
           )}
           <Button
             icon={<LogoutOutlined />}
             type="primary"
             danger
-            onClick={showLogoutConfirm}
+            onClick={() => setIsModalVisible(true)}
           >
             Logout
           </Button>
         </div>
       </Header>
 
+      {/* Sidebar + Content */}
       <Layout>
         <Sider
           collapsible
@@ -192,7 +185,6 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
             position: 'fixed',
             top: 64,
             height: 'calc(100vh - 64px)',
-            overflow: 'hidden',
             boxShadow: '2px 0 10px rgba(0, 0, 0, 0.2)',
             zIndex: 999,
           }}
@@ -212,7 +204,7 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
                 fontWeight: 500,
               }}
             >
-              {memoizedMenuItems}
+              {renderMenuItems(filteredMenuItems)}
             </Menu>
           </div>
         </Sider>
@@ -240,11 +232,12 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
         </Layout>
       </Layout>
 
+      {/* Logout Modal */}
       <Modal
         title="Confirm Logout"
         open={isModalVisible}
-        onOk={handleOk}
-        onCancel={handleCancel}
+        onOk={handleLogout}
+        onCancel={() => setIsModalVisible(false)}
         okText="Yes"
         cancelText="No"
         centered
