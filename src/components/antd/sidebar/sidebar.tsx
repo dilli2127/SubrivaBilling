@@ -18,6 +18,17 @@ interface SidebarProps {
   children: ReactNode;
 }
 
+// Helper to collect all unique menu keys recursively
+function collectAllKeys(items: any[]): string[] {
+  return items.reduce((acc: string[], item: any) => {
+    acc.push(item.key);
+    if (item.children) {
+      acc = acc.concat(collectAllKeys(item.children));
+    }
+    return acc;
+  }, []);
+}
+
 const Sidebar: React.FC<SidebarProps> = ({ children }) => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
@@ -58,46 +69,6 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
 
   // Role-based menu permissions mapping
   const roleMenuPermissions: Record<string, string[]> = {
-    Admin: [
-      'dashboard',
-      'SalesRecords',
-      'Stock Audit',
-      'customers',
-      'products',
-      'payments',
-      'reports',
-      'master_settings',
-    ],
-    OrganisationAdmin: [
-      'dashboard',
-      'SalesRecords',
-      'Stock Audit',
-      'customers',
-      'products',
-      'payments',
-      'reports',
-      'organisation_settings',
-    ],
-    BranchAdmin: [
-      'dashboard',
-      'SalesRecords',
-      'Stock Audit',
-      'customers',
-      'products',
-      'payments',
-      'reports',
-      'branch_settings',
-    ],
-    Manager: [
-      'dashboard',
-      'SalesRecords',
-      'Stock Audit',
-      'customers',
-      'products',
-      'payments',
-      'reports',
-    ],
-    Staff: ['dashboard', 'SalesRecords', 'customers', 'products'],
     tenant: [
       'dashboard',
       'SalesRecords',
@@ -110,33 +81,45 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
     ],
     // Add more roles as needed
   };
+  console.log('userItem?.roleItems?.name', userItem?.roleItems);
   // Memoize menu items to prevent unnecessary re-renders
   const memoizedMenuItems = useMemo(() => {
     // Get user role from userItem
     const userRole =
       userItem?.roleItems?.name || userItem?.usertype || userItem?.user_role;
-    let allowedKeys: string[];
-    if (userRole && roleMenuPermissions[userRole]) {
-      allowedKeys = roleMenuPermissions[userRole];
-    } else {
-      if (userItem?.usertype === 'superadmin') {
-        debugger;
-        allowedKeys = originalMenuItems.map((item: any) => item.key);
+    // Use allowedMenuKeys from userItem if available, otherwise fallback to static permissions
+    let allowedKeys: string[] = userItem?.roleItems?.allowedMenuKeys || [];
+    if (!allowedKeys.length) {
+      if (userRole && roleMenuPermissions[userRole]) {
+        allowedKeys = roleMenuPermissions[userRole];
+      } else if (userItem?.usertype === 'superadmin') {
+        allowedKeys = collectAllKeys(originalMenuItems);
       } else {
         allowedKeys = [];
       }
     }
-    // Filter menu items based on allowed keys
-    const filterMenu = (items: any[]) =>
+    // Recursive filter for menu and children
+    const filterMenu = (items: any[]): any[] =>
       items
-        .filter(item => allowedKeys.includes(item.key))
-        .map(item => {
+        .filter(
+          (item: any) =>
+            allowedKeys.includes(item.key) ||
+            (item.children &&
+              item.children.some((child: any) =>
+                allowedKeys.includes(child.key)
+              ))
+        )
+        .map((item: any) => {
           if (item.children) {
-            // Optionally filter children here if you want more granular control
-            return { ...item };
+            const filteredChildren: any[] = filterMenu(item.children);
+            if (filteredChildren.length > 0) {
+              return { ...item, children: filteredChildren };
+            }
+            return null;
           }
           return item;
-        });
+        })
+        .filter(Boolean);
     const filteredMenuItems = filterMenu(originalMenuItems);
     return filteredMenuItems.map((item: any) =>
       item.children ? (
