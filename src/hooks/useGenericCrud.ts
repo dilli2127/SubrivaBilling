@@ -1,7 +1,11 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { Form } from 'antd';
-import { dynamic_request, useDynamicSelector, dynamic_clear } from '../services/redux';
+import {
+  dynamic_request,
+  useDynamicSelector,
+  dynamic_clear,
+} from '../services/redux';
 import { CrudColumn, CrudFormItem } from '../components/common/GenericCrudPage';
 import { showToast } from '../helpers/Common_functions';
 import { BaseEntity } from '../types/entities';
@@ -30,7 +34,9 @@ export const useGenericCrud = <T extends BaseEntity>(config: CrudConfig<T>) => {
   const [filterValues, setFilterValues] = useState<Record<string, any>>({});
 
   // Selectors
-  const { loading, items } = useDynamicSelector(config.apiRoutes.get.identifier);
+  const { loading, items } = useDynamicSelector(
+    config.apiRoutes.get.identifier
+  );
   const { items: createItems, error: createError } = useDynamicSelector(
     config.apiRoutes.create.identifier
   );
@@ -94,17 +100,22 @@ export const useGenericCrud = <T extends BaseEntity>(config: CrudConfig<T>) => {
     },
     [callApi, config.apiRoutes.delete]
   );
-
+  function isStrictDate(value: string): boolean {
+    // Only matches real ISO-like date formats (YYYY-MM-DD or with time)
+    return /^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|[+-]\d{2}:\d{2})?)?$/.test(
+      value
+    );
+  }
   // Event handlers
   const handleEdit = useCallback((record: T) => {
     const newRecord: any = {};
 
-    // Convert any string value that is a valid date to a dayjs object
     for (const key in record) {
       const value = record[key];
+
       if (
-        value &&
         typeof value === 'string' &&
+        isStrictDate(value) &&
         dayjs(value, undefined, true).isValid()
       ) {
         newRecord[key] = dayjs(value);
@@ -117,9 +128,12 @@ export const useGenericCrud = <T extends BaseEntity>(config: CrudConfig<T>) => {
     setDrawerVisible(true);
   }, []);
 
-  const handleDelete = useCallback((record: T) => {
-    remove(record._id);
-  }, [remove]);
+  const handleDelete = useCallback(
+    (record: T) => {
+      remove(record._id);
+    },
+    [remove]
+  );
 
   const handleDrawerOpen = useCallback(() => {
     setDrawerVisible(true);
@@ -154,7 +168,15 @@ export const useGenericCrud = <T extends BaseEntity>(config: CrudConfig<T>) => {
     } else if (createError) {
       showToast('error', `Failed to create ${config.title}`);
     }
-  }, [createItems, createError, config.title, getAll, resetForm, dispatch, config.apiRoutes.create.identifier]);
+  }, [
+    createItems,
+    createError,
+    config.title,
+    getAll,
+    resetForm,
+    dispatch,
+    config.apiRoutes.create.identifier,
+  ]);
 
   useEffect(() => {
     if (updateItems?.statusCode === '200') {
@@ -165,7 +187,15 @@ export const useGenericCrud = <T extends BaseEntity>(config: CrudConfig<T>) => {
     } else if (updateError) {
       showToast('error', `Failed to update ${config.title}`);
     }
-  }, [updateItems, updateError, config.title, getAll, resetForm, dispatch, config.apiRoutes.update.identifier]);
+  }, [
+    updateItems,
+    updateError,
+    config.title,
+    getAll,
+    resetForm,
+    dispatch,
+    config.apiRoutes.update.identifier,
+  ]);
 
   useEffect(() => {
     if (deleteItems?.statusCode === '200') {
@@ -175,7 +205,14 @@ export const useGenericCrud = <T extends BaseEntity>(config: CrudConfig<T>) => {
     } else if (deleteError) {
       showToast('error', `Failed to delete ${config.title}`);
     }
-  }, [deleteItems, deleteError, config.title, getAll, dispatch, config.apiRoutes.delete.identifier]);
+  }, [
+    deleteItems,
+    deleteError,
+    config.title,
+    getAll,
+    dispatch,
+    config.apiRoutes.delete.identifier,
+  ]);
 
   // Load data on mount and when filters change
   useEffect(() => {
@@ -202,4 +239,4 @@ export const useGenericCrud = <T extends BaseEntity>(config: CrudConfig<T>) => {
     // Config
     ...config,
   };
-}; 
+};

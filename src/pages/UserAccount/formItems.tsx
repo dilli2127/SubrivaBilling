@@ -79,7 +79,7 @@ export const usersAccountFormItems = ({
   {
     label: "Branch",
     name: "branch_id",
-    rules: [{ required: true, message: "Please select a branch" }],
+    rules: [{ required: false, message: "Please select a branch" }],
     component: (
       <Select
         placeholder="Select branch"
