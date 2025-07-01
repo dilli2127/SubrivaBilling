@@ -68,6 +68,26 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
       'reports',
       'master_settings',
     ],
+    OrganisationAdmin: [
+      'dashboard',
+      'SalesRecords',
+      'Stock Audit',
+      'customers',
+      'products',
+      'payments',
+      'reports',
+      'organisation_settings',
+    ],
+    BranchAdmin: [
+      'dashboard',
+      'SalesRecords',
+      'Stock Audit',
+      'customers',
+      'products',
+      'payments',
+      'reports',
+      'branch_settings',
+    ],
     Manager: [
       'dashboard',
       'SalesRecords',
@@ -90,7 +110,6 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
     ],
     // Add more roles as needed
   };
-  console.log('userItem', userItem);
   // Memoize menu items to prevent unnecessary re-renders
   const memoizedMenuItems = useMemo(() => {
     // Get user role from userItem

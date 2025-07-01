@@ -210,4 +210,48 @@ export const menuItems = [
       },
     ],
   },
+  {
+    key: "organisation_settings",
+    label: "Organisation Settings",
+    icon: <SettingOutlined />,
+    children: [
+      {
+        key: "braches",
+        label: "Braches",
+        icon: <BankOutlined />,
+        path: "/branches",
+      },
+      {
+        key: "users",
+        label: "Users",
+        icon: <BankOutlined />,
+        path: "/users",
+      },
+      {
+        key: "roles",
+        label: "Roles",
+        icon: <BankOutlined />,
+        path: "/roles",
+      },
+    ],
+  },
+  {
+    key: "branch_settings",
+    label: "Branch Settings",
+    icon: <SettingOutlined />,
+    children: [
+      {
+        key: "users",
+        label: "Users",
+        icon: <BankOutlined />,
+        path: "/users",
+      },
+      {
+        key: "roles",
+        label: "Roles",
+        icon: <BankOutlined />,
+        path: "/roles",
+      },
+    ],
+  },
 ];
