@@ -295,6 +295,38 @@ const StockAuditCrud: React.FC = () => {
           </Select>
         ),
       },
+      {
+        label: "Warehouse / Location",
+        name: "warehouse_location",
+        rules: [],
+        component: (
+          <Select
+            placeholder="Select warehouse"
+            showSearch
+            allowClear
+            loading={wareHouseLoading}
+            optionFilterProp="children"
+            filterOption={(input, option) =>
+              typeof option?.children === "string" &&
+              (option.children as string)
+                .toLowerCase()
+                .includes(input.toLowerCase())
+            }
+          >
+            {wareHouseList?.result?.map((wareHouse: any) => (
+              <Select.Option key={wareHouse?._id} value={wareHouse?._id}>
+                {`${wareHouse.warehouse_name} ${wareHouse?.warehouse_code}`}
+              </Select.Option>
+            ))}
+          </Select>
+        ),
+      },
+      {
+        label: "Note",
+        name: "note",
+        rules: [],
+        component: <Input.TextArea rows={2} placeholder="Optional remarks" />,
+      },
     ],
     apiRoutes: getEntityApiRoutes("StockAudit"),
     formColumns: 2,
