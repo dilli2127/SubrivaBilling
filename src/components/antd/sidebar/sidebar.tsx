@@ -18,30 +18,45 @@ interface SidebarProps {
   children: ReactNode;
 }
 
-// Helper to collect all unique menu keys recursively
-function collectAllKeys(items: any[]): string[] {
+// Helper to collect all keys except tenant_manage and its children
+function getAllKeysExceptTenantManage(items: any[]): string[] {
   return items.reduce((acc: string[], item: any) => {
+    if (item.key === 'tenant_manage') return acc;
     acc.push(item.key);
     if (item.children) {
-      acc = acc.concat(collectAllKeys(item.children));
+      acc = acc.concat(getAllKeysExceptTenantManage(item.children));
     }
     return acc;
   }, []);
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ children }) => {
-  const [isModalVisible, setIsModalVisible] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const [selectedKey, setSelectedKey] = useState('dashboard');
   const [openKeys, setOpenKeys] = useState<string[]>([]);
+  const [isModalVisible, setIsModalVisible] = useState(false);
 
   const navigate = useNavigate();
 
-  // Memoize user data parsing to avoid parsing on every render
   const userItem = useMemo(() => {
     const userData = sessionStorage.getItem('user');
     return userData ? JSON.parse(userData) : null;
   }, []);
+
+  const userRole =
+    (userItem?.roleItems?.name && userItem.roleItems.name.toLowerCase()) ||
+    (userItem?.usertype && userItem.usertype.toLowerCase()) ||
+    (userItem?.user_role && userItem.user_role.toLowerCase());
+
+  let allowedKeys: string[] =
+    Array.isArray(userItem?.roleItems?.allowedMenuKeys) &&
+    userItem.roleItems.allowedMenuKeys.length > 0
+      ? userItem.roleItems.allowedMenuKeys
+      : [];
+
+  if (userRole === 'tenant') {
+    allowedKeys = getAllKeysExceptTenantManage(originalMenuItems);
+  }
 
   const handleOpenChange = useCallback(
     (keys: string[]) => {
@@ -53,8 +68,7 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
 
   const showLogoutConfirm = useCallback(() => setIsModalVisible(true), []);
   const handleOk = useCallback(() => {
-    sessionStorage.removeItem('token');
-    sessionStorage.removeItem('user');
+    sessionStorage.clear();
     setIsModalVisible(false);
     navigate('/billing_login');
   }, [navigate]);
@@ -67,92 +81,57 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
     [navigate]
   );
 
-  // Role-based menu permissions mapping
-  const roleMenuPermissions: Record<string, string[]> = {
-    tenant: [
-      'dashboard',
-      'SalesRecords',
-      'Stock Audit',
-      'customers',
-      'products',
-      'payments',
-      'reports',
-      'master_settings',
-    ],
-    // Add more roles as needed
-  };
-  console.log('userItem?.roleItems?.name', userItem?.roleItems);
-  // Memoize menu items to prevent unnecessary re-renders
   const memoizedMenuItems = useMemo(() => {
-    // Get user role from userItem
-    const userRole =
-      userItem?.roleItems?.name || userItem?.usertype || userItem?.user_role;
-    // Use allowedMenuKeys from userItem if available, otherwise fallback to static permissions
-    let allowedKeys: string[] = userItem?.roleItems?.allowedMenuKeys || [];
-    if (!allowedKeys.length) {
-      if (userRole && roleMenuPermissions[userRole]) {
-        allowedKeys = roleMenuPermissions[userRole];
-      } else if (userItem?.usertype === 'superadmin') {
-        allowedKeys = collectAllKeys(originalMenuItems);
-      } else {
-        allowedKeys = [];
-      }
-    }
-    // Recursive filter for menu and children
+    // Only use allowedMenuKeys and the tenant special case for menu filtering
+    // (Remove all fallback logic for collectAllKeys and roleMenuPermissions)
     const filterMenu = (items: any[]): any[] =>
       items
         .filter(
           (item: any) =>
-            allowedKeys.includes(item.key) ||
+            allowedKeys!.includes(item.key) ||
             (item.children &&
               item.children.some((child: any) =>
-                allowedKeys.includes(child.key)
+                allowedKeys!.includes(child.key)
               ))
         )
         .map((item: any) => {
           if (item.children) {
-            const filteredChildren: any[] = filterMenu(item.children);
-            if (filteredChildren.length > 0) {
-              return { ...item, children: filteredChildren };
-            }
-            return null;
+            const filteredChildren = filterMenu(item.children);
+            return filteredChildren.length > 0
+              ? { ...item, children: filteredChildren }
+              : null;
           }
           return item;
         })
         .filter(Boolean);
+
     const filteredMenuItems = filterMenu(originalMenuItems);
+
     return filteredMenuItems.map((item: any) =>
       item.children ? (
-        <React.Fragment key={item.key}>
-          {item?.key === 'EMemories' && 'Produce'}
-          <Menu.SubMenu
-            key={item.key}
-            icon={item.icon}
-            title={item.label}
-            popupClassName="custom-submenu-popup"
-          >
-            {item.children.map((child: any) => (
-              <Menu.Item
-                key={child.key}
-                icon={child.icon}
-                onClick={() => handleMenuClick(child.key, child.path)}
-                className={`custom-subitem ${
-                  selectedKey === child.key ? 'active' : ''
-                }`}
-              >
-                {child.label}
-              </Menu.Item>
-            ))}
-          </Menu.SubMenu>
-        </React.Fragment>
+        <Menu.SubMenu
+          key={item.key}
+          icon={item.icon}
+          title={item.label}
+          popupClassName="custom-submenu-popup"
+        >
+          {item.children.map((child: any) => (
+            <Menu.Item
+              key={child.key}
+              icon={child.icon}
+              onClick={() => handleMenuClick(child.key, child.path)}
+              className={`custom-subitem ${selectedKey === child.key ? 'active' : ''}`}
+            >
+              {child.label}
+            </Menu.Item>
+          ))}
+        </Menu.SubMenu>
       ) : (
         <Menu.Item
           key={item.key}
           icon={item.icon}
           onClick={() => handleMenuClick(item.key, item.path)}
-          className={`custom-menuitem ${
-            selectedKey === item.key ? 'active' : ''
-          }`}
+          className={`custom-menuitem ${selectedKey === item.key ? 'active' : ''}`}
         >
           {item.label}
         </Menu.Item>
@@ -212,8 +191,8 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
             background: 'linear-gradient(180deg, #4e54c8, #8f94fb)',
             position: 'fixed',
             top: 64,
-            height: 'calc(100vh - 64px)', // subtract header height
-            overflow: 'hidden', // disable overflow here
+            height: 'calc(100vh - 64px)',
+            overflow: 'hidden',
             boxShadow: '2px 0 10px rgba(0, 0, 0, 0.2)',
             zIndex: 999,
           }}
