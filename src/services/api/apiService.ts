@@ -2,7 +2,7 @@ import axios from 'axios';
 import { API_ERROR_CODES } from '../../helpers/constants';
 
 export interface ApiResponse<T> {
-    statusCode: string;
+    statusCode: number;
     result:any
     message: string;
     data?: T; // Optional, only present on success
@@ -59,7 +59,7 @@ class APIService {
     // Handle errors from Axios
     private handleError<T>(error: unknown): ApiResponse<T | null> {
         let errorMessage = 'API call failed';
-        let statusCode: string = 'FAILED';
+        let statusCode: number = API_ERROR_CODES.INTERNAL_SERVER_ERROR;
 
         if (axios.isAxiosError(error)) {
             if (error.response) {
@@ -67,12 +67,12 @@ class APIService {
                 const responseStatus = error.response.status;
                 errorMessage = error.response.data?.message || 'An error occurred';
 
-                if (responseStatus === 404) {
-                    statusCode = 'NOT FOUND';
-                } else if (responseStatus === 400) {
-                    statusCode = 'BAD REQUEST';
-                } else if (responseStatus >= 500) {
-                    statusCode = 'SERVER ERROR';
+                if (responseStatus === API_ERROR_CODES.NOT_FOUND) {
+                    statusCode = API_ERROR_CODES.NOT_FOUND;
+                } else if (responseStatus === API_ERROR_CODES.BAD_REQUEST) {
+                    statusCode = API_ERROR_CODES.BAD_REQUEST;
+                } else if (responseStatus >= API_ERROR_CODES.INTERNAL_SERVER_ERROR) {
+                    statusCode = API_ERROR_CODES.INTERNAL_SERVER_ERROR;
                 }
             } else if (error.request) {
                 // The request was made but no response was received

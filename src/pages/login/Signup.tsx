@@ -38,7 +38,7 @@ const Signup: React.FC = () => {
     );
   };
   useEffect(() => {
-    if (items?.statusCode === "200") {
+    if (items?.statusCode === 200) {
       message.success("Signup successful! Please log in.");
       dispatch(dynamic_clear(API_ROUTES.Signup.Create.identifier));
       navigate("/login");

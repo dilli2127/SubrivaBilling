@@ -65,7 +65,7 @@ const BillingLogin: React.FC = () => {
     }
   };
   useEffect(() => {
-    if (items?.statusCode === "200") {
+    if (items?.statusCode === 200) {
       message.success("Login successful! Welcome back.");
       sessionStorage.setItem("token", items?.result?.token);
       sessionStorage.setItem("user", JSON.stringify(items?.result?.UserItem));
@@ -75,12 +75,12 @@ const BillingLogin: React.FC = () => {
       } else {
         navigate("/dashboard");
       }
-    } else if (items?.statusCode && items.statusCode !== "200") {
+    } else if (items?.statusCode && items.statusCode !== 200) {
         message.error(items?.message || "Login failed, please try again");
     }
   }, [items]);
   useEffect(() => {
-    if (TenantItems?.statusCode === "200") {
+    if (TenantItems?.statusCode === 200) {
       message.success("Login successful! Welcome back.");
       sessionStorage.setItem("token", TenantItems?.result?.token);
       sessionStorage.setItem("user", JSON.stringify(TenantItems?.result?.UserItem));
@@ -90,7 +90,7 @@ const BillingLogin: React.FC = () => {
       } else {
         navigate("/dashboard");
       }
-    } else if (TenantItems?.statusCode && items.statusCode !== "200") {
+    } else if (TenantItems?.statusCode && items.statusCode !== 200) {
         message.error(items?.message || "Login failed, please try again");
     }
   }, [TenantItems]);

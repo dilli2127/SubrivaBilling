@@ -293,7 +293,7 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
   };
 
   useEffect(() => {
-    if (createItems?.statusCode === "200") {
+    if (createItems?.statusCode === 200) {
       handleApiResponse("create", true);
       if (createItems?.result) {
         const formattedBill = {
@@ -442,7 +442,7 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
   }, [ProductsApi, CustomerApi, InvoiceNumberApi]);
 
   useEffect(() => {
-    if (updateItems?.statusCode === "200") handleApiResponse("update", true);
+    if (updateItems?.statusCode === 200) handleApiResponse("update", true);
     if (updateError) handleApiResponse("update", false);
   }, [updateItems, updateError]);
 

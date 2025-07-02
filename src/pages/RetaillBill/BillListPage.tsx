@@ -55,7 +55,7 @@ const BillListPage = () => {
   const handleDelete = async (id: string) => {
     try {
       await SalesRecord("Delete", {}, id);
-      const success = deleteItems?.statusCode === "200";
+      const success = deleteItems?.statusCode === 200;
       handleApiResponse({
         action: "delete",
         success,

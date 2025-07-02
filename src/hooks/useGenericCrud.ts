@@ -157,16 +157,17 @@ export const useGenericCrud = <T extends BaseEntity>(config: CrudConfig<T>) => {
   );
 
   // No local filtering; all filtering is server-side
-
   // API response handlers
   useEffect(() => {
-    if (createItems?.statusCode === '200') {
+    if (createItems?.statusCode === 200) {
       showToast('success', `${config.title} created successfully`);
       getAll();
       resetForm();
       dispatch(dynamic_clear(config.apiRoutes.create.identifier));
     } else if (createError) {
-      showToast('error', `Failed to create ${config.title}`);
+      const errorMessage =
+        createError.message || `Failed to create ${config.title}`;
+      showToast('error', errorMessage);
     }
   }, [
     createItems,
@@ -179,13 +180,15 @@ export const useGenericCrud = <T extends BaseEntity>(config: CrudConfig<T>) => {
   ]);
 
   useEffect(() => {
-    if (updateItems?.statusCode === '200') {
+    if (updateItems?.statusCode === 200) {
       showToast('success', `${config.title} updated successfully`);
       getAll();
       resetForm();
       dispatch(dynamic_clear(config.apiRoutes.update.identifier));
     } else if (updateError) {
-      showToast('error', `Failed to update ${config.title}`);
+      const errorMessage =
+        updateError.message || `Failed to update ${config.title}`;
+      showToast('error', errorMessage);
     }
   }, [
     updateItems,
@@ -198,12 +201,14 @@ export const useGenericCrud = <T extends BaseEntity>(config: CrudConfig<T>) => {
   ]);
 
   useEffect(() => {
-    if (deleteItems?.statusCode === '200') {
+    if (deleteItems?.statusCode === 200) {
       showToast('success', `${config.title} deleted successfully`);
       getAll();
       dispatch(dynamic_clear(config.apiRoutes.delete.identifier));
     } else if (deleteError) {
-      showToast('error', `Failed to delete ${config.title}`);
+      const errorMessage =
+        deleteError.message || `Failed to delete ${config.title}`;
+      showToast('error', errorMessage);
     }
   }, [
     deleteItems,

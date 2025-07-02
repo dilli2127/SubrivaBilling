@@ -117,17 +117,17 @@ const StockCrudModule = ({
   };
 
   useEffect(() => {
-    if (createItems?.statusCode === "200") handleApiResponse("create", true);
+    if (createItems?.statusCode === 200) handleApiResponse("create", true);
     if (createError) handleApiResponse("create", false);
   }, [createItems, createError]);
 
   useEffect(() => {
-    if (updateItems?.statusCode === "200") handleApiResponse("update", true);
+    if (updateItems?.statusCode === 200) handleApiResponse("update", true);
     if (updateError) handleApiResponse("update", false);
   }, [updateItems, updateError]);
 
   useEffect(() => {
-    if (deleteItems?.statusCode === "200") handleApiResponse("delete", true);
+    if (deleteItems?.statusCode === 200) handleApiResponse("delete", true);
     if (deleteError) handleApiResponse("delete", false);
   }, [deleteItems, deleteError]);
 

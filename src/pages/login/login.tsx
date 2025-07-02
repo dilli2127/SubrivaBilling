@@ -47,7 +47,7 @@ const Login: React.FC = () => {
     );
   };
   useEffect(() => {
-    if (items?.statusCode === "200") {
+    if (items?.statusCode === 200) {
       message.success("Login successful! Welcome back.");
       sessionStorage.setItem("token", items?.result?.token);
       sessionStorage.setItem("user", JSON.stringify(items?.result?.UserItem));
@@ -57,7 +57,7 @@ const Login: React.FC = () => {
       } else {
         navigate("/dashboard");
       }
-    } else if (items?.statusCode && items.statusCode !== "200") {
+    } else if (items?.statusCode && items.statusCode !== 200) {
         message.error(items?.message || "Login failed, please try again");
     }
   }, [items]);
