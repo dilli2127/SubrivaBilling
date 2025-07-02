@@ -19,17 +19,6 @@ export const brancheColumns = [
     render: (org: { org_name: string }) => <Text strong>{org?.org_name}</Text>,
   },
   {
-    title: 'Contact Person',
-    dataIndex: 'owner_name',
-    key: 'owner_name',
-    render: (name: string) => (
-      <Space>
-        <UserOutlined />
-        <Text>{name}</Text>
-      </Space>
-    ),
-  },
-  {
     title: 'Phone',
     dataIndex: 'phone',
     key: 'phone',

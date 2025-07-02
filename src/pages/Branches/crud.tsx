@@ -20,7 +20,7 @@ const BranchesCrud: React.FC = () => {
   // Fetch organisations and branches data when component mounts
   useEffect(() => {
     OrganisationsApi('GetAll');
-    BranchesApi('GetAll');
+    // BranchesApi('GetAll');
   }, [OrganisationsApi, BranchesApi]);
 
   // State for selected organisation
