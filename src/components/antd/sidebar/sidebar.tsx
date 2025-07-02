@@ -66,7 +66,7 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
     const data = sessionStorage.getItem('user');
     return data ? JSON.parse(data) : null;
   }, []);
-console.log('userItem', userItem)
+
   const allowedKeys = useMemo(() => getAllowedMenuKeys(userItem), [userItem]);
 
   const handleOpenChange = useCallback(

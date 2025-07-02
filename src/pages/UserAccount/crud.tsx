@@ -1,4 +1,4 @@
-import React, { memo, useEffect, useState } from 'react';
+import React, { memo, useEffect, useMemo, useState } from 'react';
 import { GenericCrudPage } from '../../components/common/GenericCrudPage';
 import { getEntityApiRoutes } from '../../helpers/CrudFactory';
 import { usersAccountColumns } from './columns';
@@ -20,6 +20,12 @@ const UserAccountCrud: React.FC = () => {
   const { items: branchesItems } = useDynamicSelector(
     BrachesApi.getIdentifier('GetAll')
   );
+  const userItem = useMemo(() => {
+    const data = sessionStorage.getItem('user');
+    return data ? JSON.parse(data) : null;
+  }, []);
+
+  const userItemRole = userItem?.roleItems?.name ?? null;
 
   useEffect(() => {
     [RolesApi, OrganisationsApi].forEach(api => api('GetAll'));
@@ -50,7 +56,7 @@ const UserAccountCrud: React.FC = () => {
   >(null);
 
   const handleOrganisationChange = (value: string | number | undefined) => {
-    BrachesApi("GetAll",{organisation_id: value}); // Fetch branches for the selected organisation
+    BrachesApi('GetAll', { organisation_id: value }); // Fetch branches for the selected organisation
     const safeValue = value === undefined || value === '' ? null : value;
     setSelectedOrganisationId(safeValue);
     form.setFieldsValue({ branch_id: undefined }); // reset branch when org changes
@@ -72,6 +78,7 @@ const UserAccountCrud: React.FC = () => {
           organisation,
           branches,
           selectedOrganisationId,
+          userItemRole,
         }),
         apiRoutes: getEntityApiRoutes('BillingUsers'),
         formColumns: 2,
