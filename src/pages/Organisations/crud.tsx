@@ -9,7 +9,7 @@ const organisationsConfig = {
   columns: organisationColumns,
   formItems: organisationFormItems,
   apiRoutes: getEntityApiRoutes('Organisations'),
-  formColumns: 3,
+  formColumns: 2,
   drawerWidth: 800,
 };
 

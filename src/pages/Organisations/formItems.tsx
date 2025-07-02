@@ -1,5 +1,14 @@
 import React from 'react';
-import { DatePicker, Input, InputNumber, Select, Upload } from 'antd';
+import {
+  DatePicker,
+  Input,
+  InputNumber,
+  Select,
+  Switch,
+  Tag,
+  Upload,
+} from 'antd';
+import { CheckCircleTwoTone, CloseCircleTwoTone } from '@ant-design/icons';
 
 export const organisationFormItems = [
   {
@@ -13,29 +22,6 @@ export const organisationFormItems = [
     name: 'business_type',
     rules: [{ required: true, message: 'Please enter business type!' }],
     component: <Input placeholder="Enter business type" />,
-  },
-  {
-    label: 'License Type',
-    name: 'license_type',
-    rules: [{ required: true, message: 'Please select license type!' }],
-    component: (
-      <Select
-        placeholder="Select license type"
-        options={[
-          { label: 'Basic', value: 'starter' },
-          { label: 'Standard', value: 'standard' },
-          { label: 'Premium', value: 'pro' },
-        ]}
-      />
-    ),
-  },
-  {
-    label: 'License Expiry',
-    name: 'license_expiry',
-    rules: [
-      { required: true, message: 'Please select license expiry date!' },
-    ],
-    component: <DatePicker style={{ width: '100%' }} />,
   },
   {
     label: 'Email',
@@ -57,7 +43,7 @@ export const organisationFormItems = [
     name: 'gst_number',
     component: <Input placeholder="Enter GST number" />,
   },
-  
+
   {
     label: 'PAN Number',
     name: 'pan_number',
@@ -103,50 +89,15 @@ export const organisationFormItems = [
     ),
   },
   {
-    label: 'Max Branches Allowed',
-    name: 'max_branches_allowed',
-    rules: [
-      { required: true, message: 'Please enter max branches allowed!' },
-    ],
-    component: <InputNumber min={1} style={{ width: '100%' }} />,
-  },
-  {
-    label: 'Max Sales Users',
-    name: 'max_sales_users',
-    rules: [{ required: true, message: 'Please enter max sales users!' }],
-    component: <InputNumber min={1} style={{ width: '100%' }} />,
-  },
-  {
-    label: 'Owner Name',
-    name: 'owner_name',
-    component: <Input placeholder="Enter Owner Name" />,
-  },
-  {
-    label: 'Owner Email',
-    name: 'owner_email',
-    component: <Input placeholder="Enter Owner Email" />,
-  },
-  {
-    label: 'Owner Phone',
-    name: 'owner_phone',
-    component: <Input placeholder="Enter Owner Phone" />,
-  },
-  {
-    label: 'Owner Designation',
-    name: 'owner_designation',
-    component: <Input placeholder="Enter Owner Designation" />,
-  },
-  {
     label: 'Status',
     name: 'status',
+    valuePropName: 'checked',
     component: (
-      <Select
-        placeholder="Select status"
-        options={[
-          { label: 'Active', value: true },
-          { label: 'Inactive', value: false },
-        ]}
+      <Switch
+        checkedChildren="Active"
+        unCheckedChildren="Inactive"
+        defaultChecked
       />
     ),
   },
-]; 
+];

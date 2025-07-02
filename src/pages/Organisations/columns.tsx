@@ -12,17 +12,7 @@ export const organisationColumns = [
     key: 'org_name',
     render: (text: string) => <Text strong>{text}</Text>,
   },
-  {
-    title: 'Contact Person',
-    dataIndex: 'owner_name',
-    key: 'owner_name',
-    render: (name: string) => (
-      <Space>
-        <UserOutlined />
-        <Text>{name}</Text>
-      </Space>
-    ),
-  },
+
   {
     title: 'Phone',
     dataIndex: 'phone',
