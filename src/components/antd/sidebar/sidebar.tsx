@@ -25,6 +25,19 @@ const getAllowedMenuKeys = (user: any): string[] => {
     ? user.roleItems.allowedMenuKeys
     : [];
 
+  if (role === 'superadmin') {
+    // Return all menu keys (including children) for superadmin
+    const getAllKeys = (items: any[]): string[] =>
+      items.reduce((acc: string[], item: any) => {
+        acc.push(item.key);
+        if (item.children) {
+          acc.push(...getAllKeys(item.children));
+        }
+        return acc;
+      }, []);
+    return getAllKeys(originalMenuItems);
+  }
+
   if (role === 'tenant') {
     return getAllKeysExcludingTenantManage(originalMenuItems);
   }
