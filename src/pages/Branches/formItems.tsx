@@ -7,27 +7,29 @@ interface Organisation {
   org_name: string;
 }
 
-export const branchesFormItems = (organisationsItems: Organisation[] = []) => [
+export const branchesFormItems = (organisationsItems: Organisation[] = [], userRole: string = '') => [
   {
     label: 'Branch Name',
     name: 'branch_name',
     rules: [{ required: true, message: 'Please enter branch name!' }],
     component: <Input placeholder="Enter branch name" />,
   },
-  {
-    label: 'Organisation',
-    name: 'organisation_id',
-    rules: [{ required: true, message: 'Please select a organisation!' }],
-    component: (
-      <Select placeholder="Select orgnisation">
-        {(organisationsItems || []).map(org => (
-          <Option key={org._id} value={org._id}>
-            {org.org_name}
-          </Option>
-        ))}
-      </Select>
-    ),
-  },
+  ...((userRole ==="tenant" || userRole === "superadmin") ? [
+    {
+      label: 'Organisation',
+      name: 'organisation_id',
+      rules: [{ required: true, message: 'Please select a organisation!' }],
+      component: (
+        <Select placeholder="Select orgnisation">
+          {(organisationsItems || []).map(org => (
+            <Option key={org._id} value={org._id}>
+              {org.org_name}
+            </Option>
+          ))}
+        </Select>
+      ),
+    },
+  ] : []),
   {
     label: 'Branch Code',
     name: 'branch_code',

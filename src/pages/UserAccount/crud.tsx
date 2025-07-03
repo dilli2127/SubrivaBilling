@@ -25,10 +25,16 @@ const UserAccountCrud: React.FC = () => {
     return data ? JSON.parse(data) : null;
   }, []);
 
-  const userItemRole = userItem?.roleItems?.name ?? null;
-
+  const userItemRole =
+    userItem?.roleItems?.name ||
+    userItem?.usertype ||
+    userItem?.user_role ||
+    '';
   useEffect(() => {
     [RolesApi, OrganisationsApi].forEach(api => api('GetAll'));
+    if (userItemRole !== 'tenant' || userItemRole !== 'superadmin') {
+      BrachesApi('GetAll');
+    }
   }, [RolesApi, OrganisationsApi]);
 
   // Prepare roles for the select

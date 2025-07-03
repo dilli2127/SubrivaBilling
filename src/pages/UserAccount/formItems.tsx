@@ -69,8 +69,7 @@ export const usersAccountFormItems = ({
       </Select>
     ),
   },
-  ...(userItemRole !== 'OrganisationAdmin' &&
-    userItemRole !== 'BranchAdmin'
+  ...(userItemRole !== 'OrganisationAdmin' && userItemRole !== 'BranchAdmin'
     ? [
         {
           label: 'Organisation',
@@ -88,8 +87,7 @@ export const usersAccountFormItems = ({
         },
       ]
     : []),
-  ...(userItemRole !== 'OrganisationAdmin' &&
-    userItemRole !== 'BranchAdmin'
+  ...(userItemRole !== 'BranchAdmin'
     ? [
         {
           label: 'Branch',
@@ -100,7 +98,9 @@ export const usersAccountFormItems = ({
               placeholder="Select branch"
               allowClear
               showSearch
-              disabled={!selectedOrganisationId}
+              disabled={
+                userItemRole !== 'BranchAdmin' ? false : !selectedOrganisationId
+              }
             >
               {branches
                 .filter(

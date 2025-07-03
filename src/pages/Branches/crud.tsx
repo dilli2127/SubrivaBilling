@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { GenericCrudPage } from '../../components/common/GenericCrudPage';
 import { getEntityApiRoutes } from '../../helpers/CrudFactory';
 import { branchesFormItems } from './formItems';
 import { brancheColumns } from './columns';
 import { useApiActions } from '../../services/api/useApiActions';
 import { useDynamicSelector } from '../../services/redux/selector';
+import { getCurrentUserRole } from '../../helpers/auth';
 
 const BranchesCrud: React.FC = () => {
   const { getEntityApi } = useApiActions();
@@ -55,7 +56,7 @@ const BranchesCrud: React.FC = () => {
         value: branch._id,
       })),
       placeholder: 'Select Branch',
-      disabled: !selectedOrg, 
+      disabled: !selectedOrg,
     },
   ];
 
@@ -70,13 +71,13 @@ const BranchesCrud: React.FC = () => {
       },
     },
   ];
-
+  const userRole = getCurrentUserRole();
   return (
     <GenericCrudPage
       config={{
         title: 'Branches',
         columns: brancheColumns,
-        formItems: branchesFormItems(organisationItems?.result),
+        formItems: branchesFormItems(organisationItems?.result, userRole),
         apiRoutes: getEntityApiRoutes('Braches'),
         formColumns: 2,
       }}
