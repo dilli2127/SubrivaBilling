@@ -37,7 +37,11 @@ export const branchesFormItems = (organisationsItems: Organisation[] = []) => [
   {
     label: 'Phone',
     name: 'phone',
-    component: <Input placeholder="Enter phone number" />,
+    rules: [
+      { required: true, message: 'Please enter phone number' },
+      { pattern: /^\d{10}$/, message: 'Phone number must be 10 digits' },
+    ],
+    component: <Input placeholder="Enter phone number" maxLength={10} />,
   },
   {
     label: 'Email',
