@@ -99,21 +99,22 @@ export const usersAccountFormItems = ({
               allowClear
               showSearch
               disabled={
-                userItemRole !== 'BranchAdmin' ? false : !selectedOrganisationId
+                userItemRole === 'BranchAdmin' ? !selectedOrganisationId : false
               }
             >
-              {branches
-                .filter(
-                  branch =>
-                    (typeof selectedOrganisationId === 'string' ||
-                      typeof selectedOrganisationId === 'number') &&
-                    branch.organisation_id === selectedOrganisationId
-                )
-                .map(branch => (
-                  <Select.Option key={branch.value} value={branch.value}>
-                    {branch.label}
-                  </Select.Option>
-                ))}
+              {(userItemRole !== 'BranchAdmin'
+                ? branches
+                : branches.filter(
+                    branch =>
+                      (typeof selectedOrganisationId === 'string' ||
+                        typeof selectedOrganisationId === 'number') &&
+                      branch.organisation_id === selectedOrganisationId
+                  )
+              ).map(branch => (
+                <Select.Option key={branch.value} value={branch.value}>
+                  {branch.label}
+                </Select.Option>
+              ))}
             </Select>
           ),
         },
