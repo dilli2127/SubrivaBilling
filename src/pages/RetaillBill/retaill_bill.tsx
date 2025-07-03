@@ -227,7 +227,6 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
   });
 
   const handleSubmit = async (values: any) => {
-    debugger;
     // Validation: Prevent submission if any item's stock is not available
     const unavailableStockItem = billCalc.itemsWithTax.find((item) => {
       const stock = stockAuditList?.result?.find(
