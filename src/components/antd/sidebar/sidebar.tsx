@@ -168,7 +168,7 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
           style={{ color: '#fff', fontSize: 18 }}
         />
         <h2 style={{ margin: 0, flex: 1, textAlign: 'center' }}>
-          Fresh Focuz Billing
+          Subriva Billing
         </h2>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           {userItem && (
