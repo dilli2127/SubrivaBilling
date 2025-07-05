@@ -35,6 +35,22 @@ class APIService {
             }
             return config;
         });
+
+        // Add response interceptor for token expiration
+        this.api.interceptors.response.use(
+            response => response,
+            error => {
+                if (
+                    error.response &&
+                    (error.response.status === 401 ||
+                        error.response.data?.message?.toLowerCase().includes('token expired'))
+                ) {
+                    sessionStorage.clear();
+                    window.location.href = '/billing_login'; // or your login route
+                }
+                return Promise.reject(error);
+            }
+        );
     }
 
     // Method to send requests to the API
