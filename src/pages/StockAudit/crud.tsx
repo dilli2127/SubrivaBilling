@@ -9,6 +9,7 @@ import { getStockAuditFormItems } from "./formItems";
 import AllocateDrawer from "./AllocateDrawer";
 import RevertDrawer from "./RevertDrawer";
 import StockOutDrawer from "./StockOutDrawer";
+import { useHandleApiResponse } from "../../components/common/useHandleApiResponse";
 
 const StockAuditCrud: React.FC = () => {
   const [form] = Form.useForm();
@@ -24,6 +25,7 @@ const StockAuditCrud: React.FC = () => {
   const VendorApi = getEntityApi("Vendor");
   const WarehouseApi = getEntityApi("Warehouse");
   const BranchApi = getEntityApi("Braches");
+  const BranchStock = getEntityApi("BranchStock");
 
   const { items: productList, loading } = useDynamicSelector(
     ProductsApi.getIdentifier("GetAll")
@@ -36,6 +38,8 @@ const StockAuditCrud: React.FC = () => {
   const { items: branchList, loading: branchLoading } = useDynamicSelector(
     BranchApi.getIdentifier("GetAll")
   );
+
+  const handleApi = useHandleApiResponse();
 
   useEffect(() => {
     const qty = form.getFieldValue("quantity");
@@ -58,11 +62,14 @@ const StockAuditCrud: React.FC = () => {
     setAllocateDrawerOpen(true);
   };
 
-  // Handler for allocation submit
   const handleAllocateSubmit = async (values: any) => {
-    // Here you would call your allocation API
-    // Example: await allocateStock({ ...values, stock_audit_id: allocateRecord._id })
-    message.success("Stock allocated successfully!");
+    await BranchStock({ ...values, stock_audit_id: allocateRecord._id })
+    handleApi({
+      action: "create",
+      success: true,
+      title: "Stock allocation",
+      identifier: BranchStock.getIdentifier("Create"),
+    });
     setAllocateDrawerOpen(false);
     setAllocateRecord(null);
   };
@@ -77,7 +84,12 @@ const StockAuditCrud: React.FC = () => {
   const handleRevertSubmit = async (values: any) => {
     // Here you would call your revert API
     // Example: await revertStock({ ...values, stock_audit_id: revertRecord._id })
-    message.success("Stock reverted successfully!");
+    handleApi({
+      action: "update",
+      success: true,
+      title: "Stock revert",
+      identifier: BranchStock.getIdentifier("Update"),
+    });
     setRevertDrawerOpen(false);
     setRevertRecord(null);
   };
@@ -92,7 +104,12 @@ const StockAuditCrud: React.FC = () => {
   const handleStockoutSubmit = async (values: any) => {
     // Here you would call your stockout API
     // Example: await stockoutStock({ ...values, stock_audit_id: stockoutRecord._id })
-    message.success("Stock marked as out successfully!");
+    handleApi({
+      action: "update",
+      success: true,
+      title: "Stock out",
+      identifier: BranchStock.getIdentifier("Update"),
+    });
     setStockoutDrawerOpen(false);
     setStockoutRecord(null);
   };

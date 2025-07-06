@@ -28,13 +28,14 @@ import { useDynamicSelector } from "../../services/redux";
 import RetailBillingTable from "./retaill_bill";
 import BillViewModal from "./components/BillViewModal";
 import GlobalTable from "../../components/antd/GlobalTable";
-import { handleApiResponse } from "../../components/common/handleApiResponse";
+import { useHandleApiResponse } from "../../components/common/useHandleApiResponse";
 
 const { Title } = Typography;
 
 const BillListPage = () => {
   const { getEntityApi } = useApiActions();
   const SalesRecord = getEntityApi("SalesRecord");
+  const handleApi = useHandleApiResponse();
   const { items: SalesRecordList, loading } = useDynamicSelector(
     SalesRecord.getIdentifier("GetAll")
   );
@@ -56,7 +57,7 @@ const BillListPage = () => {
     try {
       await SalesRecord("Delete", {}, id);
       const success = deleteItems?.statusCode === 200;
-      handleApiResponse({
+      handleApi({
         action: "delete",
         success,
         title: "Sale",
@@ -65,9 +66,10 @@ const BillListPage = () => {
             pageNumber: pagination.current,
             pageLimit: pagination.pageSize,
           }),
+        identifier: SalesRecord.getIdentifier("Delete"),
       });
     } catch (error) {
-      handleApiResponse({
+      handleApi({
         action: "delete",
         success: false,
         title: "Sale",
