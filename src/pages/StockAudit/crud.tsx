@@ -1,20 +1,23 @@
 import React, { useEffect, useState } from "react";
-import { Form, Drawer, Button, Select, InputNumber, message } from "antd";
-
+import { Form, message } from "antd";
 import { useApiActions } from "../../services/api/useApiActions";
 import { useDynamicSelector } from "../../services/redux";
 import { GenericCrudPage } from "../../components/common/GenericCrudPage";
 import { getEntityApiRoutes } from "../../helpers/CrudFactory";
 import { stockAuditColumns } from "./columns";
 import { getStockAuditFormItems } from "./formItems";
-
-const { Option } = Select;
+import AllocateDrawer from "./AllocateDrawer";
+import RevertDrawer from "./RevertDrawer";
+import StockOutDrawer from "./StockOutDrawer";
 
 const StockAuditCrud: React.FC = () => {
   const [form] = Form.useForm();
   const [allocateDrawerOpen, setAllocateDrawerOpen] = useState(false);
   const [allocateRecord, setAllocateRecord] = useState<any>(null);
-  const [allocateForm] = Form.useForm();
+  const [revertDrawerOpen, setRevertDrawerOpen] = useState(false);
+  const [revertRecord, setRevertRecord] = useState<any>(null);
+  const [stockoutDrawerOpen, setStockoutDrawerOpen] = useState(false);
+  const [stockoutRecord, setStockoutRecord] = useState<any>(null);
 
   const { getEntityApi } = useApiActions();
   const ProductsApi = getEntityApi("Product");
@@ -53,7 +56,6 @@ const StockAuditCrud: React.FC = () => {
   const handleAllocate = (record: any) => {
     setAllocateRecord(record);
     setAllocateDrawerOpen(true);
-    allocateForm.resetFields();
   };
 
   // Handler for allocation submit
@@ -65,9 +67,39 @@ const StockAuditCrud: React.FC = () => {
     setAllocateRecord(null);
   };
 
+  // Handler to open revert drawer
+  const handleRevert = (record: any) => {
+    setRevertRecord(record);
+    setRevertDrawerOpen(true);
+  };
+
+  // Handler for revert submit
+  const handleRevertSubmit = async (values: any) => {
+    // Here you would call your revert API
+    // Example: await revertStock({ ...values, stock_audit_id: revertRecord._id })
+    message.success("Stock reverted successfully!");
+    setRevertDrawerOpen(false);
+    setRevertRecord(null);
+  };
+
+  // Handler to open stockout drawer
+  const handleStockout = (record: any) => {
+    setStockoutRecord(record);
+    setStockoutDrawerOpen(true);
+  };
+
+  // Handler for stockout submit
+  const handleStockoutSubmit = async (values: any) => {
+    // Here you would call your stockout API
+    // Example: await stockoutStock({ ...values, stock_audit_id: stockoutRecord._id })
+    message.success("Stock marked as out successfully!");
+    setStockoutDrawerOpen(false);
+    setStockoutRecord(null);
+  };
+
   const stockAuditConfig = {
     title: "Stock Audit",
-    columns: stockAuditColumns({ onAllocate: handleAllocate }),
+    columns: stockAuditColumns({ onAllocate: handleAllocate, onRevert: handleRevert, onStockout: handleStockout }),
     formItems: getStockAuditFormItems(
       productList,
       vendorList,
@@ -83,45 +115,28 @@ const StockAuditCrud: React.FC = () => {
   return (
     <>
       <GenericCrudPage config={stockAuditConfig} />
-      <Drawer
-        title="Allocate Stock"
+      <AllocateDrawer
         open={allocateDrawerOpen}
         onClose={() => setAllocateDrawerOpen(false)}
-        width={400}
-      >
-        <Form form={allocateForm} layout="vertical" onFinish={handleAllocateSubmit}>
-          <Form.Item
-            name="branch_id"
-            label="Branch"
-            rules={[{ required: true, message: "Please select a branch" }]}
-          >
-            <Select
-              placeholder="Select branch"
-              loading={branchLoading}
-              showSearch
-              optionFilterProp="children"
-            >
-              {branchList?.result?.map((branch: any) => (
-                <Option key={branch._id} value={branch._id}>
-                  {branch.branch_name}
-                </Option>
-              ))}
-            </Select>
-          </Form.Item>
-          <Form.Item
-            name="added_quantity"
-            label="Quantity"
-            rules={[{ required: true, message: "Please enter quantity" }]}
-          >
-            <InputNumber min={1} style={{ width: "100%" }} />
-          </Form.Item>
-          <Form.Item>
-            <Button type="primary" htmlType="submit" block>
-              Allocate
-            </Button>
-          </Form.Item>
-        </Form>
-      </Drawer>
+        onSubmit={handleAllocateSubmit}
+        record={allocateRecord}
+        branchList={branchList}
+        branchLoading={branchLoading}
+      />
+      <RevertDrawer
+        open={revertDrawerOpen}
+        onClose={() => setRevertDrawerOpen(false)}
+        onSubmit={handleRevertSubmit}
+        record={revertRecord}
+        branchList={branchList}
+        branchLoading={branchLoading}
+      />
+      <StockOutDrawer
+        open={stockoutDrawerOpen}
+        onClose={() => setStockoutDrawerOpen(false)}
+        onSubmit={handleStockoutSubmit}
+        record={stockoutRecord}
+      />
     </>
   );
 };

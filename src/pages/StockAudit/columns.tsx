@@ -18,7 +18,7 @@ import {
   ExportOutlined
 } from "@ant-design/icons";
 
-export const stockAuditColumns = ({ onAllocate }: { onAllocate: (record: any) => void }) => [
+export const stockAuditColumns = ({ onAllocate, onRevert, onStockout }: { onAllocate: (record: any) => void, onRevert: (record: any) => void, onStockout: (record: any) => void }) => [
   {
     title: "Invoice ID",
     dataIndex: "invoice_id",
@@ -250,6 +250,7 @@ export const stockAuditColumns = ({ onAllocate }: { onAllocate: (record: any) =>
               type="default"
               size="small"
               icon={<RollbackOutlined />}
+              onClick={() => onRevert(record)}
               style={{ 
                 fontSize: '10px',
                 height: '24px',
@@ -265,6 +266,7 @@ export const stockAuditColumns = ({ onAllocate }: { onAllocate: (record: any) =>
               type="default"
               size="small"
               icon={<ExportOutlined />}
+              onClick={() => onStockout(record)}
               style={{ 
                 fontSize: '10px',
                 height: '24px',
