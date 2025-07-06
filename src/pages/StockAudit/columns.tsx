@@ -18,7 +18,7 @@ import {
   ExportOutlined
 } from "@ant-design/icons";
 
-export const stockAuditColumns = [
+export const stockAuditColumns = ({ onAllocate }: { onAllocate: (record: any) => void }) => [
   {
     title: "Invoice ID",
     dataIndex: "invoice_id",
@@ -233,7 +233,7 @@ export const stockAuditColumns = [
               type="primary"
               size="small"
               icon={<AppstoreAddOutlined />}
-              onClick={() => handleAllocate(record)}
+              onClick={() => onAllocate(record)}
               disabled={isOutOfStock}
               style={{ 
                 fontSize: '10px',
@@ -250,7 +250,6 @@ export const stockAuditColumns = [
               type="default"
               size="small"
               icon={<RollbackOutlined />}
-              onClick={() => handleRevert(record)}
               style={{ 
                 fontSize: '10px',
                 height: '24px',
@@ -266,7 +265,6 @@ export const stockAuditColumns = [
               type="default"
               size="small"
               icon={<ExportOutlined />}
-              onClick={() => handleStockout(record)}
               style={{ 
                 fontSize: '10px',
                 height: '24px',
