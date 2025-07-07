@@ -9,14 +9,14 @@ import {
 import { UserOutlined, LockOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import "./Login.css";
-import { ApiRequest } from "../../services/api/apiService";
 import {
   dynamic_clear,
   dynamic_request,
   useDynamicSelector,
 } from "../../services/redux";
 import { useDispatch } from "react-redux";
-import { Dispatch } from "redux";
+import type { Dispatch } from "redux";
+import type { ApiRequest } from "../../services/api/apiService";
 import { API_ROUTES } from "../../services/api/utils";
 
 const { Title, Text } = Typography;

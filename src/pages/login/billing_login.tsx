@@ -10,15 +10,16 @@ import {
 import { UserOutlined, LockOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import "./Login.css";
-import { ApiRequest } from "../../services/api/apiService";
+import type { ApiRequest } from "../../services/api/apiService";
 import {
   dynamic_clear,
   dynamic_request,
   useDynamicSelector,
 } from "../../services/redux";
 import { useDispatch } from "react-redux";
-import { Dispatch } from "redux";
+import type { Dispatch } from "redux";
 import { API_ROUTES } from "../../services/api/utils";
+import LOGO from "../../assets copy/img/ffslogo.png"
 
 const { Title, Text } = Typography;
 
@@ -37,7 +38,7 @@ const BillingLogin: React.FC = () => {
   const { loading, items } = useDynamicSelector(
     API_ROUTES.BillingLogin.Create.identifier
   );
-  const { loading:TenantLoading, items:TenantItems } = useDynamicSelector(
+  const { loading: TenantLoading, items: TenantItems } = useDynamicSelector(
     API_ROUTES.TenantLogin.Create.identifier
   );
   const onFinish = (values: {
@@ -76,7 +77,7 @@ const BillingLogin: React.FC = () => {
         navigate("/dashboard");
       }
     } else if (items?.statusCode && items.statusCode !== 200) {
-        message.error(items?.message || "Login failed, please try again");
+      message.error(items?.message || "Login failed, please try again");
     }
   }, [items]);
   useEffect(() => {
@@ -91,14 +92,14 @@ const BillingLogin: React.FC = () => {
         navigate("/dashboard");
       }
     } else if (TenantItems?.statusCode && items.statusCode !== 200) {
-        message.error(items?.message || "Login failed, please try again");
+      message.error(items?.message || "Login failed, please try again");
     }
   }, [TenantItems]);
   return (
     <div className="login-background-rich">
       <div className="login-form-card-rich">
         <div className="login-header-rich">
-          <img src={require('../../assets/img/ffslogo.png')} alt="Logo" className="login-logo-rich" />
+          <img src={LOGO} alt="Logo" className="login-logo-rich" />
           <span className="login-appname-rich">Focuz Billing</span>
           <span className="login-title-rich">Welcome Back</span>
         </div>

@@ -28,7 +28,7 @@ import {
   Bar,
 } from "recharts";
 import { useDispatch } from "react-redux";
-import { Dispatch } from "redux";
+import type { Dispatch } from "redux";
 import { dynamic_request, useDynamicSelector } from "../../services/redux";
 import { createApiRouteGetter } from "../../helpers/Common_functions";
 

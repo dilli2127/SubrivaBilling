@@ -16,7 +16,7 @@ import CustomerCrud from "../../pages/Customer/crud";
 import { createApiRouteGetter } from "../../helpers/Common_functions";
 import { calculateBillTotals } from "../../helpers/amount_calculations";
 import { useDispatch } from "react-redux";
-import { Dispatch } from "redux";
+import type { Dispatch } from "redux";
 import { API_ROUTES } from "../../services/api/utils";
 import BillForm from "./components/BillForm";
 import BillItemsTable from "./components/BillItemsTable";

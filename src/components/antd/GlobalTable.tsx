@@ -1,6 +1,6 @@
 import React, { memo } from 'react';
-import { Table, TableProps } from 'antd';
-import type { ColumnsType } from 'antd/es/table';
+import { Table } from 'antd';
+import type { ColumnsType, TableProps } from 'antd/es/table';
 import './GlobalTable.css'; // Optional for custom styles
 
 interface GlobalTableProps<T> extends TableProps<T> {

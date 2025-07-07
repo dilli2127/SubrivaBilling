@@ -4,7 +4,6 @@ import React, { useCallback, useEffect, useState, memo } from "react";
 import { Button, Row, Input, Tooltip, Form } from "antd";
 import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import { useDispatch } from "react-redux";
-import { Dispatch } from "redux";
 import dayjs from "dayjs";
 import {
   dynamic_clear,
@@ -12,9 +11,10 @@ import {
   useDynamicSelector,
 } from "../../services/redux";
 import GlobalDrawer from "../antd/GlobalDrawer";
-import AntdForm from "../antd/form/form";
+import AntdForm from "../antd/form";
 import { showToast } from "../../helpers/Common_functions";
 import GlobalTable from "../antd/GlobalTable";
+import type { Dispatch } from "redux";
 
 const StockCrudModule = ({
   title,

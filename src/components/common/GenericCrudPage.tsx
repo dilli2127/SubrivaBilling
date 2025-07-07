@@ -10,11 +10,11 @@ import {
   Col,
 } from 'antd';
 import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
-import { useGenericCrud, CrudConfig } from '../../hooks/useGenericCrud';
-import { BaseEntity } from '../../types/entities';
+import { useGenericCrud, type CrudConfig } from '../../hooks/useGenericCrud';
 import GlobalDrawer from '../antd/GlobalDrawer';
-import AntdForm from '../antd/form/form';
 import GlobalTable from '../antd/GlobalTable';
+import type { BaseEntity } from '../../types/entities';
+import AntdForm from '../antd/form';
 
 // Filter and Button Config Types
 export type FilterConfig = {

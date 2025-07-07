@@ -6,11 +6,11 @@ import {
   useDynamicSelector,
   dynamic_clear,
 } from '../services/redux';
-import { CrudColumn, CrudFormItem } from '../components/common/GenericCrudPage';
 import { showToast } from '../helpers/Common_functions';
-import { BaseEntity } from '../types/entities';
-import { Dispatch } from 'redux';
 import dayjs from 'dayjs';
+import type { CrudColumn, CrudFormItem } from '../components/common/GenericCrudPage';
+import type { Dispatch } from 'redux';
+import type { BaseEntity } from '../types/entities';
 
 export interface CrudConfig<T extends BaseEntity> {
   title: string;

@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { ApiRequest } from "../../services/api/apiService";
+import type { ApiRequest } from "../../services/api/apiService";
 import { dynamic_request, useDynamicSelector } from "../../services/redux";
 import { useDispatch } from "react-redux";
-import { Dispatch } from "redux";
+import type { Dispatch } from "redux";
 import { createApiRouteGetter } from "../../helpers/Common_functions";
 
 const LandingBanner: React.FC = () => {
