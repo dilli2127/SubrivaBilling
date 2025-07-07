@@ -1,8 +1,8 @@
-import { useDispatch } from "react-redux";
-import { useDynamicSelector, dynamic_clear } from "../../services/redux";
-import { handleApiResponse } from "./handleApiResponse";
-import { Dispatch } from "redux";
-import { useEffect } from "react";
+import { useDispatch } from 'react-redux';
+import { useDynamicSelector, dynamic_clear } from '../../services/redux';
+import { handleApiResponse } from './handleApiResponse';
+import { Dispatch } from 'redux';
+import { useEffect } from 'react';
 
 export const useHandleApiResponse = ({
   action,
@@ -11,7 +11,7 @@ export const useHandleApiResponse = ({
   entityApi,
   dispatch: customDispatch,
 }: {
-  action: "create" | "update" | "delete";
+  action: 'create' | 'update' | 'delete';
   title: string;
   identifier: string;
   entityApi?: any;
@@ -31,11 +31,12 @@ export const useHandleApiResponse = ({
         identifier,
         success,
         dispatch: resolvedDispatch,
+        shouldClear: false,
       });
 
       // Automatically call GetAll after success
       if (success && entityApi) {
-        entityApi("GetAll");
+        entityApi('GetAll');
       }
 
       resolvedDispatch(dynamic_clear(identifier) as any);
