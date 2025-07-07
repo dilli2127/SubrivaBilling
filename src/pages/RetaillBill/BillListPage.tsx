@@ -40,10 +40,6 @@ const BillListPage = () => {
   const { items: SalesRecordList, loading } = useDynamicSelector(
     SalesRecord.getIdentifier("GetAll")
   );
-  const { items: deleteItems, loading: deleteLoading } = useDynamicSelector(
-    SalesRecord.getIdentifier("GetAll")
-  );
-
   const [selectedBill, setSelectedBill] = useState<any>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [billViewVisible, setBillViewVisible] = useState(false);
@@ -60,11 +56,11 @@ const BillListPage = () => {
     action: "delete",
     title: "Sale",
     identifier: SalesRecord.getIdentifier("Delete"),
+    entityApi: SalesRecord,
   });
 
   const handleDelete = async (id: string) => {
     try {
-      dispatch(dynamic_clear(SalesRecord.getIdentifier("Delete")) as any);
       await SalesRecord("Delete", {}, id);
       // You can add extra logic here if needed (e.g., refresh list, close modal)
     } catch (error) {

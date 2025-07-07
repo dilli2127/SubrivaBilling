@@ -8,11 +8,13 @@ export const useHandleApiResponse = ({
   action,
   title,
   identifier,
+  entityApi,
   dispatch: customDispatch,
 }: {
   action: "create" | "update" | "delete";
   title: string;
   identifier: string;
+  entityApi?: any;
   dispatch?: Dispatch<any>;
 }) => {
   const reduxDispatch = useDispatch();
@@ -31,7 +33,12 @@ export const useHandleApiResponse = ({
         dispatch: resolvedDispatch,
       });
 
-      resolvedDispatch(dynamic_clear(identifier));
+      // Automatically call GetAll after success
+      if (success && entityApi) {
+        entityApi("GetAll");
+      }
+
+      resolvedDispatch(dynamic_clear(identifier) as any);
     }
   }, [
     loading,
@@ -41,5 +48,6 @@ export const useHandleApiResponse = ({
     action,
     title,
     identifier,
+    entityApi,
   ]);
 };

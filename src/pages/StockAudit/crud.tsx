@@ -58,11 +58,13 @@ const StockAuditCrud: React.FC = () => {
     action: "create",
     title: "Stock allocation",
     identifier: BranchStock.getIdentifier("Create"),
+    entityApi: BranchStock,
   });
   useHandleApiResponse({
     action: "update",
     title: "Stock updated",
     identifier: BranchStock.getIdentifier("Update"),
+    entityApi: BranchStock,
   });
 
   // Handler to open allocate drawer
