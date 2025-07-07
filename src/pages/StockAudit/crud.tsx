@@ -39,8 +39,6 @@ const StockAuditCrud: React.FC = () => {
     BranchApi.getIdentifier("GetAll")
   );
 
-  const handleApi = useHandleApiResponse();
-
   useEffect(() => {
     const qty = form.getFieldValue("quantity");
     const price = form.getFieldValue("buy_price");
@@ -56,6 +54,17 @@ const StockAuditCrud: React.FC = () => {
     BranchApi("GetAll");
   }, [ProductsApi, VendorApi, WarehouseApi, BranchApi]);
 
+  useHandleApiResponse({
+    action: "create",
+    title: "Stock allocation",
+    identifier: BranchStock.getIdentifier("Create"),
+  });
+  useHandleApiResponse({
+    action: "update",
+    title: "Stock updated",
+    identifier: BranchStock.getIdentifier("Update"),
+  });
+
   // Handler to open allocate drawer
   const handleAllocate = (record: any) => {
     setAllocateRecord(record);
@@ -63,13 +72,7 @@ const StockAuditCrud: React.FC = () => {
   };
 
   const handleAllocateSubmit = async (values: any) => {
-    await BranchStock({ ...values, stock_audit_id: allocateRecord._id })
-    handleApi({
-      action: "create",
-      success: true,
-      title: "Stock allocation",
-      identifier: BranchStock.getIdentifier("Create"),
-    });
+    await BranchStock("Create", { ...values, stock_audit_id: allocateRecord._id });
     setAllocateDrawerOpen(false);
     setAllocateRecord(null);
   };
@@ -82,14 +85,7 @@ const StockAuditCrud: React.FC = () => {
 
   // Handler for revert submit
   const handleRevertSubmit = async (values: any) => {
-    // Here you would call your revert API
-    // Example: await revertStock({ ...values, stock_audit_id: revertRecord._id })
-    handleApi({
-      action: "update",
-      success: true,
-      title: "Stock revert",
-      identifier: BranchStock.getIdentifier("Update"),
-    });
+    await BranchStock("Update", { ...values, stock_audit_id: revertRecord._id });
     setRevertDrawerOpen(false);
     setRevertRecord(null);
   };
@@ -102,14 +98,7 @@ const StockAuditCrud: React.FC = () => {
 
   // Handler for stockout submit
   const handleStockoutSubmit = async (values: any) => {
-    // Here you would call your stockout API
-    // Example: await stockoutStock({ ...values, stock_audit_id: stockoutRecord._id })
-    handleApi({
-      action: "update",
-      success: true,
-      title: "Stock out",
-      identifier: BranchStock.getIdentifier("Update"),
-    });
+    await BranchStock("Update", { ...values, stock_audit_id: stockoutRecord._id });
     setStockoutDrawerOpen(false);
     setStockoutRecord(null);
   };

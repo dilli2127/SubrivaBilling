@@ -29,13 +29,14 @@ import RetailBillingTable from "./retaill_bill";
 import BillViewModal from "./components/BillViewModal";
 import GlobalTable from "../../components/antd/GlobalTable";
 import { useHandleApiResponse } from "../../components/common/useHandleApiResponse";
+import { useDispatch } from "react-redux";
+import { dynamic_clear } from "../../services/redux";
 
 const { Title } = Typography;
 
 const BillListPage = () => {
   const { getEntityApi } = useApiActions();
   const SalesRecord = getEntityApi("SalesRecord");
-  const handleApi = useHandleApiResponse();
   const { items: SalesRecordList, loading } = useDynamicSelector(
     SalesRecord.getIdentifier("GetAll")
   );
@@ -53,27 +54,21 @@ const BillListPage = () => {
     pageSize: 10,
   });
 
+  const dispatch = useDispatch();
+
+  useHandleApiResponse({
+    action: "delete",
+    title: "Sale",
+    identifier: SalesRecord.getIdentifier("Delete"),
+  });
+
   const handleDelete = async (id: string) => {
     try {
+      dispatch(dynamic_clear(SalesRecord.getIdentifier("Delete")) as any);
       await SalesRecord("Delete", {}, id);
-      const success = deleteItems?.statusCode === 200;
-      handleApi({
-        action: "delete",
-        success,
-        title: "Sale",
-        getAllItems: () =>
-          SalesRecord("GetAll", {
-            pageNumber: pagination.current,
-            pageLimit: pagination.pageSize,
-          }),
-        identifier: SalesRecord.getIdentifier("Delete"),
-      });
+      // You can add extra logic here if needed (e.g., refresh list, close modal)
     } catch (error) {
-      handleApi({
-        action: "delete",
-        success: false,
-        title: "Sale",
-      });
+      // Optionally handle error here if needed, but notification is handled by the hook
     }
   };
 
