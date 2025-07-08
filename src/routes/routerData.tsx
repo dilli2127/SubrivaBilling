@@ -7,6 +7,7 @@ import Signup from "../pages/login/Signup";
 import Dashboard from "../pages/Dashboard";
 import Loader from "../components/common/Loader";
 import BillingLogin from "../pages/login/billing_login";
+import BranchStock from "../pages/BranchStock/crud";
 const ProductCrud = lazy(() => import("../pages/Products/crud"));
 const UnitCrud = lazy(() => import("../pages/Unit/crud"));
 const CategoryCrud = lazy(() => import("../pages/Category/crud"));
@@ -289,6 +290,16 @@ const routerData: RouteConfig[] = [
         element: (
           <Suspense fallback={<Loader />}>
             <TenantAccount />
+          </Suspense>
+        ),
+        children: [],
+      },
+      {
+        key: "branchstock",
+        path: "branch_stock",
+        element: (
+          <Suspense fallback={<Loader />}>
+            <BranchStock />
           </Suspense>
         ),
         children: [],

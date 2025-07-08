@@ -65,6 +65,12 @@ export const menuItems = [
         path: '/stock_out',
       },
       {
+        key: 'branch-stock',
+        label: 'Branch Stock',
+        icon: <MinusCircleOutlined />,
+        path: '/branch_stock',
+      },
+      {
         key: 'stock-available',
         label: 'Stock Available',
         icon: <DatabaseOutlined />,
