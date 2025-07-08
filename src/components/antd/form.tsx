@@ -1,10 +1,13 @@
+
 import { Form, Button, Typography, Row, Col } from "antd";
 import { PlusOutlined, MinusCircleOutlined } from "@ant-design/icons";
 import { useEffect } from "react";
 
-const AntdForm = (props) => {
+const AntdForm = (props: any) => {
   const {
     FormValue,
+    onSubmit,
+    onCancel,
     formItems,
     onChildCancel,
     formColumns,
@@ -16,22 +19,36 @@ const AntdForm = (props) => {
     initialValues,
     loading,
     form,
+    onValuesChange,
   } = props;
-console.log("dilli",initialValues)
   const columns = formColumns || 1;
+
   const handleCancel = () => {
-    onChildCancel(false);
+    // Support both old and new cancel handlers
+    if (onCancel) {
+      onCancel();
+    } else if (onChildCancel) {
+      onChildCancel(false);
+    }
     form?.resetFields();
   };
-  const onFinish = (values) => {
-    FormValue(values);
+
+  const onFinish = (values: any) => {
+    // Support both old FormValue and new onSubmit
+    if (onSubmit) {
+      onSubmit(values);
+    } else if (FormValue) {
+      FormValue(values);
+    }
     form?.resetFields();
   };
+
   useEffect(() => {
     if (initialValues) {
       form?.setFieldsValue(initialValues);
     }
   }, [initialValues, form]);
+
   return (
     <div style={{ position: "relative", height: "100%" }}>
       <div
@@ -51,17 +68,17 @@ console.log("dilli",initialValues)
       <Form
         form={form}
         onFinish={onFinish}
-        // initialValues={initialValues}
         layout="vertical"
+        onValuesChange={onValuesChange}
       >
         <Row gutter={[16, 16]}>
-          {formItems?.map((item, index) => (
+          {formItems?.map((item: any, index: any) => (
             <Col span={24 / columns} key={index}>
               {splitLabelAndField ? (
                 <div>
                   <Typography.Text strong>
                     {item.label}{" "}
-                    {item.rules?.some((rule) => rule.required) && (
+                    {item.rules?.some((rule: any) => rule.required) && (
                       <Typography.Text type="danger">*</Typography.Text>
                     )}
                   </Typography.Text>
@@ -93,7 +110,7 @@ console.log("dilli",initialValues)
                 <>
                   {fields.map(({ key, name, fieldKey, ...restField }) => (
                     <Row gutter={[16, 16]} align="middle" key={key}>
-                      {nestedInputs.map((input, idx) => (
+                      {nestedInputs.map((input: any, idx: any) => (
                         <Col key={idx}>
                           <Form.Item
                             {...restField}
@@ -133,7 +150,7 @@ console.log("dilli",initialValues)
           )}
         </Row>
 
-        <Row justify="end" gutter={[16, 16]}>
+        <Row justify="end" gutter={[16, 16]} style={{ padding: "16px" }}>
           <Col>
             <Button onClick={handleCancel}>Cancel</Button>
           </Col>

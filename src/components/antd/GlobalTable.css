@@ -1,0 +1,16 @@
+.custom-table-container {
+  padding: 1rem;
+  background-color: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
+
+.custom-table .ant-table-thead > tr > th {
+  background-color: #99caf7;
+  font-weight: bold;
+  color: #010c29;
+}
+
+.custom-table .ant-table-tbody > tr:hover {
+  background-color: #f9f9f9;
+}

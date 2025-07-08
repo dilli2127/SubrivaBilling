@@ -1,5 +1,4 @@
-import Login from "../../pages/login/login";
-import Signup from "../../pages/login/Signup";
+import BrachesCrud from "../../pages/Branches/crud";
 
 export const API_METHODS = {
   GET: "GET",
@@ -9,6 +8,35 @@ export const API_METHODS = {
   PATCH: "PATCH",
 };
 
+// Auto-generate CRUD routes for any entity
+export const createCrudRoutes = (baseEndpoint: string, name: string) => ({
+  Create: {
+    identifier: `Add${name}`,
+    method: API_METHODS.PUT,
+    endpoint: baseEndpoint,
+  },
+  Update: {
+    identifier: `Update${name}`,
+    method: API_METHODS.PATCH,
+    endpoint: baseEndpoint,
+  },
+  Get: {
+    identifier: `Get${name}`,
+    method: API_METHODS.GET,
+    endpoint: baseEndpoint,
+  },
+  GetAll: {
+    identifier: `GetAll${name}`,
+    method: API_METHODS.POST,
+    endpoint: baseEndpoint,
+  },
+  Delete: {
+    identifier: `Delete${name}`,
+    method: API_METHODS.DELETE,
+    endpoint: baseEndpoint,
+  },
+});
+
 export const API_ROUTES = {
   Signup: {
     Create: {
@@ -17,11 +45,25 @@ export const API_ROUTES = {
       endpoint: "signup",
     },
   },
-Login: {
+  Login: {
     Create: {
       identifier: "CreateLogin",
       method: API_METHODS.POST,
       endpoint: "login",
+    },
+  },
+  TenantLogin: {
+    Create: {
+      identifier: "TeantLogin",
+      method: API_METHODS.POST,
+      endpoint: "tentant_login",
+    },
+  },
+  BillingLogin: {
+    Create: {
+      identifier: "BillingLogin",
+      method: API_METHODS.POST,
+      endpoint: "billing_login",
     },
   },
   GetEivite: {
@@ -73,171 +115,47 @@ Login: {
       endpoint: "ledger-definition/delete",
     },
   },
-  CmsImage: {
-    Create: {
-      identifier: "AddCmsImage",
-      method: API_METHODS.PUT,
-      endpoint: "/cms_image",
-    },
-    Update: {
-      identifier: "UpdateCmsImage",
-      method: API_METHODS.PATCH,
-      endpoint: "/cms_image",
-    },
-    Get: {
-      identifier: "GetCmsImage",
-      method: API_METHODS.GET,
-      endpoint: "/cms_image",
-    },
-    GetAll: {
-      identifier: "GetCmsImage",
+  DashBoard: {
+    GetCount: {
+      identifier: "GetCount",
       method: API_METHODS.POST,
-      endpoint: "/cms_image",
+      endpoint: "/dashboard/stats",
     },
-    GetAllGalleryImages: {
-      identifier: "GetAllGalleryImages",
+    SalesChartData: {
+      identifier: "GetSalesData",
       method: API_METHODS.POST,
-      endpoint: "/get_all_gallery_images",
+      endpoint: "/dashboard/sales_chart",
     },
-    Delete: {
-      identifier: "DeleteCmsImage",
-      method: API_METHODS.DELETE,
-      endpoint: "/cms_image",
+    PurchaseChartData: {
+      identifier: "GetPurchaseChartData",
+      method: API_METHODS.POST,
+      endpoint: "/dashboard/purchased_chart",
     },
   },
-  GalleryCategory: {
-    Create: {
-      identifier: "AddGalleryCategory",
-      method: API_METHODS.PUT,
-      endpoint: "/gallery_category",
-    },
-    Update: {
-      identifier: "UpdatGalleryCategory",
-      method: API_METHODS.PATCH,
-      endpoint: "/gallery_category",
-    },
-    Get: {
-      identifier: "GetGalleryCategory",
-      method: API_METHODS.GET,
-      endpoint: "/gallery_category",
-    },
-    GetAll: {
-      identifier: "GetGalleryCategory",
+  StockAvailable: {
+    GetProductStockCount: {
+      identifier: "GetCount",
       method: API_METHODS.POST,
-      endpoint: "/gallery_category",
-    },
-    Delete: {
-      identifier: "DeleteGalleryCategory",
-      method: API_METHODS.DELETE,
-      endpoint: "/gallery_category",
+      endpoint: "/product_stocks",
     },
   },
-  Gallery: {
-    Create: {
-      identifier: "AddGallery",
-      method: API_METHODS.PUT,
-      endpoint: "/gallery",
-    },
-    Update: {
-      identifier: "UpdatGallery",
-      method: API_METHODS.PATCH,
-      endpoint: "/gallery",
-    },
-    Get: {
-      identifier: "GetGallery",
-      method: API_METHODS.GET,
-      endpoint: "/gallery",
-    },
-    GetAll: {
-      identifier: "GetGallery",
-      method: API_METHODS.POST,
-      endpoint: "/gallery",
-    },
-    Delete: {
-      identifier: "DeleteGallery",
-      method: API_METHODS.DELETE,
-      endpoint: "/gallery",
-    },
-  },
-  EGallery: {
-    Create: {
-      identifier: "AddEGallery",
-      method: API_METHODS.PUT,
-      endpoint: "/e_gallery",
-    },
-    Update: {
-      identifier: "UpdatEGallery",
-      method: API_METHODS.PATCH,
-      endpoint: "/e_gallery",
-    },
-    Get: {
-      identifier: "GetEGallery",
-      method: API_METHODS.GET,
-      endpoint: "/e_gallery",
-    },
-    GetAll: {
-      identifier: "GetEGallery",
-      method: API_METHODS.POST,
-      endpoint: "/e_gallery",
-    },
-    Delete: {
-      identifier: "DeleteEGallery",
-      method: API_METHODS.DELETE,
-      endpoint: "/e_gallery",
-    },
-  },
-  User: {
-    Create: {
-      identifier: "AddUser",
-      method: API_METHODS.PUT,
-      endpoint: "/user",
-    },
-    Update: {
-      identifier: "UpdatUser",
-      method: API_METHODS.PATCH,
-      endpoint: "/user",
-    },
-    Get: {
-      identifier: "GetEUser",
-      method: API_METHODS.GET,
-      endpoint: "/user",
-    },
-    GetAll: {
-      identifier: "GetAllUser",
-      method: API_METHODS.POST,
-      endpoint: "/user",
-    },
-    Delete: {
-      identifier: "DeleteUser",
-      method: API_METHODS.DELETE,
-      endpoint: "/user",
-    },
-  },
-  EAlbum: {
-    Create: {
-      identifier: "AddEAlbum",
-      method: API_METHODS.PUT,
-      endpoint: "/e_album",
-    },
-    Update: {
-      identifier: "UpdatEAlbum",
-      method: API_METHODS.PATCH,
-      endpoint: "/e_album",
-    },
-    Get: {
-      identifier: "GetEAlbum",
-      method: API_METHODS.GET,
-      endpoint: "/e_album",
-    },
-    GetAll: {
-      identifier: "GetEAlbum",
-      method: API_METHODS.POST,
-      endpoint: "/e_album",
-    },
-    Delete: {
-      identifier: "DeleteEAlbum",
-      method: API_METHODS.DELETE,
-      endpoint: "/e_album",
-    },
-  },
+  CmsImage: createCrudRoutes("/cms_image", "CmsImage"),
+  Customer: createCrudRoutes("/customer", "Customer"),
+  Unit: createCrudRoutes("/unit", "Unit"),
+  Variant: createCrudRoutes("/variant", "Variant"),
+  Category: createCrudRoutes("/category", "Category"),
+  Product: createCrudRoutes("/products", "Product"),
+  Vendor: createCrudRoutes("/vendor", "Vendor"),
+  Warehouse: createCrudRoutes("/warehouse", "Warehouse"),
+  StockAudit: createCrudRoutes("/stock_audit", "StockAudit"),
+  SalesRecord: createCrudRoutes("/sales_record", "SalesRecord"),
+  PaymentHistory: createCrudRoutes("/payment_history", "PaymentHistory"),
+  Expenses: createCrudRoutes("/expenses", "Expenses"),
+  StockOut: createCrudRoutes("/stock_out", "StockOut"),
+  InvoiceNumber: createCrudRoutes("/invoice_numbers", "InvoiceNumber"),
+  Organisations: createCrudRoutes("/organisations", "Organisations"),
+  Braches: createCrudRoutes("/branches", "Branches"),
+  Roles: createCrudRoutes("/roles", "Roles"),
+  BillingUsers: createCrudRoutes("/billing_users", "BillingUsers"),
+  Tenant: createCrudRoutes("/tenant_accounts", "TenantAccounts"),
 };

@@ -14,7 +14,7 @@
     {
       label: "TextArea",
       name: "TextArea",
-      rules: [{ required: true, message: "Please input!" }],
+    rules: [{ required: true, message: "Please input!" }],
       component: <Input.TextArea />,
     },
     {

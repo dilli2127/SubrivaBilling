@@ -3,10 +3,10 @@ import { Form, Input, Button, Checkbox, message, Row, Col, Card } from "antd";
 import { UserOutlined, LockOutlined, MailOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import "./Signup.css";
-import { ApiRequest } from "../../services/api/apiService";
+import type { ApiRequest } from "../../services/api/apiService";
 import { dynamic_clear, dynamic_request, useDynamicSelector } from "../../services/redux";
 import { useDispatch } from "react-redux";
-import { Dispatch } from "redux";
+import type { Dispatch } from "redux";
 import { API_ROUTES } from "../../services/api/utils";
 
 const Signup: React.FC = () => {
@@ -38,7 +38,7 @@ const Signup: React.FC = () => {
     );
   };
   useEffect(() => {
-    if (items?.statusCode === "200") {
+    if (items?.statusCode === 200) {
       message.success("Signup successful! Please log in.");
       dispatch(dynamic_clear(API_ROUTES.Signup.Create.identifier));
       navigate("/login");

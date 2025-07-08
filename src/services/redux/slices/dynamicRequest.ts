@@ -1,7 +1,7 @@
-import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { ApiRequest } from "../../api/apiService";
+import { createSelector, createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import requestBackServer from "../../api";
 import { API_ERROR_CODES } from "../../../helpers/constants";
+import type { ApiRequest } from "../../api/apiService";
 
 interface DynamicRequestState {
     data: Record<string, any>;
