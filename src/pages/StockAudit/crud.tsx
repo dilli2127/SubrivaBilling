@@ -43,6 +43,12 @@ const StockAuditCrud: React.FC = () => {
   const { loading: createLoading } = useDynamicSelector(
     BranchStock.getIdentifier('Create')
   );
+  const { loading: stockoutLoading } = useDynamicSelector(
+    StockOut.getIdentifier('Create')
+  );
+  const { loading: revertLoading } = useDynamicSelector(
+    StockRevertFromBranch.getIdentifier('RevertStock')
+  );
 
   useEffect(() => {
     const qty = form.getFieldValue('quantity');
@@ -163,12 +169,14 @@ const StockAuditCrud: React.FC = () => {
         record={revertRecord}
         branchList={branchList}
         branchLoading={branchLoading}
+        loading ={revertLoading}
       />
       <StockOutDrawer
         open={stockoutDrawerOpen}
         onClose={() => setStockoutDrawerOpen(false)}
         onSubmit={handleStockoutSubmit}
         record={stockoutRecord}
+        loading={stockoutLoading}
       />
     </>
   );
