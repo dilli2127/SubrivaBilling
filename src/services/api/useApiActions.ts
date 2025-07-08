@@ -1,17 +1,14 @@
-import { useCallback } from "react";
-import { useDispatch } from "react-redux";
-import { callApi } from "./callApi";
+import { useCallback } from 'react';
+import { useDispatch } from 'react-redux';
+import { callApi } from './callApi';
 import {
   CrudOperations,
   createCrudOperations,
-} from "../../helpers/Common_functions";
-import { dynamic_request } from "../redux/slices";
-import { API_ROUTES } from "./utils";
-
-// Define supported actions
-type Action = "GetAll" | "Create" | "Update" | "Delete";
-type DashboardAction = "GetCount" | "SalesChartData" | "PurchaseChartData";
-type StockAction = "GetProductStockCount";
+} from '../../helpers/Common_functions';
+import { dynamic_request } from '../redux/slices';
+import { API_ROUTES } from './utils';
+import { customEntities, Action } from './apiEntities';
+import { useSpecialApiFetchers } from './specialApiFetchers';
 
 // Define the structure of a route
 type ApiRoute = {
@@ -29,7 +26,7 @@ type FetcherWithIdentifier<T extends string> = {
 // Generic function to get API route for any entity and action
 const getApiRoute = (entityName: string, action: string): ApiRoute => {
   // Special handling for entities that don't follow standard CRUD pattern
-  if (entityName === "DashBoard" || entityName === "StockAvailable") {
+  if (customEntities.includes(entityName)) {
     // For these entities, use the direct API_ROUTES access
     const route = (API_ROUTES as any)[entityName]?.[action];
 
@@ -48,11 +45,11 @@ const getApiRoute = (entityName: string, action: string): ApiRoute => {
 
   // Map action names to the correct function names
   const actionMap: Record<string, string> = {
-    GetAll: "getAll",
-    Create: "create",
-    Update: "update",
-    Delete: "delete",
-    Get: "get",
+    GetAll: 'getAll',
+    Create: 'create',
+    Update: 'update',
+    Delete: 'delete',
+    Get: 'get',
   };
 
   const functionName = actionMap[action];
@@ -76,23 +73,23 @@ const getApiRoute = (entityName: string, action: string): ApiRoute => {
 /**
  * Factory function to create API action wrappers for given entity
  */
-function createFetcher<T extends string>(
+export function createFetcher<T extends string>(
   entityName: string
 ): (dispatch: any) => FetcherWithIdentifier<T> {
   return (dispatch: any) => {
     const identifierMap: Record<T, string> = {} as Record<T, string>;
 
     const fetcher = useCallback(
-      async (action: T, data: any = {}, id: string = "") => {
+      async (action: T, data: any = {}, id: string = '') => {
         const route = getApiRoute(entityName, action);
         identifierMap[action] = route.identifier;
 
         // Ensure no double slashes when concatenating endpoint and id
-        const normalizedEndpoint = route.endpoint.endsWith("/")
+        const normalizedEndpoint = route.endpoint.endsWith('/')
           ? `${route.endpoint}${id}`
           : id
-          ? `${route.endpoint}/${id}`
-          : route.endpoint;
+            ? `${route.endpoint}/${id}`
+            : route.endpoint;
 
         return callApi(
           dispatch,
@@ -124,8 +121,11 @@ function createFetcher<T extends string>(
 export const useApiActions = () => {
   const dispatch = useDispatch();
 
+  // Get special fetchers
+  const specialFetchers = useSpecialApiFetchers();
+
   return {
-    // Generic function for any entity (recommended for new code)
+    ...specialFetchers,
     getEntityApi: (entityName: string) =>
       createFetcher<Action>(entityName)(dispatch),
 
@@ -135,7 +135,7 @@ export const useApiActions = () => {
         const route = getApiRoute(entityName, action);
 
         let endpoint = route.endpoint;
-        if (id && (action === "Update" || action === "Delete")) {
+        if (id && (action === 'Update' || action === 'Delete')) {
           endpoint = `${route.endpoint}/${id}`;
         }
 
@@ -152,8 +152,5 @@ export const useApiActions = () => {
       },
       [dispatch]
     ),
-    // Keep only special entities that don't follow standard CRUD pattern
-    DashBoard: createFetcher<DashboardAction>("DashBoard")(dispatch),
-    StockAvailable: createFetcher<StockAction>("StockAvailable")(dispatch),
   };
 };

@@ -1,4 +1,3 @@
-import BrachesCrud from "../../pages/Branches/crud";
 
 export const API_METHODS = {
   GET: "GET",
@@ -137,6 +136,13 @@ export const API_ROUTES = {
       identifier: "GetCount",
       method: API_METHODS.POST,
       endpoint: "/product_stocks",
+    },
+  },
+  StockRevertFromBranch: {
+    RevertStock: {
+      identifier: "RevertStock",
+      method: API_METHODS.PATCH,
+      endpoint: "/revert_stock",
     },
   },
   CmsImage: createCrudRoutes("/cms_image", "CmsImage"),

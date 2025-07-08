@@ -1,15 +1,15 @@
-import React, { useEffect, useState } from "react";
-import { Form, message } from "antd";
-import { useApiActions } from "../../services/api/useApiActions";
-import { useDynamicSelector } from "../../services/redux";
-import { GenericCrudPage } from "../../components/common/GenericCrudPage";
-import { getEntityApiRoutes } from "../../helpers/CrudFactory";
-import { stockAuditColumns } from "./columns";
-import { getStockAuditFormItems } from "./formItems";
-import AllocateDrawer from "./AllocateDrawer";
-import RevertDrawer from "./RevertDrawer";
-import StockOutDrawer from "./StockOutDrawer";
-import { useHandleApiResponse } from "../../components/common/useHandleApiResponse";
+import React, { useEffect, useState } from 'react';
+import { Form, message } from 'antd';
+import { useApiActions } from '../../services/api/useApiActions';
+import { useDynamicSelector } from '../../services/redux';
+import { GenericCrudPage } from '../../components/common/GenericCrudPage';
+import { getEntityApiRoutes } from '../../helpers/CrudFactory';
+import { stockAuditColumns } from './columns';
+import { getStockAuditFormItems } from './formItems';
+import AllocateDrawer from './AllocateDrawer';
+import RevertDrawer from './RevertDrawer';
+import StockOutDrawer from './StockOutDrawer';
+import { useHandleApiResponse } from '../../components/common/useHandleApiResponse';
 
 const StockAuditCrud: React.FC = () => {
   const [form] = Form.useForm();
@@ -20,54 +20,54 @@ const StockAuditCrud: React.FC = () => {
   const [stockoutDrawerOpen, setStockoutDrawerOpen] = useState(false);
   const [stockoutRecord, setStockoutRecord] = useState<any>(null);
 
-  const { getEntityApi } = useApiActions();
-  const ProductsApi = getEntityApi("Product");
-  const VendorApi = getEntityApi("Vendor");
-  const WarehouseApi = getEntityApi("Warehouse");
-  const BranchApi = getEntityApi("Braches");
-  const BranchStock = getEntityApi("BranchStock");
-  const StockAudit = getEntityApi("StockAudit");
+  const { getEntityApi, StockRevertFromBranch } = useApiActions();
+  const ProductsApi = getEntityApi('Product');
+  const VendorApi = getEntityApi('Vendor');
+  const WarehouseApi = getEntityApi('Warehouse');
+  const BranchApi = getEntityApi('Braches');
+  const BranchStock = getEntityApi('BranchStock');
+  const StockAudit = getEntityApi('StockAudit');
 
   const { items: productList, loading } = useDynamicSelector(
-    ProductsApi.getIdentifier("GetAll")
+    ProductsApi.getIdentifier('GetAll')
   );
   const { items: vendorList, loading: vendorloading } = useDynamicSelector(
-    VendorApi.getIdentifier("GetAll")
+    VendorApi.getIdentifier('GetAll')
   );
   const { items: wareHouseList, loading: wareHouseLoading } =
-    useDynamicSelector(WarehouseApi.getIdentifier("GetAll"));
+    useDynamicSelector(WarehouseApi.getIdentifier('GetAll'));
   const { items: branchList, loading: branchLoading } = useDynamicSelector(
-    BranchApi.getIdentifier("GetAll")
+    BranchApi.getIdentifier('GetAll')
   );
   const { loading: createLoading } = useDynamicSelector(
-    BranchStock.getIdentifier("Create")
+    BranchStock.getIdentifier('Create')
   );
 
   useEffect(() => {
-    const qty = form.getFieldValue("quantity");
-    const price = form.getFieldValue("buy_price");
+    const qty = form.getFieldValue('quantity');
+    const price = form.getFieldValue('buy_price');
     if (qty && price) {
       form.setFieldsValue({ total_cost: qty * price });
     }
-  }, [form, form.getFieldValue("quantity"), form.getFieldValue("buy_price")]);
+  }, [form, form.getFieldValue('quantity'), form.getFieldValue('buy_price')]);
 
   useEffect(() => {
-    ProductsApi("GetAll");
-    VendorApi("GetAll");
-    WarehouseApi("GetAll");
-    BranchApi("GetAll");
+    ProductsApi('GetAll');
+    VendorApi('GetAll');
+    WarehouseApi('GetAll');
+    BranchApi('GetAll');
   }, [ProductsApi, VendorApi, WarehouseApi, BranchApi]);
 
   useHandleApiResponse({
-    action: "create",
-    title: "Stock allocation",
-    identifier: BranchStock.getIdentifier("Create"),
+    action: 'create',
+    title: 'Stock allocation',
+    identifier: BranchStock.getIdentifier('Create'),
     entityApi: StockAudit,
   });
   useHandleApiResponse({
-    action: "update",
-    title: "Stock updated",
-    identifier: BranchStock.getIdentifier("Update"),
+    action: 'update',
+    title: 'Stock updated',
+    identifier: StockRevertFromBranch.getIdentifier('RevertStock'),
     entityApi: BranchStock,
   });
 
@@ -78,7 +78,10 @@ const StockAuditCrud: React.FC = () => {
   };
 
   const handleAllocateSubmit = async (values: any) => {
-    await BranchStock("Create", { ...values, stock_audit_id: allocateRecord._id });
+    await BranchStock('Create', {
+      ...values,
+      stock_audit_id: allocateRecord._id,
+    });
     setAllocateDrawerOpen(false);
     setAllocateRecord(null);
   };
@@ -91,7 +94,10 @@ const StockAuditCrud: React.FC = () => {
 
   // Handler for revert submit
   const handleRevertSubmit = async (values: any) => {
-    await BranchStock("Update", { ...values, stock_audit_id: revertRecord._id });
+    await StockRevertFromBranch('RevertStock', {
+      ...values,
+      stock_audit_id: allocateRecord._id,
+    });
     setRevertDrawerOpen(false);
     setRevertRecord(null);
   };
@@ -104,14 +110,21 @@ const StockAuditCrud: React.FC = () => {
 
   // Handler for stockout submit
   const handleStockoutSubmit = async (values: any) => {
-    await BranchStock("Update", { ...values, stock_audit_id: stockoutRecord._id });
+    await BranchStock('Update', {
+      ...values,
+      stock_audit_id: stockoutRecord._id,
+    });
     setStockoutDrawerOpen(false);
     setStockoutRecord(null);
   };
 
   const stockAuditConfig = {
-    title: "Stock Audit",
-    columns: stockAuditColumns({ onAllocate: handleAllocate, onRevert: handleRevert, onStockout: handleStockout }),
+    title: 'Stock Audit',
+    columns: stockAuditColumns({
+      onAllocate: handleAllocate,
+      onRevert: handleRevert,
+      onStockout: handleStockout,
+    }),
     formItems: getStockAuditFormItems(
       productList,
       vendorList,
@@ -120,7 +133,7 @@ const StockAuditCrud: React.FC = () => {
       vendorloading,
       wareHouseLoading
     ),
-    apiRoutes: getEntityApiRoutes("StockAudit"),
+    apiRoutes: getEntityApiRoutes('StockAudit'),
     formColumns: 2,
   };
 
