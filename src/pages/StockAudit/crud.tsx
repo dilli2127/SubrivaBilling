@@ -27,6 +27,7 @@ const StockAuditCrud: React.FC = () => {
   const BranchApi = getEntityApi('Braches');
   const BranchStock = getEntityApi('BranchStock');
   const StockAudit = getEntityApi('StockAudit');
+  const StockOut = getEntityApi('StockOut');
 
   const { items: productList, loading } = useDynamicSelector(
     ProductsApi.getIdentifier('GetAll')
@@ -68,7 +69,13 @@ const StockAuditCrud: React.FC = () => {
     action: 'update',
     title: 'Stock updated',
     identifier: StockRevertFromBranch.getIdentifier('RevertStock'),
-    entityApi: BranchStock,
+    entityApi: StockAudit,
+  });
+  useHandleApiResponse({
+    action: 'create',
+    title: 'Stock Out',
+    identifier: StockOut.getIdentifier('Create'),
+    entityApi: StockAudit,
   });
 
   // Handler to open allocate drawer
@@ -110,7 +117,7 @@ const StockAuditCrud: React.FC = () => {
 
   // Handler for stockout submit
   const handleStockoutSubmit = async (values: any) => {
-    await BranchStock('Update', {
+    await StockOut('Create', {
       ...values,
       stock_audit_id: stockoutRecord._id,
     });
