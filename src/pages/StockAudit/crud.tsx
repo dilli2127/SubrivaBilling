@@ -96,7 +96,7 @@ const StockAuditCrud: React.FC = () => {
   const handleRevertSubmit = async (values: any) => {
     await StockRevertFromBranch('RevertStock', {
       ...values,
-      stock_audit_id: allocateRecord._id,
+      stock_audit_id: revertRecord._id,
     });
     setRevertDrawerOpen(false);
     setRevertRecord(null);
