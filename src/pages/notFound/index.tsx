@@ -1,9 +1,15 @@
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import Login from "../login/login";
+import BillingLogin from "../login/billing_login";
+
 const NotFound: React.FC = () => {
+  // const navigate = useNavigate()
+  // useEffect(() => {
+  //   navigate("/admin")
+  // }, [])
   return (
-    <div>
-      <h1>404 Not Found</h1>
-      <p>The page you are looking for does not exist.</p>
-    </div>
+    <BillingLogin/>
   );
 };
 
