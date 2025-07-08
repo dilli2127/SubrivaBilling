@@ -26,6 +26,7 @@ const StockAuditCrud: React.FC = () => {
   const WarehouseApi = getEntityApi("Warehouse");
   const BranchApi = getEntityApi("Braches");
   const BranchStock = getEntityApi("BranchStock");
+  const StockAudit = getEntityApi("StockAudit");
 
   const { items: productList, loading } = useDynamicSelector(
     ProductsApi.getIdentifier("GetAll")
@@ -37,6 +38,9 @@ const StockAuditCrud: React.FC = () => {
     useDynamicSelector(WarehouseApi.getIdentifier("GetAll"));
   const { items: branchList, loading: branchLoading } = useDynamicSelector(
     BranchApi.getIdentifier("GetAll")
+  );
+  const { loading: createLoading } = useDynamicSelector(
+    BranchStock.getIdentifier("Create")
   );
 
   useEffect(() => {
@@ -58,7 +62,7 @@ const StockAuditCrud: React.FC = () => {
     action: "create",
     title: "Stock allocation",
     identifier: BranchStock.getIdentifier("Create"),
-    entityApi: BranchStock,
+    entityApi: StockAudit,
   });
   useHandleApiResponse({
     action: "update",
@@ -130,6 +134,7 @@ const StockAuditCrud: React.FC = () => {
         record={allocateRecord}
         branchList={branchList}
         branchLoading={branchLoading}
+        createLoading={createLoading}
       />
       <RevertDrawer
         open={revertDrawerOpen}
