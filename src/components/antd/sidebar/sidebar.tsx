@@ -3,8 +3,9 @@ import {
   LogoutOutlined,
   MenuFoldOutlined,
   MenuUnfoldOutlined,
+  UserOutlined, // Add this import
 } from '@ant-design/icons';
-import { Layout, Menu, Modal, Button } from 'antd';
+import { Layout, Menu, Modal, Button, Avatar } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { menuItems as originalMenuItems } from './menu';
 import './Sidebar.css';
@@ -146,41 +147,51 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
   return (
     <Layout style={{ minHeight: '100vh' }}>
       {/* Header */}
-      <Header
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          background: 'linear-gradient(90deg, #ff6a00, #ee0979)',
-          color: '#fff',
-          padding: '0 16px',
-          position: 'fixed',
-          width: '100%',
-          zIndex: 1000,
-          height: 64,
-          boxShadow: '0px 4px 12px rgba(0,0,0,0.2)',
-        }}
-      >
-        <Button
-          type="text"
-          icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-          onClick={() => setCollapsed(!collapsed)}
-          style={{ color: '#fff', fontSize: 18 }}
-        />
-        <h2 style={{ margin: 0, flex: 1, textAlign: 'center' }}>
-          Subriva Billing
-        </h2>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+      <Header className="custom-header">
+        <div className="header-left">
+          <div className="logo-placeholder">
+            <img
+              src={require('../../../assets/img/ffslogo.png')}
+              alt="Logo"
+              className="login-logo-rich"
+              style={{ marginTop: '10px' }}
+            />
+          </div>
+          <Button
+            type="text"
+            icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+            onClick={() => setCollapsed(!collapsed)}
+            className="sidebar-toggle-btn"
+          />
+        </div>
+        <h2 className="header-title">Subriva Billing</h2>
+        <div className="header-right">
           {userItem && (
-            <span style={{ fontSize: 14, fontWeight: 500 }}>
-              Welcome, {(userItem.name || userItem.username)?.toUpperCase()}
-            </span>
+            <>
+              <span className="welcome-text">
+                Welcome, {(userItem.name || userItem.username)?.toUpperCase()}
+              </span>
+              <span title="Profile">
+                <Avatar
+                  className="profile-avatar"
+                  icon={<UserOutlined />}
+                  onClick={() => navigate('/profile')}
+                  style={{
+                    cursor: 'pointer',
+                    background: '#fff',
+                    color: '#4e54c8',
+                    marginLeft: 8,
+                  }}
+                />
+              </span>
+            </>
           )}
           <Button
             icon={<LogoutOutlined />}
             type="primary"
             danger
             onClick={() => setIsModalVisible(true)}
+            className="logout-btn"
           >
             Logout
           </Button>
@@ -193,16 +204,9 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
           collapsible
           collapsed={collapsed}
           width={240}
-          style={{
-            background: 'linear-gradient(180deg, #4e54c8, #8f94fb)',
-            position: 'fixed',
-            top: 64,
-            height: 'calc(100vh - 64px)',
-            boxShadow: '2px 0 10px rgba(0, 0, 0, 0.2)',
-            zIndex: 999,
-          }}
+          className="custom-sider"
         >
-          <div style={{ height: '100%', overflowY: 'auto', paddingBottom: 32 }}>
+          <div className="sidebar-content">
             <Menu
               mode="inline"
               selectedKeys={[selectedKey]}
@@ -210,12 +214,7 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
               openKeys={openKeys}
               onOpenChange={handleOpenChange}
               inlineCollapsed={collapsed}
-              style={{
-                background: 'transparent',
-                color: '#fff',
-                paddingTop: 16,
-                fontWeight: 500,
-              }}
+              className="custom-menu"
             >
               {renderMenuItems(filteredMenuItems)}
             </Menu>

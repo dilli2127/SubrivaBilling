@@ -62,3 +62,158 @@
 .ant-menu-submenu-arrow {
   color: #fff !important;
 }
+
+/* Header styles */
+.custom-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  /* background: linear-gradient(90deg, #fce7d8, #f8e9f0); */
+  /* background: linear-gradient(90deg, #bba7ed, #cccff6); */
+  background: linear-gradient(90deg, #e5daff, #c5c8ee);
+  color: #1d1b1c;
+  padding: 0 24px;
+  position: fixed;
+  width: 100%;
+  z-index: 1000;
+  height: 64px;
+  box-shadow: 0px 4px 16px rgba(78, 84, 200, 0.10);
+  border-radius: 0 0 18px 18px;
+}
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.logo-placeholder {
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, #4e54c8 60%, #8f94fb 100%);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(78, 84, 200, 0.15);
+  margin-right: 8px;
+}
+.header-title {
+  margin: 0;
+  flex: 1;
+  text-align: center;
+  color: #4e54c8;
+  font-weight: 700;
+  letter-spacing: 1px;
+  font-size: 1.6rem;
+}
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  color: #1d1b1c;
+}
+.welcome-text {
+  font-size: 15px;
+  font-weight: 500;
+  color: #4e54c8;
+}
+.profile-avatar {
+  border: 2px solid #4e54c8;
+  background: #fff !important;
+  color: #4e54c8 !important;
+  box-shadow: 0 2px 8px rgba(78, 84, 200, 0.10);
+  transition: box-shadow 0.2s;
+}
+.profile-avatar:hover {
+  box-shadow: 0 4px 16px rgba(78, 84, 200, 0.18);
+}
+.logout-btn {
+  background: linear-gradient(90deg, #ff6a00, #ee0979);
+  border: none;
+  color: #fff;
+  font-weight: 600;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(255, 106, 0, 0.10);
+}
+.logout-btn:hover {
+  background: linear-gradient(90deg, #ee0979, #ff6a00);
+  color: #fff;
+}
+.sidebar-toggle-btn {
+  color: #4e54c8 !important;
+  font-size: 20px !important;
+}
+
+/* Sidebar styles */
+.custom-sider {
+  background: linear-gradient(180deg, #4e54c8 60%, #8f94fb 100%);
+  position: fixed;
+  top: 64px;
+  height: calc(100vh - 64px);
+  box-shadow: 2px 0 16px rgba(78, 84, 200, 0.10);
+  z-index: 999;
+  border-radius: 0 18px 18px 0;
+  transition: background 0.3s;
+  overflow-x: hidden;
+}
+.sidebar-content {
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-bottom: 32px;
+  padding-top: 16px;
+}
+.custom-menu {
+  background: transparent !important;
+  color: #fff !important;
+  font-weight: 500;
+  border: none;
+}
+.custom-menu .ant-menu-item {
+  border-radius: 10px;
+  margin: 4px 8px;
+  transition: background 0.2s, color 0.2s;
+  font-size: 1.05rem;
+}
+.custom-menu .ant-menu-item-selected,
+.custom-menu .ant-menu-item-active {
+  background: linear-gradient(90deg, #ff6a00 60%, #ee0979 100%);
+  color: #fff !important;
+  box-shadow: 0 2px 8px rgba(255, 106, 0, 0.10);
+}
+.custom-menu .ant-menu-item:hover {
+  background: linear-gradient(90deg, #ee0979 60%, #ff6a00 100%);
+  color: #fff !important;
+}
+.custom-menu .ant-menu-submenu-title {
+  border-radius: 10px;
+  margin: 4px 8px;
+  font-size: 1.05rem;
+  color: #fff !important;
+}
+.custom-menu .ant-menu-submenu-title:hover {
+  background: linear-gradient(90deg, #ee0979 60%, #ff6a00 100%);
+  color: #fff !important;
+}
+.custom-menu .custom-subitem {
+  border-radius: 8px;
+  margin: 2px 16px;
+  font-size: 1rem;
+}
+.custom-menu .custom-subitem.active {
+  background: #fff2e6;
+  color: #4e54c8 !important;
+}
+
+/* Submenu (children) items: set padding-left to 10px only */
+.custom-menu .ant-menu-item {
+  padding-left: 30px !important;
+}
+
+/* Content area tweaks */
+.ant-layout-content {
+  background: #fff;
+  min-height: calc(100vh - 64px);
+  border-radius: 18px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+  overflow-y: auto;
+}
