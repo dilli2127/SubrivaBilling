@@ -39,7 +39,7 @@ export type CustomButtonConfig = {
 // Add type definitions for columns and formItems
 export interface CrudColumn {
   title: string;
-  dataIndex?: string;
+  dataIndex?: any;
   key: string;
   render?: (value: any, record: any) => React.ReactNode;
 }
