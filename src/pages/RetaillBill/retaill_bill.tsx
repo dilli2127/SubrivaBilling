@@ -266,16 +266,32 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
       return;
     }
 
-    const items = billCalc.itemsWithTax.map((item) => ({
-      product_id: item.product,
-      stock_id: item.stock,
-      qty: item.qty,
-      loose_qty: item.loose_qty,
-      price: item.price,
-      amount: item.amount,
-      _id: item._id,
-      tax_percentage: item.tax_percentage,
-    }));
+    const items = billCalc.itemsWithTax.map((item) => {
+      // Default values
+      let branch_stock_id = undefined;
+      let stock_id = undefined;
+      if (role === "BranchAdmin" || role === "BranchSalesMan") {
+        branch_stock_id = item.stock;
+        // Find the branch stock record to get its stock_audit_id
+        const branchStock = branchStockList?.result?.find((s: any) => s._id === item.stock);
+        stock_id = branchStock?.stock_audit_id;
+      } else {
+        // For org users, stock_id is the stock audit id
+        stock_id = item.stock;
+      }
+      return {
+        product_id: item.product,
+        stock_id: item.stock,
+        ...(branch_stock_id && { branch_stock_id }),
+        ...(stock_id && { stock_id }),
+        qty: item.qty,
+        loose_qty: item.loose_qty,
+        price: item.price,
+        amount: item.amount,
+        _id: item._id,
+        tax_percentage: item.tax_percentage,
+      };
+    });
 
     const payload = {
       invoice_no: values.invoice_no,
