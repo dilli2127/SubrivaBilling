@@ -136,7 +136,6 @@ const ThemeDrawer: React.FC<ThemeDrawerProps> = ({
             <Button
               icon={<DeleteOutlined />}
               danger
-              style={{ marginLeft: 8, height: 48 }}
               onClick={handleRemoveBg}
             >
               Remove
