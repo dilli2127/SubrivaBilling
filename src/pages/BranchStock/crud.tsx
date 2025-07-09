@@ -1,156 +1,109 @@
 import React, { useEffect } from 'react';
-import { GenericCrudPage } from '../../components/common/GenericCrudPage';
-import { getEntityApiRoutes } from '../../helpers/CrudFactory';
-import {
-  Badge,
-  InputNumber,
-  Select,
-  Space,
-  Tag,
-  Tooltip,
-  Typography,
-} from 'antd';
+import { Space, Tag, Tooltip, Typography, Row, Input } from 'antd';
 import { useDynamicSelector } from '../../services/redux';
 import { useApiActions } from '../../services/api/useApiActions';
-import { StockAuditList } from '../../types/entities';
-import {
-  DollarOutlined,
-  NumberOutlined,
-  ShoppingCartOutlined,
-} from '@ant-design/icons';
-const { Option } = Select;
+import { DollarOutlined, ShoppingCartOutlined } from '@ant-design/icons';
+import GlobalTable from '../../components/antd/GlobalTable';
 const { Text } = Typography;
+
 const BranchStock: React.FC = () => {
   const { getEntityApi } = useApiActions();
-  const BranchApi = getEntityApi('Braches');
-  const StockAuditApi = getEntityApi('StockAudit');
-  const { items: branchList, loading: branchLoading } = useDynamicSelector(
-    BranchApi.getIdentifier('GetAll')
-  );
-  const { items: StockAuditList, loading: stockAuditLoading } =
-    useDynamicSelector(StockAuditApi.getIdentifier('GetAll'));
-  const branchStockConfig = {
-    title: 'Branch Stock',
-    columns: [
-      {
-        title: 'Invoice',
-        dataIndex: 'invoice_id',
-        key: 'invoice_id',
-        render: (text: string) => (
-          <Tooltip title="Invoice ID">
-            <Tag color="blue">{text}</Tag>
-          </Tooltip>
-        ),
-      },
-      {
-        title: "Product",
-        key: "product",
-        render: (_: any, record: any) =>
-          [
-            record.ProductItem?.name,
-            record.ProductItem?.VariantItem?.variant_name,
-            record?.batch_no
-          ]
-            .filter(Boolean)
-            .join(" - ") || "N/A",
-      },
-      {
-        title: 'Added Qty',
-        dataIndex: 'added_quantity',
-        key: 'added_quantity',
-        render: (qty: number) => (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-            <ShoppingCartOutlined style={{ color: '#1890ff' }} />
-            <Text strong>{qty}</Text>
-            <Text type="secondary" style={{ fontSize: 12 }}>
-              Pack(s)
-            </Text>
-          </div>
-        ),
-      },
+  const BranchStock = getEntityApi('BranchStock');
+  const { items: BranchStockList, loading: stockAuditLoading } =
+    useDynamicSelector(BranchStock.getIdentifier('GetAll'));
 
-      {
-        title: 'Available',
-        key: 'quantity',
-        render: (_: any, record: any) => (
-          <Space direction="vertical" size={0}>
-            <Text>
-              <strong>{record.available_quantity}</strong> Pack(s)
-            </Text>
-            <Text type="secondary">
-              + {record.available_loose_quantity} Loose
-            </Text>
-          </Space>
-        ),
-      },
+  const columns = [
+    {
+      title: 'Invoice',
+      dataIndex: 'invoice_id',
+      key: 'invoice_id',
+      render: (text: string) => (
+        <Tooltip title="Invoice ID">
+          <Tag color="blue">{text}</Tag>
+        </Tooltip>
+      ),
+    },
+    {
+      title: 'Product',
+      key: 'product',
+      render: (_: any, record: any) =>
+        [
+          record.ProductItem?.name,
+          record.ProductItem?.VariantItem?.variant_name,
+          record?.batch_no,
+        ]
+          .filter(Boolean)
+          .join(' - ') || 'N/A',
+    },
+    {
+      title: 'Added Qty',
+      dataIndex: 'added_quantity',
+      key: 'added_quantity',
+      render: (qty: number) => (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+          <ShoppingCartOutlined style={{ color: '#1890ff' }} />
+          <Text strong>{qty}</Text>
+          <Text type="secondary" style={{ fontSize: 12 }}>
+            Pack(s)
+          </Text>
+        </div>
+      ),
+    },
+    {
+      title: 'Available',
+      key: 'quantity',
+      render: (_: any, record: any) => (
+        <Space direction="vertical" size={0}>
+          <Text>
+            <strong>{record.available_quantity}</strong> Pack(s)
+          </Text>
+          <Text type="secondary">
+            + {record.available_loose_quantity} Loose
+          </Text>
+        </Space>
+      ),
+    },
+    {
+      title: 'Sell Price',
+      dataIndex: 'sell_price',
+      key: 'sell_price',
+      render: (price: string) => (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+          <DollarOutlined style={{ color: '#faad14' }} />
+          <Text>₹ {parseFloat(price).toFixed(2)}</Text>
+        </div>
+      ),
+    },
+  ];
 
-      {
-        title: 'Sell Price',
-        dataIndex: 'sell_price',
-        key: 'sell_price',
-        render: (price: string) => (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-            <DollarOutlined style={{ color: '#faad14' }} />
-            <Text>₹ {parseFloat(price).toFixed(2)}</Text>
-          </div>
-        ),
-      },
-    ],
-    formItems: [
-      {
-        label: 'Stock In Batch',
-        name: 'stock_audit_id',
-        rules: [{ required: true, message: 'Please select the stock batch' }],
-        component: (
-          <Select
-            placeholder="Select category"
-            loading={stockAuditLoading}
-            showSearch
-            allowClear
-          >
-            {(StockAuditList?.result || []).map((cat: StockAuditList<any>) => (
-              <Option key={cat._id} value={cat._id}>
-                {cat?.ProductItem?.name} -{' '}
-                {cat?.ProductItem?.VariantItem?.variant_name} - {cat?.batch_no}
-              </Option>
-            ))}
-          </Select>
-        ),
-      },
-      {
-        name: 'branch_id',
-        label: 'Branch',
-        rules: [{ required: true, message: 'Please select a branch' }],
-        component: (
-          <Select
-            placeholder="Select branch"
-            // loading={branchLoading}
-            showSearch
-            optionFilterProp="children"
-          >
-            {branchList?.result?.map((branch: any) => (
-              <Option key={branch._id} value={branch._id}>
-                {branch.branch_name}
-              </Option>
-            ))}
-          </Select>
-        ),
-      },
-      {
-        name: 'added_quantity',
-        label: 'Quantity',
-        rules: [{ required: true, message: 'Please enter quantity' }],
-        component: <InputNumber min={1} style={{ width: '100%' }} />,
-      },
-    ],
-    apiRoutes: getEntityApiRoutes('BranchStock'),
-    formColumns: 2,
-  };
   useEffect(() => {
-    BranchApi('GetAll');
-    StockAuditApi('GetAll');
-  }, [BranchApi]);
-  return <GenericCrudPage config={branchStockConfig} />;
+    BranchStock('GetAll');
+  }, []);
+
+  return (
+    <>
+      <Row justify="space-between" align="middle" style={{ marginBottom: 16 }}>
+        <h1>{'Branch Stocks'}</h1>
+        <div style={{ display: 'flex', gap: '16px' }}>
+          <Input
+            placeholder={`Search ${'Products'}`}
+            // value={searchText}
+            // onChange={(e) => handleSearch(e.target.value)}
+            style={{ width: 300 }}
+          />
+        </div>
+      </Row>
+      <GlobalTable
+        columns={[...columns]}
+        data={
+          Array.isArray(BranchStockList?.result) ? BranchStockList.result : []
+        }
+        rowKey="_id"
+        loading={stockAuditLoading}
+        pagination={{ pageSize: 10 }}
+      />
+    </>
+  );
 };
 
 export default BranchStock;

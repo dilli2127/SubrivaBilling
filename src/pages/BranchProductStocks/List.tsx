@@ -76,7 +76,7 @@ const BranchStockAvailable = () => {
   return (
     <>
       <Row justify="space-between" align="middle" style={{ marginBottom: 16 }}>
-        <h1>{"Product Stocks"}</h1>
+        <h1>{"Branch Available Stocks"}</h1>
         <div style={{ display: "flex", gap: "16px" }}>
           <Input
             placeholder={`Search ${"Products"}`}
