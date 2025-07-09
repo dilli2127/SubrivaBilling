@@ -1,6 +1,6 @@
 import React from 'react';
-import { Drawer, Button } from 'antd';
-import { BgColorsOutlined } from '@ant-design/icons';
+import { Drawer, Button, message } from 'antd';
+import { BgColorsOutlined, DeleteOutlined } from '@ant-design/icons';
 
 interface ThemePreset {
   key: string;
@@ -15,6 +15,8 @@ interface ThemeDrawerProps {
   theme: string;
   setTheme: (key: string) => void;
   themePresets: ThemePreset[];
+  sidebarBg: string;
+  setSidebarBg: (bg: string) => void;
 }
 
 const themeGroups = [
@@ -26,6 +28,13 @@ const themeGroups = [
     title: 'Modern',
     keys: ['aqua', 'peach', 'sky', 'rose'],
   },
+];
+
+// Predefined sidebar background images
+const sidebarBgOptions = [
+  { key: 'bg1', url:"https://ant-cra.cremawork.com/assets/images/sidebar/thumb/5.png" },
+  // { key: 'bg2', url: require('../../../assets/sidebar-bg2.jpg') },
+  // { key: 'bg3', url: require('../../../assets/sidebar-bg3.jpg') },
 ];
 
 const ThemePreview = ({ preset, selected, onClick }: any) => (
@@ -75,49 +84,94 @@ const ThemeDrawer: React.FC<ThemeDrawerProps> = ({
   theme,
   setTheme,
   themePresets,
-}) => (
-  <Drawer
-    title={
-      <div>
-        <div style={{ fontWeight: 600, fontSize: 18 }}>Sidebar Colors</div>
-        <div style={{ fontSize: 13, color: '#888', marginTop: 2 }}>
-          Customize your theme with these options.
+  sidebarBg,
+  setSidebarBg,
+}) => {
+  const handleRemoveBg = () => {
+    setSidebarBg('');
+    localStorage.removeItem('sidebarBg');
+    message.success('Sidebar background removed!');
+  };
+
+  return (
+    <Drawer
+      title={
+        <div>
+          <div style={{ fontWeight: 600, fontSize: 18 }}>Sidebar Colors</div>
+          <div style={{ fontSize: 13, color: '#888', marginTop: 2 }}>
+            Customize your theme with these options.
+          </div>
+        </div>
+      }
+      placement="right"
+      onClose={onClose}
+      open={open}
+      width={420}
+      bodyStyle={{ padding: 24 }}
+    >
+      <div style={{ marginBottom: 16 }}>
+        <div style={{ fontWeight: 500, marginBottom: 8 }}>Sidebar Backgrounds</div>
+        <div style={{ display: 'flex', gap: 12 }}>
+          {sidebarBgOptions.map(opt => (
+            <img
+              key={opt.key}
+              src={opt.url}
+              alt="sidebar-bg"
+              style={{
+                width: 48,
+                height: 48,
+                objectFit: 'cover',
+                borderRadius: 8,
+                border: sidebarBg === opt.url ? '2px solid #4e54c8' : '2px solid #eee',
+                cursor: 'pointer',
+              }}
+              onClick={() => {
+                setSidebarBg(opt.url);
+                localStorage.setItem('sidebarBg', opt.url);
+                message.success('Sidebar background updated!');
+              }}
+            />
+          ))}
+          {sidebarBg && (
+            <Button
+              icon={<DeleteOutlined />}
+              danger
+              style={{ marginLeft: 8, height: 48 }}
+              onClick={handleRemoveBg}
+            >
+              Remove
+            </Button>
+          )}
         </div>
       </div>
-    }
-    placement="right"
-    onClose={onClose}
-    open={open}
-    width={420}
-    bodyStyle={{ padding: 24 }}
-  >
-    <div style={{ overflowY: 'auto' }}>
-      {themeGroups.map(group => (
-        <div key={group.title} style={{ marginBottom: 24 }}>
-          <div
-            style={{ fontWeight: 700, fontSize: 15, margin: '12px 0 8px 0' }}
-          >
-            {group.title}
+      <div style={{ overflowY: 'auto' }}>
+        {themeGroups.map(group => (
+          <div key={group.title} style={{ marginBottom: 24 }}>
+            <div
+              style={{ fontWeight: 700, fontSize: 15, margin: '12px 0 8px 0' }}
+            >
+              {group.title}
+            </div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 ,justifyContent:"center"}}>
+              {themePresets
+                .filter(preset => group.keys.includes(preset.key))
+                .map(preset => (
+                  <ThemePreview
+                    key={preset.key}
+                    preset={preset}
+                    selected={theme === preset.key}
+                    onClick={() => {
+                      setTheme(preset.key);
+                      onClose();
+                    }}
+                  />
+                ))}
+            </div>
           </div>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 ,justifyContent:"center"}}>
-            {themePresets
-              .filter(preset => group.keys.includes(preset.key))
-              .map(preset => (
-                <ThemePreview
-                  key={preset.key}
-                  preset={preset}
-                  selected={theme === preset.key}
-                  onClick={() => {
-                    setTheme(preset.key);
-                    onClose();
-                  }}
-                />
-              ))}
-          </div>
-        </div>
-      ))}
-    </div>
-  </Drawer>
-);
+        ))}
+      </div>
+    </Drawer>
+  );
+};
 
 export default ThemeDrawer;

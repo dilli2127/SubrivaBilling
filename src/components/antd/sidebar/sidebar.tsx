@@ -204,6 +204,7 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
   const [theme, setTheme] = useState(getInitialTheme());
   const [themePopoverVisible, setThemePopoverVisible] = useState(false);
   const [themeDrawerOpen, setThemeDrawerOpen] = useState(false);
+  const [sidebarBg, setSidebarBg] = useState(localStorage.getItem('sidebarBg') || '');
 
   // Apply theme variables
   React.useEffect(() => {
@@ -362,6 +363,11 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
           collapsed={collapsed}
           width={240}
           className="custom-sider"
+          style={{
+            background: sidebarBg
+              ? `url(${sidebarBg}) center center / cover no-repeat`
+              : 'var(--sidebar-bg, linear-gradient(180deg, #4e54c8 60%, #8f94fb 100%))',
+          }}
         >
           <div className="sidebar-content">
             <Menu
@@ -425,6 +431,8 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
         theme={theme}
         setTheme={setTheme}
         themePresets={themePresets}
+        sidebarBg={sidebarBg}
+        setSidebarBg={setSidebarBg}
       />
 
       {/* Logout Modal */}
