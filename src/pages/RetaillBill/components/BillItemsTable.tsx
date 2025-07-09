@@ -250,7 +250,7 @@ const BillItemsTable: React.FC<BillItemsTableProps> = ({
           >
             {validStockAudits.map((stockAudit: any) => (
               <Select.Option key={stockAudit?._id} value={stockAudit?._id}>
-                {`B#${stockAudit.batch_no} | ₹ ${stockAudit.buy_price} | AQ: ${stockAudit.available_quantity} | LQ: ${stockAudit.available_loose_quantity} | Exp: ${new Date(stockAudit.expiry_date).toLocaleDateString()}`}
+                {`B#${stockAudit.batch_no} | AQ: ${stockAudit.available_quantity} | LQ: ${stockAudit.available_loose_quantity} | Exp: ${new Date(stockAudit.expiry_date).toLocaleDateString()}`}
               </Select.Option>
             ))}
           </Select>

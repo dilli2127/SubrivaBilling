@@ -44,6 +44,7 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
   const CustomerApi = getEntityApi("Customer");
   const SalesRecord = getEntityApi("SalesRecord");
   const InvoiceNumberApi = getEntityApi("InvoiceNumber");
+  const BranchStock=getEntityApi("BranchStock");
 
   interface DataSourceItem {
     key: number;
@@ -103,6 +104,9 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
   const { items: stockAuditList } = useDynamicSelector(
     StockAuditApi.getIdentifier("GetAll")
   );
+  const { items: branchStockList } = useDynamicSelector(
+    BranchStock.getIdentifier("GetAll")
+  );
   const { items: customerList } = useDynamicSelector(
     CustomerApi.getIdentifier("GetAll")
   );
@@ -115,8 +119,12 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
     const item = newData.find((item) => item.key === key);
     if (!item) return;
 
-    const getSelectedStock = () =>
-      stockAuditList?.result?.find((s: any) => s._id === item.stock);
+    const getSelectedStock = () => {
+      if (role === "BranchAdmin" || role === "BranchSalesMan") {
+        return branchStockList?.result?.find((s: any) => s._id === item.stock);
+      }
+      return stockAuditList?.result?.find((s: any) => s._id === item.stock);
+    };
 
     const getProductCategory = () => {
       const product = productList?.result?.find(
@@ -184,6 +192,12 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
     setDataSource(newData);
   };
 
+  // Get user info and role from sessionStorage
+  const user = JSON.parse(sessionStorage.getItem('user') || '{}');
+  const role = user?.roleItems?.name || user?.usertype || user?.user_role || '';
+  const organisationId = user?.organisation_id || user?.org_id;
+  const branchId = user?.branch_id;
+
   useEffect(() => {
     if (billdata) {
       form.setFieldsValue({
@@ -212,10 +226,17 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
 
       if (transformedItems.length > 0) {
         const productIds = transformedItems.map((item: any) => item.product);
-        StockAuditApi("GetAll", { products: productIds });
+        // Fetch stock based on role
+        if (role === "OrganisationAdmin") {
+          StockAuditApi("GetAll", { products: productIds });
+        } else if (role === "BranchAdmin" || role === "BranchSalesMan") {
+          BranchStock("GetAll", { products: productIds });
+        } else {
+          StockAuditApi("GetAll", { products: productIds });
+        }
       }
     }
-  }, [billdata, form, StockAuditApi]);
+  }, [billdata, form, StockAuditApi, role, organisationId, branchId]);
 
   // Centralized calculation using utility
   const billCalc = calculateBillTotals({
@@ -514,13 +535,23 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
         <BillItemsTable
           dataSource={billCalc.itemsWithTax}
           productList={productList}
-          stockAuditList={stockAuditList}
+          stockAuditList={
+            role === "BranchAdmin" || role === "BranchSalesMan"
+              ? branchStockList
+              : stockAuditList
+          }
           onAdd={handleAdd}
           onDelete={handleDelete}
           onChange={handleChange}
-          onStockAuditFetch={(productId) =>
-            StockAuditApi("GetAll", { product: productId })
-          }
+          onStockAuditFetch={(productId) => {
+            if (role === "OrganisationAdmin") {
+              StockAuditApi("GetAll", { product: productId });
+            } else if (role === "BranchAdmin" || role === "BranchSalesMan") {
+              BranchStock("GetAll", { product: productId});
+            } else {
+              StockAuditApi("GetAll", { product: productId });
+            }
+          }}
           sub_total={billCalc.sub_total}
           value_of_goods={billCalc.value_of_goods}
           total_gst={billCalc.total_gst}
