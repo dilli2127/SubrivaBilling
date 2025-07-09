@@ -367,9 +367,21 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
             background: sidebarBg
               ? `url(${sidebarBg}) center center / cover no-repeat`
               : 'var(--sidebar-bg, linear-gradient(180deg, #4e54c8 60%, #8f94fb 100%))',
+            position: 'relative',
           }}
         >
-          <div className="sidebar-content">
+          {sidebarBg && (
+            <div
+              style={{
+                position: 'absolute',
+                inset: 0,
+                background: 'rgba(24, 25, 26, 0.65)',
+                zIndex: 1,
+                pointerEvents: 'none',
+              }}
+            />
+          )}
+          <div className="sidebar-content" style={{ position: 'relative', zIndex: 2 }}>
             <Menu
               mode="inline"
               selectedKeys={[selectedKey]}
