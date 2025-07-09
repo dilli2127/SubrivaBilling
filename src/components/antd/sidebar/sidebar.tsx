@@ -4,8 +4,9 @@ import {
   MenuFoldOutlined,
   MenuUnfoldOutlined,
   UserOutlined, // Add this import
+  BgColorsOutlined,
 } from '@ant-design/icons';
-import { Layout, Menu, Modal, Button, Avatar } from 'antd';
+import { Layout, Menu, Modal, Button, Avatar, Popover, Select, Drawer } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { menuItems as originalMenuItems } from './menu';
 import './Sidebar.css';
@@ -15,6 +16,66 @@ const { Header, Content, Sider } = Layout;
 interface SidebarProps {
   children: ReactNode;
 }
+
+const themePresets = [
+  {
+    key: 'classic',
+    label: 'Classic',
+    variables: {
+      '--sidebar-bg': 'linear-gradient(180deg, #4e54c8 60%, #8f94fb 100%)',
+      '--header-bg': 'linear-gradient(90deg, #e5daff, #c5c8ee)',
+      '--menu-item-selected': 'linear-gradient(90deg, #ff6a00 60%, #ee0979 100%)',
+      '--menu-item-hover': 'linear-gradient(90deg, #ee0979 60%, #ff6a00 100%)',
+      '--header-title': '#4e54c8',
+      '--profile-avatar': '#4e54c8',
+    },
+    previewColor: '#4e54c8',
+  },
+  {
+    key: 'violet',
+    label: 'Violet',
+    variables: {
+      '--sidebar-bg': 'linear-gradient(180deg, #8f94fb 60%, #4e54c8 100%)',
+      '--header-bg': 'linear-gradient(90deg, #bba7ed, #cccff6)',
+      '--menu-item-selected': 'linear-gradient(90deg, #8f94fb 60%, #4e54c8 100%)',
+      '--menu-item-hover': 'linear-gradient(90deg, #4e54c8 60%, #8f94fb 100%)',
+      '--header-title': '#8f94fb',
+      '--profile-avatar': '#8f94fb',
+    },
+    previewColor: '#8f94fb',
+  },
+  {
+    key: 'sunset',
+    label: 'Sunset',
+    variables: {
+      '--sidebar-bg': 'linear-gradient(180deg, #ff9966 60%, #ff5e62 100%)',
+      '--header-bg': 'linear-gradient(90deg, #fceabb, #f8b500)',
+      '--menu-item-selected': 'linear-gradient(90deg, #ff9966 60%, #ff5e62 100%)',
+      '--menu-item-hover': 'linear-gradient(90deg, #ff5e62 60%, #ff9966 100%)',
+      '--header-title': '#ff5e62',
+      '--profile-avatar': '#ff9966',
+    },
+    previewColor: '#ff9966',
+  },
+  {
+    key: 'dark',
+    label: 'Dark',
+    variables: {
+      '--sidebar-bg': 'linear-gradient(180deg, #232526 60%, #414345 100%)',
+      '--header-bg': 'linear-gradient(90deg, #232526, #414345)',
+      '--menu-item-selected': 'linear-gradient(90deg, #232526 60%, #414345 100%)',
+      '--menu-item-hover': 'linear-gradient(90deg, #414345 60%, #232526 100%)',
+      '--header-title': '#fff',
+      '--profile-avatar': '#fff',
+    },
+    previewColor: '#232526',
+  },
+];
+
+const getInitialTheme = () => {
+  const saved = localStorage.getItem('sidebarTheme');
+  return saved || 'classic';
+};
 
 const getAllowedMenuKeys = (user: any): string[] => {
   const role =
@@ -62,6 +123,18 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
   const [openKeys, setOpenKeys] = useState<string[]>([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const navigate = useNavigate();
+  const [theme, setTheme] = useState(getInitialTheme());
+  const [themePopoverVisible, setThemePopoverVisible] = useState(false);
+  const [themeDrawerOpen, setThemeDrawerOpen] = useState(false);
+
+  // Apply theme variables
+  React.useEffect(() => {
+    const preset = themePresets.find(t => t.key === theme) || themePresets[0];
+    Object.entries(preset.variables).forEach(([key, value]) => {
+      document.body.style.setProperty(key, value);
+    });
+    localStorage.setItem('sidebarTheme', theme);
+  }, [theme]);
 
   const userItem = useMemo(() => {
     const data = sessionStorage.getItem('user');
@@ -144,6 +217,41 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
       )
     );
 
+  const ThemePreview = ({ preset, selected, onClick }: any) => (
+    <div
+      onClick={onClick}
+      style={{
+        border: selected ? '2px solid #4e54c8' : '1px solid #ccc',
+        borderRadius: 12,
+        padding: 10,
+        margin: 6,
+        width: 110,
+        cursor: 'pointer',
+        background: '#fff',
+        boxShadow: selected ? '0 0 8px #4e54c8' : '0 2px 8px rgba(0,0,0,0.06)',
+        transition: 'box-shadow 0.2s, border 0.2s',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 8,
+      }}
+    >
+      <div style={{ fontWeight: 600, fontSize: 13, marginBottom: 4 }}>{preset.label}</div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+        <div style={{ color: '#888', fontWeight: 500 }}>Menu–1</div>
+        <div style={{ color: '#888', fontWeight: 500 }}>Menu–2</div>
+        <div style={{
+          background: preset.previewColor,
+          color: '#fff',
+          borderRadius: 8,
+          padding: '2px 8px',
+          fontWeight: 600,
+          width: 'fit-content',
+        }}>Selected Menu</div>
+        <div style={{ color: '#888', fontWeight: 500 }}>Menu–4</div>
+      </div>
+    </div>
+  );
+
   return (
     <Layout style={{ minHeight: '100vh' }}>
       {/* Header */}
@@ -179,7 +287,7 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
                   style={{
                     cursor: 'pointer',
                     background: '#fff',
-                    color: '#4e54c8',
+                    color: 'var(--profile-avatar)',
                     marginLeft: 8,
                   }}
                 />
@@ -243,6 +351,54 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
           </Content>
         </Layout>
       </Layout>
+
+      {/* Floating Theme Button */}
+      <Button
+        icon={<BgColorsOutlined style={{ fontSize: 22 }} />}
+        style={{
+          position: 'fixed',
+          top: '50%',
+          right: 0,
+          zIndex: 2000,
+          background: '#fff',
+          border: '1px solid #eee',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.10)',
+          borderRadius: '8px 0 0 8px',
+          padding: '10px 12px',
+          transform: 'translateY(-50%)',
+        }}
+        onClick={() => setThemeDrawerOpen(true)}
+      />
+      {/* Theme Drawer */}
+      <Drawer
+        title={
+          <div>
+            <div style={{ fontWeight: 600, fontSize: 18 }}>Sidebar Colors</div>
+            <div style={{ fontSize: 13, color: '#888', marginTop: 2 }}>
+              Customize your theme with these options.
+            </div>
+          </div>
+        }
+        placement="right"
+        onClose={() => setThemeDrawerOpen(false)}
+        open={themeDrawerOpen}
+        width={420}
+        bodyStyle={{ padding: 24 }}
+      >
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'flex-start', maxHeight: '70vh', overflowY: 'auto' }}>
+          {themePresets.map((preset) => (
+            <ThemePreview
+              key={preset.key}
+              preset={preset}
+              selected={theme === preset.key}
+              onClick={() => {
+                setTheme(preset.key);
+                setThemeDrawerOpen(false);
+              }}
+            />
+          ))}
+        </div>
+      </Drawer>
 
       {/* Logout Modal */}
       <Modal
