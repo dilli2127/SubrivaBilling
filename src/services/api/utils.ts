@@ -133,9 +133,16 @@ export const API_ROUTES = {
   },
   StockAvailable: {
     GetProductStockCount: {
-      identifier: "GetCount",
+      identifier: "GetProductStockCount",
       method: API_METHODS.POST,
       endpoint: "/product_stocks",
+    },
+  },
+  BranchStockAvailable: {
+    GetBranchStockCount: {
+      identifier: "GetBranchStock",
+      method: API_METHODS.POST,
+      endpoint: "/product_branch_stocks",
     },
   },
   StockRevertFromBranch: {

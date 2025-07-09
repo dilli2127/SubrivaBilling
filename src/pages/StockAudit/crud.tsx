@@ -94,6 +94,14 @@ const StockAuditCrud: React.FC = () => {
     await BranchStock('Create', {
       ...values,
       stock_audit_id: allocateRecord._id,
+      product: allocateRecord.ProductItem?._id,
+      batch_no: allocateRecord.batch_no,
+      mfg_date: allocateRecord.mfg_date,
+      expiry_date: allocateRecord.expiry_date,
+      invoice_id:allocateRecord.invoice_id,
+      sell_price:allocateRecord.sell_price,
+      available_loose_quantity: allocateRecord.available_loose_quantity,
+      available_quantity: allocateRecord.available_quantity,
     });
     setAllocateDrawerOpen(false);
     setAllocateRecord(null);
@@ -169,7 +177,7 @@ const StockAuditCrud: React.FC = () => {
         record={revertRecord}
         branchList={branchList}
         branchLoading={branchLoading}
-        loading ={revertLoading}
+        loading={revertLoading}
       />
       <StockOutDrawer
         open={stockoutDrawerOpen}

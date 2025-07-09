@@ -1,5 +1,6 @@
 export const customEntities = [
   "DashBoard",
   "StockAvailable",
-  "StockRevertFromBranch"
+  "StockRevertFromBranch",
+  "BranchStockAvailable"
 ]; 

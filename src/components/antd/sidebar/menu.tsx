@@ -65,14 +65,20 @@ export const menuItems = [
         path: '/stock_out',
       },
       {
+        key: 'organisation-stock-available',
+        label: 'Org Stock Available',
+        icon: <DatabaseOutlined />,
+        path: '/stock_available',
+      },
+      {
         key: 'branch-stock',
         label: 'Branch Stock',
         icon: <MinusCircleOutlined />,
         path: '/branch_stock',
       },
       {
-        key: 'stock-available',
-        label: 'Stock Available',
+        key: 'branch-stock-available',
+        label: 'Branch Stock Available',
         icon: <DatabaseOutlined />,
         path: '/stock_available',
       },

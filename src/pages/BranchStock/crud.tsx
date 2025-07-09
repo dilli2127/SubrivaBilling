@@ -34,7 +34,7 @@ const BranchStock: React.FC = () => {
     columns: [
       {
         title: 'Invoice',
-        dataIndex: ['StockAudit', 'invoice_id'],
+        dataIndex: 'invoice_id',
         key: 'invoice_id',
         render: (text: string) => (
           <Tooltip title="Invoice ID">
@@ -74,7 +74,7 @@ const BranchStock: React.FC = () => {
 
       {
         title: 'Sell Price',
-        dataIndex: ['StockAudit', 'sell_price'],
+        dataIndex: 'sell_price',
         key: 'sell_price',
         render: (price: string) => (
           <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
@@ -82,24 +82,6 @@ const BranchStock: React.FC = () => {
             <Text>₹ {parseFloat(price).toFixed(2)}</Text>
           </div>
         ),
-      },
-      {
-        title: 'Payment',
-        dataIndex: ['StockAudit', 'payment_status'],
-        key: 'payment_status',
-        render: (status: string) => {
-          const color =
-            status === 'paid'
-              ? 'green'
-              : status === 'pending'
-                ? 'orange'
-                : 'volcano';
-          return (
-            <Tag color={color} style={{ fontWeight: 500 }}>
-              {status.toUpperCase()}
-            </Tag>
-          );
-        },
       },
     ],
     formItems: [

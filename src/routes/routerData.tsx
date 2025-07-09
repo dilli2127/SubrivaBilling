@@ -27,6 +27,7 @@ const BrachesCrud = lazy(() => import("../pages/Branches/crud"));
 const SalesAccountCrud = lazy(() => import("../pages/UserAccount/crud"));
 const RolesCrud = lazy(() => import("../pages/Roles/crud"));
 const TenantAccount = lazy(() => import("../pages/TentantAccount/crud"));
+const BranchStockAvailable = lazy(() => import("../pages/BranchProductStocks/List"));
 
 
 const routerData: RouteConfig[] = [
@@ -300,6 +301,16 @@ const routerData: RouteConfig[] = [
         element: (
           <Suspense fallback={<Loader />}>
             <BranchStock />
+          </Suspense>
+        ),
+        children: [],
+      },
+      {
+        key: "branch_stock_available",
+        path: "branch_stock_available",
+        element: (
+          <Suspense fallback={<Loader />}>
+            <BranchStockAvailable />
           </Suspense>
         ),
         children: [],
