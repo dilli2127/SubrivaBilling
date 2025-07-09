@@ -39,6 +39,7 @@ const themePresets = [
       '--menu-item-hover': 'linear-gradient(90deg, #ee0979 60%, #ff6a00 100%)',
       '--header-title': '#4e54c8',
       '--profile-avatar': '#4e54c8',
+      '--welcome-text': '#4e54c8',
     },
     previewColor: '#4e54c8',
   },
@@ -53,6 +54,7 @@ const themePresets = [
       '--menu-item-hover': 'linear-gradient(90deg, #ff5e62 60%, #ff9966 100%)',
       '--header-title': '#ff5e62',
       '--profile-avatar': '#ff9966',
+      '--welcome-text': '#ff5e62',
     },
     previewColor: '#ff9966',
   },
@@ -67,6 +69,7 @@ const themePresets = [
       '--menu-item-hover': 'linear-gradient(90deg, #414345 60%, #232526 100%)',
       '--header-title': '#fff',
       '--profile-avatar': '#fff',
+      '--welcome-text': '#fff',
     },
     previewColor: '#232526',
   },
@@ -81,6 +84,7 @@ const themePresets = [
       '--menu-item-hover': 'linear-gradient(90deg, #185a9d 60%, #43cea2 100%)',
       '--header-title': '#185a9d',
       '--profile-avatar': '#43cea2',
+      '--welcome-text': '#185a9d',
     },
     previewColor: '#43cea2',
   },
@@ -95,6 +99,7 @@ const themePresets = [
       '--menu-item-hover': 'linear-gradient(90deg, #ffecd2 60%, #fcb69f 100%)',
       '--header-title': '#fcb69f',
       '--profile-avatar': '#fcb69f',
+      '--welcome-text': '#fcb69f',
     },
     previewColor: '#fcb69f',
   },
@@ -109,6 +114,7 @@ const themePresets = [
       '--menu-item-hover': 'linear-gradient(90deg, #5b86e5 60%, #36d1c4 100%)',
       '--header-title': '#36d1c4',
       '--profile-avatar': '#36d1c4',
+      '--welcome-text': '#36d1c4',
     },
     previewColor: '#36d1c4',
   },
@@ -123,6 +129,7 @@ const themePresets = [
       '--menu-item-hover': 'linear-gradient(90deg, #4e54c8 60%, #8f94fb 100%)',
       '--header-title': '#8f94fb',
       '--profile-avatar': '#8f94fb',
+      '--welcome-text': '#8f94fb',
     },
     previewColor: '#8f94fb',
   },
@@ -137,19 +144,9 @@ const themePresets = [
       '--menu-item-hover': 'linear-gradient(90deg, #ff5858 60%, #f857a6 100%)',
       '--header-title': '#f857a6',
       '--profile-avatar': '#f857a6',
+      '--welcome-text': '#f857a6',
     },
     previewColor: '#f857a6',
-  },
-];
-
-const themeGroups = [
-  {
-    title: 'Classic',
-    keys: ['classic', 'violet', 'dark', 'sunset'],
-  },
-  {
-    title: 'Modern',
-    keys: ['aqua', 'peach', 'sky', 'rose'],
   },
 ];
 
@@ -215,6 +212,12 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
       document.body.style.setProperty(key, value);
     });
     localStorage.setItem('sidebarTheme', theme);
+    // Enable dark mode class for the full app
+    if (theme === 'dark') {
+      document.body.classList.add('dark-mode');
+    } else {
+      document.body.classList.remove('dark-mode');
+    }
   }, [theme]);
 
   const userItem = useMemo(() => {
@@ -297,47 +300,6 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
         </Menu.Item>
       )
     );
-
-  const ThemePreview = ({ preset, selected, onClick }: any) => (
-    <div
-      onClick={onClick}
-      style={{
-        border: selected ? '2px solid #4e54c8' : '1px solid #ccc',
-        borderRadius: 12,
-        padding: 10,
-        margin: 6,
-        width: 110,
-        cursor: 'pointer',
-        background: '#fff',
-        boxShadow: selected ? '0 0 8px #4e54c8' : '0 2px 8px rgba(0,0,0,0.06)',
-        transition: 'box-shadow 0.2s, border 0.2s',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 8,
-      }}
-    >
-      <div style={{ fontWeight: 600, fontSize: 13, marginBottom: 4 }}>
-        {preset.label}
-      </div>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-        <div style={{ color: '#888', fontWeight: 500 }}>Menu–1</div>
-        <div style={{ color: '#888', fontWeight: 500 }}>Menu–2</div>
-        <div
-          style={{
-            background: preset.previewColor,
-            color: '#fff',
-            borderRadius: 8,
-            padding: '2px 8px',
-            fontWeight: 600,
-            width: 'fit-content',
-          }}
-        >
-          Selected Menu
-        </div>
-        <div style={{ color: '#888', fontWeight: 500 }}>Menu–4</div>
-      </div>
-    </div>
-  );
 
   return (
     <Layout style={{ minHeight: '100vh' }}>
