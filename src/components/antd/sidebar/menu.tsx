@@ -80,7 +80,7 @@ export const menuItems = [
         key: 'branch-stock-available',
         label: 'Branch Stock Available',
         icon: <DatabaseOutlined />,
-        path: '/stock_available',
+        path: '/branch_stock_available',
       },
     ],
   },
