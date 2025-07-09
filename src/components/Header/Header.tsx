@@ -92,7 +92,7 @@ const AppHeader = () => {
             }
             onMouseOut={(e) => (e.currentTarget.style.transform = "scale(1)")}
           />
-          Fresh Focuz Studio
+          Subriva Biling
         </Link>
       </div>
 

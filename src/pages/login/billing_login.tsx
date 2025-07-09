@@ -99,7 +99,7 @@ const BillingLogin: React.FC = () => {
       <div className="login-form-card-rich">
         <div className="login-header-rich">
           <img src={require('../../assets/img/ffslogo.png')} alt="Logo" className="login-logo-rich" />
-          <span className="login-appname-rich">Focuz Billing</span>
+          <span className="login-appname-rich">Subriva Billing</span>
           <span className="login-title-rich">Welcome Back</span>
         </div>
         <Tabs
