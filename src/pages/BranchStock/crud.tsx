@@ -43,6 +43,18 @@ const BranchStock: React.FC = () => {
         ),
       },
       {
+        title: "Product",
+        key: "product",
+        render: (_: any, record: any) =>
+          [
+            record.ProductItem?.name,
+            record.ProductItem?.VariantItem?.variant_name,
+            record?.batch_no
+          ]
+            .filter(Boolean)
+            .join(" - ") || "N/A",
+      },
+      {
         title: 'Added Qty',
         dataIndex: 'added_quantity',
         key: 'added_quantity',
