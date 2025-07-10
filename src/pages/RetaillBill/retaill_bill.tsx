@@ -22,6 +22,8 @@ import BillForm from "./components/BillForm";
 import BillItemsTable from "./components/BillItemsTable";
 import PaymentStatus from "./components/PaymentStatus";
 import BillViewModal from "./components/BillViewModal";
+import { billingTemplates, BillingTemplateKey } from './templates/registry';
+import BillTemplateSelector from './BillTemplateSelector';
 
 const { Title } = Typography;
 
@@ -86,6 +88,14 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
   const [discountType, setDiscountType] = useState<"percentage" | "amount">(
     billdata?.discount_type ?? "percentage"
   );
+  const [selectedTemplate, setSelectedTemplate] = useState<BillingTemplateKey>(() => {
+    return (localStorage.getItem('billingTemplate') as BillingTemplateKey) || 'classic';
+  });
+
+  const handleTemplateSelect = (key: BillingTemplateKey) => {
+    setSelectedTemplate(key);
+    localStorage.setItem('billingTemplate', key);
+  };
 
   const { items: createItems, error: createError } = useDynamicSelector(
     getApiRouteSalesRecord("Create").identifier
@@ -488,6 +498,21 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
     }
   }, [invoice_no_auto_generated, billdata, form]);
 
+  // Prepare billData for template (map your billdata to the template format)
+  const billDataForTemplate = {
+    customerName: billdata?.customer?.name || '',
+    customerAddress: billdata?.customer?.address || '',
+    date: billdata?.date || '',
+    invoice_no: billdata?.invoice_no || '',
+    items: billdata?.Items?.map((item: any) => ({
+      name: item.product_name || '',
+      qty: item.qty,
+      price: item.price,
+      amount: item.amount,
+    })) || [],
+    total: billdata?.total || 0,
+  };
+
   return (
     <>
       <Form
@@ -650,6 +675,18 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
           </Button>
         </div>
       </Form>
+
+      {/* Template Selector UI */}
+      <h3 style={{ marginTop: 32 }}>Choose Invoice Template</h3>
+      <BillTemplateSelector selected={selectedTemplate} onSelect={handleTemplateSelect} />
+
+      {/* Invoice Preview */}
+      <div style={{ margin: '32px 0' }}>
+        {(() => {
+          const TemplateComponent = billingTemplates[selectedTemplate].component;
+          return <TemplateComponent billData={billDataForTemplate} />;
+        })()}
+      </div>
 
       <Drawer
         title="Add New Customer"
