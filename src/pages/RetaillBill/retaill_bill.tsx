@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from 'react';
 import {
   Form,
   Button,
@@ -8,22 +8,23 @@ import {
   Switch,
   InputNumber,
   Space,
-} from "antd";
-import dayjs from "dayjs";
-import { useApiActions } from "../../services/api/useApiActions";
-import { dynamic_clear, useDynamicSelector } from "../../services/redux";
-import CustomerCrud from "../../pages/Customer/crud";
-import { createApiRouteGetter } from "../../helpers/Common_functions";
-import { calculateBillTotals } from "../../helpers/amount_calculations";
-import { useDispatch } from "react-redux";
-import { Dispatch } from "redux";
-import { API_ROUTES } from "../../services/api/utils";
-import BillForm from "./components/BillForm";
-import BillItemsTable from "./components/BillItemsTable";
-import PaymentStatus from "./components/PaymentStatus";
-import BillViewModal from "./components/BillViewModal";
+} from 'antd';
+import dayjs from 'dayjs';
+import { useApiActions } from '../../services/api/useApiActions';
+import { dynamic_clear, useDynamicSelector } from '../../services/redux';
+import CustomerCrud from '../../pages/Customer/crud';
+import { createApiRouteGetter } from '../../helpers/Common_functions';
+import { calculateBillTotals } from '../../helpers/amount_calculations';
+import { useDispatch } from 'react-redux';
+import { Dispatch } from 'redux';
+import { API_ROUTES } from '../../services/api/utils';
+import BillForm from './components/BillForm';
+import BillItemsTable from './components/BillItemsTable';
+import PaymentStatus from './components/PaymentStatus';
+import BillViewModal from './components/BillViewModal';
 import { billingTemplates, BillingTemplateKey } from './templates/registry';
 import BillTemplateSelector from './BillTemplateSelector';
+import FloatingTemplateSelector from './FloatingTemplateSelector';
 
 const { Title } = Typography;
 
@@ -37,16 +38,16 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
   onSuccess,
 }) => {
   const [form] = Form.useForm();
-  const getApiRouteSalesRecord = createApiRouteGetter("SalesRecord");
+  const getApiRouteSalesRecord = createApiRouteGetter('SalesRecord');
 
   const dispatch: Dispatch<any> = useDispatch();
   const { getEntityApi } = useApiActions();
-  const ProductsApi = getEntityApi("Product");
-  const StockAuditApi = getEntityApi("StockAudit");
-  const CustomerApi = getEntityApi("Customer");
-  const SalesRecord = getEntityApi("SalesRecord");
-  const InvoiceNumberApi = getEntityApi("InvoiceNumber");
-  const BranchStock=getEntityApi("BranchStock");
+  const ProductsApi = getEntityApi('Product');
+  const StockAuditApi = getEntityApi('StockAudit');
+  const CustomerApi = getEntityApi('Customer');
+  const SalesRecord = getEntityApi('SalesRecord');
+  const InvoiceNumberApi = getEntityApi('InvoiceNumber');
+  const BranchStock = getEntityApi('BranchStock');
 
   interface DataSourceItem {
     key: number;
@@ -64,7 +65,7 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
   const [dataSource, setDataSource] = useState<DataSourceItem[]>([
     {
       key: 0,
-      name: "",
+      name: '',
       qty: 0,
       price: 0,
       amount: 0,
@@ -85,12 +86,17 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
     billdata?.is_gst_included ?? true
   );
   const [discount, setDiscount] = useState(billdata?.discount ?? 0);
-  const [discountType, setDiscountType] = useState<"percentage" | "amount">(
-    billdata?.discount_type ?? "percentage"
+  const [discountType, setDiscountType] = useState<'percentage' | 'amount'>(
+    billdata?.discount_type ?? 'percentage'
   );
-  const [selectedTemplate, setSelectedTemplate] = useState<BillingTemplateKey>(() => {
-    return (localStorage.getItem('billingTemplate') as BillingTemplateKey) || 'classic';
-  });
+  const [selectedTemplate, setSelectedTemplate] = useState<BillingTemplateKey>(
+    () => {
+      return (
+        (localStorage.getItem('billingTemplate') as BillingTemplateKey) ||
+        'classic'
+      );
+    }
+  );
 
   const handleTemplateSelect = (key: BillingTemplateKey) => {
     setSelectedTemplate(key);
@@ -98,27 +104,27 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
   };
 
   const { items: createItems, error: createError } = useDynamicSelector(
-    getApiRouteSalesRecord("Create").identifier
+    getApiRouteSalesRecord('Create').identifier
   );
 
   const { items: updateItems, error: updateError } = useDynamicSelector(
-    getApiRouteSalesRecord("Update").identifier
+    getApiRouteSalesRecord('Update').identifier
   );
   const { items: productList } = useDynamicSelector(
-    ProductsApi.getIdentifier("GetAll")
+    ProductsApi.getIdentifier('GetAll')
   );
   const { items: invoice_no_item } = useDynamicSelector(
-    InvoiceNumberApi.getIdentifier("GetAll")
+    InvoiceNumberApi.getIdentifier('GetAll')
   );
   const invoice_no_auto_generated = invoice_no_item?.result?.invoice_no;
   const { items: stockAuditList } = useDynamicSelector(
-    StockAuditApi.getIdentifier("GetAll")
+    StockAuditApi.getIdentifier('GetAll')
   );
   const { items: branchStockList } = useDynamicSelector(
-    BranchStock.getIdentifier("GetAll")
+    BranchStock.getIdentifier('GetAll')
   );
   const { items: customerList } = useDynamicSelector(
-    CustomerApi.getIdentifier("GetAll")
+    CustomerApi.getIdentifier('GetAll')
   );
 
   const [billViewVisible, setBillViewVisible] = useState(false);
@@ -126,11 +132,11 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
 
   const handleChange = (value: any, key: number, column: string) => {
     const newData = [...dataSource];
-    const item = newData.find((item) => item.key === key);
+    const item = newData.find(item => item.key === key);
     if (!item) return;
 
     const getSelectedStock = () => {
-      if (role === "BranchAdmin" || role === "BranchSalesMan") {
+      if (role === 'BranchAdmin' || role === 'BranchSalesMan') {
         return branchStockList?.result?.find((s: any) => s._id === item.stock);
       }
       return stockAuditList?.result?.find((s: any) => s._id === item.stock);
@@ -166,7 +172,7 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
     };
 
     switch (column) {
-      case "product":
+      case 'product':
         item.product = value;
         item.stock = undefined;
         item.price = 0;
@@ -176,24 +182,24 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
         item.tax_percentage = category?.tax_percentage || 0;
         break;
 
-      case "stock":
+      case 'stock':
         item.stock = value;
         const stock = getSelectedStock();
         item.price = stock?.sell_price || 0;
         item.amount = calculateAmount();
         break;
 
-      case "qty":
+      case 'qty':
         item.qty = value;
         item.amount = calculateAmount();
         break;
 
-      case "loose_qty":
+      case 'loose_qty':
         item.loose_qty = value;
         item.amount = calculateAmount();
         break;
 
-      case "price":
+      case 'price':
         item.price = value;
         item.amount = calculateAmount();
         break;
@@ -221,7 +227,7 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
         (item: any, index: number) => ({
           _id: item._id,
           key: index,
-          name: "",
+          name: '',
           qty: item.qty ?? 0,
           price: item.price,
           amount: item.amount,
@@ -237,12 +243,12 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
       if (transformedItems.length > 0) {
         const productIds = transformedItems.map((item: any) => item.product);
         // Fetch stock based on role
-        if (role === "OrganisationAdmin") {
-          StockAuditApi("GetAll", { products: productIds });
-        } else if (role === "BranchAdmin" || role === "BranchSalesMan") {
-          BranchStock("GetAll", { products: productIds });
+        if (role === 'OrganisationAdmin') {
+          StockAuditApi('GetAll', { products: productIds });
+        } else if (role === 'BranchAdmin' || role === 'BranchSalesMan') {
+          BranchStock('GetAll', { products: productIds });
         } else {
-          StockAuditApi("GetAll", { products: productIds });
+          StockAuditApi('GetAll', { products: productIds });
         }
       }
     }
@@ -259,7 +265,7 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
 
   const handleSubmit = async (values: any) => {
     // Validation: Prevent submission if any item's stock is not available
-    const unavailableStockItem = billCalc.itemsWithTax.find((item) => {
+    const unavailableStockItem = billCalc.itemsWithTax.find(item => {
       const stock = stockAuditList?.result?.find(
         (s: any) => s._id === item.stock
       );
@@ -271,19 +277,21 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
     });
     if (unavailableStockItem) {
       message.error(
-        "Cannot submit bill: One or more items have no available stock."
+        'Cannot submit bill: One or more items have no available stock.'
       );
       return;
     }
 
-    const items = billCalc.itemsWithTax.map((item) => {
+    const items = billCalc.itemsWithTax.map(item => {
       // Default values
       let branch_stock_id = undefined;
       let stock_id = undefined;
-      if (role === "BranchAdmin" || role === "BranchSalesMan") {
+      if (role === 'BranchAdmin' || role === 'BranchSalesMan') {
         branch_stock_id = item.stock;
         // Find the branch stock record to get its stock_audit_id
-        const branchStock = branchStockList?.result?.find((s: any) => s._id === item.stock);
+        const branchStock = branchStockList?.result?.find(
+          (s: any) => s._id === item.stock
+        );
         stock_id = branchStock?.stock_audit_id;
       } else {
         // For org users, stock_id is the stock audit id
@@ -305,7 +313,7 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
 
     const payload = {
       invoice_no: values.invoice_no,
-      date: dayjs(values.date).format("YYYY-MM-DD"),
+      date: dayjs(values.date).format('YYYY-MM-DD'),
       customer_id: values.customer,
       payment_mode: values.payment_mode,
       items,
@@ -318,36 +326,36 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
       discount_value: billCalc.discountValue,
       is_paid: isPaid,
       is_partially_paid: isPartiallyPaid,
-      sale_type: isRetail ? "retail" : "wholesale",
+      sale_type: isRetail ? 'retail' : 'wholesale',
       is_gst_included: isGstIncluded,
       paid_amount: isPartiallyPaid
         ? values.paid_amount
         : isPaid
-        ? billCalc.total_amount
-        : 0,
+          ? billCalc.total_amount
+          : 0,
     };
 
     try {
       if (billdata) {
-        await SalesRecord("Update", { ...payload }, billdata._id);
+        await SalesRecord('Update', { ...payload }, billdata._id);
       } else {
-        await SalesRecord("Create", payload);
+        await SalesRecord('Create', payload);
       }
     } catch (error) {
-      console.error("Sale submission failed:", error);
+      console.error('Sale submission failed:', error);
     }
   };
 
   useEffect(() => {
     if (createItems?.statusCode === 200) {
-      handleApiResponse("create", true);
+      handleApiResponse('create', true);
       if (createItems?.result) {
         const formattedBill = {
           ...createItems.result,
           customerDetails: customerList?.result?.find(
             (c: any) => c._id === createItems?.result?.customer_id
           ),
-          Items: billCalc.itemsWithTax.map((item) => {
+          Items: billCalc.itemsWithTax.map(item => {
             const product = productList?.result?.find(
               (p: any) => p._id === item.product
             );
@@ -355,7 +363,7 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
               ...item,
               productItems: {
                 ...product,
-                name: product?.name || "",
+                name: product?.name || '',
                 VariantItem: product?.VariantItem || null,
               },
               qty: item.qty || 0,
@@ -368,23 +376,23 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
           is_paid: isPaid,
           is_partially_paid: isPartiallyPaid,
           paid_amount: isPartiallyPaid
-            ? form.getFieldValue("paid_amount")
+            ? form.getFieldValue('paid_amount')
             : isPaid
-            ? billCalc.total_amount
-            : 0,
+              ? billCalc.total_amount
+              : 0,
         };
         setCurrentBill(formattedBill);
         setBillViewVisible(true);
-        InvoiceNumberApi("Create");
+        InvoiceNumberApi('Create');
         setTimeout(() => {
-          InvoiceNumberApi("GetAll");
+          InvoiceNumberApi('GetAll');
         }, 500);
         // Reset form and data after successful submission
         form.resetFields();
         setDataSource([
           {
             key: 0,
-            name: "",
+            name: '',
             qty: 0,
             price: 0,
             amount: 0,
@@ -397,10 +405,10 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
         setIsPaid(true);
         setIsPartiallyPaid(false);
         setDiscount(0);
-        setDiscountType("percentage");
+        setDiscountType('percentage');
       }
     }
-    if (createError) handleApiResponse("create", false);
+    if (createError) handleApiResponse('create', false);
   }, [createItems, createError]);
 
   const validateRows = () => {
@@ -423,7 +431,7 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
   const handleAdd = () => {
     if (!validateRows()) {
       message.warning(
-        "Please fill all required fields before adding a new item."
+        'Please fill all required fields before adding a new item.'
       );
       return;
     }
@@ -431,7 +439,7 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
       ...dataSource,
       {
         key: count,
-        name: "",
+        name: '',
         qty: 0,
         price: 0,
         amount: 0,
@@ -446,29 +454,29 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
   const handleDelete = async (key: number) => {
     try {
       if (billdata) {
-        await SalesRecord("Delete", { id: billdata._id });
-        handleApiResponse("delete", true);
+        await SalesRecord('Delete', { id: billdata._id });
+        handleApiResponse('delete', true);
       }
-      const newData = dataSource.filter((item) => item.key !== key);
+      const newData = dataSource.filter(item => item.key !== key);
       setDataSource(newData);
     } catch (error) {
-      console.error("Delete failed:", error);
-      handleApiResponse("delete", false);
+      console.error('Delete failed:', error);
+      handleApiResponse('delete', false);
     }
   };
 
   const handleApiResponse = (
-    action: "create" | "update" | "delete",
+    action: 'create' | 'update' | 'delete',
     success: boolean
   ) => {
-    const title = "Sale";
+    const title = 'Sale';
     if (success) {
       message.success(`${title} ${action}d successfully`);
-      if (action === "create") {
+      if (action === 'create') {
         form.resetFields();
         setDataSource([]);
       }
-      if (action === "update" || action === "delete") {
+      if (action === 'update' || action === 'delete') {
         onSuccess?.();
       }
       const actionRoute = getApiRouteSalesRecord(
@@ -482,14 +490,14 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
   };
 
   useEffect(() => {
-    ProductsApi("GetAll");
-    CustomerApi("GetAll");
-    InvoiceNumberApi("GetAll");
+    ProductsApi('GetAll');
+    CustomerApi('GetAll');
+    InvoiceNumberApi('GetAll');
   }, [ProductsApi, CustomerApi, InvoiceNumberApi]);
 
   useEffect(() => {
-    if (updateItems?.statusCode === 200) handleApiResponse("update", true);
-    if (updateError) handleApiResponse("update", false);
+    if (updateItems?.statusCode === 200) handleApiResponse('update', true);
+    if (updateError) handleApiResponse('update', false);
   }, [updateItems, updateError]);
 
   useEffect(() => {
@@ -504,12 +512,13 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
     customerAddress: billdata?.customer?.address || '',
     date: billdata?.date || '',
     invoice_no: billdata?.invoice_no || '',
-    items: billdata?.Items?.map((item: any) => ({
-      name: item.product_name || '',
-      qty: item.qty,
-      price: item.price,
-      amount: item.amount,
-    })) || [],
+    items:
+      billdata?.Items?.map((item: any) => ({
+        name: item.product_name || '',
+        qty: item.qty,
+        price: item.price,
+        amount: item.amount,
+      })) || [],
     total: billdata?.total || 0,
   };
 
@@ -521,7 +530,7 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
         onFinish={handleSubmit}
         initialValues={{
           date: dayjs(),
-          payment_mode: "cash",
+          payment_mode: 'cash',
           ...(billdata && {
             invoice_no: billdata.invoice_no,
             date: dayjs(billdata.date),
@@ -531,23 +540,23 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
           }),
         }}
         style={{
-          margin: "auto",
-          background: "#f0f5ff",
+          margin: 'auto',
+          background: '#f0f5ff',
           padding: 24,
           borderRadius: 10,
-          boxShadow: "0 4px 12px rgba(24, 144, 255, 0.15)",
+          boxShadow: '0 4px 12px rgba(24, 144, 255, 0.15)',
         }}
       >
-        <Title level={3} style={{ color: "#1890ff", textAlign: "center" }}>
+        <Title level={3} style={{ color: '#1890ff', textAlign: 'center' }}>
           {billdata
-            ? `Edit ${isRetail ? "Bill" : "Invoice"}`
-            : `Create ${isRetail ? "Bill" : "Invoice"}`}
+            ? `Edit ${isRetail ? 'Bill' : 'Invoice'}`
+            : `Create ${isRetail ? 'Bill' : 'Invoice'}`}
         </Title>
 
         <div
           style={{
-            display: "flex",
-            justifyContent: "flex-end",
+            display: 'flex',
+            justifyContent: 'flex-end',
             marginBottom: 16,
           }}
         >
@@ -577,20 +586,20 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
           dataSource={billCalc.itemsWithTax}
           productList={productList}
           stockAuditList={
-            role === "BranchAdmin" || role === "BranchSalesMan"
+            role === 'BranchAdmin' || role === 'BranchSalesMan'
               ? branchStockList
               : stockAuditList
           }
           onAdd={handleAdd}
           onDelete={handleDelete}
           onChange={handleChange}
-          onStockAuditFetch={(productId) => {
-            if (role === "OrganisationAdmin") {
-              StockAuditApi("GetAll", { product: productId });
-            } else if (role === "BranchAdmin" || role === "BranchSalesMan") {
-              BranchStock("GetAll", { product: productId});
+          onStockAuditFetch={productId => {
+            if (role === 'OrganisationAdmin') {
+              StockAuditApi('GetAll', { product: productId });
+            } else if (role === 'BranchAdmin' || role === 'BranchSalesMan') {
+              BranchStock('GetAll', { product: productId });
             } else {
-              StockAuditApi("GetAll", { product: productId });
+              StockAuditApi('GetAll', { product: productId });
             }
           }}
           sub_total={billCalc.sub_total}
@@ -599,7 +608,7 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
           total_amount={billCalc.total_amount}
           discount_value={billCalc.discountValue}
           isPartiallyPaid={isPartiallyPaid}
-          paid_amount={form.getFieldValue("paid_amount") || 0}
+          paid_amount={form.getFieldValue('paid_amount') || 0}
           isGstIncluded={isGstIncluded}
           isRetail={isRetail}
           discount={discount}
@@ -610,27 +619,27 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
           style={{
             marginTop: 16,
             marginBottom: 16,
-            display: "flex",
-            justifyContent: "flex-end",
-            alignItems: "center",
-            gap: "8px",
+            display: 'flex',
+            justifyContent: 'flex-end',
+            alignItems: 'center',
+            gap: '8px',
           }}
         >
           <InputNumber
             min={0}
-            max={discountType === "percentage" ? 100 : undefined}
+            max={discountType === 'percentage' ? 100 : undefined}
             value={discount}
-            onChange={(value) => setDiscount(value || 0)}
+            onChange={value => setDiscount(value || 0)}
             addonBefore="Discount"
-            addonAfter={discountType === "percentage" ? "%" : "₹"}
+            addonAfter={discountType === 'percentage' ? '%' : '₹'}
             style={{ width: 200 }}
           />
           <Switch
             checkedChildren="%"
             unCheckedChildren="₹"
-            checked={discountType === "percentage"}
-            onChange={(checked) =>
-              setDiscountType(checked ? "percentage" : "amount")
+            checked={discountType === 'percentage'}
+            onChange={checked =>
+              setDiscountType(checked ? 'percentage' : 'amount')
             }
           />
         </div>
@@ -638,11 +647,11 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
         <PaymentStatus
           isPaid={isPaid}
           isPartiallyPaid={isPartiallyPaid}
-          onPaidChange={(checked) => {
+          onPaidChange={checked => {
             setIsPaid(checked);
             if (checked) setIsPartiallyPaid(false);
           }}
-          onPartiallyPaidChange={(checked) => {
+          onPartiallyPaidChange={checked => {
             setIsPartiallyPaid(checked);
             if (checked) setIsPaid(false);
           }}
@@ -651,42 +660,30 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
 
         <div
           style={{
-            display: "flex",
-            justifyContent: "flex-end",
-            alignItems: "center",
+            display: 'flex',
+            justifyContent: 'flex-end',
+            alignItems: 'center',
           }}
         >
           <Button
             type="primary"
             htmlType="submit"
             style={{
-              backgroundColor: "#1890ff",
-              borderColor: "#1890ff",
-              fontWeight: "bold",
+              backgroundColor: '#1890ff',
+              borderColor: '#1890ff',
+              fontWeight: 'bold',
               fontSize: 16,
               minWidth: 140,
             }}
           >
             {billdata
-              ? "Update Sale"
+              ? 'Update Sale'
               : isRetail
-              ? "Create Bill"
-              : "Create Invoice"}
+                ? 'Create Bill'
+                : 'Create Invoice'}
           </Button>
         </div>
       </Form>
-
-      {/* Template Selector UI */}
-      <h3 style={{ marginTop: 32 }}>Choose Invoice Template</h3>
-      <BillTemplateSelector selected={selectedTemplate} onSelect={handleTemplateSelect} />
-
-      {/* Invoice Preview */}
-      <div style={{ margin: '32px 0' }}>
-        {(() => {
-          const TemplateComponent = billingTemplates[selectedTemplate].component;
-          return <TemplateComponent billData={billDataForTemplate} />;
-        })()}
-      </div>
 
       <Drawer
         title="Add New Customer"
@@ -705,6 +702,12 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
           billData={currentBill}
         />
       )}
+
+      {/* Floating template selector button (bottom right) */}
+      <FloatingTemplateSelector
+        selected={selectedTemplate}
+        onSelect={handleTemplateSelect}
+      />
 
       <style>
         {`

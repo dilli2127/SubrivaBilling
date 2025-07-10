@@ -222,10 +222,4 @@ export const menuItems = [
       },
     ],
   },
-  {
-    key: 'user_settings',
-    label: 'User Settings',
-    icon: <SettingOutlined />,
-    path: '/user-settings',
-  },
 ];
