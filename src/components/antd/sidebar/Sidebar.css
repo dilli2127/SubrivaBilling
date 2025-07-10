@@ -176,9 +176,13 @@
 }
 .custom-menu .ant-menu-item-selected,
 .custom-menu .ant-menu-item-active {
-  background: var(--menu-item-selected, linear-gradient(90deg, #ff6a00 60%, #ee0979 100%));
+  background: var(--menu-item-selected, linear-gradient(90deg, #ff6a00 60%, #ee0979 100%)) !important;
   color: #fff !important;
   box-shadow: 0 2px 8px rgba(255, 106, 0, 0.10);
+}
+.custom-menu .ant-menu-submenu-title-selected {
+  background: var(--menu-item-selected, linear-gradient(90deg, #ff6a00 60%, #ee0979 100%)) !important;
+  color: #fff !important;
 }
 .custom-menu .ant-menu-item:hover {
   background: var(--menu-item-hover, linear-gradient(90deg, #ee0979 60%, #ff6a00 100%));
