@@ -205,6 +205,7 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
   const [themePopoverVisible, setThemePopoverVisible] = useState(false);
   const [themeDrawerOpen, setThemeDrawerOpen] = useState(false);
   const [sidebarBg, setSidebarBg] = useState(localStorage.getItem('sidebarBg') || '');
+  const [sidebarPosition, setSidebarPosition] = useState(localStorage.getItem('sidebarPosition') || 'left');
 
   // Apply theme variables
   React.useEffect(() => {
@@ -367,6 +368,9 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
             background: sidebarBg
               ? `url(${sidebarBg}) center center / cover no-repeat`
               : 'var(--sidebar-bg, linear-gradient(180deg, #4e54c8 60%, #8f94fb 100%))',
+            position: 'fixed',
+            left: sidebarPosition === 'left' ? 0 : 'auto',
+            right: sidebarPosition === 'right' ? 0 : 'auto',
           }}
         > {sidebarBg && (
           <div
@@ -396,8 +400,9 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
 
         <Layout
           style={{
-            marginLeft: collapsed ? 80 : 240,
-            transition: 'margin-left 0.3s ease',
+            marginLeft: sidebarPosition === 'left' ? (collapsed ? 80 : 240) : 0,
+            marginRight: sidebarPosition === 'right' ? (collapsed ? 80 : 240) : 0,
+            transition: 'margin-left 0.3s ease, margin-right 0.3s ease',
             background: '#f4f6f8',
           }}
         >
@@ -443,6 +448,8 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
         themePresets={themePresets}
         sidebarBg={sidebarBg}
         setSidebarBg={setSidebarBg}
+        sidebarPosition={sidebarPosition}
+        setSidebarPosition={setSidebarPosition}
       />
 
       {/* Logout Modal */}

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Drawer, Button, message } from 'antd';
+import { Drawer, Button, message, Radio } from 'antd';
 import { BgColorsOutlined, DeleteOutlined } from '@ant-design/icons';
 
 interface ThemePreset {
@@ -17,6 +17,8 @@ interface ThemeDrawerProps {
   themePresets: ThemePreset[];
   sidebarBg: string;
   setSidebarBg: (bg: string) => void;
+  sidebarPosition: string;
+  setSidebarPosition: (pos: string) => void;
 }
 
 const themeGroups = [
@@ -86,6 +88,8 @@ const ThemeDrawer: React.FC<ThemeDrawerProps> = ({
   themePresets,
   sidebarBg,
   setSidebarBg,
+  sidebarPosition,
+  setSidebarPosition,
 }) => {
   const handleRemoveBg = () => {
     setSidebarBg('');
@@ -109,6 +113,20 @@ const ThemeDrawer: React.FC<ThemeDrawerProps> = ({
       width={420}
       bodyStyle={{ padding: 24 }}
     >
+      <div style={{ marginBottom: 16 }}>
+        <div style={{ fontWeight: 500, marginBottom: 8 }}>Sidebar Position</div>
+        <Radio.Group
+          value={sidebarPosition}
+          onChange={e => {
+            setSidebarPosition(e.target.value);
+            localStorage.setItem('sidebarPosition', e.target.value);
+          }}
+          style={{ marginBottom: 16 }}
+        >
+          <Radio.Button value="left">Left</Radio.Button>
+          <Radio.Button value="right">Right</Radio.Button>
+        </Radio.Group>
+      </div>
       <div style={{ marginBottom: 16 }}>
         <div style={{ fontWeight: 500, marginBottom: 8 }}>Sidebar Backgrounds</div>
         <div style={{ display: 'flex', gap: 12 }}>
