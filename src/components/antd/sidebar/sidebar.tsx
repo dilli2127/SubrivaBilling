@@ -310,7 +310,7 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
             marginLeft: sidebarPosition === 'left' ? (collapsed ? 80 : 240) : 0,
             marginRight:
               sidebarPosition === 'right' ? (collapsed ? 80 : 240) : 0,
-            marginTop: sidebarPosition === 'top' ? 120 : 0, // 64 header + 56 menu
+            marginTop: sidebarPosition === 'top' ? 120 : 64, // 64 header + 56 menu
             transition:
               'margin-left 0.3s ease, margin-right 0.3s ease, margin-top 0.3s ease',
             background: '#f4f6f8',
