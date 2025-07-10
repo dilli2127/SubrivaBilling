@@ -8,6 +8,7 @@ import {
   Form,
   Input,
   Tooltip,
+  Modal,
 } from "antd";
 import {
   EyeOutlined,
@@ -31,6 +32,7 @@ import GlobalTable from "../../components/antd/GlobalTable";
 import { useHandleApiResponse } from "../../components/common/useHandleApiResponse";
 import { useDispatch } from "react-redux";
 import { dynamic_clear } from "../../services/redux";
+import { billingTemplates } from './templates/registry';
 
 const { Title } = Typography;
 
@@ -49,6 +51,8 @@ const BillListPage = () => {
     current: 1,
     pageSize: 10,
   });
+  const [printModalVisible, setPrintModalVisible] = useState(false);
+  const [printBill, setPrintBill] = useState<any>(null);
 
   const dispatch = useDispatch();
 
@@ -78,12 +82,22 @@ const BillListPage = () => {
   };
 
   const handlePrint = (record: any) => {
-    const formattedBill = {
-      ...record,
+    // Map the sales record to the template's expected format
+    const billData = {
+      customerName: record.customerDetails?.full_name || '',
+      customerAddress: record.customerDetails?.address || '',
+      date: record.date,
+      invoice_no: record.invoice_no,
+      items: (record.Items || []).map((item: any) => ({
+        name: item.product_name || item.name || '',
+        qty: item.qty,
+        price: item.price,
+        amount: item.amount,
+      })),
+      total: record.total_amount || 0,
     };
-
-    setSelectedBill(formattedBill);
-    setBillViewVisible(true);
+    setPrintBill(billData);
+    setPrintModalVisible(true);
   };
 
   const handleSearch = (value: string) => {
@@ -276,6 +290,30 @@ const BillListPage = () => {
           billData={selectedBill}
         />
       )}
+
+      {/* Print Modal for Bill Template */}
+      <Modal
+        open={printModalVisible}
+        onCancel={() => setPrintModalVisible(false)}
+        footer={[
+          <Button key="print" type="primary" onClick={() => window.print()}>
+            Print
+          </Button>,
+          <Button key="close" onClick={() => setPrintModalVisible(false)}>
+            Close
+          </Button>,
+        ]}
+        width={800}
+        title={printBill ? `Print Invoice #${printBill.invoice_no}` : 'Print Invoice'}
+        centered
+      >
+        {printBill && (() => {
+          const key = localStorage.getItem('billingTemplate');
+          const selectedTemplate: 'classic' | 'modern' = (key === 'modern' || key === 'classic') ? key : 'classic';
+          const TemplateComponent = billingTemplates[selectedTemplate].component;
+          return <TemplateComponent billData={printBill} />;
+        })()}
+      </Modal>
     </div>
   );
 };
