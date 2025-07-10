@@ -1,6 +1,8 @@
 import React from 'react';
-import { Drawer, Button, message, Radio } from 'antd';
-import { BgColorsOutlined, DeleteOutlined } from '@ant-design/icons';
+import { Drawer, Button, message, Radio, Divider, Typography } from 'antd';
+import { BgColorsOutlined, DeleteOutlined, CheckCircleFilled } from '@ant-design/icons';
+
+const { Title, Text } = Typography;
 
 interface ThemePreset {
   key: string;
@@ -101,20 +103,20 @@ const ThemeDrawer: React.FC<ThemeDrawerProps> = ({
     <Drawer
       title={
         <div>
-          <div style={{ fontWeight: 600, fontSize: 18 }}>Sidebar Colors</div>
-          <div style={{ fontSize: 13, color: '#888', marginTop: 2 }}>
+          <Title level={4} style={{ margin: 0 }}>Sidebar Settings</Title>
+          <Text type="secondary" style={{ fontSize: 13 }}>
             Customize your theme with these options.
-          </div>
+          </Text>
         </div>
       }
       placement="right"
       onClose={onClose}
       open={open}
-      width={420}
-      bodyStyle={{ padding: 24 }}
+      width={440}
+      bodyStyle={{ padding: 0, background: 'transparent' }}
     >
-      <div style={{ marginBottom: 16 }}>
-        <div style={{ fontWeight: 500, marginBottom: 8 }}>Sidebar Position</div>
+      <div style={{ padding: 24, background: '#fff', borderRadius: 16, boxShadow: '0 2px 12px rgba(0,0,0,0.06)', margin: 16 }}>
+        <Title level={5} style={{ marginBottom: 12 }}>Sidebar Position</Title>
         <Radio.Group
           value={sidebarPosition}
           onChange={e => {
@@ -128,65 +130,118 @@ const ThemeDrawer: React.FC<ThemeDrawerProps> = ({
           <Radio.Button value="top">Top</Radio.Button>
         </Radio.Group>
       </div>
-      <div style={{ marginBottom: 16 }}>
-        <div style={{ fontWeight: 500, marginBottom: 8 }}>Sidebar Backgrounds</div>
-        <div style={{ display: 'flex', gap: 12 }}>
+      <Divider style={{ margin: '24px 0' }} />
+      <div style={{ padding: 24, background: '#fff', borderRadius: 16, boxShadow: '0 2px 12px rgba(0,0,0,0.06)', margin: 16 }}>
+        <Title level={5} style={{ marginBottom: 12 }}>Sidebar Backgrounds</Title>
+        <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', alignItems: 'center' }}>
           {sidebarBgOptions.map(opt => (
-            <img
+            <div
               key={opt.key}
-              src={opt.url}
-              alt="sidebar-bg"
               style={{
-                width: 48,
-                height: 48,
-                objectFit: 'cover',
-                borderRadius: 8,
-                border: sidebarBg === opt.url ? '2px solid #4e54c8' : '2px solid #eee',
+                position: 'relative',
+                borderRadius: 10,
+                boxShadow: sidebarBg === opt.url ? '0 0 0 2px #4e54c8' : '0 1px 4px rgba(0,0,0,0.08)',
                 cursor: 'pointer',
+                transition: 'box-shadow 0.2s',
               }}
               onClick={() => {
                 setSidebarBg(opt.url);
                 localStorage.setItem('sidebarBg', opt.url);
                 message.success('Sidebar background updated!');
               }}
-            />
+            >
+              <img
+                src={opt.url}
+                alt="sidebar-bg"
+                style={{
+                  width: 56,
+                  height: 56,
+                  objectFit: 'cover',
+                  borderRadius: 10,
+                  filter: sidebarBg === opt.url ? 'brightness(0.95)' : 'none',
+                }}
+              />
+              {sidebarBg === opt.url && (
+                <CheckCircleFilled style={{
+                  color: '#4e54c8',
+                  fontSize: 22,
+                  position: 'absolute',
+                  top: 4,
+                  right: 4,
+                  background: '#fff',
+                  borderRadius: '50%',
+                  boxShadow: '0 1px 4px rgba(0,0,0,0.10)',
+                }} />
+              )}
+            </div>
           ))}
           {sidebarBg && (
             <Button
               icon={<DeleteOutlined />}
               danger
               onClick={handleRemoveBg}
+              style={{ marginLeft: 8, height: 48 }}
             >
               Remove
             </Button>
           )}
         </div>
       </div>
-      <div style={{ overflowY: 'auto' }}>
-        {themeGroups.map(group => (
-          <div key={group.title} style={{ marginBottom: 24 }}>
-            <div
-              style={{ fontWeight: 700, fontSize: 15, margin: '12px 0 8px 0' }}
-            >
-              {group.title}
+      <Divider style={{ margin: '24px 0' }} />
+      <div style={{ padding: 24, background: '#fff', borderRadius: 16, boxShadow: '0 2px 12px rgba(0,0,0,0.06)', margin: 16 }}>
+        <Title level={5} style={{ marginBottom: 12 }}>Sidebar Colors</Title>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+          {themeGroups.map(group => (
+            <div key={group.title} style={{ marginBottom: 0 }}>
+              <Text strong style={{ fontSize: 15, margin: '12px 0 8px 0', display: 'block' }}>
+                {group.title}
+              </Text>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, justifyContent: 'center' }}>
+                {themePresets
+                  .filter(preset => group.keys.includes(preset.key))
+                  .map(preset => (
+                    <div
+                      key={preset.key}
+                      style={{
+                        position: 'relative',
+                        borderRadius: 12,
+                        boxShadow: theme === preset.key ? '0 0 0 2px #4e54c8' : '0 1px 4px rgba(0,0,0,0.08)',
+                        cursor: 'pointer',
+                        transition: 'box-shadow 0.2s',
+                        background: '#fff',
+                        margin: 2,
+                      }}
+                      onClick={() => {
+                        setTheme(preset.key);
+                        onClose();
+                      }}
+                    >
+                      <ThemePreview
+                        preset={preset}
+                        selected={theme === preset.key}
+                        onClick={() => {
+                          setTheme(preset.key);
+                          onClose();
+                        }}
+                      />
+                      {theme === preset.key && (
+                        <CheckCircleFilled style={{
+                          color: '#4e54c8',
+                          fontSize: 22,
+                          position: 'absolute',
+                          top: 8,
+                          right: 8,
+                          background: '#fff',
+                          borderRadius: '50%',
+                          boxShadow: '0 1px 4px rgba(0,0,0,0.10)',
+                        }} />
+                      )}
+                    </div>
+                  ))}
+              </div>
             </div>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 ,justifyContent:"center"}}>
-              {themePresets
-                .filter(preset => group.keys.includes(preset.key))
-                .map(preset => (
-                  <ThemePreview
-                    key={preset.key}
-                    preset={preset}
-                    selected={theme === preset.key}
-                    onClick={() => {
-                      setTheme(preset.key);
-                      onClose();
-                    }}
-                  />
-                ))}
-            </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </Drawer>
   );
