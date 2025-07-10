@@ -12,6 +12,7 @@ import { menuItems as originalMenuItems } from './menu';
 import './Sidebar.css';
 import ThemeDrawer from './ThemeDrawer';
 import { themePresets } from './themePresets';
+import { useSessionStorage } from '../../../hooks/useLocalStorage';
 
 const { Header, Content, Sider } = Layout;
 
@@ -73,12 +74,10 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
   const [theme, setTheme] = useState(getInitialTheme());
   const [themePopoverVisible, setThemePopoverVisible] = useState(false);
   const [themeDrawerOpen, setThemeDrawerOpen] = useState(false);
-  const [sidebarBg, setSidebarBg] = useState(
-    localStorage.getItem('sidebarBg') || ''
-  );
-  const [sidebarPosition, setSidebarPosition] = useState(
-    localStorage.getItem('sidebarPosition') || 'left'
-  );
+  
+  // Use custom hooks for better storage management
+  const [sidebarBg, setSidebarBg] = useSessionStorage('sidebarBg', '');
+  const [sidebarPosition, setSidebarPosition] = useSessionStorage('sidebarPosition', 'left');
 
   // Draggable button state
   const [buttonTop, setButtonTop] = useState(20); // percentage
@@ -129,6 +128,47 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
     setIsModalVisible(false);
     navigate('/billing_login');
   }, [navigate]);
+
+  // Draggable button handlers
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+    setDragStartY(e.clientY);
+    setDragStartTop(buttonTop);
+  }, [buttonTop]);
+
+  const handleMouseMove = useCallback((e: MouseEvent) => {
+    if (!isDragging) return;
+    
+    const deltaY = e.clientY - dragStartY;
+    const windowHeight = window.innerHeight;
+    const buttonHeight = 44; // Approximate button height
+    const maxTop = windowHeight - buttonHeight;
+    
+    // Convert percentage to pixels for calculation
+    const currentTopPx = (dragStartTop / 100) * windowHeight;
+    const newTopPx = Math.max(0, Math.min(maxTop, currentTopPx + deltaY));
+    const newTopPercent = (newTopPx / windowHeight) * 100;
+    
+    setButtonTop(newTopPercent);
+  }, [isDragging, dragStartY, dragStartTop]);
+
+  const handleMouseUp = useCallback(() => {
+    setIsDragging(false);
+  }, []);
+
+  // Add/remove global mouse event listeners
+  useLayoutEffect(() => {
+    if (isDragging) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+      
+      return () => {
+        document.removeEventListener('mousemove', handleMouseMove);
+        document.removeEventListener('mouseup', handleMouseUp);
+      };
+    }
+  }, [isDragging, handleMouseMove, handleMouseUp]);
 
   // Memoize filteredMenuItems
   const filteredMenuItems = useMemo(() => {
@@ -183,47 +223,6 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
         </Menu.Item>
       )
     ), [selectedKey, handleMenuClick]);
-
-  // Draggable button handlers
-  const handleMouseDown = useCallback((e: React.MouseEvent) => {
-    e.preventDefault();
-    setIsDragging(true);
-    setDragStartY(e.clientY);
-    setDragStartTop(buttonTop);
-  }, [buttonTop]);
-
-  const handleMouseMove = useCallback((e: MouseEvent) => {
-    if (!isDragging) return;
-    
-    const deltaY = e.clientY - dragStartY;
-    const windowHeight = window.innerHeight;
-    const buttonHeight = 44; // Approximate button height
-    const maxTop = windowHeight - buttonHeight;
-    
-    // Convert percentage to pixels for calculation
-    const currentTopPx = (dragStartTop / 100) * windowHeight;
-    const newTopPx = Math.max(0, Math.min(maxTop, currentTopPx + deltaY));
-    const newTopPercent = (newTopPx / windowHeight) * 100;
-    
-    setButtonTop(newTopPercent);
-  }, [isDragging, dragStartY, dragStartTop]);
-
-  const handleMouseUp = useCallback(() => {
-    setIsDragging(false);
-  }, []);
-
-  // Add/remove global mouse event listeners
-  useLayoutEffect(() => {
-    if (isDragging) {
-      document.addEventListener('mousemove', handleMouseMove);
-      document.addEventListener('mouseup', handleMouseUp);
-      
-      return () => {
-        document.removeEventListener('mousemove', handleMouseMove);
-        document.removeEventListener('mouseup', handleMouseUp);
-      };
-    }
-  }, [isDragging, handleMouseMove, handleMouseUp]);
 
   return (
     <Layout style={{ minHeight: '100vh' }}>
