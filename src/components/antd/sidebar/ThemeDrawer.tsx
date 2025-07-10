@@ -153,7 +153,7 @@ const ThemeDrawer: React.FC<ThemeDrawerProps> = ({
                 alt="sidebar-bg"
                 style={{
                   width: 56,
-                  height: 56,
+                  height: 100,
                   objectFit: 'cover',
                   borderRadius: 10,
                   filter: sidebarBg === opt.url ? 'brightness(0.95)' : 'none',
@@ -178,7 +178,6 @@ const ThemeDrawer: React.FC<ThemeDrawerProps> = ({
               icon={<DeleteOutlined />}
               danger
               onClick={handleRemoveBg}
-              style={{ marginLeft: 8, height: 48 }}
             >
               Remove
             </Button>
