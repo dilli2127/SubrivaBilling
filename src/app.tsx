@@ -11,9 +11,9 @@ const App: FC = () =>
 {
   const handlePerformanceMetrics = (metrics: any) => {
     // Log performance metrics
-    if (process.env.NODE_ENV === 'development') {
-      console.log('Performance Metrics:', metrics);
-    }
+    // if (process.env.NODE_ENV === 'development') {
+    //   console.log('Performance Metrics:', metrics);
+    // }
     
     // You can send metrics to external service here
     // sendMetricsToService(metrics);
