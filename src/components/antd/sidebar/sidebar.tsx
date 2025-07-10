@@ -80,6 +80,12 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
     localStorage.getItem('sidebarPosition') || 'left'
   );
 
+  // Draggable button state
+  const [buttonTop, setButtonTop] = useState(20); // percentage
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStartY, setDragStartY] = useState(0);
+  const [dragStartTop, setDragStartTop] = useState(0);
+
   // Apply theme variables
   React.useEffect(() => {
     const preset = themePresets.find(t => t.key === theme) || themePresets[0];
@@ -177,6 +183,47 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
         </Menu.Item>
       )
     ), [selectedKey, handleMenuClick]);
+
+  // Draggable button handlers
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+    setDragStartY(e.clientY);
+    setDragStartTop(buttonTop);
+  }, [buttonTop]);
+
+  const handleMouseMove = useCallback((e: MouseEvent) => {
+    if (!isDragging) return;
+    
+    const deltaY = e.clientY - dragStartY;
+    const windowHeight = window.innerHeight;
+    const buttonHeight = 44; // Approximate button height
+    const maxTop = windowHeight - buttonHeight;
+    
+    // Convert percentage to pixels for calculation
+    const currentTopPx = (dragStartTop / 100) * windowHeight;
+    const newTopPx = Math.max(0, Math.min(maxTop, currentTopPx + deltaY));
+    const newTopPercent = (newTopPx / windowHeight) * 100;
+    
+    setButtonTop(newTopPercent);
+  }, [isDragging, dragStartY, dragStartTop]);
+
+  const handleMouseUp = useCallback(() => {
+    setIsDragging(false);
+  }, []);
+
+  // Add/remove global mouse event listeners
+  useLayoutEffect(() => {
+    if (isDragging) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+      
+      return () => {
+        document.removeEventListener('mousemove', handleMouseMove);
+        document.removeEventListener('mouseup', handleMouseUp);
+      };
+    }
+  }, [isDragging, handleMouseMove, handleMouseUp]);
 
   return (
     <Layout style={{ minHeight: '100vh' }}>
@@ -333,12 +380,12 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
         </Layout>
       </Layout>
 
-      {/* Floating Theme Button */}
+      {/* Floating Theme Button - Now Draggable */}
       <Button
         icon={<BgColorsOutlined style={{ fontSize: 22 }} />}
         style={{
           position: 'fixed',
-          top: '50%',
+          top: `${buttonTop}%`,
           right: 0,
           zIndex: 2000,
           background: '#fff',
@@ -347,7 +394,10 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
           borderRadius: '8px 0 0 8px',
           padding: '10px 12px',
           transform: 'translateY(-50%)',
+          cursor: isDragging ? 'grabbing' : 'grab',
+          userSelect: 'none',
         }}
+        onMouseDown={handleMouseDown}
         onClick={() => setThemeDrawerOpen(true)}
       />
       {/* Theme Drawer as separate component */}
