@@ -1,4 +1,4 @@
-import React, { ReactNode, useState, useMemo, useCallback } from 'react';
+import React, { ReactNode, useState, useMemo, useCallback, useRef, useLayoutEffect } from 'react';
 import {
   LogoutOutlined,
   MenuFoldOutlined,
@@ -124,6 +124,7 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
     navigate('/billing_login');
   }, [navigate]);
 
+  // Memoize filteredMenuItems
   const filteredMenuItems = useMemo(() => {
     const filterMenu = (items: any[]): any[] =>
       items
@@ -144,7 +145,8 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
     return filterMenu(originalMenuItems);
   }, [allowedKeys]);
 
-  const renderMenuItems = (items: any[]) =>
+  // Memoize renderMenuItems
+  const renderMenuItems = useCallback((items: any[]) =>
     items.map(item =>
       item.children ? (
         <Menu.SubMenu
@@ -174,7 +176,7 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
           {item.label}
         </Menu.Item>
       )
-    );
+    ), [selectedKey, handleMenuClick]);
 
   return (
     <Layout style={{ minHeight: '100vh' }}>
