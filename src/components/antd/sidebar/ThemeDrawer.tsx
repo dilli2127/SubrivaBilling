@@ -51,7 +51,7 @@ const ThemePreview = ({ preset, selected, onClick }: any) => (
       margin: 6,
       width: 110,
       cursor: 'pointer',
-      background: '#fff',
+      background: preset.variables['--sidebar-bg'],
       boxShadow: selected ? '0 0 8px #4e54c8' : '0 2px 8px rgba(0,0,0,0.06)',
       transition: 'box-shadow 0.2s, border 0.2s',
       display: 'flex',
@@ -59,15 +59,13 @@ const ThemePreview = ({ preset, selected, onClick }: any) => (
       gap: 8,
     }}
   >
-    <div style={{ fontWeight: 600, fontSize: 13, marginBottom: 4 }}>
-      {preset.label}
-    </div>
+    <div style={{ fontWeight: 600, fontSize: 13, marginBottom: 4, color: '#fff', textShadow: '0 1px 4px rgba(0,0,0,0.18)' }}>{preset.label}</div>
     <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-      <div style={{ color: '#888', fontWeight: 500 }}>Menu–1</div>
-      <div style={{ color: '#888', fontWeight: 500 }}>Menu–2</div>
+      <div style={{ color: '#fff', fontWeight: 500, opacity: 0.85 }}>Menu–1</div>
+      <div style={{ color: '#fff', fontWeight: 500, opacity: 0.85 }}>Menu–2</div>
       <div
         style={{
-          background: preset.previewColor,
+          background: preset.variables['--menu-item-selected'],
           color: '#fff',
           borderRadius: 8,
           padding: '2px 8px',
@@ -77,7 +75,7 @@ const ThemePreview = ({ preset, selected, onClick }: any) => (
       >
         Selected Menu
       </div>
-      <div style={{ color: '#888', fontWeight: 500 }}>Menu–4</div>
+      <div style={{ color: '#fff', fontWeight: 500, opacity: 0.85 }}>Menu–4</div>
     </div>
   </div>
 );

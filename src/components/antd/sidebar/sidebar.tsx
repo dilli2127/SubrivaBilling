@@ -204,8 +204,12 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
   const [theme, setTheme] = useState(getInitialTheme());
   const [themePopoverVisible, setThemePopoverVisible] = useState(false);
   const [themeDrawerOpen, setThemeDrawerOpen] = useState(false);
-  const [sidebarBg, setSidebarBg] = useState(localStorage.getItem('sidebarBg') || '');
-  const [sidebarPosition, setSidebarPosition] = useState(localStorage.getItem('sidebarPosition') || 'left');
+  const [sidebarBg, setSidebarBg] = useState(
+    localStorage.getItem('sidebarBg') || ''
+  );
+  const [sidebarPosition, setSidebarPosition] = useState(
+    localStorage.getItem('sidebarPosition') || 'left'
+  );
 
   // Apply theme variables
   React.useEffect(() => {
@@ -373,18 +377,23 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
               left: sidebarPosition === 'left' ? 0 : 'auto',
               right: sidebarPosition === 'right' ? 0 : 'auto',
             }}
-          > {sidebarBg && (
+          >
+            {' '}
+            {sidebarBg && (
+              <div
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  background: 'rgba(24, 25, 26, 0.65)',
+                  zIndex: 1,
+                  pointerEvents: 'none',
+                }}
+              />
+            )}
             <div
-              style={{
-                position: 'absolute',
-                inset: 0,
-                background: 'rgba(24, 25, 26, 0.65)',
-                zIndex: 1,
-                pointerEvents: 'none',
-              }}
-            />
-          )}
-            <div className="sidebar-content" style={{ position: 'relative', zIndex: 2 }}>
+              className="sidebar-content"
+              style={{ position: 'relative', zIndex: 2 }}
+            >
               <Menu
                 mode="inline"
                 selectedKeys={[selectedKey]}
@@ -400,20 +409,22 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
           </Sider>
         )}
         {sidebarPosition === 'top' && (
-          <div style={{
-            width: '100%',
-            position: 'fixed',
-            top: 64,
-            left: 0,
-            zIndex: 999,
-            background: sidebarBg
-              ? `url(${sidebarBg}) center center / cover no-repeat`
-              : 'var(--sidebar-bg, linear-gradient(180deg, #4e54c8 60%, #8f94fb 100%))',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.10)',
-            minHeight: 56,
-            display: 'flex',
-            alignItems: 'center',
-          }}>
+          <div
+            style={{
+              width: '100%',
+              position: 'fixed',
+              top: 64,
+              left: 0,
+              zIndex: 999,
+              background: sidebarBg
+                ? `url(${sidebarBg}) center center / cover no-repeat`
+                : 'var(--sidebar-bg, linear-gradient(180deg, #4e54c8 60%, #8f94fb 100%))',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.10)',
+              minHeight: 56,
+              display: 'flex',
+              alignItems: 'center',
+            }}
+          >
             <Menu
               mode="horizontal"
               selectedKeys={[selectedKey]}
@@ -427,8 +438,7 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
         )}
         <Layout
           style={{
-            marginLeft:
-              sidebarPosition === 'left' ? (collapsed ? 80 : 240) : 0,
+            marginLeft: sidebarPosition === 'left' ? (collapsed ? 80 : 240) : 0,
             marginRight:
               sidebarPosition === 'right' ? (collapsed ? 80 : 240) : 0,
             marginTop: sidebarPosition === 'top' ? 120 : 0, // 64 header + 56 menu
