@@ -26,11 +26,19 @@ interface ThemeDrawerProps {
 const themeGroups = [
   {
     title: 'Classic',
-    keys: ['classic', 'violet', 'dark', 'sunset'],
+    keys: ['classic', 'violet', 'dark', 'sunset', 'forest', 'graphite', 'amber'],
   },
   {
     title: 'Modern',
-    keys: ['aqua', 'peach', 'sky', 'rose'],
+    keys: [
+      'aqua', 'peach', 'rose',
+      'ocean', 'sunrise', 'mint',
+      'plum', 'blush', 'emerald', 'frost',
+    ],
+  },
+  {
+    title: 'Neon / Bold',
+    keys: ['flamingo', 'neon', 'citrus', 'teal', 'lavender'],
   },
 ];
 
