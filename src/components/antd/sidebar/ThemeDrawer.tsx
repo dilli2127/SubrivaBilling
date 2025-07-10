@@ -125,6 +125,7 @@ const ThemeDrawer: React.FC<ThemeDrawerProps> = ({
         >
           <Radio.Button value="left">Left</Radio.Button>
           <Radio.Button value="right">Right</Radio.Button>
+          <Radio.Button value="top">Top</Radio.Button>
         </Radio.Group>
       </div>
       <div style={{ marginBottom: 16 }}>

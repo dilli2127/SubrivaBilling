@@ -359,60 +359,90 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
 
       {/* Sidebar + Content */}
       <Layout>
-        <Sider
-          collapsible
-          collapsed={collapsed}
-          width={240}
-          className="custom-sider"
-          style={{
+        {sidebarPosition !== 'top' && (
+          <Sider
+            collapsible
+            collapsed={collapsed}
+            width={240}
+            className="custom-sider"
+            style={{
+              background: sidebarBg
+                ? `url(${sidebarBg}) center center / cover no-repeat`
+                : 'var(--sidebar-bg, linear-gradient(180deg, #4e54c8 60%, #8f94fb 100%))',
+              position: 'fixed',
+              left: sidebarPosition === 'left' ? 0 : 'auto',
+              right: sidebarPosition === 'right' ? 0 : 'auto',
+            }}
+          > {sidebarBg && (
+            <div
+              style={{
+                position: 'absolute',
+                inset: 0,
+                background: 'rgba(24, 25, 26, 0.65)',
+                zIndex: 1,
+                pointerEvents: 'none',
+              }}
+            />
+          )}
+            <div className="sidebar-content" style={{ position: 'relative', zIndex: 2 }}>
+              <Menu
+                mode="inline"
+                selectedKeys={[selectedKey]}
+                theme="light"
+                openKeys={openKeys}
+                onOpenChange={handleOpenChange}
+                inlineCollapsed={collapsed}
+                className="custom-menu"
+              >
+                {renderMenuItems(filteredMenuItems)}
+              </Menu>
+            </div>
+          </Sider>
+        )}
+        {sidebarPosition === 'top' && (
+          <div style={{
+            width: '100%',
+            position: 'fixed',
+            top: 64,
+            left: 0,
+            zIndex: 999,
             background: sidebarBg
               ? `url(${sidebarBg}) center center / cover no-repeat`
               : 'var(--sidebar-bg, linear-gradient(180deg, #4e54c8 60%, #8f94fb 100%))',
-            position: 'fixed',
-            left: sidebarPosition === 'left' ? 0 : 'auto',
-            right: sidebarPosition === 'right' ? 0 : 'auto',
-          }}
-        > {sidebarBg && (
-          <div
-            style={{
-              position: 'absolute',
-              inset: 0,
-              background: 'rgba(24, 25, 26, 0.65)',
-              zIndex: 1,
-              pointerEvents: 'none',
-            }}
-          />
-        )}
-          <div className="sidebar-content" style={{ position: 'relative', zIndex: 2 }}>
+            boxShadow: '0 2px 8px rgba(0,0,0,0.10)',
+            minHeight: 56,
+            display: 'flex',
+            alignItems: 'center',
+          }}>
             <Menu
-              mode="inline"
+              mode="horizontal"
               selectedKeys={[selectedKey]}
               theme="light"
-              openKeys={openKeys}
-              onOpenChange={handleOpenChange}
-              inlineCollapsed={collapsed}
               className="custom-menu"
+              style={{ flex: 1, background: 'transparent' }}
             >
               {renderMenuItems(filteredMenuItems)}
             </Menu>
           </div>
-        </Sider>
-
+        )}
         <Layout
           style={{
-            marginLeft: sidebarPosition === 'left' ? (collapsed ? 80 : 240) : 0,
-            marginRight: sidebarPosition === 'right' ? (collapsed ? 80 : 240) : 0,
-            transition: 'margin-left 0.3s ease, margin-right 0.3s ease',
+            marginLeft:
+              sidebarPosition === 'left' ? (collapsed ? 80 : 240) : 0,
+            marginRight:
+              sidebarPosition === 'right' ? (collapsed ? 80 : 240) : 0,
+            marginTop: sidebarPosition === 'top' ? 120 : 0, // 64 header + 56 menu
+            transition:
+              'margin-left 0.3s ease, margin-right 0.3s ease, margin-top 0.3s ease',
             background: '#f4f6f8',
           }}
         >
           <Content
             style={{
               padding: 24,
-              marginTop: 64,
+              marginTop: 0,
               background: '#fff',
               minHeight: 'calc(100vh - 64px)',
-              borderRadius: 12,
               boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
               overflowY: 'auto',
             }}
