@@ -209,9 +209,6 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
   const role = user?.roleItems?.name || user?.usertype || user?.user_role || '';
   const organisationId = user?.organisation_id || user?.org_id;
   const branchId = user?.branch_id;
-  {
-    console.log('StockCrudModule', billdata);
-  }
   useEffect(() => {
     if (billdata) {
       form.setFieldsValue({

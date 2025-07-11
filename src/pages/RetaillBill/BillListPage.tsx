@@ -98,6 +98,10 @@ const BillListPage = () => {
         amount: item.amount,
       })),
       total: record.total_amount || 0,
+      total_gst: record.total_gst || 0,
+      discount: record.discount || 0,
+      discount_type: record.discount_type || '',
+      gst_number: record.gst_number || record.organisationItems?.gst_number || '',
     };
     setPrintBill(billData);
     setPrintModalVisible(true);

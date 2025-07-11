@@ -6,6 +6,7 @@ import { store } from './services/redux';
 import ErrorBoundary from './components/common/ErrorBoundary';
 import { AccessibilityProvider } from './components/common/AccessibilityProvider';
 import PerformanceMonitor from './components/common/PerformanceMonitor';
+import { UserProvider } from './components/antd/UserContext';
 
 const App: FC = () =>
 {
@@ -23,12 +24,14 @@ const App: FC = () =>
     <ErrorBoundary>
       <AccessibilityProvider>
         <Provider store={store}>
-          <PerformanceMonitor 
-            onMetricsUpdate={handlePerformanceMetrics}
-            enableErrorTracking={true}
-            enablePerformanceTracking={true}
-          />
-          <AppRouter />
+          <UserProvider>
+            <PerformanceMonitor 
+              onMetricsUpdate={handlePerformanceMetrics}
+              enableErrorTracking={true}
+              enablePerformanceTracking={true}
+            />
+            <AppRouter />
+          </UserProvider>
         </Provider>
       </AccessibilityProvider>
     </ErrorBoundary>
