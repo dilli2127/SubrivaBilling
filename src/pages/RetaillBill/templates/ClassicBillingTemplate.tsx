@@ -8,7 +8,9 @@ const ClassicBillingTemplate: React.FC<ClassicBillingTemplateProps> = ({ billDat
   // Render a simple classic invoice layout
   return (
     <div style={{ padding: 32, fontFamily: 'serif', background: '#fff', border: '1px solid #eee', borderRadius: 8, maxWidth: 700, margin: '0 auto' }}>
-      <h2 style={{ textAlign: 'center', color: '#4e54c8' }}>INVOICE</h2>
+      <h1 style={{ textAlign: 'center', color: '#1890ff' }}>
+        {billData?.sale_type === 'wholesale' ? 'INVOICE' : 'CASH BILL'}
+      </h1>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 24 }}>
         <div>
           <strong>Bill To:</strong><br />
