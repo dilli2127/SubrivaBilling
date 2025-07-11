@@ -22,9 +22,7 @@ import { API_ROUTES } from '../../services/api/utils';
 import BillForm from './components/BillForm';
 import BillItemsTable from './components/BillItemsTable';
 import PaymentStatus from './components/PaymentStatus';
-import BillViewModal from './components/BillViewModal';
 import { billingTemplates, BillingTemplateKey } from './templates/registry';
-import BillTemplateSelector from './BillTemplateSelector';
 import FloatingTemplateSelector from './FloatingTemplateSelector';
 
 const { Title } = Typography;
@@ -111,20 +109,18 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
   const { items: updateItems, error: updateError } = useDynamicSelector(
     getApiRouteSalesRecord('Update').identifier
   );
-  const { items: productList } = useDynamicSelector(
+  const { items: productList, loading: productLoading } = useDynamicSelector(
     ProductsApi.getIdentifier('GetAll')
   );
-  const { items: invoice_no_item } = useDynamicSelector(
-    InvoiceNumberApi.getIdentifier('GetAll')
-  );
+  const { items: invoice_no_item, loading: invoiceLoading } =
+    useDynamicSelector(InvoiceNumberApi.getIdentifier('GetAll'));
   const invoice_no_auto_generated = invoice_no_item?.result?.invoice_no;
-  const { items: stockAuditList } = useDynamicSelector(
+  const { items: stockAuditList, loading: stockLoading } = useDynamicSelector(
     StockAuditApi.getIdentifier('GetAll')
   );
-  const { items: branchStockList } = useDynamicSelector(
-    BranchStock.getIdentifier('GetAll')
-  );
-  const { items: customerList } = useDynamicSelector(
+  const { items: branchStockList, loading: branchStockLoading } =
+    useDynamicSelector(BranchStock.getIdentifier('GetAll'));
+  const { items: customerList, loading: customerLoading } = useDynamicSelector(
     CustomerApi.getIdentifier('GetAll')
   );
 
@@ -213,7 +209,9 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
   const role = user?.roleItems?.name || user?.usertype || user?.user_role || '';
   const organisationId = user?.organisation_id || user?.org_id;
   const branchId = user?.branch_id;
- {console.log("StockCrudModule",billdata)}
+  {
+    console.log('StockCrudModule', billdata);
+  }
   useEffect(() => {
     if (billdata) {
       form.setFieldsValue({
@@ -232,9 +230,10 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
           price: item.price,
           amount: item.amount,
           product: item.product_id,
-          stock: role === 'BranchAdmin' || role === 'BranchSalesMan' 
-            ? item.branch_stock_id 
-            : item.stock_id,
+          stock:
+            role === 'BranchAdmin' || role === 'BranchSalesMan'
+              ? item.branch_stock_id
+              : item.stock_id,
           loose_qty: item.loose_qty ?? 0,
         })
       );
@@ -369,7 +368,9 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
             name: [
               item.productItems?.name || item.product_name || '',
               item.productItems?.VariantItem?.variant_name || '',
-            ].filter(Boolean).join(' '),
+            ]
+              .filter(Boolean)
+              .join(' '),
             qty: item.qty,
             price: item.price,
             amount: item.amount,
@@ -602,15 +603,22 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
         <BillForm
           customerList={customerList}
           onAddCustomer={() => setCustomerDrawerVisible(true)}
+          customerLoading={customerLoading}
         />
 
         <BillItemsTable
           dataSource={billCalc.itemsWithTax}
           productList={productList}
+          productLoading={productLoading}
           stockAuditList={
             role === 'BranchAdmin' || role === 'BranchSalesMan'
               ? branchStockList
               : stockAuditList
+          }
+          stockLoading={
+            role === 'BranchAdmin' || role === 'BranchSalesMan'
+              ? branchStockLoading
+              : stockLoading
           }
           onAdd={handleAdd}
           onDelete={handleDelete}
@@ -736,15 +744,20 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
           </Button>,
         ]}
         width={800}
-        title={printBill ? `Print Invoice #${printBill.invoice_no}` : 'Print Invoice'}
+        title={
+          printBill ? `Print Invoice #${printBill.invoice_no}` : 'Print Invoice'
+        }
         centered
       >
-        {printBill && (() => {
-          const key = localStorage.getItem('billingTemplate');
-          const selectedTemplate: 'classic' | 'modern' = (key === 'modern' || key === 'classic') ? key : 'classic';
-          const TemplateComponent = billingTemplates[selectedTemplate].component;
-          return <TemplateComponent billData={printBill} />;
-        })()}
+        {printBill &&
+          (() => {
+            const key = localStorage.getItem('billingTemplate');
+            const selectedTemplate: 'classic' | 'modern' =
+              key === 'modern' || key === 'classic' ? key : 'classic';
+            const TemplateComponent =
+              billingTemplates[selectedTemplate].component;
+            return <TemplateComponent billData={printBill} />;
+          })()}
       </Modal>
 
       <style>

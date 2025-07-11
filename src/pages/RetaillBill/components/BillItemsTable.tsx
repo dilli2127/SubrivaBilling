@@ -5,7 +5,9 @@ import { DeleteOutlined } from "@ant-design/icons";
 interface BillItemsTableProps {
   dataSource: any[];
   productList: any;
+  productLoading: boolean;
   stockAuditList: any;
+  stockLoading?: boolean;
   onAdd: () => void;
   onDelete: (key: number) => void;
   onChange: (value: any, key: number, column: string) => void;
@@ -27,7 +29,9 @@ interface BillItemsTableProps {
 const BillItemsTable: React.FC<BillItemsTableProps> = ({
   dataSource,
   productList,
+  productLoading,
   stockAuditList,
+  stockLoading,
   onAdd,
   onDelete,
   onChange,
@@ -183,13 +187,14 @@ const BillItemsTable: React.FC<BillItemsTableProps> = ({
         <span style={{ color: "#1890ff", fontWeight: "bold" }}>Item Name</span>
       ),
       dataIndex: "product",
+       width: 250,
       render: (_: any, record: any, rowIdx: number) => (
         <Select
           ref={rowIdx === 0 ? (el => {
             inputRefs.current[rowIdx][0].current = el;
             if (firstTableCellRef) firstTableCellRef.current = el;
           }) : inputRefs.current[rowIdx][0]}
-          value={record.product}
+          value={productLoading?[]:record.product}
           onChange={(productId) => {
             onChange(productId, record.key, "product");
             onChange(undefined, record.key, "qty");
@@ -208,6 +213,7 @@ const BillItemsTable: React.FC<BillItemsTableProps> = ({
               .indexOf(input.toLowerCase()) >= 0
           }
           dropdownStyle={{ maxHeight: 150, overflowY: "auto" }}
+          loading={productLoading}
         >
           {productList?.result?.map((product: any) => (
             <Select.Option key={product?._id} value={product?._id}>
@@ -233,7 +239,7 @@ const BillItemsTable: React.FC<BillItemsTableProps> = ({
         return (
           <Select
             ref={inputRefs.current?.[rowIdx]?.[1]}
-            value={record.stock}
+            value={stockLoading?[]:record.stock}
             onChange={(value) => onChange(value, record.key, "stock")}
             onKeyDown={handleCellKeyDown(rowIdx, 1)}
             showSearch
@@ -247,10 +253,11 @@ const BillItemsTable: React.FC<BillItemsTableProps> = ({
                 .indexOf(input.toLowerCase()) >= 0
             }
             dropdownStyle={{ maxHeight: 150, overflowY: "auto" }}
+            loading={stockLoading}
           >
             {validStockAudits.map((stockAudit: any) => (
               <Select.Option key={stockAudit?._id} value={stockAudit?._id}>
-                {`B#${stockAudit.batch_no} | AQ: ${stockAudit.available_quantity} | LQ: ${stockAudit.available_loose_quantity} | Exp: ${new Date(stockAudit.expiry_date).toLocaleDateString()}`}
+                {`B#${stockAudit.batch_no} | AQ: ${stockAudit.available_quantity} | LQ: ${stockAudit.available_loose_quantity}`}
               </Select.Option>
             ))}
           </Select>
