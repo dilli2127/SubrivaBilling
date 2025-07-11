@@ -6,6 +6,10 @@ import { Input, Row, Space, Tag, Typography } from "antd";
 const { Text } = Typography;
 const StockAvailable = () => {
   const [searchText, setSearchText] = useState("");
+  const [pagination, setPagination] = useState({
+    current: 1,
+    pageSize: 10,
+  });
   const { StockAvailable } = useApiActions();
   const { items: StockItems, loading: stock_get_loading } = useDynamicSelector(
     StockAvailable.getIdentifier("GetProductStockCount")
@@ -13,9 +17,23 @@ const StockAvailable = () => {
 
   const handleSearch = useCallback((value: string) => {
     setSearchText(value);
+    setPagination({ ...pagination, current: 1 }); // Reset to first page on search
     if(value.length > 2 || value.length === 0)
-    StockAvailable("GetProductStockCount", { searchString: value });
-  }, [StockAvailable]);
+    StockAvailable("GetProductStockCount", { 
+      searchString: value,
+      pageNumber: 1,
+      pageLimit: pagination.pageSize,
+    });
+  }, [StockAvailable, pagination]);
+
+  const handlePaginationChange = (pageNumber: number, pageLimit: number) => {
+    setPagination({ current: pageNumber, pageSize: pageLimit });
+    StockAvailable("GetProductStockCount", {
+      searchString: searchText,
+      pageNumber,
+      pageLimit,
+    });
+  };
 
   const columns = [
     {
@@ -70,8 +88,12 @@ const StockAvailable = () => {
   ];
 
   useEffect(() => {
-    StockAvailable("GetProductStockCount", { searchString: searchText });
-  }, []);
+    StockAvailable("GetProductStockCount", { 
+      searchString: searchText,
+      pageNumber: pagination.current,
+      pageLimit: pagination.pageSize,
+    });
+  }, [StockAvailable]);
 
   return (
     <>
@@ -91,7 +113,9 @@ const StockAvailable = () => {
         data={Array.isArray(StockItems?.result) ? StockItems.result : []}
         rowKey="_id"
         loading={stock_get_loading}
-        pagination={{ pageSize: 10 }}
+        totalCount={StockItems?.pagination?.totalCount || 0}
+        pageLimit={StockItems?.pagination?.pageLimit || 10}
+        onPaginationChange={handlePaginationChange}
       />
     </>
   );

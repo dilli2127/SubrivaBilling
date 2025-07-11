@@ -259,7 +259,7 @@ const BillListPage = () => {
           </Button>
         </Space>
       </div>
-{console.log("SalesRecordList",SalesRecordList)}
+
       <GlobalTable
         data={SalesRecordList?.result}
         columns={columns}
@@ -267,7 +267,7 @@ const BillListPage = () => {
         bordered
         rowKey="_id"
         totalCount={SalesRecordList?.pagination?.totalCount || 0}
-        pageLimit={SalesRecordList?.pagination?.pageLimit || 0}
+        pageLimit={SalesRecordList?.pagination?.pageLimit || 10}
         onPaginationChange={handlePaginationChange}
       />
 

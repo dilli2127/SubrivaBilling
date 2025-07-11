@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Space, Tag, Tooltip, Typography, Row, Input } from 'antd';
 import { useDynamicSelector } from '../../services/redux';
 import { useApiActions } from '../../services/api/useApiActions';
@@ -11,6 +11,31 @@ const BranchStock: React.FC = () => {
   const BranchStock = getEntityApi('BranchStock');
   const { items: BranchStockList, loading: stockAuditLoading } =
     useDynamicSelector(BranchStock.getIdentifier('GetAll'));
+
+  const [pagination, setPagination] = useState({
+    current: 1,
+    pageSize: 10,
+  });
+  const [searchText, setSearchText] = useState("");
+
+  const handlePaginationChange = (pageNumber: number, pageLimit: number) => {
+    setPagination({ current: pageNumber, pageSize: pageLimit });
+    BranchStock('GetAll', {
+      pageNumber,
+      pageLimit,
+      searchString: searchText,
+    });
+  };
+
+  const handleSearch = (value: string) => {
+    setSearchText(value);
+    setPagination({ ...pagination, current: 1 }); // Reset to first page on search
+    BranchStock('GetAll', {
+      pageNumber: 1,
+      pageLimit: pagination.pageSize,
+      searchString: value,
+    });
+  };
 
   const columns = [
     {
@@ -77,8 +102,12 @@ const BranchStock: React.FC = () => {
   ];
 
   useEffect(() => {
-    BranchStock('GetAll');
-  }, []);
+    BranchStock('GetAll', {
+      pageNumber: pagination.current,
+      pageLimit: pagination.pageSize,
+      searchString: searchText,
+    });
+  }, [BranchStock]);
 
   return (
     <>
@@ -87,8 +116,8 @@ const BranchStock: React.FC = () => {
         <div style={{ display: 'flex', gap: '16px' }}>
           <Input
             placeholder={`Search ${'Products'}`}
-            // value={searchText}
-            // onChange={(e) => handleSearch(e.target.value)}
+            value={searchText}
+            onChange={(e) => handleSearch(e.target.value)}
             style={{ width: 300 }}
           />
         </div>
@@ -100,7 +129,9 @@ const BranchStock: React.FC = () => {
         }
         rowKey="_id"
         loading={stockAuditLoading}
-        pagination={{ pageSize: 10 }}
+        totalCount={BranchStockList?.pagination?.totalCount || 0}
+        pageLimit={BranchStockList?.pagination?.pageLimit || 10}
+        onPaginationChange={handlePaginationChange}
       />
     </>
   );

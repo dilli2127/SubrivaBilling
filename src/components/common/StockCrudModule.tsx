@@ -217,7 +217,8 @@ const StockCrudModule = ({
         dataSource={filteredItems}
         rowKey="_id"
         loading={loading}
-        pagination={{ pageSize: 10 }}
+        totalCount={items?.pagination?.totalCount || 0}
+        pageLimit={items?.pagination?.pageLimit || 10}
       />
 
       <GlobalDrawer
