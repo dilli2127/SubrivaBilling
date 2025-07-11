@@ -364,11 +364,10 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
           date: formattedBill.date,
           invoice_no: formattedBill.invoice_no,
           items: (formattedBill.Items || []).map((item: any) => ({
-            name:
-              (item.productItems?.name || item.product_name || item.name || '') +
-              (item.productItems?.VariantItem?.name
-                ? ` (${item.productItems.VariantItem.name})`
-                : ''),
+            name: [
+              item.productItems?.name || item.product_name || '',
+              item.productItems?.VariantItem?.variant_name || '',
+            ].filter(Boolean).join(' '),
             qty: item.qty,
             price: item.price,
             amount: item.amount,

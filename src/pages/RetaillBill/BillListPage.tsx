@@ -89,7 +89,10 @@ const BillListPage = () => {
       date: record.date,
       invoice_no: record.invoice_no,
       items: (record.Items || []).map((item: any) => ({
-        name: item.product_name || item.name || '',
+        name: [
+          item.productItems?.name || item.product_name || '',
+          item.productItems?.VariantItem?.variant_name || '',
+        ].filter(Boolean).join(' '),
         qty: item.qty,
         price: item.price,
         amount: item.amount,
