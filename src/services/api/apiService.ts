@@ -6,6 +6,7 @@ export interface ApiResponse<T> {
     result:any
     message: string;
     data?: T; // Optional, only present on success
+    pagination:{};
 }
 
 export interface ApiRequest {
@@ -81,7 +82,7 @@ class APIService {
             statusCode: response.statusCode,
             message: response.message,
             result: response.result,
-            data: response.data,
+            pagination :response.pagination
         };
     }
 
@@ -109,7 +110,7 @@ class APIService {
             statusCode,
             message: errorMessage,
             result: null,
-            data: null,
+            pagination: {}
         };
     }
 }

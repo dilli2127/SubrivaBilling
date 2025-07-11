@@ -259,7 +259,7 @@ const BillListPage = () => {
           </Button>
         </Space>
       </div>
-
+{console.log("SalesRecordList",SalesRecordList)}
       <GlobalTable
         data={SalesRecordList?.result}
         columns={columns}
