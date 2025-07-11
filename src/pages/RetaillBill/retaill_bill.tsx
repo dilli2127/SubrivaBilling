@@ -8,6 +8,7 @@ import {
   Switch,
   InputNumber,
   Space,
+  Modal,
 } from 'antd';
 import dayjs from 'dayjs';
 import { useApiActions } from '../../services/api/useApiActions';
@@ -30,7 +31,7 @@ const { Title } = Typography;
 
 interface RetailBillingTableProps {
   billdata: any;
-  onSuccess?: () => void;
+  onSuccess?: (formattedBill?: any) => void;
 }
 
 const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
@@ -127,8 +128,7 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
     CustomerApi.getIdentifier('GetAll')
   );
 
-  const [billViewVisible, setBillViewVisible] = useState(false);
-  const [currentBill, setCurrentBill] = useState<any>(null);
+  // Remove BillViewModal and related state
 
   const handleChange = (value: any, key: number, column: string) => {
     const newData = [...dataSource];
@@ -346,67 +346,115 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
     }
   };
 
+  const handleApiResponse = (
+    action: 'create' | 'update' | 'delete',
+    success: boolean,
+    formattedBill?: any
+  ) => {
+    const title = 'Sale';
+    if (success) {
+      message.success(`${title} ${action}d successfully`);
+      if (action === 'create') {
+        form.resetFields();
+        setDataSource([]);
+        // Map the bill for the template
+        const mappedBill = {
+          customerName: formattedBill.customerDetails?.full_name || '',
+          customerAddress: formattedBill.customerDetails?.address || '',
+          date: formattedBill.date,
+          invoice_no: formattedBill.invoice_no,
+          items: (formattedBill.Items || []).map((item: any) => ({
+            name:
+              (item.productItems?.name || item.product_name || item.name || '') +
+              (item.productItems?.VariantItem?.name
+                ? ` (${item.productItems.VariantItem.name})`
+                : ''),
+            qty: item.qty,
+            price: item.price,
+            amount: item.amount,
+          })),
+          total: formattedBill.total_amount || 0,
+        };
+        setPrintBill(mappedBill);
+        setPrintModalVisible(true);
+        onSuccess?.(formattedBill);
+      }
+      if (action === 'update' || action === 'delete') {
+        onSuccess?.(formattedBill);
+      }
+      const actionRoute = getApiRouteSalesRecord(
+        (action.charAt(0).toUpperCase() +
+          action.slice(1)) as keyof typeof API_ROUTES.SalesRecord
+      );
+      dispatch(dynamic_clear(actionRoute.identifier));
+    } else {
+      message.error(`Failed to ${action} ${title}`);
+    }
+  };
+
+  useEffect(() => {
+    ProductsApi('GetAll');
+    CustomerApi('GetAll');
+    InvoiceNumberApi('GetAll');
+  }, [ProductsApi, CustomerApi, InvoiceNumberApi]);
+
   useEffect(() => {
     if (createItems?.statusCode === 200) {
-      handleApiResponse('create', true);
-      if (createItems?.result) {
-        const formattedBill = {
-          ...createItems.result,
-          customerDetails: customerList?.result?.find(
-            (c: any) => c._id === createItems?.result?.customer_id
-          ),
-          Items: billCalc.itemsWithTax.map(item => {
-            const product = productList?.result?.find(
-              (p: any) => p._id === item.product
-            );
-            return {
-              ...item,
-              productItems: {
-                ...product,
-                name: product?.name || '',
-                VariantItem: product?.VariantItem || null,
-              },
-              qty: item.qty || 0,
-              price: item.price || 0,
-              amount: item.amount || 0,
-              loose_qty: item.loose_qty || 0,
-            };
-          }),
-          total_amount: billCalc.total_amount,
-          is_paid: isPaid,
-          is_partially_paid: isPartiallyPaid,
-          paid_amount: isPartiallyPaid
-            ? form.getFieldValue('paid_amount')
-            : isPaid
-              ? billCalc.total_amount
-              : 0,
-        };
-        setCurrentBill(formattedBill);
-        setBillViewVisible(true);
-        InvoiceNumberApi('Create');
-        setTimeout(() => {
-          InvoiceNumberApi('GetAll');
-        }, 500);
-        // Reset form and data after successful submission
-        form.resetFields();
-        setDataSource([
-          {
-            key: 0,
-            name: '',
-            qty: 0,
-            price: 0,
-            amount: 0,
-            product: undefined,
-            stock: undefined,
-            loose_qty: 0,
-          },
-        ]);
-        setCount(1);
-        setIsPaid(true);
-        setIsPartiallyPaid(false);
-        setDiscount(0);
-        setDiscountType('percentage');
-      }
+      const formattedBill = {
+        ...createItems.result,
+        customerDetails: customerList?.result?.find(
+          (c: any) => c._id === createItems?.result?.customer_id
+        ),
+        Items: billCalc.itemsWithTax.map(item => {
+          const product = productList?.result?.find(
+            (p: any) => p._id === item.product
+          );
+          return {
+            ...item,
+            productItems: {
+              ...product,
+              name: product?.name || '',
+              VariantItem: product?.VariantItem || null,
+            },
+            qty: item.qty || 0,
+            price: item.price || 0,
+            amount: item.amount || 0,
+            loose_qty: item.loose_qty || 0,
+          };
+        }),
+        total_amount: billCalc.total_amount,
+        is_paid: isPaid,
+        is_partially_paid: isPartiallyPaid,
+        paid_amount: isPartiallyPaid
+          ? form.getFieldValue('paid_amount')
+          : isPaid
+            ? billCalc.total_amount
+            : 0,
+      };
+      handleApiResponse('create', true, formattedBill);
+      InvoiceNumberApi('Create');
+      setTimeout(() => {
+        InvoiceNumberApi('GetAll');
+      }, 500);
+      // Reset form and data after successful submission
+      form.resetFields();
+      setDataSource([
+        {
+          key: 0,
+          name: '',
+          qty: 0,
+          price: 0,
+          amount: 0,
+          product: undefined,
+          stock: undefined,
+          loose_qty: 0,
+        },
+      ]);
+      setCount(1);
+      setIsPaid(true);
+      setIsPartiallyPaid(false);
+      setDiscount(0);
+      setDiscountType('percentage');
     }
     if (createError) handleApiResponse('create', false);
   }, [createItems, createError]);
@@ -465,36 +513,6 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
     }
   };
 
-  const handleApiResponse = (
-    action: 'create' | 'update' | 'delete',
-    success: boolean
-  ) => {
-    const title = 'Sale';
-    if (success) {
-      message.success(`${title} ${action}d successfully`);
-      if (action === 'create') {
-        form.resetFields();
-        setDataSource([]);
-      }
-      if (action === 'update' || action === 'delete') {
-        onSuccess?.();
-      }
-      const actionRoute = getApiRouteSalesRecord(
-        (action.charAt(0).toUpperCase() +
-          action.slice(1)) as keyof typeof API_ROUTES.SalesRecord
-      );
-      dispatch(dynamic_clear(actionRoute.identifier));
-    } else {
-      message.error(`Failed to ${action} ${title}`);
-    }
-  };
-
-  useEffect(() => {
-    ProductsApi('GetAll');
-    CustomerApi('GetAll');
-    InvoiceNumberApi('GetAll');
-  }, [ProductsApi, CustomerApi, InvoiceNumberApi]);
-
   useEffect(() => {
     if (updateItems?.statusCode === 200) handleApiResponse('update', true);
     if (updateError) handleApiResponse('update', false);
@@ -521,6 +539,9 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
       })) || [],
     total: billdata?.total || 0,
   };
+
+  const [printModalVisible, setPrintModalVisible] = useState(false);
+  const [printBill, setPrintBill] = useState<any>(null);
 
   return (
     <>
@@ -695,19 +716,35 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
         <CustomerCrud />
       </Drawer>
 
-      {currentBill && (
-        <BillViewModal
-          visible={billViewVisible}
-          onClose={() => setBillViewVisible(false)}
-          billData={currentBill}
-        />
-      )}
-
       {/* Floating template selector button (bottom right) */}
       <FloatingTemplateSelector
         selected={selectedTemplate}
         onSelect={handleTemplateSelect}
       />
+
+      {/* Print Modal for Bill Template */}
+      <Modal
+        open={printModalVisible}
+        onCancel={() => setPrintModalVisible(false)}
+        footer={[
+          <Button key="print" type="primary" onClick={() => window.print()}>
+            Print
+          </Button>,
+          <Button key="close" onClick={() => setPrintModalVisible(false)}>
+            Close
+          </Button>,
+        ]}
+        width={800}
+        title={printBill ? `Print Invoice #${printBill.invoice_no}` : 'Print Invoice'}
+        centered
+      >
+        {printBill && (() => {
+          const key = localStorage.getItem('billingTemplate');
+          const selectedTemplate: 'classic' | 'modern' = (key === 'modern' || key === 'classic') ? key : 'classic';
+          const TemplateComponent = billingTemplates[selectedTemplate].component;
+          return <TemplateComponent billData={printBill} />;
+        })()}
+      </Modal>
 
       <style>
         {`
