@@ -9,6 +9,7 @@ const ClassicBillingTemplate: React.FC<ClassicBillingTemplateProps> = ({
   billData,
 }) => {
   const userItem = useUser();
+  console.log("userItem",userItem)
 
   return (
     <div
@@ -26,11 +27,11 @@ const ClassicBillingTemplate: React.FC<ClassicBillingTemplateProps> = ({
       {/* Header */}
       <div style={{ textAlign: 'center', marginBottom: '8px' }}>
         <h3 style={{ margin: '4px 0', fontWeight: 'bold', fontSize: '16px' }}>
-          {userItem?.organisationItems?.org_name || 'SREE LAKSHMI PHARMACY'}
+          {userItem?.organisationItems?.org_name || ''}
         </h3>
         <div style={{ fontSize: '11px', marginBottom: '4px' }}>
           {userItem?.branchItems?.address1 ||
-            'No:18/2, Anna Street, Gandhi Nagar, Chennai-600054'}
+            ''}
         </div>
         <div style={{ fontSize: '11px' }}>
           GSTIN: {userItem?.organisationItems?.gst_number || '33XXXXXXXXXXX'}
