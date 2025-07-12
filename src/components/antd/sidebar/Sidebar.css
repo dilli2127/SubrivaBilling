@@ -88,7 +88,7 @@
 .logo-placeholder {
   width: 40px;
   height: 40px;
-  background: linear-gradient(135deg, #4e54c8 60%, #8f94fb 100%);
+  /* background: linear-gradient(135deg, #4e54c8 60%, #8f94fb 100%); */
   border-radius: 12px;
   display: flex;
   align-items: center;
