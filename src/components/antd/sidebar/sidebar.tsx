@@ -242,6 +242,13 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
     [selectedKey, handleMenuClick]
   );
   console.log('userItem', userItem);
+  // Dynamic greeting based on time
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'Good Morning';
+    if (hour < 18) return 'Good Afternoon';
+    return 'Good Evening';
+  };
   return (
     <Layout style={{ minHeight: '100vh' }}>
       {/* Header */}
@@ -261,22 +268,23 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
               style={{ marginTop: '10px' }}
             />
           </div>
-          <div style={{ textAlign: 'center' }}>
-            <div style={{ fontWeight: 600, color: '#222', fontSize: 16 }}>
-              {userItem?.roleItems?.description}
-            </div>
-            <div style={{ fontWeight: 400, color: '#555', fontSize: 14 }}>
-              {userItem?.branchItems?.branch_name}
-            </div>
+          <div className="description-branch">
+            <div>{userItem?.roleItems?.description}</div>
+            <div>{userItem?.branchItems?.branch_name}</div>
           </div>
         </div>
         <h2 className="header-title">Subriva Billing</h2>
         <div className="header-right">
           {userItem && (
             <>
-              <span className="welcome-text">
-                Welcome, {(userItem.name || userItem.username)?.toUpperCase()}
-              </span>
+              <div>
+                <span className="welcome-mse">{getGreeting()},</span>
+                <span className="welcome-text">
+                  {(userItem.name || userItem.username)?.toUpperCase()}
+                </span>
+                <div className="have-a-nice-day">have a nice day</div>
+              </div>
+
               <span title="Profile">
                 <Avatar
                   className="profile-avatar"
