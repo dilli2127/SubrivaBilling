@@ -13,7 +13,7 @@ export const themePresets = [
       '--profile-avatar': '#4e54c8',
       '--welcome-text': '#4e54c8',
       '--welcome-mse': '#888',
-      '--have-a-nice-day': '#aaa',
+      '--have-a-nice-day': 'rgb(203, 55, 244) ',
       '--description-branch': '#444',
     },
     previewColor: '#4e54c8',

@@ -249,6 +249,17 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
     if (hour < 18) return 'Good Afternoon';
     return 'Good Evening';
   };
+  // Motivational messages
+  const messages = [
+    "🚀 Let's make today amazing!",
+    "💡 Remember: Small steps = Big results.",
+    "🔥 Stay positive, work hard, make it happen!",
+    "🎯 Focus and win the day.",
+    "🌟 Welcome back! Ready to shine?",
+  ];
+  function getRandomMessage() {
+    return messages[Math.floor(Math.random() * messages.length)];
+  }
   return (
     <Layout style={{ minHeight: '100vh' }}>
       {/* Header */}
@@ -282,7 +293,7 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
                 <span className="welcome-text">
                   {(userItem.name || userItem.username)?.toUpperCase()}
                 </span>
-                <div className="have-a-nice-day">have a nice day</div>
+                <div className="have-a-nice-day">{getRandomMessage()}</div>
               </div>
 
               <span title="Profile">
