@@ -241,7 +241,7 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
       ),
     [selectedKey, handleMenuClick]
   );
-console.log("userItem",userItem)
+  console.log('userItem', userItem);
   return (
     <Layout style={{ minHeight: '100vh' }}>
       {/* Header */}
@@ -261,8 +261,13 @@ console.log("userItem",userItem)
               style={{ marginTop: '10px' }}
             />
           </div>
-          <div>
-            {userItem?.branchItems?.branch_name}
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontWeight: 600, color: '#222', fontSize: 16 }}>
+              {userItem?.roleItems?.description}
+            </div>
+            <div style={{ fontWeight: 400, color: '#555', fontSize: 14 }}>
+              {userItem?.branchItems?.branch_name}
+            </div>
           </div>
         </div>
         <h2 className="header-title">Subriva Billing</h2>

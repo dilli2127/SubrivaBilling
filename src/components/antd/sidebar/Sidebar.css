@@ -325,3 +325,7 @@ body.dark-mode .ant-table-wrapper .ant-table-footer {
 body.dark-mode .ant-select-selection-placeholder {
   color: #fff !important;
 }
+
+.ant-layout-header {
+  line-height: normal !important;
+}
