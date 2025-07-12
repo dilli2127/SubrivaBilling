@@ -241,12 +241,18 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
       ),
     [selectedKey, handleMenuClick]
   );
-
+console.log("userItem",userItem)
   return (
     <Layout style={{ minHeight: '100vh' }}>
       {/* Header */}
       <Header className="custom-header">
         <div className="header-left">
+          <Button
+            type="text"
+            icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+            onClick={() => setCollapsed(!collapsed)}
+            className="sidebar-toggle-btn"
+          />
           <div className="logo-placeholder">
             <img
               src={require('../../../assets/img/ffslogo.png')}
@@ -255,12 +261,9 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
               style={{ marginTop: '10px' }}
             />
           </div>
-          <Button
-            type="text"
-            icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-            onClick={() => setCollapsed(!collapsed)}
-            className="sidebar-toggle-btn"
-          />
+          <div>
+            {userItem?.branchItems?.branch_name}
+          </div>
         </div>
         <h2 className="header-title">Subriva Billing</h2>
         <div className="header-right">
