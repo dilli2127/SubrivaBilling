@@ -94,22 +94,31 @@ const ModernBillingTemplate: React.FC<ModernBillingTemplateProps> = ({
         }}
       >
         <thead>
-          <tr style={{ backgroundColor: '#f4f4f4', textAlign: 'left' }}>
-            <th style={thStyle}>S.No</th>
-            <th style={thStyle}>Item</th>
-            <th style={thStyle}>Qty</th>
-            <th style={thStyle}>Price</th>
-            <th style={thStyle}>Amount</th>
+          <tr style={{ background: 'rgba(255,255,255,0.08)' }}>
+            <th style={{ padding: 10, textAlign: 'left' }}>Item</th>
+            <th style={{ padding: 10, textAlign: 'right' }}>Qty</th>
+            <th style={{ padding: 10, textAlign: 'right' }}>Price</th>
+            <th style={{ padding: 10, textAlign: 'right' }}>MRP</th>
+            <th style={{ padding: 10, textAlign: 'right' }}>Amount</th>
           </tr>
         </thead>
         <tbody>
           {billData?.items?.map((item: any, idx: number) => (
-            <tr key={idx}>
-              <td style={tdStyle}>{idx + 1}</td>
-              <td style={tdStyle}>{item.name}</td>
-              <td style={tdStyle}>{item.qty}</td>
-              <td style={tdStyle}>₹{item.price}</td>
-              <td style={tdStyle}>₹{item.amount}</td>
+            <tr
+              key={idx}
+              style={{ borderBottom: '1px solid rgba(255,255,255,0.10)' }}
+            >
+              <td style={{ padding: 10 }}>{item.name}</td>
+              <td style={{ padding: 10, textAlign: 'right' }}>{item.qty}</td>
+              <td style={{ padding: 10, textAlign: 'right' }}>
+                {item.price}
+              </td>
+              <td style={{ padding: 10, textAlign: 'right' }}>
+                {item.mrp || item.price}
+              </td>
+              <td style={{ padding: 10, textAlign: 'right' }}>
+                {item.amount}
+              </td>
             </tr>
           ))}
         </tbody>

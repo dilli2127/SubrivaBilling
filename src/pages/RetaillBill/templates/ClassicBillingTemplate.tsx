@@ -9,7 +9,6 @@ const ClassicBillingTemplate: React.FC<ClassicBillingTemplateProps> = ({
   billData,
 }) => {
   const userItem = useUser();
-  console.log("userItem",userItem)
 
   return (
     <div
@@ -79,6 +78,7 @@ const ClassicBillingTemplate: React.FC<ClassicBillingTemplateProps> = ({
             <th style={tableHeaderStyle}>Item</th>
             <th style={tableHeaderStyle}>Qty</th>
             <th style={tableHeaderStyle}>Rate</th>
+            <th style={tableHeaderStyle}>MRP</th>
             <th style={tableHeaderStyle}>Amt</th>
           </tr>
         </thead>
@@ -93,6 +93,7 @@ const ClassicBillingTemplate: React.FC<ClassicBillingTemplateProps> = ({
               </td>
               <td style={tableCellStyle}>{item.qty}</td>
               <td style={tableCellStyle}>₹{item.price}</td>
+              <td style={tableCellStyle}>₹{item.mrp || item.price}</td>
               <td style={tableCellStyle}>₹{item.amount}</td>
             </tr>
           ))}

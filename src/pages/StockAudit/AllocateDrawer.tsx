@@ -31,7 +31,6 @@ const AllocateDrawer: React.FC<AllocateDrawerProps> = ({
       // Optionally set initial values from record if needed
     }
   }, [open, form, record]);
-
   return (
     <GlobalDrawer
       title="Allocate Stock"

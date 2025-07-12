@@ -97,6 +97,7 @@ const StockAuditCrud: React.FC = () => {
       product: allocateRecord.ProductItem?._id,
       batch_no: allocateRecord.batch_no,
       mfg_date: allocateRecord.mfg_date,
+      mrp:allocateRecord.mrp,
       expiry_date: allocateRecord.expiry_date,
       invoice_id:allocateRecord.invoice_id,
       sell_price:allocateRecord.sell_price,

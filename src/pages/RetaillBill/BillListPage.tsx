@@ -95,6 +95,7 @@ const BillListPage = () => {
         ].filter(Boolean).join(' '),
         qty: item.qty,
         price: item.price,
+        mrp:item.mrp,
         amount: item.amount,
       })),
       total: record.total_amount || 0,

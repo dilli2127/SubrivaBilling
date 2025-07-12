@@ -280,23 +280,4 @@ export const stockAuditColumns = ({ onAllocate, onRevert, onStockout }: { onAllo
       );
     },
   },
-];
-
-// Action handlers - these will be implemented in the parent component
-export const handleAllocate = (record: any) => {
-  console.log("Allocate clicked for record:", record);
-  // TODO: Implement allocate logic
-  // This could open a modal to select allocation details
-};
-
-export const handleRevert = (record: any) => {
-  console.log("Revert clicked for record:", record);
-  // TODO: Implement revert logic
-  // This could revert the last changes for this record
-};
-
-export const handleStockout = (record: any) => {
-  console.log("Stockout clicked for record:", record);
-  // TODO: Implement stockout logic
-  // This could mark the item as out of stock
-}; 
+]; 

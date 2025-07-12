@@ -74,6 +74,19 @@ export const getStockAuditFormItems = (
     ),
   },
   {
+    label: "MRP (per unit)",
+    name: "mrp",
+    rules: [{ required: true, message: "Enter buying price!" }],
+    component: (
+      <InputNumber
+        min={0}
+        step={0.01}
+        placeholder="₹0.00"
+        style={{ width: "100%" }}
+      />
+    ),
+  },
+  {
     label: "Total Cost",
     name: "total_cost",
     rules: [],

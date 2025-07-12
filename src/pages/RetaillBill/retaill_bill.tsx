@@ -59,6 +59,7 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
     loose_qty: number;
     _id?: string;
     tax_percentage?: number;
+    mrp?: number;
   }
 
   const [dataSource, setDataSource] = useState<DataSourceItem[]>([
@@ -182,6 +183,7 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
         item.stock = value;
         const stock = getSelectedStock();
         item.price = stock?.sell_price || 0;
+        item.mrp = stock?.mrp || stock?.sell_price || 0;
         item.amount = calculateAmount();
         break;
 
@@ -225,6 +227,7 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
           name: '',
           qty: item.qty ?? 0,
           price: item.price,
+          mrp: item.mrp || item.price,
           amount: item.amount,
           product: item.product_id,
           stock:
@@ -303,6 +306,7 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
         qty: item.qty,
         loose_qty: item.loose_qty,
         price: item.price,
+        mrp:item.mrp,
         amount: item.amount,
         _id: item._id,
         tax_percentage: item.tax_percentage,
@@ -355,23 +359,25 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
       if (action === 'create') {
         form.resetFields();
         setDataSource([]);
-        // Map the bill for the template
         const mappedBill = {
           customerName: formattedBill.customerDetails?.full_name || '',
           customerAddress: formattedBill.customerDetails?.address || '',
           date: formattedBill.date,
           invoice_no: formattedBill.invoice_no,
-          items: (formattedBill.Items || []).map((item: any) => ({
-            name: [
-              item.productItems?.name || item.product_name || '',
-              item.productItems?.VariantItem?.variant_name || '',
-            ]
-              .filter(Boolean)
-              .join(' '),
-            qty: item.qty,
-            price: item.price,
-            amount: item.amount,
-          })),
+          items: (formattedBill.Items || []).map((item: any) => {
+            return {
+              name: [
+                item.productItems?.name || item.product_name || '',
+                item.productItems?.VariantItem?.variant_name || '',
+              ]
+                .filter(Boolean)
+                .join(' '),
+              qty: item.qty,
+              price: item.price,
+              mrp: item.mrp,
+              amount: item.amount,
+            };
+          }),
           total: formattedBill.total_amount || 0,
         };
         setPrintBill(mappedBill);
@@ -522,22 +528,6 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
       form.setFieldsValue({ invoice_no: invoice_no_auto_generated });
     }
   }, [invoice_no_auto_generated, billdata, form]);
-
-  // Prepare billData for template (map your billdata to the template format)
-  const billDataForTemplate = {
-    customerName: billdata?.customer?.name || '',
-    customerAddress: billdata?.customer?.address || '',
-    date: billdata?.date || '',
-    invoice_no: billdata?.invoice_no || '',
-    items:
-      billdata?.Items?.map((item: any) => ({
-        name: item.product_name || '',
-        qty: item.qty,
-        price: item.price,
-        amount: item.amount,
-      })) || [],
-    total: billdata?.total || 0,
-  };
 
   const [printModalVisible, setPrintModalVisible] = useState(false);
   const [printBill, setPrintBill] = useState<any>(null);
