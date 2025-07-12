@@ -1,4 +1,11 @@
-import React, { ReactNode, useState, useMemo, useCallback, useRef, useLayoutEffect } from 'react';
+import React, {
+  ReactNode,
+  useState,
+  useMemo,
+  useCallback,
+  useRef,
+  useLayoutEffect,
+} from 'react';
 import {
   LogoutOutlined,
   MenuFoldOutlined,
@@ -72,12 +79,14 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const navigate = useNavigate();
   const [theme, setTheme] = useState(getInitialTheme());
-  const [themePopoverVisible, setThemePopoverVisible] = useState(false);
   const [themeDrawerOpen, setThemeDrawerOpen] = useState(false);
-  
+
   // Use custom hooks for better storage management
   const [sidebarBg, setSidebarBg] = useSessionStorage('sidebarBg', '');
-  const [sidebarPosition, setSidebarPosition] = useSessionStorage('sidebarPosition', 'left');
+  const [sidebarPosition, setSidebarPosition] = useSessionStorage(
+    'sidebarPosition',
+    'left'
+  );
 
   // Draggable button state
   const [buttonTop, setButtonTop] = useState(20); // percentage
@@ -130,28 +139,34 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
   }, [navigate]);
 
   // Draggable button handlers
-  const handleMouseDown = useCallback((e: React.MouseEvent) => {
-    e.preventDefault();
-    setIsDragging(true);
-    setDragStartY(e.clientY);
-    setDragStartTop(buttonTop);
-  }, [buttonTop]);
+  const handleMouseDown = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      setIsDragging(true);
+      setDragStartY(e.clientY);
+      setDragStartTop(buttonTop);
+    },
+    [buttonTop]
+  );
 
-  const handleMouseMove = useCallback((e: MouseEvent) => {
-    if (!isDragging) return;
-    
-    const deltaY = e.clientY - dragStartY;
-    const windowHeight = window.innerHeight;
-    const buttonHeight = 44; // Approximate button height
-    const maxTop = windowHeight - buttonHeight;
-    
-    // Convert percentage to pixels for calculation
-    const currentTopPx = (dragStartTop / 100) * windowHeight;
-    const newTopPx = Math.max(0, Math.min(maxTop, currentTopPx + deltaY));
-    const newTopPercent = (newTopPx / windowHeight) * 100;
-    
-    setButtonTop(newTopPercent);
-  }, [isDragging, dragStartY, dragStartTop]);
+  const handleMouseMove = useCallback(
+    (e: MouseEvent) => {
+      if (!isDragging) return;
+
+      const deltaY = e.clientY - dragStartY;
+      const windowHeight = window.innerHeight;
+      const buttonHeight = 44; // Approximate button height
+      const maxTop = windowHeight - buttonHeight;
+
+      // Convert percentage to pixels for calculation
+      const currentTopPx = (dragStartTop / 100) * windowHeight;
+      const newTopPx = Math.max(0, Math.min(maxTop, currentTopPx + deltaY));
+      const newTopPercent = (newTopPx / windowHeight) * 100;
+
+      setButtonTop(newTopPercent);
+    },
+    [isDragging, dragStartY, dragStartTop]
+  );
 
   const handleMouseUp = useCallback(() => {
     setIsDragging(false);
@@ -162,7 +177,7 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
     if (isDragging) {
       document.addEventListener('mousemove', handleMouseMove);
       document.addEventListener('mouseup', handleMouseUp);
-      
+
       return () => {
         document.removeEventListener('mousemove', handleMouseMove);
         document.removeEventListener('mouseup', handleMouseUp);
@@ -192,37 +207,40 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
   }, [allowedKeys]);
 
   // Memoize renderMenuItems
-  const renderMenuItems = useCallback((items: any[]) =>
-    items.map(item =>
-      item.children ? (
-        <Menu.SubMenu
-          key={item.key}
-          icon={item.icon}
-          title={item.label}
-          popupClassName="custom-submenu-popup"
-        >
-          {item.children.map((child: any) => (
-            <Menu.Item
-              key={child.key}
-              icon={child.icon}
-              onClick={() => handleMenuClick(child.key, child.path)}
-              className={`custom-subitem ${selectedKey === child.key ? 'active' : ''}`}
-            >
-              {child.label}
-            </Menu.Item>
-          ))}
-        </Menu.SubMenu>
-      ) : (
-        <Menu.Item
-          key={item.key}
-          icon={item.icon}
-          onClick={() => handleMenuClick(item.key, item.path)}
-          className={`custom-menuitem ${selectedKey === item.key ? 'active' : ''}`}
-        >
-          {item.label}
-        </Menu.Item>
-      )
-    ), [selectedKey, handleMenuClick]);
+  const renderMenuItems = useCallback(
+    (items: any[]) =>
+      items.map(item =>
+        item.children ? (
+          <Menu.SubMenu
+            key={item.key}
+            icon={item.icon}
+            title={item.label}
+            popupClassName="custom-submenu-popup"
+          >
+            {item.children.map((child: any) => (
+              <Menu.Item
+                key={child.key}
+                icon={child.icon}
+                onClick={() => handleMenuClick(child.key, child.path)}
+                className={`custom-subitem ${selectedKey === child.key ? 'active' : ''}`}
+              >
+                {child.label}
+              </Menu.Item>
+            ))}
+          </Menu.SubMenu>
+        ) : (
+          <Menu.Item
+            key={item.key}
+            icon={item.icon}
+            onClick={() => handleMenuClick(item.key, item.path)}
+            className={`custom-menuitem ${selectedKey === item.key ? 'active' : ''}`}
+          >
+            {item.label}
+          </Menu.Item>
+        )
+      ),
+    [selectedKey, handleMenuClick]
+  );
 
   return (
     <Layout style={{ minHeight: '100vh' }}>
