@@ -7,9 +7,15 @@ const { Option } = Select;
 interface BillFormProps {
   customerList: any;
   onAddCustomer: () => void;
+  customerLoading?: boolean;
+  invoiceLoading?: boolean;
 }
 
-const BillForm: React.FC<BillFormProps> = ({ customerList, onAddCustomer }) => {
+const BillForm: React.FC<BillFormProps> = ({
+  customerList,
+  onAddCustomer,
+  customerLoading,
+}) => {
   return (
     <>
       <Row gutter={16} style={{ marginBottom: 24 }}>
@@ -20,7 +26,7 @@ const BillForm: React.FC<BillFormProps> = ({ customerList, onAddCustomer }) => {
             initialValue={dayjs()}
             style={{ marginBottom: 0 }}
           >
-            <DatePicker disabled style={{ width: "100%" }} />
+            <DatePicker disabled style={{ width: '100%' }} />
           </Form.Item>
         </Col>
 
@@ -28,12 +34,12 @@ const BillForm: React.FC<BillFormProps> = ({ customerList, onAddCustomer }) => {
           <Form.Item
             label="Invoice Number"
             name="invoice_no"
-            rules={[{ required: true, message: "Invoice number is required" }]}
+            rules={[{ required: true, message: 'Invoice number is required' }]}
             style={{ marginBottom: 0 }}
           >
             <Input
               placeholder="Enter invoice number"
-              style={{ borderColor: "#1890ff" }}
+              style={{ borderColor: '#1890ff' }}
             />
           </Form.Item>
         </Col>
@@ -45,25 +51,26 @@ const BillForm: React.FC<BillFormProps> = ({ customerList, onAddCustomer }) => {
             label="Customer"
             name="customer"
             style={{ marginBottom: 0 }}
-            rules={[{ required: true, message: "Please select a customer" }]}
+            rules={[{ required: true, message: 'Please select a customer' }]}
           >
             <Select
               placeholder="Select Customer"
               showSearch
               allowClear
-              style={{ width: "100%", borderColor: "#1890ff" }}
+              style={{ width: '100%', borderColor: '#1890ff' }}
               optionFilterProp="children"
-              dropdownRender={(menu) => (
+              loading={customerLoading}
+              dropdownRender={menu => (
                 <>
                   {menu}
                   <div
                     style={{
-                      display: "flex",
-                      justifyContent: "center",
+                      display: 'flex',
+                      justifyContent: 'center',
                       padding: 8,
-                      cursor: "pointer",
-                      color: "#1890ff",
-                      borderTop: "1px solid #f0f0f0",
+                      cursor: 'pointer',
+                      color: '#1890ff',
+                      borderTop: '1px solid #f0f0f0',
                     }}
                     onClick={onAddCustomer}
                   >
@@ -87,7 +94,7 @@ const BillForm: React.FC<BillFormProps> = ({ customerList, onAddCustomer }) => {
             name="payment_mode"
             style={{ marginBottom: 0 }}
           >
-            <Select style={{ borderColor: "#1890ff" }}>
+            <Select style={{ borderColor: '#1890ff' }}>
               <Option value="cash">Cash</Option>
               <Option value="upi">UPI</Option>
               <Option value="card">Card</Option>
@@ -99,4 +106,4 @@ const BillForm: React.FC<BillFormProps> = ({ customerList, onAddCustomer }) => {
   );
 };
 
-export default BillForm; 
+export default BillForm;

@@ -113,3 +113,15 @@ export interface PaginatedResponse<T> {
   limit: number;
   totalPages: number;
 } 
+
+export interface StockAuditList<T>{
+  _id: string;
+  batch_no: string;
+  category_name: string;
+  ProductItem?: {
+    name?: string;
+    VariantItem?: {
+      variant_name?: string;
+    };
+  };
+};

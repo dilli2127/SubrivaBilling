@@ -11,6 +11,7 @@ interface ApiResponseHandlerParams {
   resetForm?: () => void;
   dispatch?: (arg: any) => void;
   identifier?: string;
+  shouldClear?: boolean;
 }
 
 export const handleApiResponse = ({
@@ -21,12 +22,13 @@ export const handleApiResponse = ({
   resetForm,
   dispatch,
   identifier,
+  shouldClear = true,
 }: ApiResponseHandlerParams) => {
   if (success) {
     showToast("success", `${title} ${action}d successfully`);
     getAllItems?.();
     resetForm?.();
-    if (dispatch && identifier) {
+    if (shouldClear && dispatch && identifier) {
       dispatch(dynamic_clear(identifier));
     }
   } else {

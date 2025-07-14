@@ -1,5 +1,5 @@
 import React from "react";
-import { Select, InputNumber } from "antd";
+import { Select, InputNumber, Input } from "antd";
 
 const { Option } = Select;
 
@@ -31,5 +31,11 @@ export const allocateDrawerFormItems = (
     label: "Quantity",
     rules: [{ required: true, message: "Please enter quantity" }],
     component: <InputNumber min={1} style={{ width: "100%" }} />,
+  },
+  {
+    label: "Note",
+    name: "note",
+    rules: [],
+    component: <Input.TextArea rows={3} placeholder="Optional notes" />,
   },
 ]; 

@@ -8,6 +8,7 @@ import {
   Form,
   Input,
   Tooltip,
+  Modal,
 } from "antd";
 import {
   EyeOutlined,
@@ -29,20 +30,18 @@ import RetailBillingTable from "./retaill_bill";
 import BillViewModal from "./components/BillViewModal";
 import GlobalTable from "../../components/antd/GlobalTable";
 import { useHandleApiResponse } from "../../components/common/useHandleApiResponse";
+import { useDispatch } from "react-redux";
+import { dynamic_clear } from "../../services/redux";
+import { billingTemplates } from './templates/registry';
 
 const { Title } = Typography;
 
 const BillListPage = () => {
   const { getEntityApi } = useApiActions();
   const SalesRecord = getEntityApi("SalesRecord");
-  const handleApi = useHandleApiResponse();
   const { items: SalesRecordList, loading } = useDynamicSelector(
     SalesRecord.getIdentifier("GetAll")
   );
-  const { items: deleteItems, loading: deleteLoading } = useDynamicSelector(
-    SalesRecord.getIdentifier("GetAll")
-  );
-
   const [selectedBill, setSelectedBill] = useState<any>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [billViewVisible, setBillViewVisible] = useState(false);
@@ -52,28 +51,24 @@ const BillListPage = () => {
     current: 1,
     pageSize: 10,
   });
+  const [printModalVisible, setPrintModalVisible] = useState(false);
+  const [printBill, setPrintBill] = useState<any>(null);
+
+  const dispatch = useDispatch();
+
+  useHandleApiResponse({
+    action: "delete",
+    title: "Sale",
+    identifier: SalesRecord.getIdentifier("Delete"),
+    entityApi: SalesRecord,
+  });
 
   const handleDelete = async (id: string) => {
     try {
       await SalesRecord("Delete", {}, id);
-      const success = deleteItems?.statusCode === 200;
-      handleApi({
-        action: "delete",
-        success,
-        title: "Sale",
-        getAllItems: () =>
-          SalesRecord("GetAll", {
-            pageNumber: pagination.current,
-            pageLimit: pagination.pageSize,
-          }),
-        identifier: SalesRecord.getIdentifier("Delete"),
-      });
+      // You can add extra logic here if needed (e.g., refresh list, close modal)
     } catch (error) {
-      handleApi({
-        action: "delete",
-        success: false,
-        title: "Sale",
-      });
+      // Optionally handle error here if needed, but notification is handled by the hook
     }
   };
 
@@ -87,12 +82,30 @@ const BillListPage = () => {
   };
 
   const handlePrint = (record: any) => {
-    const formattedBill = {
-      ...record,
+    // Map the sales record to the template's expected format
+    const billData = {
+      customerName: record.customerDetails?.full_name || '',
+      customerAddress: record.customerDetails?.address || '',
+      date: record.date,
+      invoice_no: record.invoice_no,
+      items: (record.Items || []).map((item: any) => ({
+        name: [
+          item.productItems?.name || item.product_name || '',
+          item.productItems?.VariantItem?.variant_name || '',
+        ].filter(Boolean).join(' '),
+        qty: item.qty,
+        price: item.price,
+        mrp:item.mrp,
+        amount: item.amount,
+      })),
+      total: record.total_amount || 0,
+      total_gst: record.total_gst || 0,
+      discount: record.discount || 0,
+      discount_type: record.discount_type || '',
+      gst_number: record.gst_number || record.organisationItems?.gst_number || '',
     };
-
-    setSelectedBill(formattedBill);
-    setBillViewVisible(true);
+    setPrintBill(billData);
+    setPrintModalVisible(true);
   };
 
   const handleSearch = (value: string) => {
@@ -259,7 +272,7 @@ const BillListPage = () => {
         bordered
         rowKey="_id"
         totalCount={SalesRecordList?.pagination?.totalCount || 0}
-        pageLimit={SalesRecordList?.pagination?.pageLimit || 0}
+        pageLimit={SalesRecordList?.pagination?.pageLimit || 10}
         onPaginationChange={handlePaginationChange}
       />
 
@@ -285,6 +298,30 @@ const BillListPage = () => {
           billData={selectedBill}
         />
       )}
+
+      {/* Print Modal for Bill Template */}
+      <Modal
+        open={printModalVisible}
+        onCancel={() => setPrintModalVisible(false)}
+        footer={[
+          <Button key="print" type="primary" onClick={() => window.print()}>
+            Print
+          </Button>,
+          <Button key="close" onClick={() => setPrintModalVisible(false)}>
+            Close
+          </Button>,
+        ]}
+        width={800}
+        title={printBill ? `Print Invoice #${printBill.invoice_no}` : 'Print Invoice'}
+        centered
+      >
+        {printBill && (() => {
+          const key = localStorage.getItem('billingTemplate');
+          const selectedTemplate: 'classic' | 'modern' = (key === 'modern' || key === 'classic') ? key : 'classic';
+          const TemplateComponent = billingTemplates[selectedTemplate].component;
+          return <TemplateComponent billData={printBill} />;
+        })()}
+      </Modal>
     </div>
   );
 };

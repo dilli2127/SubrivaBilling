@@ -8,6 +8,7 @@ interface StockOutDrawerProps {
   onClose: () => void;
   onSubmit: (values: any) => void;
   record: any;
+  loading?: boolean;
 }
 
 const StockOutDrawer: React.FC<StockOutDrawerProps> = ({
@@ -15,6 +16,7 @@ const StockOutDrawer: React.FC<StockOutDrawerProps> = ({
   onClose,
   onSubmit,
   record,
+  loading = false,
 }) => {
   const [form] = Form.useForm();
   const formItems = stockOutDrawerFormItems(record);
@@ -45,7 +47,7 @@ const StockOutDrawer: React.FC<StockOutDrawerProps> = ({
           </Form.Item>
         ))}
         <Form.Item>
-          <Button type="primary" htmlType="submit" block>
+          <Button type="primary" htmlType="submit" block loading={loading} disabled={loading}>
             Stockout
           </Button>
         </Form.Item>

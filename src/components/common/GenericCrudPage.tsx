@@ -39,7 +39,7 @@ export type CustomButtonConfig = {
 // Add type definitions for columns and formItems
 export interface CrudColumn {
   title: string;
-  dataIndex?: string;
+  dataIndex?: any;
   key: string;
   render?: (value: any, record: any) => React.ReactNode;
 }
@@ -97,6 +97,7 @@ export const GenericCrudPage = <T extends BaseEntity>({
   const {
     loading,
     items,
+    pagination,
     drawerVisible,
     initialValues,
     form,
@@ -105,6 +106,7 @@ export const GenericCrudPage = <T extends BaseEntity>({
     handleDrawerOpen,
     resetForm,
     handleSubmit,
+    handlePaginationChange,
     columns,
     formItems,
     formColumns = 2,
@@ -221,6 +223,9 @@ export const GenericCrudPage = <T extends BaseEntity>({
         data={items}
         loading={loading}
         rowKeyField="_id"
+        totalCount={pagination?.totalCount || 0}
+        pageLimit={pagination?.pageLimit || 10}
+        onPaginationChange={handlePaginationChange}
       />
 
       <GlobalDrawer

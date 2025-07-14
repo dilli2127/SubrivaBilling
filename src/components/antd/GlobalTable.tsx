@@ -23,6 +23,12 @@ function GlobalTable<T extends object>({
   pageLimit,
   ...rest
 }: GlobalTableProps<T>) {
+  const handleTableChange = (page: number, pageSize: number) => {
+    if (onPaginationChange) {
+      onPaginationChange(page, pageSize);
+    }
+  };
+
   return (
     <div className="custom-table-container">
       <Table
@@ -35,7 +41,7 @@ function GlobalTable<T extends object>({
           total: totalCount,
           showSizeChanger: true,
           showTotal: (total) => `Total ${total} items`,
-          onChange: onPaginationChange
+          onChange: handleTableChange
         }}
         className="custom-table"
         {...rest}

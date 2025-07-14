@@ -10,6 +10,7 @@ interface RevertDrawerProps {
   record: any;
   branchList: any;
   branchLoading: boolean;
+  loading:boolean
 }
 
 const RevertDrawer: React.FC<RevertDrawerProps> = ({
@@ -19,6 +20,7 @@ const RevertDrawer: React.FC<RevertDrawerProps> = ({
   record,
   branchList,
   branchLoading,
+  loading
 }) => {
   const [form] = Form.useForm();
   const formItems = revertDrawerFormItems(branchList, branchLoading, record);
@@ -43,7 +45,7 @@ const RevertDrawer: React.FC<RevertDrawerProps> = ({
           </Form.Item>
         ))}
         <Form.Item>
-          <Button type="primary" htmlType="submit" block>
+          <Button type="primary" htmlType="submit" block loading={loading} disabled={loading}>
             Revert
           </Button>
         </Form.Item>

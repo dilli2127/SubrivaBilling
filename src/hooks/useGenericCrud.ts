@@ -32,6 +32,10 @@ export const useGenericCrud = <T extends BaseEntity>(config: CrudConfig<T>) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [initialValues, setInitialValues] = useState<Partial<T>>({});
   const [filterValues, setFilterValues] = useState<Record<string, any>>({});
+  const [pagination, setPagination] = useState({
+    current: 1,
+    pageSize: 10,
+  });
 
   // Selectors
   const { loading, items } = useDynamicSelector(
@@ -57,13 +61,18 @@ export const useGenericCrud = <T extends BaseEntity>(config: CrudConfig<T>) => {
 
   // CRUD operations
   const getAll = useCallback(() => {
+    const apiData = {
+      ...filterValues,
+      pageNumber: pagination.current,
+      pageLimit: pagination.pageSize,
+    };
     callApi(
       config.apiRoutes.get.method,
       config.apiRoutes.get.endpoint,
-      filterValues,
+      apiData,
       config.apiRoutes.get.identifier
     );
-  }, [callApi, config.apiRoutes.get, filterValues]);
+  }, [callApi, config.apiRoutes.get, filterValues, pagination]);
 
   const create = useCallback(
     (data: Partial<T>) => {
@@ -100,12 +109,18 @@ export const useGenericCrud = <T extends BaseEntity>(config: CrudConfig<T>) => {
     },
     [callApi, config.apiRoutes.delete]
   );
+
+  const handlePaginationChange = useCallback((pageNumber: number, pageLimit: number) => {
+    setPagination({ current: pageNumber, pageSize: pageLimit });
+  }, []);
+
   function isStrictDate(value: string): boolean {
     // Only matches real ISO-like date formats (YYYY-MM-DD or with time)
     return /^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|[+-]\d{2}:\d{2})?)?$/.test(
       value
     );
   }
+
   // Event handlers
   const handleEdit = useCallback((record: T) => {
     const newRecord: any = {};
@@ -228,6 +243,7 @@ export const useGenericCrud = <T extends BaseEntity>(config: CrudConfig<T>) => {
     // State
     loading,
     items: items?.result,
+    pagination: items?.pagination,
     drawerVisible,
     initialValues,
     form,
@@ -240,6 +256,7 @@ export const useGenericCrud = <T extends BaseEntity>(config: CrudConfig<T>) => {
     handleDrawerOpen,
     resetForm,
     handleSubmit,
+    handlePaginationChange,
 
     // Config
     ...config,

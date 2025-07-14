@@ -30,7 +30,7 @@ export const revertDrawerFormItems = (
   {
     name: "available_stock",
     label: "Available Stock",
-    rules: [{ required: true, message: "Please enter available stock" }],
+    rules: [{ required: false, message: "Please enter available stock" }],
     component: (
       <InputNumber
         min={1}

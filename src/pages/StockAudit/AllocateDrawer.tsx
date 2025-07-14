@@ -1,7 +1,7 @@
-import React, { useEffect } from "react";
-import { Form, Button } from "antd";
-import GlobalDrawer from "../../components/antd/GlobalDrawer";
-import { allocateDrawerFormItems } from "./AllocateDrawerFormItems";
+import React, { useEffect } from 'react';
+import { Form, Button } from 'antd';
+import GlobalDrawer from '../../components/antd/GlobalDrawer';
+import { allocateDrawerFormItems } from './AllocateDrawerFormItems';
 
 interface AllocateDrawerProps {
   open: boolean;
@@ -10,6 +10,7 @@ interface AllocateDrawerProps {
   record: any;
   branchList: any;
   branchLoading: boolean;
+  createLoading?: boolean;
 }
 
 const AllocateDrawer: React.FC<AllocateDrawerProps> = ({
@@ -19,6 +20,7 @@ const AllocateDrawer: React.FC<AllocateDrawerProps> = ({
   record,
   branchList,
   branchLoading,
+  createLoading = false,
 }) => {
   const [form] = Form.useForm();
   const formItems = allocateDrawerFormItems(branchList, branchLoading);
@@ -29,7 +31,6 @@ const AllocateDrawer: React.FC<AllocateDrawerProps> = ({
       // Optionally set initial values from record if needed
     }
   }, [open, form, record]);
-
   return (
     <GlobalDrawer
       title="Allocate Stock"
@@ -37,14 +38,30 @@ const AllocateDrawer: React.FC<AllocateDrawerProps> = ({
       onClose={onClose}
       width={400}
     >
-      <Form form={form} layout="vertical" onFinish={onSubmit} initialValues={{}}>
+      <Form
+        form={form}
+        layout="vertical"
+        onFinish={onSubmit}
+        initialValues={{}}
+      >
         {formItems.map(item => (
-          <Form.Item key={item.name} name={item.name} label={item.label} rules={item.rules}>
+          <Form.Item
+            key={item.name}
+            name={item.name}
+            label={item.label}
+            rules={item.rules}
+          >
             {item.component}
           </Form.Item>
         ))}
         <Form.Item>
-          <Button type="primary" htmlType="submit" block>
+          <Button
+            type="primary"
+            htmlType="submit"
+            block
+            disabled={createLoading}
+            loading={createLoading}
+          >
             Allocate
           </Button>
         </Form.Item>
@@ -53,4 +70,4 @@ const AllocateDrawer: React.FC<AllocateDrawerProps> = ({
   );
 };
 
-export default AllocateDrawer; 
+export default AllocateDrawer;

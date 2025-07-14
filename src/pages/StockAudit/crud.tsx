@@ -1,15 +1,15 @@
-import React, { useEffect, useState } from "react";
-import { Form, message } from "antd";
-import { useApiActions } from "../../services/api/useApiActions";
-import { useDynamicSelector } from "../../services/redux";
-import { GenericCrudPage } from "../../components/common/GenericCrudPage";
-import { getEntityApiRoutes } from "../../helpers/CrudFactory";
-import { stockAuditColumns } from "./columns";
-import { getStockAuditFormItems } from "./formItems";
-import AllocateDrawer from "./AllocateDrawer";
-import RevertDrawer from "./RevertDrawer";
-import StockOutDrawer from "./StockOutDrawer";
-import { useHandleApiResponse } from "../../components/common/useHandleApiResponse";
+import React, { useEffect, useState } from 'react';
+import { Form, message } from 'antd';
+import { useApiActions } from '../../services/api/useApiActions';
+import { useDynamicSelector } from '../../services/redux';
+import { GenericCrudPage } from '../../components/common/GenericCrudPage';
+import { getEntityApiRoutes } from '../../helpers/CrudFactory';
+import { stockAuditColumns } from './columns';
+import { getStockAuditFormItems } from './formItems';
+import AllocateDrawer from './AllocateDrawer';
+import RevertDrawer from './RevertDrawer';
+import StockOutDrawer from './StockOutDrawer';
+import { useHandleApiResponse } from '../../components/common/useHandleApiResponse';
 
 const StockAuditCrud: React.FC = () => {
   const [form] = Form.useForm();
@@ -20,41 +20,69 @@ const StockAuditCrud: React.FC = () => {
   const [stockoutDrawerOpen, setStockoutDrawerOpen] = useState(false);
   const [stockoutRecord, setStockoutRecord] = useState<any>(null);
 
-  const { getEntityApi } = useApiActions();
-  const ProductsApi = getEntityApi("Product");
-  const VendorApi = getEntityApi("Vendor");
-  const WarehouseApi = getEntityApi("Warehouse");
-  const BranchApi = getEntityApi("Braches");
-  const BranchStock = getEntityApi("BranchStock");
+  const { getEntityApi, StockRevertFromBranch } = useApiActions();
+  const ProductsApi = getEntityApi('Product');
+  const VendorApi = getEntityApi('Vendor');
+  const WarehouseApi = getEntityApi('Warehouse');
+  const BranchApi = getEntityApi('Braches');
+  const BranchStock = getEntityApi('BranchStock');
+  const StockAudit = getEntityApi('StockAudit');
+  const StockOut = getEntityApi('StockOut');
 
   const { items: productList, loading } = useDynamicSelector(
-    ProductsApi.getIdentifier("GetAll")
+    ProductsApi.getIdentifier('GetAll')
   );
   const { items: vendorList, loading: vendorloading } = useDynamicSelector(
-    VendorApi.getIdentifier("GetAll")
+    VendorApi.getIdentifier('GetAll')
   );
   const { items: wareHouseList, loading: wareHouseLoading } =
-    useDynamicSelector(WarehouseApi.getIdentifier("GetAll"));
+    useDynamicSelector(WarehouseApi.getIdentifier('GetAll'));
   const { items: branchList, loading: branchLoading } = useDynamicSelector(
-    BranchApi.getIdentifier("GetAll")
+    BranchApi.getIdentifier('GetAll')
+  );
+  const { loading: createLoading } = useDynamicSelector(
+    BranchStock.getIdentifier('Create')
+  );
+  const { loading: stockoutLoading } = useDynamicSelector(
+    StockOut.getIdentifier('Create')
+  );
+  const { loading: revertLoading } = useDynamicSelector(
+    StockRevertFromBranch.getIdentifier('RevertStock')
   );
 
-  const handleApi = useHandleApiResponse();
-
   useEffect(() => {
-    const qty = form.getFieldValue("quantity");
-    const price = form.getFieldValue("buy_price");
+    const qty = form.getFieldValue('quantity');
+    const price = form.getFieldValue('buy_price');
     if (qty && price) {
       form.setFieldsValue({ total_cost: qty * price });
     }
-  }, [form, form.getFieldValue("quantity"), form.getFieldValue("buy_price")]);
+  }, [form, form.getFieldValue('quantity'), form.getFieldValue('buy_price')]);
 
   useEffect(() => {
-    ProductsApi("GetAll");
-    VendorApi("GetAll");
-    WarehouseApi("GetAll");
-    BranchApi("GetAll");
+    ProductsApi('GetAll');
+    VendorApi('GetAll');
+    WarehouseApi('GetAll');
+    BranchApi('GetAll');
   }, [ProductsApi, VendorApi, WarehouseApi, BranchApi]);
+
+  useHandleApiResponse({
+    action: 'create',
+    title: 'Stock allocation',
+    identifier: BranchStock.getIdentifier('Create'),
+    entityApi: StockAudit,
+  });
+  useHandleApiResponse({
+    action: 'update',
+    title: 'Stock updated',
+    identifier: StockRevertFromBranch.getIdentifier('RevertStock'),
+    entityApi: StockAudit,
+  });
+  useHandleApiResponse({
+    action: 'create',
+    title: 'Stock Out',
+    identifier: StockOut.getIdentifier('Create'),
+    entityApi: StockAudit,
+  });
 
   // Handler to open allocate drawer
   const handleAllocate = (record: any) => {
@@ -63,12 +91,18 @@ const StockAuditCrud: React.FC = () => {
   };
 
   const handleAllocateSubmit = async (values: any) => {
-    await BranchStock({ ...values, stock_audit_id: allocateRecord._id })
-    handleApi({
-      action: "create",
-      success: true,
-      title: "Stock allocation",
-      identifier: BranchStock.getIdentifier("Create"),
+    await BranchStock('Create', {
+      ...values,
+      stock_audit_id: allocateRecord._id,
+      product: allocateRecord.ProductItem?._id,
+      batch_no: allocateRecord.batch_no,
+      mfg_date: allocateRecord.mfg_date,
+      mrp:allocateRecord.mrp,
+      expiry_date: allocateRecord.expiry_date,
+      invoice_id:allocateRecord.invoice_id,
+      sell_price:allocateRecord.sell_price,
+      available_loose_quantity: allocateRecord.available_loose_quantity,
+      available_quantity: allocateRecord.available_quantity,
     });
     setAllocateDrawerOpen(false);
     setAllocateRecord(null);
@@ -82,13 +116,9 @@ const StockAuditCrud: React.FC = () => {
 
   // Handler for revert submit
   const handleRevertSubmit = async (values: any) => {
-    // Here you would call your revert API
-    // Example: await revertStock({ ...values, stock_audit_id: revertRecord._id })
-    handleApi({
-      action: "update",
-      success: true,
-      title: "Stock revert",
-      identifier: BranchStock.getIdentifier("Update"),
+    await StockRevertFromBranch('RevertStock', {
+      ...values,
+      stock_audit_id: revertRecord._id,
     });
     setRevertDrawerOpen(false);
     setRevertRecord(null);
@@ -102,21 +132,21 @@ const StockAuditCrud: React.FC = () => {
 
   // Handler for stockout submit
   const handleStockoutSubmit = async (values: any) => {
-    // Here you would call your stockout API
-    // Example: await stockoutStock({ ...values, stock_audit_id: stockoutRecord._id })
-    handleApi({
-      action: "update",
-      success: true,
-      title: "Stock out",
-      identifier: BranchStock.getIdentifier("Update"),
+    await StockOut('Create', {
+      ...values,
+      stock_audit_id: stockoutRecord._id,
     });
     setStockoutDrawerOpen(false);
     setStockoutRecord(null);
   };
 
   const stockAuditConfig = {
-    title: "Stock Audit",
-    columns: stockAuditColumns({ onAllocate: handleAllocate, onRevert: handleRevert, onStockout: handleStockout }),
+    title: 'Stock Audit',
+    columns: stockAuditColumns({
+      onAllocate: handleAllocate,
+      onRevert: handleRevert,
+      onStockout: handleStockout,
+    }),
     formItems: getStockAuditFormItems(
       productList,
       vendorList,
@@ -125,7 +155,7 @@ const StockAuditCrud: React.FC = () => {
       vendorloading,
       wareHouseLoading
     ),
-    apiRoutes: getEntityApiRoutes("StockAudit"),
+    apiRoutes: getEntityApiRoutes('StockAudit'),
     formColumns: 2,
   };
 
@@ -139,6 +169,7 @@ const StockAuditCrud: React.FC = () => {
         record={allocateRecord}
         branchList={branchList}
         branchLoading={branchLoading}
+        createLoading={createLoading}
       />
       <RevertDrawer
         open={revertDrawerOpen}
@@ -147,12 +178,14 @@ const StockAuditCrud: React.FC = () => {
         record={revertRecord}
         branchList={branchList}
         branchLoading={branchLoading}
+        loading={revertLoading}
       />
       <StockOutDrawer
         open={stockoutDrawerOpen}
         onClose={() => setStockoutDrawerOpen(false)}
         onSubmit={handleStockoutSubmit}
         record={stockoutRecord}
+        loading={stockoutLoading}
       />
     </>
   );

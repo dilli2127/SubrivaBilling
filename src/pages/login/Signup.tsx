@@ -15,7 +15,6 @@ const Signup: React.FC = () => {
   const { loading, items } = useDynamicSelector(
     API_ROUTES.Signup.Create.identifier
   );
-  console.log(items);
   const callBackServer = useCallback(
     (variables: ApiRequest, key: string) => {
       dispatch(dynamic_request(variables, key));

@@ -7,6 +7,7 @@ import Signup from "../pages/login/Signup";
 import Dashboard from "../pages/Dashboard";
 import Loader from "../components/common/Loader";
 import BillingLogin from "../pages/login/billing_login";
+import BranchStock from "../pages/BranchStock/crud";
 const ProductCrud = lazy(() => import("../pages/Products/crud"));
 const UnitCrud = lazy(() => import("../pages/Unit/crud"));
 const CategoryCrud = lazy(() => import("../pages/Category/crud"));
@@ -26,6 +27,7 @@ const BrachesCrud = lazy(() => import("../pages/Branches/crud"));
 const SalesAccountCrud = lazy(() => import("../pages/UserAccount/crud"));
 const RolesCrud = lazy(() => import("../pages/Roles/crud"));
 const TenantAccount = lazy(() => import("../pages/TentantAccount/crud"));
+const BranchStockAvailable = lazy(() => import("../pages/BranchProductStocks/List"));
 
 
 const routerData: RouteConfig[] = [
@@ -289,6 +291,26 @@ const routerData: RouteConfig[] = [
         element: (
           <Suspense fallback={<Loader />}>
             <TenantAccount />
+          </Suspense>
+        ),
+        children: [],
+      },
+      {
+        key: "branchstock",
+        path: "branch_stock",
+        element: (
+          <Suspense fallback={<Loader />}>
+            <BranchStock />
+          </Suspense>
+        ),
+        children: [],
+      },
+      {
+        key: "branch_stock_available",
+        path: "branch_stock_available",
+        element: (
+          <Suspense fallback={<Loader />}>
+            <BranchStockAvailable />
           </Suspense>
         ),
         children: [],

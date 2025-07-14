@@ -4,31 +4,31 @@ import { useDynamicSelector } from "../../services/redux";
 import GlobalTable from "../../components/antd/GlobalTable";
 import { Input, Row, Space, Tag, Typography } from "antd";
 const { Text } = Typography;
-const StockAvailable = () => {
+const BranchStockAvailable = () => {
   const [searchText, setSearchText] = useState("");
   const [pagination, setPagination] = useState({
     current: 1,
     pageSize: 10,
   });
-  const { StockAvailable } = useApiActions();
+  const { BranchStockAvailable } = useApiActions();
   const { items: StockItems, loading: stock_get_loading } = useDynamicSelector(
-    StockAvailable.getIdentifier("GetProductStockCount")
+    BranchStockAvailable.getIdentifier("GetBranchStockCount")
   );
 
   const handleSearch = useCallback((value: string) => {
     setSearchText(value);
     setPagination({ ...pagination, current: 1 }); // Reset to first page on search
     if(value.length > 2 || value.length === 0)
-    StockAvailable("GetProductStockCount", { 
-      searchString: value,
-      pageNumber: 1,
-      pageLimit: pagination.pageSize,
-    });
-  }, [StockAvailable, pagination]);
+      BranchStockAvailable("GetBranchStockCount", { 
+        searchString: value,
+        pageNumber: 1,
+        pageLimit: pagination.pageSize,
+      });
+  }, [BranchStockAvailable, pagination]);
 
   const handlePaginationChange = (pageNumber: number, pageLimit: number) => {
     setPagination({ current: pageNumber, pageSize: pageLimit });
-    StockAvailable("GetProductStockCount", {
+    BranchStockAvailable("GetBranchStockCount", {
       searchString: searchText,
       pageNumber,
       pageLimit,
@@ -88,17 +88,17 @@ const StockAvailable = () => {
   ];
 
   useEffect(() => {
-    StockAvailable("GetProductStockCount", { 
+    BranchStockAvailable("GetBranchStockCount", { 
       searchString: searchText,
       pageNumber: pagination.current,
       pageLimit: pagination.pageSize,
     });
-  }, [StockAvailable]);
+  }, [BranchStockAvailable]);
 
   return (
     <>
       <Row justify="space-between" align="middle" style={{ marginBottom: 16 }}>
-        <h1>{"Product Stocks"}</h1>
+        <h1>{"Branch Available Stocks"}</h1>
         <div style={{ display: "flex", gap: "16px" }}>
           <Input
             placeholder={`Search ${"Products"}`}
@@ -121,4 +121,4 @@ const StockAvailable = () => {
   );
 };
 
-export default memo(StockAvailable);
+export default memo(BranchStockAvailable);
