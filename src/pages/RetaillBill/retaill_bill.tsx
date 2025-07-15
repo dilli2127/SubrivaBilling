@@ -133,7 +133,7 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
     if (!item) return;
 
     const getSelectedStock = () => {
-      if (role === 'BranchAdmin' || role === 'BranchSalesMan') {
+      if (branchId) {
         return branchStockList?.result?.find((s: any) => s._id === item.stock);
       }
       return stockAuditList?.result?.find((s: any) => s._id === item.stock);
@@ -230,10 +230,7 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
           mrp: item.mrp || item.price,
           amount: item.amount,
           product: item.product_id,
-          stock:
-            role === 'BranchAdmin' || role === 'BranchSalesMan'
-              ? item.branch_stock_id
-              : item.stock_id,
+          stock: branchId ? item.branch_stock_id : item.stock_id,
           loose_qty: item.loose_qty ?? 0,
         })
       );
@@ -244,10 +241,8 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
       if (transformedItems.length > 0) {
         const productIds = transformedItems.map((item: any) => item.product);
         // Fetch stock based on role
-        if (role === 'OrganisationAdmin') {
-          StockAuditApi('GetAll', { products: productIds });
-        } else if (role === 'BranchAdmin' || role === 'BranchSalesMan') {
-          BranchStock('GetAll', { products: productIds });
+        if (branchId) {
+          BranchStock('GetAll', { product: productIds });
         } else {
           StockAuditApi('GetAll', { products: productIds });
         }
@@ -287,7 +282,7 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
       // Default values
       let branch_stock_id = undefined;
       let stock_id = undefined;
-      if (role === 'BranchAdmin' || role === 'BranchSalesMan') {
+      if (branchId) {
         branch_stock_id = item.stock;
         // Find the branch stock record to get its stock_audit_id
         const branchStock = branchStockList?.result?.find(
@@ -306,7 +301,7 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
         qty: item.qty,
         loose_qty: item.loose_qty,
         price: item.price,
-        mrp:item.mrp,
+        mrp: item.mrp,
         amount: item.amount,
         _id: item._id,
         tax_percentage: item.tax_percentage,
@@ -597,23 +592,13 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
           dataSource={billCalc.itemsWithTax}
           productList={productList}
           productLoading={productLoading}
-          stockAuditList={
-            role === 'BranchAdmin' || role === 'BranchSalesMan'
-              ? branchStockList
-              : stockAuditList
-          }
-          stockLoading={
-            role === 'BranchAdmin' || role === 'BranchSalesMan'
-              ? branchStockLoading
-              : stockLoading
-          }
+          stockAuditList={branchId ? branchStockList : stockAuditList}
+          stockLoading={branchId ? branchStockLoading : stockLoading}
           onAdd={handleAdd}
           onDelete={handleDelete}
           onChange={handleChange}
           onStockAuditFetch={productId => {
-            if (role === 'OrganisationAdmin') {
-              StockAuditApi('GetAll', { product: productId });
-            } else if (role === 'BranchAdmin' || role === 'BranchSalesMan') {
+            if (branchId) {
               BranchStock('GetAll', { product: productId });
             } else {
               StockAuditApi('GetAll', { product: productId });
