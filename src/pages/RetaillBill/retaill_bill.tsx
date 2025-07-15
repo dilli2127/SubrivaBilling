@@ -103,7 +103,7 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
     localStorage.setItem('billingTemplate', key);
   };
 
-  const { items: createItems, error: createError } = useDynamicSelector(
+  const { items: createItems, error: createError,loading:saleCreateLoading } = useDynamicSelector(
     getApiRouteSalesRecord('Create').identifier
   );
 
@@ -670,6 +670,7 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
           <Button
             type="primary"
             htmlType="submit"
+            loading={saleCreateLoading}
             style={{
               backgroundColor: '#1890ff',
               borderColor: '#1890ff',
