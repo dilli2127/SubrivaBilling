@@ -256,6 +256,7 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
     "🔥 Stay positive, work hard, make it happen!",
     "🎯 Focus and win the day.",
     "🌟 Welcome back! Ready to shine?",
+    "Unlike the stomach, the brain doesn't alert when it's empty"
   ];
   function getRandomMessage() {
     return messages[Math.floor(Math.random() * messages.length)];
