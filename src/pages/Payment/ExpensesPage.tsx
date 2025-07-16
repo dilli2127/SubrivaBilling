@@ -1,6 +1,6 @@
 import React from "react";
 import { GenericCrudPage } from "../../components/common/GenericCrudPage";
-import { DatePicker, Input, InputNumber, Select } from "antd";
+import { DatePicker, Input, InputNumber, Select, Tag, Tooltip } from "antd";
 import { Option } from "antd/es/mentions";
 import {
   CalendarOutlined,
@@ -9,6 +9,7 @@ import {
   TagsOutlined,
 } from "@ant-design/icons";
 import { getEntityApiRoutes } from "../../helpers/CrudFactory";
+import dayjs from "dayjs";
 
 const ExpensesCrud = () => {
   const formItems = [
@@ -74,13 +75,60 @@ const ExpensesCrud = () => {
     },
   ];
   const columns = [
-    { title: "Title", dataIndex: "title", key: "title" },
-    { title: "Category", dataIndex: "category", key: "category" },
-    { title: "Date", dataIndex: "date", key: "date" },
-    { title: "Amount", dataIndex: "amount", key: "amount" },
-     { title: "Notes", dataIndex: "notes", key: "notes" },
+    {
+      title: "Title",
+      dataIndex: "title",
+      key: "title",
+      render: (text: string) => (
+        <div style={{ fontWeight: 600, display: "flex", alignItems: "center", gap: "8px" }}>
+          <FileTextOutlined style={{ color: "#1890ff" }} />
+          {text}
+        </div>
+      ),
+    },
+    {
+      title: "Category",
+      dataIndex: "category",
+      key: "category",
+      render: (category: string) => (
+        <Tag color={category === "Income" ? "green" : "volcano"}>{category}</Tag>
+      ),
+    },
+    {
+      title: "Date",
+      dataIndex: "date",
+      key: "date",
+      render: (date: string) => (
+        <span>
+          <CalendarOutlined style={{ color: "#faad14", marginRight: 4 }} />
+          {dayjs(date).format("DD MMM YYYY")}
+        </span>
+      ),
+    },
+    {
+      title: "Amount",
+      dataIndex: "amount",
+      key: "amount",
+      render: (amount: number) => (
+        <span style={{ fontWeight: 500 }}>
+          <DollarOutlined style={{ color: "#52c41a", marginRight: 4 }} />
+          ₹{amount.toLocaleString("en-IN")}
+        </span>
+      ),
+    },
+    {
+      title: "Notes",
+      dataIndex: "notes",
+      key: "notes",
+      render: (notes: string) => (
+        <Tooltip title={notes}>
+          <span style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 150, display: "inline-block" }}>
+            {notes}
+          </span>
+        </Tooltip>
+      ),
+    },
   ];
-
   const apiRoutes = getEntityApiRoutes("Expenses");
 
   const config = {
