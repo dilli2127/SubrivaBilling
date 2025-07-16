@@ -25,6 +25,7 @@ export const useHandleApiResponse = ({
     if (!loading && (result || error)) {
       const success = !!(result && result.statusCode === 200);
 
+      // Pass error or result to handleApiResponse for custom error message
       handleApiResponse({
         action,
         title,
@@ -32,6 +33,8 @@ export const useHandleApiResponse = ({
         success,
         dispatch: resolvedDispatch,
         shouldClear: false,
+        // Add errorMessage prop for custom error message
+        errorMessage: (!success && (result?.message || error?.message)) || undefined,
       });
 
       // Automatically call GetAll after success

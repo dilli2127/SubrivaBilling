@@ -24,6 +24,7 @@ import BillItemsTable from './components/BillItemsTable';
 import PaymentStatus from './components/PaymentStatus';
 import { billingTemplates, BillingTemplateKey } from './templates/registry';
 import FloatingTemplateSelector from './FloatingTemplateSelector';
+import { useHandleApiResponse } from '../../components/common/useHandleApiResponse';
 
 const { Title } = Typography;
 
@@ -391,7 +392,12 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
       message.error(`Failed to ${action} ${title}`);
     }
   };
-
+  useHandleApiResponse({
+    action: 'create',
+    title: 'Sale',
+    identifier: SalesRecord.getIdentifier('Create'),
+    entityApi: SalesRecord,
+  });
   useEffect(() => {
     ProductsApi('GetAll');
     CustomerApi('GetAll');

@@ -12,6 +12,7 @@ interface ApiResponseHandlerParams {
   dispatch?: (arg: any) => void;
   identifier?: string;
   shouldClear?: boolean;
+  errorMessage?: string;
 }
 
 export const handleApiResponse = ({
@@ -23,6 +24,7 @@ export const handleApiResponse = ({
   dispatch,
   identifier,
   shouldClear = true,
+  errorMessage,
 }: ApiResponseHandlerParams) => {
   if (success) {
     showToast("success", `${title} ${action}d successfully`);
@@ -32,6 +34,6 @@ export const handleApiResponse = ({
       dispatch(dynamic_clear(identifier));
     }
   } else {
-    showToast("error", `Failed to ${action} ${title}`);
+    showToast("error", errorMessage || `Failed to ${action} ${title}`);
   }
 };
