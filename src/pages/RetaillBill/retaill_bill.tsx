@@ -344,58 +344,22 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
     }
   };
 
-  const handleApiResponse = (
-    action: 'create' | 'update' | 'delete',
-    success: boolean,
-    formattedBill?: any
-  ) => {
-    const title = 'Sale';
-    if (success) {
-      message.success(`${title} ${action}d successfully`);
-      if (action === 'create') {
-        form.resetFields();
-        setDataSource([]);
-        const mappedBill = {
-          customerName: formattedBill.customerDetails?.full_name || '',
-          customerAddress: formattedBill.customerDetails?.address || '',
-          date: formattedBill.date,
-          invoice_no: formattedBill.invoice_no,
-          items: (formattedBill.Items || []).map((item: any) => {
-            return {
-              name: [
-                item.productItems?.name || item.product_name || '',
-                item.productItems?.VariantItem?.variant_name || '',
-              ]
-                .filter(Boolean)
-                .join(' '),
-              qty: item.qty,
-              price: item.price,
-              mrp: item.mrp,
-              amount: item.amount,
-            };
-          }),
-          total: formattedBill.total_amount || 0,
-        };
-        setPrintBill(mappedBill);
-        setPrintModalVisible(true);
-        onSuccess?.(formattedBill);
-      }
-      if (action === 'update' || action === 'delete') {
-        onSuccess?.(formattedBill);
-      }
-      const actionRoute = getApiRouteSalesRecord(
-        (action.charAt(0).toUpperCase() +
-          action.slice(1)) as keyof typeof API_ROUTES.SalesRecord
-      );
-      dispatch(dynamic_clear(actionRoute.identifier));
-    } else {
-      message.error(`Failed to ${action} ${title}`);
-    }
-  };
   useHandleApiResponse({
     action: 'create',
     title: 'Sale',
     identifier: SalesRecord.getIdentifier('Create'),
+    // entityApi: SalesRecord,
+  });
+  useHandleApiResponse({
+    action: 'update',
+    title: 'Sale',
+    identifier: SalesRecord.getIdentifier('Update'),
+    entityApi: SalesRecord,
+  });
+  useHandleApiResponse({
+    action: 'delete',
+    title: 'Sale',
+    identifier: SalesRecord.getIdentifier('Delete'),
     entityApi: SalesRecord,
   });
   useEffect(() => {
@@ -437,7 +401,31 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
             ? billCalc.total_amount
             : 0,
       };
-      handleApiResponse('create', true, formattedBill);
+      // Map for print modal
+      const mappedBill = {
+        customerName: formattedBill.customerDetails?.full_name || '',
+        customerAddress: formattedBill.customerDetails?.address || '',
+        date: formattedBill.date,
+        invoice_no: formattedBill.invoice_no,
+        items: (formattedBill.Items || []).map((item: any) => {
+          return {
+            name: [
+              item.productItems?.name || item.product_name || '',
+              item.productItems?.VariantItem?.variant_name || '',
+            ]
+              .filter(Boolean)
+              .join(' '),
+            qty: item.qty,
+            price: item.price,
+            mrp: item.mrp,
+            amount: item.amount,
+          };
+        }),
+        total: formattedBill.total_amount || 0,
+      };
+      setPrintBill(mappedBill);
+      setPrintModalVisible(true);
+      onSuccess?.(formattedBill);
       InvoiceNumberApi('Create');
       setTimeout(() => {
         InvoiceNumberApi('GetAll');
@@ -462,8 +450,8 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
       setDiscount(0);
       setDiscountType('percentage');
     }
-    if (createError) handleApiResponse('create', false);
-  }, [createItems, createError]);
+    if (createError) onSuccess?.(null);
+  }, [createItems, createError, onSuccess, form, billCalc.total_amount, isPaid, isPartiallyPaid]);
 
   const validateRows = () => {
     for (const item of dataSource) {
@@ -509,20 +497,20 @@ const RetailBillingTable: React.FC<RetailBillingTableProps> = ({
     try {
       if (billdata) {
         await SalesRecord('Delete', { id: billdata._id });
-        handleApiResponse('delete', true);
+        onSuccess?.(null);
       }
       const newData = dataSource.filter(item => item.key !== key);
       setDataSource(newData);
     } catch (error) {
       console.error('Delete failed:', error);
-      handleApiResponse('delete', false);
+      onSuccess?.(null);
     }
   };
 
   useEffect(() => {
-    if (updateItems?.statusCode === 200) handleApiResponse('update', true);
-    if (updateError) handleApiResponse('update', false);
-  }, [updateItems, updateError]);
+    if (updateItems?.statusCode === 200) onSuccess?.(null);
+    if (updateError) onSuccess?.(null);
+  }, [updateItems, updateError, onSuccess]);
 
   useEffect(() => {
     if (invoice_no_auto_generated && !billdata) {
