@@ -9,6 +9,7 @@ import { getStockAuditFormItems } from './formItems';
 import AllocateDrawer from './AllocateDrawer';
 import RevertDrawer from './RevertDrawer';
 import StockOutDrawer from './StockOutDrawer';
+import StorageAllocateDrawer from './StorageAllocateDrawer';
 import { useHandleApiResponse } from '../../components/common/useHandleApiResponse';
 
 const StockAuditCrud: React.FC = () => {
@@ -19,6 +20,8 @@ const StockAuditCrud: React.FC = () => {
   const [revertRecord, setRevertRecord] = useState<any>(null);
   const [stockoutDrawerOpen, setStockoutDrawerOpen] = useState(false);
   const [stockoutRecord, setStockoutRecord] = useState<any>(null);
+  const [storageAllocateDrawerOpen, setStorageAllocateDrawerOpen] = useState(false);
+  const [storageAllocateRecord, setStorageAllocateRecord] = useState<any>(null);
 
   const { getEntityApi, StockRevertFromBranch } = useApiActions();
   const ProductsApi = getEntityApi('Product');
@@ -28,6 +31,8 @@ const StockAuditCrud: React.FC = () => {
   const BranchStock = getEntityApi('BranchStock');
   const StockAudit = getEntityApi('StockAudit');
   const StockOut = getEntityApi('StockOut');
+  const RackApi = getEntityApi('Rack');
+  const StockStorageApi = getEntityApi('StockStorage');
 
   const { items: productList, loading } = useDynamicSelector(
     ProductsApi.getIdentifier('GetAll')
@@ -39,6 +44,9 @@ const StockAuditCrud: React.FC = () => {
     useDynamicSelector(WarehouseApi.getIdentifier('GetAll'));
   const { items: branchList, loading: branchLoading } = useDynamicSelector(
     BranchApi.getIdentifier('GetAll')
+  );
+  const { items: rackList, loading: rackLoading } = useDynamicSelector(
+    RackApi.getIdentifier('GetAll')
   );
   const { loading: createLoading } = useDynamicSelector(
     BranchStock.getIdentifier('Create')
@@ -63,7 +71,8 @@ const StockAuditCrud: React.FC = () => {
     VendorApi('GetAll');
     WarehouseApi('GetAll');
     BranchApi('GetAll');
-  }, [ProductsApi, VendorApi, WarehouseApi, BranchApi]);
+    RackApi('GetAll');
+  }, [ProductsApi, VendorApi, WarehouseApi, BranchApi, RackApi]);
 
   useHandleApiResponse({
     action: 'create',
@@ -140,12 +149,34 @@ const StockAuditCrud: React.FC = () => {
     setStockoutRecord(null);
   };
 
+  // Handler to open storage allocate drawer
+  const handleStorageAllocate = (record: any) => {
+    setStorageAllocateRecord(record);
+    setStorageAllocateDrawerOpen(true);
+  };
+
+  // Handler for storage allocate submit
+  const handleStorageAllocateSubmit = async (values: any) => {
+    try {
+      await StockStorageApi('Create', {
+        ...values,
+        stock_audit_id: storageAllocateRecord?._id,
+      });
+      message.success('Storage allocated successfully');
+    } catch (error) {
+      message.error('Failed to allocate storage');
+    }
+    setStorageAllocateDrawerOpen(false);
+    setStorageAllocateRecord(null);
+  };
+
   const stockAuditConfig = {
     title: 'Stock Audit',
     columns: stockAuditColumns({
       onAllocate: handleAllocate,
       onRevert: handleRevert,
       onStockout: handleStockout,
+      onStorageAllocate: handleStorageAllocate,
     }),
     formItems: getStockAuditFormItems(
       productList,
@@ -186,6 +217,15 @@ const StockAuditCrud: React.FC = () => {
         onSubmit={handleStockoutSubmit}
         record={stockoutRecord}
         loading={stockoutLoading}
+      />
+      <StorageAllocateDrawer
+        open={storageAllocateDrawerOpen}
+        onClose={() => setStorageAllocateDrawerOpen(false)}
+        onSubmit={handleStorageAllocateSubmit}
+        record={storageAllocateRecord}
+        rackList={rackList}
+        rackLoading={rackLoading}
+        createLoading={createLoading}
       />
     </>
   );

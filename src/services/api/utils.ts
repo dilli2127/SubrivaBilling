@@ -173,4 +173,5 @@ export const API_ROUTES = {
   BillingUsers: createCrudRoutes("/billing_users", "BillingUsers"),
   Tenant: createCrudRoutes("/tenant_accounts", "TenantAccounts"),
   BranchStock: createCrudRoutes("/branch_stock", "BranchStock"),
+  StockStorage: createCrudRoutes("/stock_storage", "StockStorage"),
 };
