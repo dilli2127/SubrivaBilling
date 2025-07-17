@@ -82,6 +82,12 @@ export const menuItems = [
         icon: <DatabaseOutlined />,
         path: '/branch_stock_available',
       },
+      {
+        key: 'storage-stock-list',
+        label: 'Storage Stock List',
+        icon: <DatabaseOutlined />,
+        path: '/storage_stock_list',
+      },
     ],
   },
   {
