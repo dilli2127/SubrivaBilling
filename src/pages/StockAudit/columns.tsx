@@ -90,22 +90,6 @@ export const stockAuditColumns = ({
     ),
   },
   {
-    title: 'Quantity',
-    dataIndex: 'quantity',
-    key: 'quantity',
-    render: (qty: number) => (
-      <Tag color="green">
-        <AppstoreAddOutlined /> {qty}
-      </Tag>
-    ),
-  },
-  {
-    title: 'Available Qty',
-    dataIndex: 'available_quantity',
-    key: 'available_quantity',
-    render: (qty: number) => <Tag color={qty > 0 ? 'green' : 'red'}>{qty}</Tag>,
-  },
-  {
     title: 'Buy Price',
     dataIndex: 'buy_price',
     key: 'buy_price',
@@ -192,6 +176,28 @@ export const stockAuditColumns = ({
         {status}
       </Tag>
     ),
+  },
+  {
+    title: 'Quantity',
+    dataIndex: 'quantity',
+    key: 'quantity',
+    render: (qty: number) => (
+      <Tag color="green">
+        <AppstoreAddOutlined /> {qty}
+      </Tag>
+    ),
+  },
+  {
+    title: 'Available Qty',
+    dataIndex: 'available_quantity',
+    key: 'available_quantity',
+    render: (qty: number) => <Tag color={qty > 0 ? 'green' : 'red'}>{qty}</Tag>,
+  },
+  {
+    title: 'Available Qty to Rack',
+    dataIndex: 'rack_available_to_allocate',
+    key: 'rack_available_to_allocate',
+    render: (qty: number) => <Tag color={qty > 0 ? 'green' : 'red'}>{qty}</Tag>,
   },
   {
     title: 'Status',
