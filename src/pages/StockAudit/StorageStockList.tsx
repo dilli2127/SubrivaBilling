@@ -18,10 +18,10 @@ const StorageStockList: React.FC = () => {
 
   const columns = [
     {
-      title: 'Rack',
-      dataIndex: 'rack_id',
-      key: 'rack_id',
-      render: (rack: any) => rack?.name || rack || '-',
+      title: 'Rack Name',
+      dataIndex: ['RackItem', 'name'],
+      key: 'rack_name',
+      render: (_: any, record: any) => record.RackItem?.name || '-',
     },
     {
       title: 'Quantity',
@@ -34,15 +34,40 @@ const StorageStockList: React.FC = () => {
       key: 'loose_quantity',
     },
     {
-      title: 'Stock Audit ID',
-      dataIndex: 'stock_audit_id',
-      key: 'stock_audit_id',
+      title: 'Invoice ID',
+      dataIndex: ['StockAuditItem', 'invoice_id'],
+      key: 'invoice_id',
+      render: (_: any, record: any) => record.StockAuditItem?.invoice_id || '-',
     },
     {
-      title: 'Created At',
-      dataIndex: 'createdAt',
-      key: 'createdAt',
-      render: (date: string) => date ? new Date(date).toLocaleString() : '-',
+      title: 'Product Qty',
+      dataIndex: ['StockAuditItem', 'quantity'],
+      key: 'product_quantity',
+      render: (_: any, record: any) => record.StockAuditItem?.quantity || '-',
+    },
+    {
+      title: 'Batch No',
+      dataIndex: ['StockAuditItem', 'batch_no'],
+      key: 'batch_no',
+      render: (_: any, record: any) => record.StockAuditItem?.batch_no || '-',
+    },
+    {
+      title: 'MFG Date',
+      dataIndex: ['StockAuditItem', 'mfg_date'],
+      key: 'mfg_date',
+      render: (_: any, record: any) =>
+        record.StockAuditItem?.mfg_date
+          ? new Date(record.StockAuditItem.mfg_date).toLocaleDateString()
+          : '-',
+    },
+    {
+      title: 'Expiry Date',
+      dataIndex: ['StockAuditItem', 'expiry_date'],
+      key: 'expiry_date',
+      render: (_: any, record: any) =>
+        record.StockAuditItem?.expiry_date
+          ? new Date(record.StockAuditItem.expiry_date).toLocaleDateString()
+          : '-',
     },
   ];
 
@@ -61,7 +86,7 @@ const StorageStockList: React.FC = () => {
           rowKeyField="_id"
           columns={columns}
           data={dataSource}
-          pageLimit={20}
+          pageLimit={10}
         />
       </Spin>
     </div>
