@@ -50,6 +50,13 @@ export interface Warehouse extends BaseEntity {
   manager?: string;
 }
 
+// Rack entity
+export interface Rack extends BaseEntity {
+  name: string;
+  capacity?: number;
+  notes?: string;
+}
+
 // Unit entity
 export interface Unit extends BaseEntity {
   name: string;

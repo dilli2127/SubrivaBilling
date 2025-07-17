@@ -20,6 +20,7 @@ const ExpensesPage = lazy(() => import("../pages/Payment/ExpensesPage"));
 const StockAudit = lazy(() => import("../pages/StockAudit/crud"));
 const VendorCrud = lazy(() => import("../pages/Vendor/crud"));
 const Warehouse = lazy(() => import("../pages/Warehouse/crud"));
+const RackCrud = lazy(() => import("../pages/Rack/crud"));
 const StockOutCrud = lazy(() => import("../pages/StockOut/crud"));
 const StockAvailable = lazy(() => import("../pages/ProductStocks/List"));
 const OrganisationsCrud = lazy(() => import("../pages/Organisations/crud"));
@@ -231,6 +232,16 @@ const routerData: RouteConfig[] = [
         element: (
           <Suspense fallback={<Loader />}>
             <Warehouse />
+          </Suspense>
+        ),
+        children: [],
+      },
+      {
+        key: "rack_crud",
+        path: "rack_crud",
+        element: (
+          <Suspense fallback={<Loader />}>
+            <RackCrud />
           </Suspense>
         ),
         children: [],

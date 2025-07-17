@@ -138,6 +138,12 @@ export const menuItems = [
         icon: <HomeOutlined />,
         path: '/warehouse_crud',
       },
+      {
+        key: 'rack',
+        label: 'Rack',
+        icon: <FolderOpenOutlined />,
+        path: '/rack_crud',
+      },
     ],
   },
   {

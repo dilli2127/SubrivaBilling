@@ -160,6 +160,7 @@ export const API_ROUTES = {
   Product: createCrudRoutes("/products", "Product"),
   Vendor: createCrudRoutes("/vendor", "Vendor"),
   Warehouse: createCrudRoutes("/warehouse", "Warehouse"),
+  Rack: createCrudRoutes("/rack", "Rack"),
   StockAudit: createCrudRoutes("/stock_audit", "StockAudit"),
   SalesRecord: createCrudRoutes("/sales_record", "SalesRecord"),
   PaymentHistory: createCrudRoutes("/payment_history", "PaymentHistory"),
