@@ -42,7 +42,15 @@ const StorageAllocateDrawer: React.FC<StorageAllocateDrawerProps> = ({
       <Form
         form={form}
         layout="vertical"
-        onFinish={onSubmit}
+        // onFinish={onSubmit}
+        onFinish={(values) => {
+          const payload = {
+            ...values,
+            stock_audit_id: record?._id,
+            rack_available_to_allocate: record?.rack_available_to_allocate,
+          };
+          onSubmit(payload);
+        }}
         initialValues={{}}
       >
         {formItems.map(item => (

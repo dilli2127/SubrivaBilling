@@ -27,15 +27,15 @@ export const storageAllocateDrawerFormItems = (
     ),
   },
   {
-    name: "quantity",
-    label: "Quantity",
+    name: "storage_quantity",
+    label: "Storage Quantity",
     rules: [{ required: true, message: "Please enter quantity" }],
     component: <InputNumber min={1} style={{ width: "100%" }} />,
   },
-  {
-    name: "loose_quantity",
-    label: "Loose Quantity",
-    rules: [{ required: true, message: "Please enter loose quantity" }],
-    component: <InputNumber min={0} style={{ width: "100%" }} />,
-  },
+  // {
+  //   name: "loose_quantity",
+  //   label: "Loose Quantity",
+  //   rules: [{ required: true, message: "Please enter loose quantity" }],
+  //   component: <InputNumber min={0} style={{ width: "100%" }} />,
+  // },
 ]; 
