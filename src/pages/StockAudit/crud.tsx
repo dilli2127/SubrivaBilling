@@ -92,6 +92,12 @@ const StockAuditCrud: React.FC = () => {
     identifier: StockOut.getIdentifier('Create'),
     entityApi: StockAudit,
   });
+  useHandleApiResponse({
+    action: 'create',
+    title: 'Storage Allocate',
+    identifier: StockStorageApi.getIdentifier('Create'),
+    entityApi: StockAudit,
+  });
 
   // Handler to open allocate drawer
   const handleAllocate = (record: any) => {
@@ -157,15 +163,10 @@ const StockAuditCrud: React.FC = () => {
 
   // Handler for storage allocate submit
   const handleStorageAllocateSubmit = async (values: any) => {
-    try {
-      await StockStorageApi('Create', {
-        ...values,
-        stock_audit_id: storageAllocateRecord?._id,
-      });
-      message.success('Storage allocated successfully');
-    } catch (error) {
-      message.error('Failed to allocate storage');
-    }
+    await StockStorageApi('Create', {
+      ...values,
+      stock_audit_id: storageAllocateRecord?._id,
+    });
     setStorageAllocateDrawerOpen(false);
     setStorageAllocateRecord(null);
   };
