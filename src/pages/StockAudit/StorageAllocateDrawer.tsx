@@ -46,7 +46,7 @@ const StorageAllocateDrawer: React.FC<StorageAllocateDrawerProps> = ({
         onFinish={(values) => {
           const payload = {
             ...values,
-            stock_audit_id: record?._id,
+            stock_id: record?._id,
             rack_available_to_allocate: record?.rack_available_to_allocate,
           };
           onSubmit(payload);

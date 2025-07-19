@@ -1,22 +1,40 @@
 import React, { useEffect, useState } from 'react';
-import { Space, Tag, Tooltip, Typography, Row, Input } from 'antd';
+import { Space, Tag, Tooltip, Typography, Row, Input, Button } from 'antd';
 import { useDynamicSelector } from '../../services/redux';
 import { useApiActions } from '../../services/api/useApiActions';
-import { DollarOutlined, ShoppingCartOutlined } from '@ant-design/icons';
+import {
+  DollarOutlined,
+  ShoppingCartOutlined,
+  InboxOutlined,
+} from '@ant-design/icons';
 import GlobalTable from '../../components/antd/GlobalTable';
+import StorageAllocateDrawer from '../StockAudit/StorageAllocateDrawer';
+import { useHandleApiResponse } from '../../components/common/useHandleApiResponse';
 const { Text } = Typography;
 
 const BranchStock: React.FC = () => {
   const { getEntityApi } = useApiActions();
   const BranchStock = getEntityApi('BranchStock');
+  const StockStorageApi = getEntityApi('StockStorage');
+  const RackApi = getEntityApi('Rack');
+
   const { items: BranchStockList, loading: stockAuditLoading } =
     useDynamicSelector(BranchStock.getIdentifier('GetAll'));
+  const { items: rackList, loading: rackLoading } = useDynamicSelector(
+    RackApi.getIdentifier('GetAll')
+  );
+  const { loading: createLoading } = useDynamicSelector(
+    StockStorageApi.getIdentifier('Create')
+  );
 
   const [pagination, setPagination] = useState({
     current: 1,
     pageSize: 10,
   });
-  const [searchText, setSearchText] = useState("");
+  const [searchText, setSearchText] = useState('');
+  const [storageAllocateDrawerOpen, setStorageAllocateDrawerOpen] =
+    useState(false);
+  const [storageAllocateRecord, setStorageAllocateRecord] = useState<any>(null);
 
   const handlePaginationChange = (pageNumber: number, pageLimit: number) => {
     setPagination({ current: pageNumber, pageSize: pageLimit });
@@ -36,6 +54,29 @@ const BranchStock: React.FC = () => {
       searchString: value,
     });
   };
+
+  // Handler to open storage allocate drawer
+  const handleStorageAllocate = (record: any) => {
+    setStorageAllocateRecord(record);
+    setStorageAllocateDrawerOpen(true);
+  };
+
+  // Handler for storage allocate submit
+  const handleStorageAllocateSubmit = async (values: any) => {
+    await StockStorageApi('Create', {
+      ...values,
+      stock_audit_id: storageAllocateRecord?._id,
+    });
+    setStorageAllocateDrawerOpen(false);
+    setStorageAllocateRecord(null);
+  };
+
+  useHandleApiResponse({
+    action: 'create',
+    title: 'Storage Allocate',
+    identifier: StockStorageApi.getIdentifier('Create'),
+    entityApi: BranchStock,
+  });
 
   const columns = [
     {
@@ -99,6 +140,46 @@ const BranchStock: React.FC = () => {
         </div>
       ),
     },
+    {
+      title: 'A/Q to Rack',
+      dataIndex: 'rack_available_to_allocate',
+      key: 'rack_available_to_allocate',
+      render: (qty: number) => (
+        <Tag color={qty > 0 ? 'green' : 'red'}>{qty}</Tag>
+      ),
+    },
+    {
+      title: 'Actions',
+      key: 'actions',
+      width: 120,
+      render: (_: any, record: any) => {
+        const availableQty = record.available_quantity || 0;
+        const isOutOfStock = availableQty === 0;
+
+        return (
+          <Space size="small">
+            <Tooltip title="Storage Allocate">
+              <Button
+                type="primary"
+                size="small"
+                icon={<InboxOutlined />}
+                onClick={() => handleStorageAllocate(record)}
+                disabled={isOutOfStock}
+                style={{
+                  fontSize: '10px',
+                  height: '24px',
+                  padding: '0 6px',
+                  backgroundColor: '#52c41a',
+                  borderColor: '#52c41a',
+                }}
+              >
+                Storage
+              </Button>
+            </Tooltip>
+          </Space>
+        );
+      },
+    },
   ];
 
   useEffect(() => {
@@ -107,7 +188,8 @@ const BranchStock: React.FC = () => {
       pageLimit: pagination.pageSize,
       searchString: searchText,
     });
-  }, [BranchStock]);
+    RackApi('GetAll');
+  }, [BranchStock, RackApi]);
 
   return (
     <>
@@ -117,7 +199,7 @@ const BranchStock: React.FC = () => {
           <Input
             placeholder={`Search ${'Products'}`}
             value={searchText}
-            onChange={(e) => handleSearch(e.target.value)}
+            onChange={e => handleSearch(e.target.value)}
             style={{ width: 300 }}
           />
         </div>
@@ -132,6 +214,15 @@ const BranchStock: React.FC = () => {
         totalCount={BranchStockList?.pagination?.totalCount || 0}
         pageLimit={BranchStockList?.pagination?.pageLimit || 10}
         onPaginationChange={handlePaginationChange}
+      />
+      <StorageAllocateDrawer
+        open={storageAllocateDrawerOpen}
+        onClose={() => setStorageAllocateDrawerOpen(false)}
+        onSubmit={handleStorageAllocateSubmit}
+        record={storageAllocateRecord}
+        rackList={rackList}
+        rackLoading={rackLoading}
+        createLoading={createLoading}
       />
     </>
   );
