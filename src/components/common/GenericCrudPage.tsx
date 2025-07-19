@@ -64,7 +64,12 @@ interface GenericCrudPageProps<T extends BaseEntity> {
 }
 
 // Extract actions column to a helper
-function getActionsColumn(title: string, handleEdit: (record: any) => void, handleDelete: (record: any) => void) {
+function getActionsColumn(
+  title: string, 
+  handleEdit: (record: any) => void, 
+  handleDelete: (record: any) => void,
+  deleteLoading: boolean = false
+) {
   return {
     title: 'Actions',
     key: 'actions',
@@ -78,8 +83,12 @@ function getActionsColumn(title: string, handleEdit: (record: any) => void, hand
         </Tooltip>
         <Tooltip title={`Delete ${title}`}>
           <DeleteOutlined
-            style={{ cursor: 'pointer', color: '#ff4d4f' }}
-            onClick={() => handleDelete(record)}
+            style={{ 
+              cursor: deleteLoading ? 'not-allowed' : 'pointer', 
+              color: deleteLoading ? '#d9d9d9' : '#ff4d4f',
+              opacity: deleteLoading ? 0.5 : 1
+            }}
+            onClick={() => !deleteLoading && handleDelete(record)}
           />
         </Tooltip>
       </div>
@@ -96,6 +105,9 @@ export const GenericCrudPage = <T extends BaseEntity>({
 }: GenericCrudPageProps<T>) => {
   const {
     loading,
+    createLoading,
+    updateLoading,
+    deleteLoading,
     items,
     pagination,
     drawerVisible,
@@ -123,8 +135,8 @@ export const GenericCrudPage = <T extends BaseEntity>({
 
   const tableColumns = useMemo(() => [
     ...columns,
-    getActionsColumn(config.title, handleEdit, handleDelete)
-  ], [columns, config.title, handleEdit, handleDelete]);
+    getActionsColumn(config.title, handleEdit, handleDelete, deleteLoading)
+  ], [columns, config.title, handleEdit, handleDelete, deleteLoading]);
 
   return (
     <div>
@@ -153,6 +165,7 @@ export const GenericCrudPage = <T extends BaseEntity>({
                       handleFilterChange(filter.key, e.target.value)
                     }
                     style={{ width: filter.width || 200 }}
+                    disabled={createLoading || updateLoading || deleteLoading}
                   />
                 )}
                 {filter.type === 'select' && (
@@ -165,7 +178,7 @@ export const GenericCrudPage = <T extends BaseEntity>({
                     }}
                     allowClear
                     style={{ width: filter.width || 200 }}
-                    disabled={filter.disabled}
+                    disabled={filter.disabled || createLoading || updateLoading || deleteLoading}
                   >
                     {filter.options?.map(opt => (
                       <Select.Option key={opt.value} value={opt.value}>
@@ -180,6 +193,7 @@ export const GenericCrudPage = <T extends BaseEntity>({
                     value={filterValues[filter.key]}
                     onChange={date => handleFilterChange(filter.key, date)}
                     style={{ width: filter.width || 200 }}
+                    disabled={createLoading || updateLoading || deleteLoading}
                   />
                 )}
               </Col>
@@ -192,6 +206,7 @@ export const GenericCrudPage = <T extends BaseEntity>({
                 value={filterValues['searchString'] || ''}
                 onChange={e => handleFilterChange('searchString', e.target.value)}
                 style={{ width: 200 }}
+                disabled={createLoading || updateLoading || deleteLoading}
               />
             </Col>
 
@@ -202,6 +217,7 @@ export const GenericCrudPage = <T extends BaseEntity>({
                   type={btn.type || 'default'}
                   onClick={btn.onClick}
                   icon={btn.icon}
+                  disabled={createLoading || updateLoading || deleteLoading}
                 >
                   {btn.label}
                 </Button>
@@ -210,7 +226,12 @@ export const GenericCrudPage = <T extends BaseEntity>({
 
             {/* Add Button */}
             <Col>
-              <Button type="primary" onClick={handleDrawerOpen}>
+              <Button 
+                type="primary" 
+                onClick={handleDrawerOpen}
+                loading={createLoading}
+                disabled={createLoading}
+              >
                 Add {config.title}
               </Button>
             </Col>
@@ -221,7 +242,7 @@ export const GenericCrudPage = <T extends BaseEntity>({
       <GlobalTable
         columns={tableColumns}
         data={items}
-        loading={loading}
+        loading={loading || deleteLoading}
         rowKeyField="_id"
         totalCount={pagination?.totalCount || 0}
         pageLimit={pagination?.pageLimit || 10}
@@ -231,7 +252,7 @@ export const GenericCrudPage = <T extends BaseEntity>({
       <GlobalDrawer
         title={`${initialValues._id ? 'Edit' : 'Add'} ${config.title}`}
         open={drawerVisible}
-        onClose={resetForm}
+        onClose={createLoading || updateLoading ? () => {} : resetForm}
         width={drawerWidth}
       >
         <AntdForm
@@ -242,6 +263,7 @@ export const GenericCrudPage = <T extends BaseEntity>({
           onSubmit={handleSubmit}
           onCancel={resetForm}
           onValuesChange={onValuesChange}
+          loading={createLoading || updateLoading}
         />
       </GlobalDrawer>
     </div>

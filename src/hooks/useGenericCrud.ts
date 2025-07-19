@@ -41,13 +41,13 @@ export const useGenericCrud = <T extends BaseEntity>(config: CrudConfig<T>) => {
   const { loading, items } = useDynamicSelector(
     config.apiRoutes.get.identifier
   );
-  const { items: createItems, error: createError } = useDynamicSelector(
+  const { loading: createLoading, items: createItems, error: createError } = useDynamicSelector(
     config.apiRoutes.create.identifier
   );
-  const { items: updateItems, error: updateError } = useDynamicSelector(
+  const { loading: updateLoading, items: updateItems, error: updateError } = useDynamicSelector(
     config.apiRoutes.update.identifier
   );
-  const { items: deleteItems, error: deleteError } = useDynamicSelector(
+  const { loading: deleteLoading, items: deleteItems, error: deleteError } = useDynamicSelector(
     config.apiRoutes.delete.identifier
   );
 
@@ -242,6 +242,9 @@ export const useGenericCrud = <T extends BaseEntity>(config: CrudConfig<T>) => {
   return {
     // State
     loading,
+    createLoading,
+    updateLoading,
+    deleteLoading,
     items: items?.result,
     pagination: items?.pagination,
     drawerVisible,
