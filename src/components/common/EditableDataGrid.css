@@ -175,4 +175,193 @@
 
 .rdg-cell .ant-btn:hover {
   background: rgba(255, 77, 79, 0.1);
+}
+
+/* Compact Header Grid Styling */
+.compact-header-grid {
+  border-radius: 6px !important;
+  overflow: hidden;
+}
+
+.compact-header-grid .rdg-header-row {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  color: white !important;
+  font-weight: 600;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  height: 35px !important;
+}
+
+.compact-header-grid .rdg-header-row .rdg-cell {
+  color: white !important;
+  border-right: 1px solid rgba(255,255,255,0.2) !important;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+  height: 35px !important;
+}
+
+.compact-header-grid .rdg-row {
+  height: 40px !important;
+  background: rgba(255,255,255,0.95) !important;
+}
+
+.compact-header-grid .rdg-row:hover {
+  background: linear-gradient(90deg, #e8f4fd 0%, #f0f8ff 100%) !important;
+}
+
+.compact-header-grid .rdg-cell {
+  font-weight: 500;
+  color: #2c3e50;
+  border-right: 1px solid #e9ecef !important;
+  font-size: 13px;
+  height: 40px !important;
+}
+
+.compact-header-grid .rdg-cell:focus-within {
+  background: linear-gradient(135deg, #667eea20, #764ba220) !important;
+  outline: 2px solid #667eea;
+  outline-offset: -2px;
+}
+
+.compact-header-grid .editable-data-grid-toolbar {
+  display: none; /* Hide toolbar for header grid */
+}
+
+.compact-header-grid .editable-data-grid-shortcuts {
+  display: none; /* Hide shortcuts for header grid */
+}
+
+/* Modern Bill Grid Styling */
+.modern-bill-grid {
+  border-radius: 8px !important;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.modern-bill-grid .rdg-header-row {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  color: white !important;
+  font-weight: 700;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.modern-bill-grid .rdg-header-row .rdg-cell {
+  color: white !important;
+  border-right: 1px solid rgba(255,255,255,0.2) !important;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
+
+.modern-bill-grid .rdg-row {
+  border-bottom: 1px solid #f0f0f0;
+  transition: all 0.2s ease;
+}
+
+.modern-bill-grid .rdg-row:nth-child(even) {
+  background-color: #fafbfc !important;
+}
+
+.modern-bill-grid .rdg-row:hover {
+  background: linear-gradient(90deg, #e8f4fd 0%, #f0f8ff 100%) !important;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.modern-bill-grid .rdg-cell {
+  font-weight: 500;
+  color: #2c3e50;
+  border-right: 1px solid #e9ecef !important;
+  font-size: 14px;
+}
+
+.modern-bill-grid .rdg-cell:focus-within {
+  background: linear-gradient(135deg, #667eea20, #764ba220) !important;
+  outline: 2px solid #667eea;
+  outline-offset: -2px;
+}
+
+/* Monetary values styling */
+.modern-bill-grid .rdg-cell[data-column-key="amount"],
+.modern-bill-grid .rdg-cell[data-column-key="price"] {
+  font-family: 'Monaco', 'Menlo', monospace;
+  font-weight: 600;
+  color: #27ae60;
+}
+
+/* Product column styling */
+.modern-bill-grid .rdg-cell[data-column-key="product_id"] {
+  font-weight: 600;
+  color: #2980b9;
+}
+
+/* Quantity columns styling */
+.modern-bill-grid .rdg-cell[data-column-key="qty"],
+.modern-bill-grid .rdg-cell[data-column-key="loose_qty"] {
+  text-align: center;
+  font-weight: 600;
+  color: #e67e22;
+}
+
+/* Stock column styling */
+.modern-bill-grid .rdg-cell[data-column-key="stock_id"] {
+  color: #8e44ad;
+  font-weight: 500;
+}
+
+.modern-bill-grid .editable-data-grid-toolbar {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-bottom: 2px solid #dee2e6;
+  padding: 12px 16px;
+}
+
+.modern-bill-grid .editable-data-grid-toolbar .ant-btn {
+  border-radius: 6px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  transition: all 0.2s ease;
+  font-size: 11px;
+}
+
+.modern-bill-grid .editable-data-grid-toolbar .ant-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.modern-bill-grid .editable-data-grid-shortcuts {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  text-align: center;
+  padding: 8px;
+}
+
+.modern-bill-grid .editable-data-grid-shortcuts small {
+  color: rgba(255,255,255,0.9);
+  font-weight: 500;
+  font-size: 10px;
+}
+
+/* Animation for new rows */
+@keyframes slideInFromBottom {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modern-bill-grid .rdg-row:last-child {
+  animation: slideInFromBottom 0.3s ease-out;
+}
+
+/* Selection styling */
+.modern-bill-grid .rdg-row[aria-selected="true"] {
+  background: linear-gradient(135deg, #667eea15, #764ba215) !important;
+  border: 2px solid #667eea !important;
+  border-radius: 4px;
 } 

@@ -1,14 +1,46 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { Form, Button, Typography, Space, Modal, message, Switch, InputNumber } from 'antd';
+import {
+  Form,
+  Button,
+  Typography,
+  Space,
+  Modal,
+  message,
+  Switch,
+  InputNumber,
+  Row,
+  Col,
+  Input,
+  Select,
+  DatePicker,
+  Card,
+  Divider,
+  Badge,
+  Tag,
+  Tooltip,
+} from 'antd';
 import dayjs from 'dayjs';
-import EditableDataGrid, { EditableColumn } from '../../../components/common/EditableDataGrid';
+import EditableDataGrid, {
+  EditableColumn,
+} from '../../../components/common/EditableDataGrid';
 import { useApiActions } from '../../../services/api/useApiActions';
 import { useDynamicSelector } from '../../../services/redux';
 import { calculateBillTotals } from '../../../helpers/amount_calculations';
 import { useHandleApiResponse } from '../../../components/common/useHandleApiResponse';
-import { SaveOutlined, PrinterOutlined } from '@ant-design/icons';
+import { 
+  SaveOutlined, 
+  PrinterOutlined, 
+  FileTextOutlined,
+  CalendarOutlined,
+  UserOutlined,
+  CreditCardOutlined,
+  DollarOutlined,
+  ShoppingCartOutlined,
+  CheckCircleOutlined
+} from '@ant-design/icons';
 
-const { Title } = Typography;
+const { Option } = Select;
+const { Title, Text } = Typography;
 
 interface BillDataGridProps {
   billdata?: any;
@@ -41,7 +73,7 @@ interface BillFormData {
 const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
   const [form] = Form.useForm();
   const { getEntityApi } = useApiActions();
-  
+
   // API hooks
   const ProductsApi = getEntityApi('Product');
   const CustomerApi = getEntityApi('Customer');
@@ -51,12 +83,23 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
   const InvoiceNumberApi = getEntityApi('InvoiceNumber');
 
   // Redux selectors
-  const { items: productList, loading: productLoading } = useDynamicSelector(ProductsApi.getIdentifier('GetAll'));
-  const { items: customerList, loading: customerLoading } = useDynamicSelector(CustomerApi.getIdentifier('GetAll'));
-  const { items: stockAuditList, loading: stockLoading } = useDynamicSelector(StockAuditApi.getIdentifier('GetAll'));
-  const { items: branchStockList, loading: branchStockLoading } = useDynamicSelector(BranchStock.getIdentifier('GetAll'));
-  const { items: invoice_no_item } = useDynamicSelector(InvoiceNumberApi.getIdentifier('GetAll'));
-  const { loading: saleCreateLoading } = useDynamicSelector(SalesRecord.getIdentifier('Create'));
+  const { items: productList, loading: productLoading } = useDynamicSelector(
+    ProductsApi.getIdentifier('GetAll')
+  );
+  const { items: customerList, loading: customerLoading } = useDynamicSelector(
+    CustomerApi.getIdentifier('GetAll')
+  );
+  const { items: stockAuditList, loading: stockLoading } = useDynamicSelector(
+    StockAuditApi.getIdentifier('GetAll')
+  );
+  const { items: branchStockList, loading: branchStockLoading } =
+    useDynamicSelector(BranchStock.getIdentifier('GetAll'));
+  const { items: invoice_no_item } = useDynamicSelector(
+    InvoiceNumberApi.getIdentifier('GetAll')
+  );
+  const { loading: saleCreateLoading } = useDynamicSelector(
+    SalesRecord.getIdentifier('Create')
+  );
 
   // State
   const [billFormData, setBillFormData] = useState<BillFormData>({
@@ -65,7 +108,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
     customer_id: '',
     customer_name: '',
     payment_mode: 'cash',
-    items: []
+    items: [],
   });
 
   const [billSettings, setBillSettings] = useState({
@@ -75,7 +118,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
     isGstIncluded: true,
     discount: 0,
     discountType: 'percentage' as 'percentage' | 'amount',
-    paidAmount: 0
+    paidAmount: 0,
   });
 
   // User info
@@ -95,19 +138,20 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
         customer_id: billdata.customer_id,
         customer_name: billdata.customerDetails?.full_name || '',
         payment_mode: billdata.payment_mode,
-        items: billdata.Items?.map((item: any) => ({
-          _id: item._id,
-          product_id: item.product_id,
-          product_name: item.productItems?.name || '',
-          variant_name: item.productItems?.VariantItem?.variant_name || '',
-          stock_id: branchId ? item.branch_stock_id : item.stock_id,
-          qty: item.qty || 0,
-          loose_qty: item.loose_qty || 0,
-          price: item.price,
-          mrp: item.mrp || item.price,
-          amount: item.amount,
-          tax_percentage: item.tax_percentage || 0
-        })) || []
+        items:
+          billdata.Items?.map((item: any) => ({
+            _id: item._id,
+            product_id: item.product_id,
+            product_name: item.productItems?.name || '',
+            variant_name: item.productItems?.VariantItem?.variant_name || '',
+            stock_id: branchId ? item.branch_stock_id : item.stock_id,
+            qty: item.qty || 0,
+            loose_qty: item.loose_qty || 0,
+            price: item.price,
+            mrp: item.mrp || item.price,
+            amount: item.amount,
+            tax_percentage: item.tax_percentage || 0,
+          })) || [],
       });
 
       setBillSettings({
@@ -117,7 +161,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
         isGstIncluded: billdata.is_gst_included ?? true,
         discount: billdata.discount ?? 0,
         discountType: billdata.discount_type ?? 'percentage',
-        paidAmount: billdata.paid_amount ?? 0
+        paidAmount: billdata.paid_amount ?? 0,
       });
     }
   }, [billdata]);
@@ -125,160 +169,183 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
   // Set auto-generated invoice number
   useEffect(() => {
     if (invoice_no_item?.result?.invoice_no && !billdata) {
-      setBillFormData(prev => ({ ...prev, invoice_no: invoice_no_item.result.invoice_no }));
+      setBillFormData(prev => ({
+        ...prev,
+        invoice_no: invoice_no_item.result.invoice_no,
+      }));
     }
   }, [invoice_no_item, billdata]);
 
   // Product and stock options
-  const productOptions = useMemo(() => 
-    productList?.result?.map((product: any) => ({
-      label: `${product.name} ${product?.VariantItem?.variant_name || ''}`.trim(),
-      value: product._id
-    })) || [], [productList]);
+  const productOptions = useMemo(
+    () =>
+      productList?.result?.map((product: any) => ({
+        label:
+          `${product.name} ${product?.VariantItem?.variant_name || ''}`.trim(),
+        value: product._id,
+      })) || [],
+    [productList]
+  );
 
-  const customerOptions = useMemo(() =>
-    customerList?.result?.map((customer: any) => ({
-      label: `${customer.full_name} - ${customer.mobile}`,
-      value: customer._id
-    })) || [], [customerList]);
+  const customerOptions = useMemo(
+    () =>
+      customerList?.result?.map((customer: any) => ({
+        label: `${customer.full_name} - ${customer.mobile}`,
+        value: customer._id,
+      })) || [],
+    [customerList]
+  );
 
   const getStockOptionsForProduct = (productId: string) => {
     const stockList = branchId ? branchStockList : stockAuditList;
-    const stocks = stockList?.result?.filter((stock: any) => 
-      stock.product === productId || stock.ProductItem?._id === productId
-    ) || [];
-    
+    const stocks =
+      stockList?.result?.filter(
+        (stock: any) =>
+          stock.product === productId || stock.ProductItem?._id === productId
+      ) || [];
+
     return stocks.map((stock: any) => ({
       label: `Stock: ${stock.available_quantity || 0} pcs, ₹${stock.sell_price || 0}`,
-      value: stock._id
+      value: stock._id,
     }));
   };
 
-  // Column definitions for the bill header
+  // Column definitions for bill header
   const headerColumns: EditableColumn[] = [
     {
-      key: 'field',
-      name: 'Field',
-      field: 'field',
-      editable: false,
-      width: 150
+      key: 'invoice_no',
+      name: '📄 INVOICE #',
+      field: 'invoice_no',
+      type: 'text',
+      required: true,
+      width: 180,
     },
     {
-      key: 'value',
-      name: 'Value',
-      field: 'value',
-      type: 'text',
-      width: 300,
-      editable: true
+      key: 'date',
+      name: '📅 DATE',
+      field: 'date',
+      type: 'date',
+      required: true,
+      width: 150,
+    },
+    {
+      key: 'customer_id',
+      name: '👤 CUSTOMER',
+      field: 'customer_id',
+      type: 'select',
+      options: customerOptions,
+      required: true,
+      width: 250,
+    },
+    {
+      key: 'payment_mode',
+      name: '💳 PAYMENT',
+      field: 'payment_mode',
+      type: 'select',
+      options: [
+        { label: '💵 Cash', value: 'cash' },
+        { label: '📱 UPI', value: 'upi' },
+        { label: '💳 Card', value: 'card' }
+      ],
+      required: true,
+      width: 150,
     }
   ];
 
-  const headerData = [
-    { field: 'Invoice Number', value: billFormData.invoice_no },
-    { field: 'Date', value: billFormData.date, type: 'date' },
-    { field: 'Customer', value: billFormData.customer_id, type: 'select', options: customerOptions },
-    { field: 'Payment Mode', value: billFormData.payment_mode, type: 'select', options: [
-      { label: 'Cash', value: 'cash' },
-      { label: 'UPI', value: 'upi' },
-      { label: 'Card', value: 'card' }
-    ]}
-  ];
+  const headerData = [{
+    invoice_no: billFormData.invoice_no,
+    date: billFormData.date,
+    customer_id: billFormData.customer_id,
+    payment_mode: billFormData.payment_mode
+  }];
 
   // Column definitions for bill items
   const itemColumns: EditableColumn[] = [
     {
       key: 'product_id',
-      name: 'Product',
+      name: '🛒 PRODUCT',
       field: 'product_id',
       type: 'select',
       options: productOptions,
       required: true,
-      width: 250
+      width: 280,
     },
     {
       key: 'stock_id',
-      name: 'Stock',
+      name: '📦 STOCK',
       field: 'stock_id',
       type: 'select',
       options: [], // Dynamic based on selected product
       required: true,
-      width: 200
+      width: 200,
     },
     {
       key: 'qty',
-      name: 'Qty',
+      name: '📊 QTY',
       field: 'qty',
       type: 'number',
-      width: 80
+      width: 90,
     },
     {
       key: 'loose_qty',
-      name: 'Loose Qty',
+      name: '📋 LOOSE',
       field: 'loose_qty',
       type: 'number',
-      width: 100
+      width: 90,
     },
     {
       key: 'price',
-      name: 'Price',
+      name: '💰 RATE',
       field: 'price',
       type: 'number',
       required: true,
-      width: 120
+      width: 120,
     },
     {
       key: 'amount',
-      name: 'Amount',
+      name: '💵 AMOUNT',
       field: 'amount',
       type: 'number',
       editable: false,
-      width: 120
-    }
+      width: 130,
+    },
   ];
 
   // Calculate bill totals
   const billCalculations = useMemo(() => {
-    if (!billFormData.items.length) return {
-      sub_total: 0,
-      value_of_goods: 0,
-      total_gst: 0,
-      total_amount: 0,
-      discountValue: 0
-    };
+    if (!billFormData.items.length)
+      return {
+        sub_total: 0,
+        value_of_goods: 0,
+        total_gst: 0,
+        total_amount: 0,
+        discountValue: 0,
+      };
 
     return calculateBillTotals({
       items: billFormData.items,
       productList: productList?.result || [],
       isGstIncluded: billSettings.isGstIncluded,
       discount: billSettings.discount,
-      discountType: billSettings.discountType
+      discountType: billSettings.discountType,
     });
   }, [billFormData.items, productList, billSettings]);
 
-  // Handle bill header changes
-  const handleHeaderSave = (headerRows: any[]) => {
-    const headerUpdates: Partial<BillFormData> = {};
-    
-    headerRows.forEach(row => {
-      switch (row.field) {
-        case 'Invoice Number':
-          headerUpdates.invoice_no = row.value;
-          break;
-        case 'Date':
-          headerUpdates.date = row.value;
-          break;
-        case 'Customer':
-          headerUpdates.customer_id = row.value;
-          const customer = customerList?.result?.find((c: any) => c._id === row.value);
-          headerUpdates.customer_name = customer?.full_name || '';
-          break;
-        case 'Payment Mode':
-          headerUpdates.payment_mode = row.value;
-          break;
-      }
-    });
-
-    setBillFormData(prev => ({ ...prev, ...headerUpdates }));
+  // Handle header changes
+  const handleHeaderChange = (headerRows: any[]) => {
+    const updatedHeader = headerRows[0];
+    if (updatedHeader) {
+      // Find customer name for display
+      const customer = customerList?.result?.find((c: any) => c._id === updatedHeader.customer_id);
+      setBillFormData(prev => ({
+        ...prev,
+        invoice_no: updatedHeader.invoice_no || '',
+        date: updatedHeader.date || dayjs().format('YYYY-MM-DD'),
+        customer_id: updatedHeader.customer_id || '',
+        customer_name: customer?.full_name || '',
+        payment_mode: updatedHeader.payment_mode || 'cash'
+      }));
+    }
   };
 
   // Handle item changes
@@ -289,22 +356,27 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
 
       // Get stock info
       const stockList = branchId ? branchStockList : stockAuditList;
-      const stock = stockList?.result?.find((s: any) => s._id === item.stock_id);
-      
+      const stock = stockList?.result?.find(
+        (s: any) => s._id === item.stock_id
+      );
+
       if (stock) {
         const sellPrice = stock.sell_price || 0;
         const packQty = stock.quantity || 1;
         const looseRate = sellPrice / packQty;
-        
-        const baseAmount = (item.qty || 0) * sellPrice + (item.loose_qty || 0) * looseRate;
-        
+
+        const baseAmount =
+          (item.qty || 0) * sellPrice + (item.loose_qty || 0) * looseRate;
+
         // Get product for tax calculation
-        const product = productList?.result?.find((p: any) => p._id === item.product_id);
+        const product = productList?.result?.find(
+          (p: any) => p._id === item.product_id
+        );
         const taxPercentage = product?.CategoryItem?.tax_percentage || 0;
-        
+
         let amount = baseAmount;
         if (!billSettings.isGstIncluded) {
-          amount = baseAmount + (baseAmount * taxPercentage / 100);
+          amount = baseAmount + (baseAmount * taxPercentage) / 100;
         }
 
         return {
@@ -314,7 +386,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
           amount: amount,
           tax_percentage: taxPercentage,
           product_name: product?.name || '',
-          variant_name: product?.VariantItem?.variant_name || ''
+          variant_name: product?.VariantItem?.variant_name || '',
         };
       }
 
@@ -336,12 +408,12 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
       price: 0,
       mrp: 0,
       amount: 0,
-      tax_percentage: 0
+      tax_percentage: 0,
     };
-    
-    setBillFormData(prev => ({ 
-      ...prev, 
-      items: [...prev.items, newItem]
+
+    setBillFormData(prev => ({
+      ...prev,
+      items: [...prev.items, newItem],
     }));
   };
 
@@ -349,21 +421,29 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
   const handleDeleteItems = (indices: number[]) => {
     setBillFormData(prev => ({
       ...prev,
-      items: prev.items.filter((_, index) => !indices.includes(index))
+      items: prev.items.filter((_, index) => !indices.includes(index)),
     }));
   };
 
   // Handle final save
   const handleSaveBill = async () => {
     // Validation
-    if (!billFormData.invoice_no || !billFormData.customer_id || !billFormData.items.length) {
+    if (
+      !billFormData.invoice_no ||
+      !billFormData.customer_id ||
+      !billFormData.items.length
+    ) {
       message.error('Please fill all required fields');
       return;
     }
 
     // Check for incomplete items
-    const incompleteItems = billFormData.items.some(item => 
-      !item.product_id || !item.stock_id || (!item.qty && !item.loose_qty) || !item.price
+    const incompleteItems = billFormData.items.some(
+      item =>
+        !item.product_id ||
+        !item.stock_id ||
+        (!item.qty && !item.loose_qty) ||
+        !item.price
     );
 
     if (incompleteItems) {
@@ -386,7 +466,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
         mrp: item.mrp,
         amount: item.amount,
         tax_percentage: item.tax_percentage,
-        _id: item._id
+        _id: item._id,
       })),
       ...billCalculations,
       discount: billSettings.discount,
@@ -395,8 +475,11 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
       is_partially_paid: billSettings.isPartiallyPaid,
       sale_type: billSettings.isRetail ? 'retail' : 'wholesale',
       is_gst_included: billSettings.isGstIncluded,
-      paid_amount: billSettings.isPartiallyPaid ? billSettings.paidAmount : 
-                  billSettings.isPaid ? billCalculations.total_amount : 0
+      paid_amount: billSettings.isPartiallyPaid
+        ? billSettings.paidAmount
+        : billSettings.isPaid
+          ? billCalculations.total_amount
+          : 0,
     };
 
     try {
@@ -411,21 +494,25 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
   };
 
   // Handle API responses
-  const { items: createItems } = useDynamicSelector(SalesRecord.getIdentifier('Create'));
-  const { items: updateItems } = useDynamicSelector(SalesRecord.getIdentifier('Update'));
+  const { items: createItems } = useDynamicSelector(
+    SalesRecord.getIdentifier('Create')
+  );
+  const { items: updateItems } = useDynamicSelector(
+    SalesRecord.getIdentifier('Update')
+  );
 
   useHandleApiResponse({
     action: 'create',
     title: 'Bill',
     identifier: SalesRecord.getIdentifier('Create'),
-    entityApi: SalesRecord
+    entityApi: SalesRecord,
   });
 
   useHandleApiResponse({
     action: 'update',
     title: 'Bill',
     identifier: SalesRecord.getIdentifier('Update'),
-    entityApi: SalesRecord
+    entityApi: SalesRecord,
   });
 
   // Handle create success
@@ -434,7 +521,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
       onSuccess?.();
       InvoiceNumberApi('Create');
       setTimeout(() => InvoiceNumberApi('GetAll'), 500);
-      
+
       // Reset form
       setBillFormData({
         invoice_no: '',
@@ -442,7 +529,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
         customer_id: '',
         customer_name: '',
         payment_mode: 'cash',
-        items: []
+        items: [],
       });
     }
   }, [createItems]);
@@ -454,162 +541,330 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
     }
   }, [updateItems]);
 
-  return (
-    <div style={{ padding: 24, background: '#f0f5ff', borderRadius: 10 }}>
-      <Title level={3} style={{ color: '#1890ff', textAlign: 'center', marginBottom: 24 }}>
-        {billdata ? `Edit ${billSettings.isRetail ? 'Bill' : 'Invoice'}` : `Create ${billSettings.isRetail ? 'Bill' : 'Invoice'}`}
-      </Title>
+  // Enhanced keyboard shortcuts for fast billing
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // F-key shortcuts
+      if (e.key === 'F1') {
+        e.preventDefault();
+        handleAddItem();
+      } else if (e.key === 'F2') {
+        e.preventDefault();
+        handleSaveBill();
+      } else if (e.key === 'F3') {
+        e.preventDefault();
+        // Print functionality can be added here
+        message.info('Print feature - F3 pressed');
+      } else if (e.key === 'F4') {
+        e.preventDefault();
+        // Focus customer field
+        const customerField = document.querySelector('.rdg-cell[data-column-key="customer_id"]') as HTMLElement;
+        customerField?.focus();
+      } 
+      
+      // Ctrl shortcuts
+      else if (e.ctrlKey) {
+        if (e.key === 's') {
+          e.preventDefault();
+          handleSaveBill();
+        } else if (e.key === 'n') {
+          e.preventDefault();
+          handleAddItem();
+        } else if (e.key === 'p') {
+          e.preventDefault();
+          message.info('Print functionality - Ctrl+P pressed');
+        }
+      }
+      
+      // ESC to clear current editing
+      else if (e.key === 'Escape') {
+        const activeElement = document.activeElement as HTMLElement;
+        activeElement?.blur();
+      }
+    };
 
-      {/* Settings Row */}
-      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 24, gap: 16 }}>
-        <Switch
-          checkedChildren="Retail"
-          unCheckedChildren="Wholesale"
-          checked={billSettings.isRetail}
-          onChange={(checked) => setBillSettings(prev => ({ ...prev, isRetail: checked }))}
-        />
-        <Switch
-          checkedChildren="GST Included"
-          unCheckedChildren="GST Excluded"
-          checked={billSettings.isGstIncluded}
-          onChange={(checked) => setBillSettings(prev => ({ ...prev, isGstIncluded: checked }))}
-        />
-        <Switch
-          checkedChildren="Paid"
-          unCheckedChildren="Unpaid"
-          checked={billSettings.isPaid}
-          onChange={(checked) => setBillSettings(prev => ({ 
-            ...prev, 
-            isPaid: checked, 
-            isPartiallyPaid: checked ? false : prev.isPartiallyPaid 
-          }))}
-        />
-        {!billSettings.isPaid && (
-          <Switch
-            checkedChildren="Partially Paid"
-            unCheckedChildren="Not Paid"
-            checked={billSettings.isPartiallyPaid}
-            onChange={(checked) => setBillSettings(prev => ({ ...prev, isPartiallyPaid: checked }))}
-          />
-        )}
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [billFormData.items.length]);
+
+  return (
+    <div style={{ 
+      padding: 12, 
+      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      minHeight: '100vh' 
+    }}>
+      {/* Compact Header */}
+      <div style={{
+        textAlign: 'center',
+        marginBottom: 16,
+        background: 'rgba(255, 255, 255, 0.95)',
+        padding: '12px',
+        borderRadius: '8px',
+        boxShadow: '0 4px 16px rgba(0, 0, 0, 0.1)'
+      }}>
+        <Title
+          level={4}
+          style={{ 
+            color: '#2c3e50', 
+            margin: 0,
+            fontSize: '18px',
+            fontWeight: 600
+          }}
+        >
+          <FileTextOutlined style={{ marginRight: 8, color: '#667eea' }} />
+          {billdata ? 'EDIT BILL' : 'CREATE BILL'} • {dayjs().format('DD MMM YYYY')}
+        </Title>
       </div>
 
-      {/* Bill Header */}
-      <div style={{ marginBottom: 24 }}>
-        <Title level={4}>Bill Details</Title>
+      {/* Compact Settings Row */}
+      <div style={{
+        background: 'rgba(255, 255, 255, 0.95)',
+        padding: '8px 16px',
+        borderRadius: '6px',
+        marginBottom: 12,
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        gap: 16,
+        flexWrap: 'wrap'
+      }}>
+        <Space size="large">
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <Text style={{ fontSize: '12px', fontWeight: 600, color: '#2c3e50' }}>🏪</Text>
+            <Switch
+              checkedChildren="Retail"
+              unCheckedChildren="Wholesale"
+              checked={billSettings.isRetail}
+              onChange={checked =>
+                setBillSettings(prev => ({ ...prev, isRetail: checked }))
+              }
+            />
+          </div>
+          
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <Text style={{ fontSize: '12px', fontWeight: 600, color: '#2c3e50' }}>📊</Text>
+            <Switch
+              checkedChildren="GST ✓"
+              unCheckedChildren="GST ✗"
+              checked={billSettings.isGstIncluded}
+              onChange={checked =>
+                setBillSettings(prev => ({ ...prev, isGstIncluded: checked }))
+              }
+            />
+          </div>
+          
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <Text style={{ fontSize: '12px', fontWeight: 600, color: '#2c3e50' }}>💳</Text>
+            <Switch
+              checkedChildren="Paid"
+              unCheckedChildren="Unpaid"
+              checked={billSettings.isPaid}
+              onChange={checked =>
+                setBillSettings(prev => ({
+                  ...prev,
+                  isPaid: checked,
+                  isPartiallyPaid: checked ? false : prev.isPartiallyPaid,
+                }))
+              }
+            />
+          </div>
+
+          {!billSettings.isPaid && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <Text style={{ fontSize: '12px', fontWeight: 600, color: '#2c3e50' }}>💰</Text>
+              <Switch
+                checkedChildren="Partial"
+                unCheckedChildren="None"
+                checked={billSettings.isPartiallyPaid}
+                onChange={checked =>
+                  setBillSettings(prev => ({ ...prev, isPartiallyPaid: checked }))
+                }
+              />
+            </div>
+          )}
+        </Space>
+      </div>
+
+      {/* Invoice Details Data Grid */}
+      <div style={{
+        background: 'rgba(255, 255, 255, 0.95)',
+        borderRadius: '8px',
+        padding: '4px',
+        marginBottom: 12,
+        border: '2px solid #e9ecef'
+      }}>
         <EditableDataGrid
           columns={headerColumns}
           data={headerData}
-          onSave={handleHeaderSave}
+          onSave={handleHeaderChange}
           allowAdd={false}
           allowDelete={false}
-          height={200}
+          height={100}
           loading={customerLoading}
+          className="compact-header-grid"
         />
       </div>
 
-      {/* Bill Items */}
-      <div style={{ marginBottom: 24 }}>
-        <Title level={4}>Items</Title>
+      {/* Items Section */}
+      <div style={{
+        background: 'rgba(255, 255, 255, 0.95)',
+        borderRadius: '8px',
+        padding: '8px',
+        marginBottom: 12,
+        border: '2px solid #e9ecef'
+      }}>
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center', 
+          marginBottom: 8,
+          padding: '0 8px'
+        }}>
+          <Text style={{ fontWeight: 600, color: '#2c3e50', fontSize: '14px' }}>
+            🛒 BILL ITEMS
+          </Text>
+          <Badge count={billFormData.items.length} showZero size="small">
+            <Text style={{ fontSize: '12px', color: '#666' }}>Items</Text>
+          </Badge>
+        </div>
+        
         <EditableDataGrid
           columns={itemColumns}
           data={billFormData.items}
           onSave={handleItemsChange}
           onAdd={handleAddItem}
           onDelete={handleDeleteItems}
-          height={400}
+          height={280}
           loading={productLoading || stockLoading || branchStockLoading}
+          className="modern-bill-grid"
         />
       </div>
 
-      {/* Bill Summary */}
-      <div style={{ 
-        background: '#fff', 
-        padding: 16, 
-        borderRadius: 8, 
-        border: '1px solid #d9d9d9',
-        marginBottom: 24
+      {/* Compact Bill Summary */}
+      <div style={{
+        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        color: 'white',
+        borderRadius: '8px',
+        padding: '12px',
+        marginBottom: 12
       }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-          <div>
-            <div><strong>Sub Total:</strong> ₹ {billCalculations.sub_total.toFixed(2)}</div>
-            <div><strong>Value of Goods:</strong> ₹ {billCalculations.value_of_goods.toFixed(2)}</div>
-            {billSettings.discount > 0 && (
-              <div>
-                <strong>Discount:</strong> 
-                {billSettings.discountType === 'percentage' 
-                  ? ` ${billSettings.discount}%` 
-                  : ` ₹ ${billCalculations.discountValue.toFixed(2)}`}
-              </div>
-            )}
-          </div>
-          <div>
-            <div><strong>GST:</strong> ₹ {billCalculations.total_gst.toFixed(2)}</div>
-            <div style={{ fontSize: 18, color: '#1890ff' }}>
-              <strong>Net Payable:</strong> ₹ {billCalculations.total_amount.toFixed(2)}
-            </div>
-            {billSettings.isPartiallyPaid && (
-              <div style={{ color: '#52c41a' }}>
-                <strong>Paid:</strong> ₹ {billSettings.paidAmount}
-                <br />
-                <strong>Remaining:</strong> ₹ {(billCalculations.total_amount - billSettings.paidAmount).toFixed(2)}
-              </div>
-            )}
-          </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+          <Text style={{ color: 'white', fontWeight: 600, fontSize: '14px' }}>
+            💰 BILL TOTALS
+          </Text>
+          <Space size="large">
+            <Text style={{ color: 'rgba(255,255,255,0.9)', fontSize: '12px' }}>
+              Sub: ₹{billCalculations.sub_total.toFixed(2)}
+            </Text>
+            <Text style={{ color: 'rgba(255,255,255,0.9)', fontSize: '12px' }}>
+              GST: ₹{billCalculations.total_gst.toFixed(2)}
+            </Text>
+            <Text style={{ color: 'white', fontWeight: 700, fontSize: '16px' }}>
+              NET: ₹{billCalculations.total_amount.toFixed(2)}
+            </Text>
+          </Space>
         </div>
 
-        {/* Discount Controls */}
-        <div style={{ marginTop: 16, display: 'flex', gap: 16, alignItems: 'center' }}>
-          <span>Discount:</span>
-          <InputNumber
-            min={0}
-            value={billSettings.discount}
-            onChange={(value) => setBillSettings(prev => ({ ...prev, discount: value || 0 }))}
-            style={{ width: 120 }}
-          />
-          <Switch
-            checkedChildren="%"
-            unCheckedChildren="₹"
-            checked={billSettings.discountType === 'percentage'}
-            onChange={(checked) => setBillSettings(prev => ({ 
-              ...prev, 
-              discountType: checked ? 'percentage' : 'amount' 
-            }))}
-          />
+        {/* Compact Controls */}
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'center', 
+          alignItems: 'center', 
+          gap: 16,
+          flexWrap: 'wrap'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <Text style={{ color: 'white', fontSize: '12px' }}>Disc:</Text>
+            <InputNumber
+              min={0}
+              value={billSettings.discount}
+              onChange={value =>
+                setBillSettings(prev => ({ ...prev, discount: value || 0 }))
+              }
+              style={{ width: 80 }}
+              size="small"
+            />
+            <Switch
+              checkedChildren="%"
+              unCheckedChildren="₹"
+              checked={billSettings.discountType === 'percentage'}
+              onChange={checked =>
+                setBillSettings(prev => ({
+                  ...prev,
+                  discountType: checked ? 'percentage' : 'amount',
+                }))
+              }
+              size="small"
+            />
+          </div>
           
           {billSettings.isPartiallyPaid && (
-            <>
-              <span style={{ marginLeft: 16 }}>Paid Amount:</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <Text style={{ color: 'white', fontSize: '12px' }}>Paid:</Text>
               <InputNumber
                 min={0}
                 max={billCalculations.total_amount}
                 value={billSettings.paidAmount}
-                onChange={(value) => setBillSettings(prev => ({ ...prev, paidAmount: value || 0 }))}
-                style={{ width: 120 }}
-                formatter={(value) => `₹ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                parser={(value) => Number(value!.replace(/₹\s?|(,*)/g, ''))}
+                onChange={value =>
+                  setBillSettings(prev => ({ ...prev, paidAmount: value || 0 }))
+                }
+                style={{ width: 100 }}
+                size="small"
+                formatter={value =>
+                  `₹${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+                }
+                parser={value => Number(value!.replace(/₹\s?|(,*)/g, ''))}
               />
-            </>
+              <Text style={{ color: '#2ecc71', fontSize: '12px', fontWeight: 600 }}>
+                Rem: ₹{(billCalculations.total_amount - billSettings.paidAmount).toFixed(2)}
+              </Text>
+            </div>
           )}
         </div>
       </div>
 
-      {/* Action Buttons */}
-      <div style={{ textAlign: 'center' }}>
-        <Space>
+      {/* Compact Action Bar */}
+      <div style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        background: 'rgba(255,255,255,0.95)',
+        padding: '8px 16px',
+        borderRadius: '6px'
+      }}>
+        <div>
           <Button
             type="primary"
-            size="large"
             icon={<SaveOutlined />}
             onClick={handleSaveBill}
             loading={saleCreateLoading}
+            style={{
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              border: 'none',
+              fontWeight: 600
+            }}
           >
-            {billdata ? 'Update Bill' : 'Save Bill'} (Ctrl+S)
+            {billdata ? 'Update' : 'Save'} (Ctrl+S)
           </Button>
-        </Space>
+          <Button
+            icon={<PrinterOutlined />}
+            style={{ marginLeft: 8, color: '#667eea', borderColor: '#667eea' }}
+          >
+            Print (Ctrl+P)
+          </Button>
+        </div>
+        
+        <div style={{ textAlign: 'right' }}>
+          <Text style={{ color: '#666', fontSize: '11px', display: 'block' }}>
+            <strong>⚡ Fast Keys:</strong> F1(New) • F2(Save) • F3(Print) • F4(Customer) • Tab(Navigate)
+          </Text>
+          <Text style={{ color: '#666', fontSize: '11px' }}>
+            <strong>Items:</strong> Ctrl+N(Add) • Del(Remove) • Enter(Edit) • Esc(Cancel)
+          </Text>
+        </div>
       </div>
     </div>
   );
 };
 
-export default BillDataGrid; 
+export default BillDataGrid;
