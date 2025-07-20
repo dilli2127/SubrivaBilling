@@ -30,21 +30,7 @@ const BillingPage: React.FC = () => {
         <BillDataGrid onSuccess={handleSuccess} />
       </div>
 
-      <div style={{ 
-        position: 'fixed',
-        bottom: 10,
-        left: '50%',
-        transform: 'translateX(-50%)',
-        background: 'rgba(0,0,0,0.8)',
-        color: 'white',
-        padding: '8px 16px',
-        borderRadius: 20,
-        fontSize: 11,
-        zIndex: 1000,
-        backdropFilter: 'blur(10px)'
-      }}>
-        <strong>💡 Tips:</strong> Tab(Navigate) • Enter(Edit) • F2(Save) • F1(Add) • Del(Remove)
-      </div>
+
     </div>
   );
 };

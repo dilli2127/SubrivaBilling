@@ -896,7 +896,8 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
       <div style={{
         display: 'flex',
         gap: 12,
-        margin: '0 8px 8px 8px'
+        margin: '0 8px 8px 8px',
+        alignItems: 'flex-start'
       }}>
         {/* Bill Items Grid */}
         <div style={{
@@ -905,20 +906,30 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
           background: 'rgba(255, 255, 255, 0.95)',
           borderRadius: '6px',
           padding: '8px',
-          border: '2px solid #e9ecef'
+          border: '2px solid #e9ecef',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
         }}>
           <div style={{ 
             display: 'flex', 
             justifyContent: 'space-between', 
             alignItems: 'center', 
-            marginBottom: 8,
-            padding: '0 8px'
+            marginBottom: 12,
+            padding: '8px 8px',
+            background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
+            borderRadius: '4px',
+            border: '1px solid #dee2e6'
           }}>
-            <Text style={{ fontWeight: 600, color: '#2c3e50', fontSize: '14px' }}>
+            <Text style={{ 
+              fontWeight: 700, 
+              color: '#2c3e50', 
+              fontSize: '15px',
+              textTransform: 'uppercase',
+              letterSpacing: '0.5px'
+            }}>
               🛒 BILL ITEMS
             </Text>
             <Badge count={billFormData.items.length} showZero size="small">
-              <Text style={{ fontSize: '12px', color: '#666' }}>Items</Text>
+              <Text style={{ fontSize: '12px', color: '#666', fontWeight: 600 }}>Items</Text>
             </Badge>
           </div>
           
@@ -1230,17 +1241,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
               lineHeight: '16px',
               textShadow: '0 1px 2px rgba(0,0,0,0.2)'
             }}>
-              ⚡ <strong>LIGHTNING KEYS:</strong> F1(➕Item) • F2(💾Save) • F3(🖨️Print) • F4(👤Customer)
-            </Text>
-            <Text style={{ 
-              color: 'rgba(255,255,255,0.8)', 
-              fontSize: '10px',
-              fontWeight: 500,
-              lineHeight: '14px',
-              marginTop: 2,
-              display: 'block'
-            }}>
-              <strong>NAVIGATION:</strong> Tab(Next) • Enter(Edit) • Esc(Cancel) • Ctrl+N(Add) • Del(Remove)
+              ⚡ <strong>Keyboard Shortcuts:</strong> Ctrl+S (Save) • Ctrl+N (Add) • Ctrl+D/Del (Delete) • Tab/Shift+Tab (Navigate) • Enter (Edit) • Esc (Cancel)
             </Text>
           </div>
         </div>
