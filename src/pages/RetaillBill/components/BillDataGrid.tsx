@@ -176,6 +176,28 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
     }
   }, [invoice_no_item, billdata]);
 
+  // Initialize with 5 default empty items if no existing data
+  useEffect(() => {
+    if (!billdata && billFormData.items.length === 0) {
+      const defaultItems = Array(5).fill(null).map((_, index) => ({
+        product_id: '',
+        product_name: '',
+        variant_name: '',
+        stock_id: '',
+        qty: 0,
+        loose_qty: 0,
+        price: 0,
+        mrp: 0,
+        amount: 0,
+        tax_percentage: 0,
+      }));
+      setBillFormData(prev => ({
+        ...prev,
+        items: defaultItems
+      }));
+    }
+  }, [billdata, billFormData.items.length]);
+
   // Product and stock options
   const productOptions = useMemo(
     () =>
@@ -589,20 +611,22 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
 
   return (
     <div style={{ 
-      padding: 12, 
+      padding: '8px 0', 
       background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-      minHeight: '100vh' 
+      minHeight: '100vh',
+      width: '100%'
     }}>
       {/* Ultra-Fast Billing Header */}
       <div style={{
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom: 12,
+        marginBottom: 8,
         background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-        padding: '16px 24px',
-        borderRadius: '12px',
-        boxShadow: '0 8px 24px rgba(102, 126, 234, 0.3)',
+        padding: '12px 16px',
+        margin: '0 8px',
+        borderRadius: '8px',
+        boxShadow: '0 6px 18px rgba(102, 126, 234, 0.25)',
         position: 'relative',
         overflow: 'hidden'
       }}>
@@ -691,9 +715,9 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
       {/* Ultra-Modern Quick Settings */}
       <div style={{
         background: 'linear-gradient(135deg, #667eea 10%, #764ba2 90%)',
-        padding: '12px 20px',
-        borderRadius: '10px',
-        marginBottom: 12,
+        padding: '8px 16px',
+        borderRadius: '8px',
+        margin: '0 8px 8px 8px',
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
@@ -701,7 +725,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
         flexWrap: 'wrap',
         position: 'relative',
         overflow: 'hidden',
-        boxShadow: '0 6px 20px rgba(102, 126, 234, 0.2)'
+        boxShadow: '0 4px 16px rgba(102, 126, 234, 0.15)'
       }}>
         {/* Background decoration */}
         <div style={{
@@ -851,9 +875,9 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
       {/* Invoice Details Data Grid */}
       <div style={{
         background: 'rgba(255, 255, 255, 0.95)',
-        borderRadius: '8px',
+        borderRadius: '6px',
         padding: '4px',
-        marginBottom: 12,
+        margin: '0 8px 8px 8px',
         border: '2px solid #e9ecef'
       }}>
         <EditableDataGrid
@@ -868,54 +892,59 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
         />
       </div>
 
-      {/* Items Section */}
+      {/* Items Section with Summary */}
       <div style={{
-        background: 'rgba(255, 255, 255, 0.95)',
-        borderRadius: '8px',
-        padding: '8px',
-        marginBottom: 12,
-        border: '2px solid #e9ecef'
+        display: 'flex',
+        gap: 12,
+        margin: '0 8px 8px 8px'
       }}>
-        <div style={{ 
-          display: 'flex', 
-          justifyContent: 'space-between', 
-          alignItems: 'center', 
-          marginBottom: 8,
-          padding: '0 8px'
-        }}>
-          <Text style={{ fontWeight: 600, color: '#2c3e50', fontSize: '14px' }}>
-            🛒 BILL ITEMS
-          </Text>
-          <Badge count={billFormData.items.length} showZero size="small">
-            <Text style={{ fontSize: '12px', color: '#666' }}>Items</Text>
-          </Badge>
-        </div>
-        
-        <EditableDataGrid
-          columns={itemColumns}
-          data={billFormData.items}
-          onSave={handleItemsChange}
-          onAdd={handleAddItem}
-          onDelete={handleDeleteItems}
-          height={280}
-          loading={productLoading || stockLoading || branchStockLoading}
-          className="modern-bill-grid"
-        />
-      </div>
-
-            {/* Bill Summary - Right Aligned Table Style */}
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'flex-end',
-        marginBottom: 12 
-      }}>
+        {/* Bill Items Grid */}
         <div style={{
+          flex: 1,
+          minWidth: 0,
+          background: 'rgba(255, 255, 255, 0.95)',
+          borderRadius: '6px',
+          padding: '8px',
+          border: '2px solid #e9ecef'
+        }}>
+          <div style={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center', 
+            marginBottom: 8,
+            padding: '0 8px'
+          }}>
+            <Text style={{ fontWeight: 600, color: '#2c3e50', fontSize: '14px' }}>
+              🛒 BILL ITEMS
+            </Text>
+            <Badge count={billFormData.items.length} showZero size="small">
+              <Text style={{ fontSize: '12px', color: '#666' }}>Items</Text>
+            </Badge>
+          </div>
+          
+          <EditableDataGrid
+            columns={itemColumns}
+            data={billFormData.items}
+            onSave={handleItemsChange}
+            onAdd={handleAddItem}
+            onDelete={handleDeleteItems}
+            height={320}
+            loading={productLoading || stockLoading || branchStockLoading}
+            className="modern-bill-grid"
+          />
+        </div>
+
+        {/* Bill Summary - Right Side */}
+        <div style={{
+          width: '350px',
+          maxWidth: '350px',
+          flexShrink: 0,
           background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
           border: '2px solid #dee2e6',
           borderRadius: '6px',
           padding: '12px',
-          minWidth: '300px',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
+          boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+          alignSelf: 'flex-start'
         }}>
           {/* Header */}
           <div style={{
@@ -1120,11 +1149,12 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
         justifyContent: 'space-between',
         alignItems: 'center',
         background: 'linear-gradient(135deg, #2c3e50 0%, #34495e 100%)',
-        padding: '16px 20px',
-        borderRadius: '12px',
+        padding: '12px 16px',
+        margin: '0 8px',
+        borderRadius: '8px',
         position: 'relative',
         overflow: 'hidden',
-        boxShadow: '0 8px 24px rgba(44, 62, 80, 0.25)'
+        boxShadow: '0 6px 18px rgba(44, 62, 80, 0.2)'
       }}>
         {/* Background decoration */}
         <div style={{

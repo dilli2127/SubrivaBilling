@@ -17,27 +17,33 @@ const BillingPage: React.FC = () => {
 
   return (
     <div style={{ 
-      padding: 24, 
+      padding: 0, 
       minHeight: '100vh',
-      background: '#f5f5f5' 
+      background: '#f5f5f5',
+      width: '100%'
     }}>
       <div style={{ 
-        maxWidth: 1400, 
-        margin: '0 auto',
+        width: '100%',
         background: '#fff',
-        borderRadius: 8,
-        boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+        minHeight: '100vh'
       }}>
         <BillDataGrid onSuccess={handleSuccess} />
       </div>
 
       <div style={{ 
-        textAlign: 'center', 
-        marginTop: 16, 
-        fontSize: 12, 
-        color: '#666' 
+        position: 'fixed',
+        bottom: 10,
+        left: '50%',
+        transform: 'translateX(-50%)',
+        background: 'rgba(0,0,0,0.8)',
+        color: 'white',
+        padding: '8px 16px',
+        borderRadius: 20,
+        fontSize: 11,
+        zIndex: 1000,
+        backdropFilter: 'blur(10px)'
       }}>
-        <strong>💡 Tips:</strong> Use Tab to navigate, Enter to edit, Ctrl+S to save, Ctrl+N to add items
+        <strong>💡 Tips:</strong> Tab(Navigate) • Enter(Edit) • F2(Save) • F1(Add) • Del(Remove)
       </div>
     </div>
   );
