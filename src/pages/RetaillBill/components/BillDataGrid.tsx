@@ -1183,8 +1183,18 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
               borderRadius: '8px',
               color: 'white',
               boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)',
-              animation: 'pulse 2s ease-in-out infinite'
-            }}>
+              transition: 'all 0.3s ease',
+              transform: 'scale(1)'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'scale(1.02)';
+              e.currentTarget.style.boxShadow = '0 6px 16px rgba(16, 185, 129, 0.4)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'scale(1)';
+              e.currentTarget.style.boxShadow = '0 4px 12px rgba(16, 185, 129, 0.3)';
+            }}
+            >
               <Text style={{ fontWeight: 800, fontSize: '14px', textShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>
                 NET/EXC/REPL:
               </Text>
@@ -1404,7 +1414,16 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
               textTransform: 'uppercase',
               letterSpacing: '0.5px',
               transition: 'all 0.3s ease',
-              animation: 'bounce 2s ease-in-out infinite'
+              transform: 'scale(1)',
+              cursor: 'pointer'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'scale(1.05)';
+              e.currentTarget.style.boxShadow = '0 8px 25px rgba(16, 185, 129, 0.4)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'scale(1)';
+              e.currentTarget.style.boxShadow = '0 6px 20px rgba(16, 185, 129, 0.3)';
             }}
           >
             🚀 {billdata ? 'UPDATE' : 'SAVE BILL'} (F2)
@@ -1425,7 +1444,17 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
               boxShadow: '0 6px 20px rgba(59, 130, 246, 0.3)',
               textTransform: 'uppercase',
               letterSpacing: '0.5px',
-              transition: 'all 0.3s ease'
+              transition: 'all 0.3s ease',
+              transform: 'scale(1)',
+              cursor: 'pointer'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'scale(1.05)';
+              e.currentTarget.style.boxShadow = '0 8px 25px rgba(59, 130, 246, 0.4)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'scale(1)';
+              e.currentTarget.style.boxShadow = '0 6px 20px rgba(59, 130, 246, 0.3)';
             }}
           >
             🖨️ PRINT (F3)
