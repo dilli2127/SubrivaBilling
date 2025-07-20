@@ -615,8 +615,66 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
       background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #cbd5e1 100%)',
       minHeight: '100vh',
       width: '100%',
-      animation: 'gradientShift 8s ease-in-out infinite'
+      animation: 'gradientShift 8s ease-in-out infinite',
+      position: 'relative',
+      overflow: 'hidden'
     }}>
+      {/* Background Half Circles */}
+      <div style={{
+        position: 'absolute',
+        top: '10%',
+        right: '-15%',
+        width: '40%',
+        height: '40%',
+        background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
+        borderRadius: '50%',
+        opacity: 0.15,
+        animation: 'float 10s ease-in-out infinite'
+      }} />
+      <div style={{
+        position: 'absolute',
+        top: '60%',
+        left: '-10%',
+        width: '30%',
+        height: '30%',
+        background: 'linear-gradient(135deg, #10b981 0%, #06b6d4 100%)',
+        borderRadius: '50%',
+        opacity: 0.12,
+        animation: 'float 12s ease-in-out infinite reverse'
+      }} />
+      <div style={{
+        position: 'absolute',
+        bottom: '20%',
+        right: '5%',
+        width: '25%',
+        height: '25%',
+        background: 'linear-gradient(135deg, #f59e0b 0%, #ef4444 100%)',
+        borderRadius: '50%',
+        opacity: 0.10,
+        animation: 'float 8s ease-in-out infinite 2s'
+      }} />
+      <div style={{
+        position: 'absolute',
+        top: '30%',
+        left: '20%',
+        width: '20%',
+        height: '20%',
+        background: 'linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%)',
+        borderRadius: '50%',
+        opacity: 0.08,
+        animation: 'float 15s ease-in-out infinite 1s'
+      }} />
+      <div style={{
+        position: 'absolute',
+        bottom: '60%',
+        right: '30%',
+        width: '15%',
+        height: '15%',
+        background: 'linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%)',
+        borderRadius: '50%',
+        opacity: 0.06,
+        animation: 'float 6s ease-in-out infinite 3s'
+      }} />
       {/* Ultra-Fast Billing Header */}
       <div style={{
         display: 'flex',
@@ -644,7 +702,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
           height: 80,
           background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
           borderRadius: '50%',
-          opacity: 0.1,
+          opacity: 0.18,
           animation: 'float 6s ease-in-out infinite'
         }} />
         <div style={{
@@ -655,7 +713,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
           height: 60,
           background: 'linear-gradient(135deg, #10b981 0%, #06b6d4 100%)',
           borderRadius: '50%',
-          opacity: 0.08,
+          opacity: 0.15,
           animation: 'float 8s ease-in-out infinite reverse'
         }} />
         <div style={{
@@ -666,9 +724,31 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
           height: 100,
           background: 'linear-gradient(135deg, #f59e0b 0%, #ef4444 100%)',
           borderRadius: '50%',
-          opacity: 0.05,
+          opacity: 0.12,
           transform: 'translate(-50%, -50%)',
           animation: 'pulse 4s ease-in-out infinite'
+        }} />
+        <div style={{
+          position: 'absolute',
+          top: -15,
+          left: '20%',
+          width: 40,
+          height: 40,
+          background: 'linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%)',
+          borderRadius: '50%',
+          opacity: 0.10,
+          animation: 'float 10s ease-in-out infinite 1s'
+        }} />
+        <div style={{
+          position: 'absolute',
+          bottom: -10,
+          right: '15%',
+          width: 50,
+          height: 50,
+          background: 'linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%)',
+          borderRadius: '50%',
+          opacity: 0.12,
+          animation: 'float 7s ease-in-out infinite 2s'
         }} />
         
         <div style={{ display: 'flex', alignItems: 'center', gap: 16, justifyContent: 'space-between', flexWrap: 'wrap', width: '100%' }}>
@@ -921,8 +1001,32 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
         gap: 16,
         margin: '0 8px 12px 8px',
         alignItems: 'flex-start',
-        animation: 'fadeInUp 1s ease-out 1s both'
+        animation: 'fadeInUp 1s ease-out 1s both',
+        position: 'relative'
       }}>
+        {/* Decorative half circles for items section */}
+        <div style={{
+          position: 'absolute',
+          top: '10%',
+          right: '5%',
+          width: 60,
+          height: 60,
+          background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
+          borderRadius: '50%',
+          opacity: 0.08,
+          animation: 'rotate 20s linear infinite'
+        }} />
+        <div style={{
+          position: 'absolute',
+          bottom: '20%',
+          left: '2%',
+          width: 40,
+          height: 40,
+          background: 'linear-gradient(135deg, #10b981 0%, #06b6d4 100%)',
+          borderRadius: '50%',
+          opacity: 0.06,
+          animation: 'scaleIn 3s ease-out infinite'
+        }} />
         {/* Bill Items Grid */}
         <div style={{
           flex: 1,
@@ -985,8 +1089,33 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
           boxShadow: '0 6px 20px rgba(0, 0, 0, 0.08)',
           alignSelf: 'flex-start',
           transition: 'all 0.3s ease',
-          animation: 'slideInRight 0.8s ease-out 1.2s both'
+          animation: 'slideInRight 0.8s ease-out 1.2s both',
+          position: 'relative',
+          overflow: 'hidden'
         }}>
+          {/* Decorative half circles for summary */}
+          <div style={{
+            position: 'absolute',
+            top: -10,
+            right: -10,
+            width: 30,
+            height: 30,
+            background: 'linear-gradient(135deg, #f59e0b 0%, #ef4444 100%)',
+            borderRadius: '50%',
+            opacity: 0.10,
+            animation: 'float 8s ease-in-out infinite'
+          }} />
+          <div style={{
+            position: 'absolute',
+            bottom: -5,
+            left: -5,
+            width: 25,
+            height: 25,
+            background: 'linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%)',
+            borderRadius: '50%',
+            opacity: 0.08,
+            animation: 'float 6s ease-in-out infinite reverse'
+          }} />
           {/* Header */}
           <div style={{
             borderBottom: '2px solid #e2e8f0',
@@ -1219,7 +1348,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
           height: 80,
           background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
           borderRadius: '50%',
-          opacity: 0.1,
+          opacity: 0.16,
           animation: 'float 6s ease-in-out infinite'
         }} />
         <div style={{
@@ -1230,8 +1359,30 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
           height: 60,
           background: 'linear-gradient(135deg, #10b981 0%, #06b6d4 100%)',
           borderRadius: '50%',
-          opacity: 0.08,
+          opacity: 0.14,
           animation: 'float 8s ease-in-out infinite reverse'
+        }} />
+        <div style={{
+          position: 'absolute',
+          top: '50%',
+          left: -15,
+          width: 45,
+          height: 45,
+          background: 'linear-gradient(135deg, #f59e0b 0%, #ef4444 100%)',
+          borderRadius: '50%',
+          opacity: 0.12,
+          animation: 'float 9s ease-in-out infinite 1s'
+        }} />
+        <div style={{
+          position: 'absolute',
+          bottom: -15,
+          right: '10%',
+          width: 35,
+          height: 35,
+          background: 'linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%)',
+          borderRadius: '50%',
+          opacity: 0.10,
+          animation: 'float 11s ease-in-out infinite 2s'
         }} />
         
         <div style={{ display: 'flex', alignItems: 'center', gap: 16, position: 'relative', zIndex: 1 }}>
