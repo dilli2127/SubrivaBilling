@@ -593,71 +593,212 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
       background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
       minHeight: '100vh' 
     }}>
-      {/* Compact Header */}
+      {/* Ultra-Fast Billing Header */}
       <div style={{
-        textAlign: 'center',
-        marginBottom: 16,
-        background: 'rgba(255, 255, 255, 0.95)',
-        padding: '12px',
-        borderRadius: '8px',
-        boxShadow: '0 4px 16px rgba(0, 0, 0, 0.1)'
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 12,
+        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        padding: '16px 24px',
+        borderRadius: '12px',
+        boxShadow: '0 8px 24px rgba(102, 126, 234, 0.3)',
+        position: 'relative',
+        overflow: 'hidden'
       }}>
-        <Title
-          level={4}
-          style={{ 
-            color: '#2c3e50', 
-            margin: 0,
-            fontSize: '18px',
-            fontWeight: 600
-          }}
-        >
-          <FileTextOutlined style={{ marginRight: 8, color: '#667eea' }} />
-          {billdata ? 'EDIT BILL' : 'CREATE BILL'} • {dayjs().format('DD MMM YYYY')}
-        </Title>
+        {/* Decorative background elements */}
+        <div style={{
+          position: 'absolute',
+          top: -20,
+          right: -20,
+          width: 60,
+          height: 60,
+          background: 'rgba(255,255,255,0.1)',
+          borderRadius: '50%',
+          opacity: 0.6
+        }} />
+        <div style={{
+          position: 'absolute',
+          bottom: -10,
+          left: -10,
+          width: 40,
+          height: 40,
+          background: 'rgba(255,255,255,0.08)',
+          borderRadius: '50%',
+          opacity: 0.5
+        }} />
+        
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <div style={{
+            background: 'rgba(255,255,255,0.2)',
+            padding: '8px',
+            borderRadius: '50%',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+          }}>
+            <FileTextOutlined style={{ fontSize: '20px', color: 'white' }} />
+          </div>
+          <div>
+            <Title
+              level={4}
+              style={{ 
+                color: 'white', 
+                margin: 0,
+                fontSize: '20px',
+                fontWeight: 700,
+                textShadow: '0 2px 4px rgba(0,0,0,0.2)'
+              }}
+            >
+              {billdata ? '⚡ EDIT INVOICE' : '🚀 NEW INVOICE'}
+            </Title>
+            <Text style={{ 
+              color: 'rgba(255,255,255,0.9)', 
+              fontSize: '13px',
+              fontWeight: 500,
+              display: 'block',
+              marginTop: 2
+            }}>
+              Ultra-Fast Billing • {dayjs().format('DD MMM YYYY, dddd')}
+            </Text>
+          </div>
+        </div>
+        
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+          <div style={{
+            background: 'rgba(255,255,255,0.15)',
+            padding: '8px 16px',
+            borderRadius: '20px',
+            border: '1px solid rgba(255,255,255,0.2)',
+            backdropFilter: 'blur(10px)'
+          }}>
+            <Text style={{ color: 'white', fontSize: '12px', fontWeight: 600 }}>
+              🎯 ITEMS: {billFormData.items.length}
+            </Text>
+          </div>
+          <div style={{
+            background: 'rgba(255,255,255,0.15)',
+            padding: '8px 16px',
+            borderRadius: '20px',
+            border: '1px solid rgba(255,255,255,0.2)',
+            backdropFilter: 'blur(10px)'
+          }}>
+            <Text style={{ color: 'white', fontSize: '12px', fontWeight: 600 }}>
+              💰 ₹{billCalculations.total_amount.toFixed(2)}
+            </Text>
+          </div>
+        </div>
       </div>
 
-      {/* Compact Settings Row */}
+      {/* Ultra-Modern Quick Settings */}
       <div style={{
-        background: 'rgba(255, 255, 255, 0.95)',
-        padding: '8px 16px',
-        borderRadius: '6px',
+        background: 'linear-gradient(135deg, #667eea 10%, #764ba2 90%)',
+        padding: '12px 20px',
+        borderRadius: '10px',
         marginBottom: 12,
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
-        gap: 16,
-        flexWrap: 'wrap'
+        gap: 20,
+        flexWrap: 'wrap',
+        position: 'relative',
+        overflow: 'hidden',
+        boxShadow: '0 6px 20px rgba(102, 126, 234, 0.2)'
       }}>
-        <Space size="large">
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <Text style={{ fontSize: '12px', fontWeight: 600, color: '#2c3e50' }}>🏪</Text>
+        {/* Background decoration */}
+        <div style={{
+          position: 'absolute',
+          top: -15,
+          left: -15,
+          width: 50,
+          height: 50,
+          background: 'rgba(255,255,255,0.06)',
+          borderRadius: '50%',
+          opacity: 0.8
+        }} />
+        
+        <Space size="large" style={{ position: 'relative', zIndex: 1 }}>
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: 10,
+            background: 'rgba(255,255,255,0.1)',
+            padding: '6px 12px',
+            borderRadius: '20px',
+            border: '1px solid rgba(255,255,255,0.15)',
+            backdropFilter: 'blur(10px)'
+          }}>
+            <Text style={{ 
+              fontSize: '14px', 
+              fontWeight: 700, 
+              color: 'white',
+              textShadow: '0 1px 2px rgba(0,0,0,0.2)'
+            }}>
+              🏪 SALE TYPE
+            </Text>
             <Switch
-              checkedChildren="Retail"
-              unCheckedChildren="Wholesale"
+              checkedChildren="RETAIL"
+              unCheckedChildren="WHOLESALE"
               checked={billSettings.isRetail}
               onChange={checked =>
                 setBillSettings(prev => ({ ...prev, isRetail: checked }))
               }
+              style={{
+                backgroundColor: billSettings.isRetail ? '#52c41a' : '#1890ff',
+              }}
             />
           </div>
           
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <Text style={{ fontSize: '12px', fontWeight: 600, color: '#2c3e50' }}>📊</Text>
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: 10,
+            background: 'rgba(255,255,255,0.1)',
+            padding: '6px 12px',
+            borderRadius: '20px',
+            border: '1px solid rgba(255,255,255,0.15)',
+            backdropFilter: 'blur(10px)'
+          }}>
+            <Text style={{ 
+              fontSize: '14px', 
+              fontWeight: 700, 
+              color: 'white',
+              textShadow: '0 1px 2px rgba(0,0,0,0.2)'
+            }}>
+              📊 GST
+            </Text>
             <Switch
-              checkedChildren="GST ✓"
-              unCheckedChildren="GST ✗"
+              checkedChildren="INCL"
+              unCheckedChildren="EXCL"
               checked={billSettings.isGstIncluded}
               onChange={checked =>
                 setBillSettings(prev => ({ ...prev, isGstIncluded: checked }))
               }
+              style={{
+                backgroundColor: billSettings.isGstIncluded ? '#52c41a' : '#faad14',
+              }}
             />
           </div>
           
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <Text style={{ fontSize: '12px', fontWeight: 600, color: '#2c3e50' }}>💳</Text>
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: 10,
+            background: 'rgba(255,255,255,0.1)',
+            padding: '6px 12px',
+            borderRadius: '20px',
+            border: '1px solid rgba(255,255,255,0.15)',
+            backdropFilter: 'blur(10px)'
+          }}>
+            <Text style={{ 
+              fontSize: '14px', 
+              fontWeight: 700, 
+              color: 'white',
+              textShadow: '0 1px 2px rgba(0,0,0,0.2)'
+            }}>
+              💳 PAYMENT
+            </Text>
             <Switch
-              checkedChildren="Paid"
-              unCheckedChildren="Unpaid"
+              checkedChildren="PAID"
+              unCheckedChildren="UNPAID"
               checked={billSettings.isPaid}
               onChange={checked =>
                 setBillSettings(prev => ({
@@ -666,19 +807,41 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
                   isPartiallyPaid: checked ? false : prev.isPartiallyPaid,
                 }))
               }
+              style={{
+                backgroundColor: billSettings.isPaid ? '#52c41a' : '#ff4d4f',
+              }}
             />
           </div>
 
           {!billSettings.isPaid && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <Text style={{ fontSize: '12px', fontWeight: 600, color: '#2c3e50' }}>💰</Text>
+            <div style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: 10,
+              background: 'rgba(255,255,255,0.1)',
+              padding: '6px 12px',
+              borderRadius: '20px',
+              border: '1px solid rgba(255,255,255,0.15)',
+              backdropFilter: 'blur(10px)'
+            }}>
+              <Text style={{ 
+                fontSize: '14px', 
+                fontWeight: 700, 
+                color: 'white',
+                textShadow: '0 1px 2px rgba(0,0,0,0.2)'
+              }}>
+                💰 PARTIAL
+              </Text>
               <Switch
-                checkedChildren="Partial"
-                unCheckedChildren="None"
+                checkedChildren="YES"
+                unCheckedChildren="NO"
                 checked={billSettings.isPartiallyPaid}
                 onChange={checked =>
                   setBillSettings(prev => ({ ...prev, isPartiallyPaid: checked }))
                 }
+                style={{
+                  backgroundColor: billSettings.isPartiallyPaid ? '#faad14' : '#d9d9d9',
+                }}
               />
             </div>
           )}
@@ -740,127 +903,362 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
         />
       </div>
 
-      {/* Compact Bill Summary */}
+      {/* Ultra-Clean Bill Summary */}
       <div style={{
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        background: 'linear-gradient(135deg, #00d2ff 0%, #3a7bd5 100%)',
         color: 'white',
-        borderRadius: '8px',
-        padding: '12px',
-        marginBottom: 12
+        borderRadius: '12px',
+        padding: '16px 20px',
+        marginBottom: 12,
+        position: 'relative',
+        overflow: 'hidden',
+        boxShadow: '0 8px 24px rgba(0, 210, 255, 0.25)'
       }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-          <Text style={{ color: 'white', fontWeight: 600, fontSize: '14px' }}>
-            💰 BILL TOTALS
-          </Text>
-          <Space size="large">
-            <Text style={{ color: 'rgba(255,255,255,0.9)', fontSize: '12px' }}>
-              Sub: ₹{billCalculations.sub_total.toFixed(2)}
-            </Text>
-            <Text style={{ color: 'rgba(255,255,255,0.9)', fontSize: '12px' }}>
-              GST: ₹{billCalculations.total_gst.toFixed(2)}
-            </Text>
-            <Text style={{ color: 'white', fontWeight: 700, fontSize: '16px' }}>
-              NET: ₹{billCalculations.total_amount.toFixed(2)}
-            </Text>
-          </Space>
-        </div>
-
-        {/* Compact Controls */}
+        {/* Background decoration */}
+        <div style={{
+          position: 'absolute',
+          top: -30,
+          right: -30,
+          width: 80,
+          height: 80,
+          background: 'rgba(255,255,255,0.08)',
+          borderRadius: '50%',
+          opacity: 0.7
+        }} />
+        
         <div style={{ 
           display: 'flex', 
-          justifyContent: 'center', 
-          alignItems: 'center', 
-          gap: 16,
-          flexWrap: 'wrap'
+          justifyContent: 'space-between', 
+          alignItems: 'center',
+          position: 'relative',
+          zIndex: 1
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <Text style={{ color: 'white', fontSize: '12px' }}>Disc:</Text>
-            <InputNumber
-              min={0}
-              value={billSettings.discount}
-              onChange={value =>
-                setBillSettings(prev => ({ ...prev, discount: value || 0 }))
-              }
-              style={{ width: 80 }}
-              size="small"
-            />
-            <Switch
-              checkedChildren="%"
-              unCheckedChildren="₹"
-              checked={billSettings.discountType === 'percentage'}
-              onChange={checked =>
-                setBillSettings(prev => ({
-                  ...prev,
-                  discountType: checked ? 'percentage' : 'amount',
-                }))
-              }
-              size="small"
-            />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div style={{
+              background: 'rgba(255,255,255,0.15)',
+              padding: '8px',
+              borderRadius: '50%',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+            }}>
+              💰
+            </div>
+            <Text style={{ 
+              color: 'white', 
+              fontWeight: 700, 
+              fontSize: '16px',
+              textShadow: '0 2px 4px rgba(0,0,0,0.2)'
+            }}>
+              BILL SUMMARY
+            </Text>
           </div>
           
-          {billSettings.isPartiallyPaid && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <Text style={{ color: 'white', fontSize: '12px' }}>Paid:</Text>
-              <InputNumber
-                min={0}
-                max={billCalculations.total_amount}
-                value={billSettings.paidAmount}
-                onChange={value =>
-                  setBillSettings(prev => ({ ...prev, paidAmount: value || 0 }))
-                }
-                style={{ width: 100 }}
-                size="small"
-                formatter={value =>
-                  `₹${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-                }
-                parser={value => Number(value!.replace(/₹\s?|(,*)/g, ''))}
-              />
-              <Text style={{ color: '#2ecc71', fontSize: '12px', fontWeight: 600 }}>
-                Rem: ₹{(billCalculations.total_amount - billSettings.paidAmount).toFixed(2)}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+            <div style={{ textAlign: 'center' }}>
+              <Text style={{ 
+                color: 'rgba(255,255,255,0.8)', 
+                fontSize: '11px', 
+                display: 'block',
+                fontWeight: 600,
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px'
+              }}>
+                SUBTOTAL
+              </Text>
+              <Text style={{ 
+                color: 'white', 
+                fontSize: '15px', 
+                fontWeight: 700,
+                fontFamily: 'monospace'
+              }}>
+                ₹{billCalculations.sub_total.toFixed(2)}
               </Text>
             </div>
-          )}
+            
+            <div style={{ textAlign: 'center' }}>
+              <Text style={{ 
+                color: 'rgba(255,255,255,0.8)', 
+                fontSize: '11px', 
+                display: 'block',
+                fontWeight: 600,
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px'
+              }}>
+                GST
+              </Text>
+              <Text style={{ 
+                color: 'white', 
+                fontSize: '15px', 
+                fontWeight: 700,
+                fontFamily: 'monospace'
+              }}>
+                ₹{billCalculations.total_gst.toFixed(2)}
+              </Text>
+            </div>
+
+            {/* Discount Display */}
+            {billSettings.discount > 0 && (
+              <div style={{ textAlign: 'center' }}>
+                <Text style={{ 
+                  color: 'rgba(255,255,255,0.8)', 
+                  fontSize: '11px', 
+                  display: 'block',
+                  fontWeight: 600,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.5px'
+                }}>
+                  DISCOUNT
+                </Text>
+                <Text style={{ 
+                  color: '#ff7875', 
+                  fontSize: '15px', 
+                  fontWeight: 700,
+                  fontFamily: 'monospace'
+                }}>
+                  -{billSettings.discountType === 'percentage' 
+                    ? `₹${((billCalculations.sub_total + billCalculations.total_gst) * billSettings.discount / 100).toFixed(2)}` 
+                    : `₹${billSettings.discount.toFixed(2)}`}
+                </Text>
+              </div>
+            )}
+            
+            <div style={{
+              background: 'rgba(255,255,255,0.2)',
+              padding: '12px 20px',
+              borderRadius: '25px',
+              border: '2px solid rgba(255,255,255,0.3)',
+              textAlign: 'center',
+              backdropFilter: 'blur(10px)',
+              boxShadow: '0 4px 16px rgba(0,0,0,0.1)'
+            }}>
+              <Text style={{ 
+                color: 'rgba(255,255,255,0.9)', 
+                fontSize: '12px', 
+                display: 'block',
+                fontWeight: 700,
+                textTransform: 'uppercase',
+                letterSpacing: '1px',
+                marginBottom: 2
+              }}>
+                NET TOTAL
+              </Text>
+              <Text style={{ 
+                color: 'white', 
+                fontSize: '20px', 
+                fontWeight: 900,
+                fontFamily: 'monospace',
+                textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+              }}>
+                ₹{billCalculations.total_amount.toFixed(2)}
+              </Text>
+            </div>
+            
+                         <div style={{ 
+               display: 'flex',
+               flexDirection: 'row',
+               gap: 12,
+               alignItems: 'flex-start',
+               justifyContent: 'center'
+             }}>
+               {/* Discount Controls */}
+               <div style={{ 
+                 textAlign: 'center',
+                 background: 'rgba(255,255,255,0.12)',
+                 padding: '8px 12px',
+                 borderRadius: '15px',
+                 border: '1px solid rgba(255,255,255,0.15)',
+                 backdropFilter: 'blur(10px)',
+                 minWidth: 120
+               }}>
+                 <Text style={{ 
+                   color: 'rgba(255,255,255,0.9)', 
+                   fontSize: '10px', 
+                   display: 'block',
+                   fontWeight: 700,
+                   textTransform: 'uppercase',
+                   letterSpacing: '0.5px',
+                   marginBottom: 4
+                 }}>
+                   💸 DISCOUNT
+                 </Text>
+                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, justifyContent: 'center' }}>
+                   <InputNumber
+                     min={0}
+                     value={billSettings.discount}
+                     onChange={value =>
+                       setBillSettings(prev => ({ ...prev, discount: value || 0 }))
+                     }
+                     style={{ width: 70 }}
+                     size="small"
+                   />
+                   <Switch
+                     checkedChildren="%"
+                     unCheckedChildren="₹"
+                     checked={billSettings.discountType === 'percentage'}
+                     onChange={checked =>
+                       setBillSettings(prev => ({
+                         ...prev,
+                         discountType: checked ? 'percentage' : 'amount',
+                       }))
+                     }
+                     size="small"
+                   />
+                 </div>
+               </div>
+
+               {/* Partial Payment Controls */}
+               {billSettings.isPartiallyPaid && (
+                 <div style={{ 
+                   textAlign: 'center',
+                   background: 'rgba(255,255,255,0.15)',
+                   padding: '8px 12px',
+                   borderRadius: '15px',
+                   border: '1px solid rgba(255,255,255,0.2)',
+                   backdropFilter: 'blur(10px)',
+                   minWidth: 130
+                 }}>
+                   <Text style={{ 
+                     color: 'rgba(255,255,255,0.9)', 
+                     fontSize: '10px', 
+                     display: 'block',
+                     fontWeight: 700,
+                     textTransform: 'uppercase',
+                     letterSpacing: '0.5px',
+                     marginBottom: 4
+                   }}>
+                     💰 PARTIAL PAY
+                   </Text>
+                   <InputNumber
+                     min={0}
+                     max={billCalculations.total_amount}
+                     value={billSettings.paidAmount}
+                     onChange={value =>
+                       setBillSettings(prev => ({ ...prev, paidAmount: value || 0 }))
+                     }
+                     style={{ 
+                       width: 90,
+                       marginBottom: 4
+                     }}
+                     size="small"
+                     formatter={value =>
+                       `₹${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+                     }
+                     parser={value => Number(value!.replace(/₹\s?|(,*)/g, ''))}
+                   />
+                   <Text style={{ 
+                     color: '#ff7875', 
+                     fontSize: '9px', 
+                     fontWeight: 600,
+                     display: 'block',
+                     fontFamily: 'monospace'
+                   }}>
+                     Rem: ₹{(billCalculations.total_amount - billSettings.paidAmount).toFixed(2)}
+                   </Text>
+                 </div>
+               )}
+             </div>
+          </div>
         </div>
       </div>
 
-      {/* Compact Action Bar */}
+      {/* Ultra-Fast Action Hub */}
       <div style={{
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
-        background: 'rgba(255,255,255,0.95)',
-        padding: '8px 16px',
-        borderRadius: '6px'
+        background: 'linear-gradient(135deg, #2c3e50 0%, #34495e 100%)',
+        padding: '16px 20px',
+        borderRadius: '12px',
+        position: 'relative',
+        overflow: 'hidden',
+        boxShadow: '0 8px 24px rgba(44, 62, 80, 0.25)'
       }}>
-        <div>
+        {/* Background decoration */}
+        <div style={{
+          position: 'absolute',
+          top: -20,
+          right: -20,
+          width: 70,
+          height: 70,
+          background: 'rgba(255,255,255,0.05)',
+          borderRadius: '50%',
+          opacity: 0.8
+        }} />
+        
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, position: 'relative', zIndex: 1 }}>
           <Button
             type="primary"
+            size="large"
             icon={<SaveOutlined />}
             onClick={handleSaveBill}
             loading={saleCreateLoading}
             style={{
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              background: 'linear-gradient(135deg, #52c41a 0%, #389e0d 100%)',
               border: 'none',
-              fontWeight: 600
+              fontWeight: 700,
+              height: '45px',
+              padding: '0 24px',
+              borderRadius: '25px',
+              fontSize: '15px',
+              boxShadow: '0 4px 16px rgba(82, 196, 26, 0.3)',
+              textTransform: 'uppercase',
+              letterSpacing: '0.5px'
             }}
           >
-            {billdata ? 'Update' : 'Save'} (Ctrl+S)
+            🚀 {billdata ? 'UPDATE' : 'SAVE BILL'} (F2)
           </Button>
+          
           <Button
+            size="large"
             icon={<PrinterOutlined />}
-            style={{ marginLeft: 8, color: '#667eea', borderColor: '#667eea' }}
+            style={{ 
+              background: 'linear-gradient(135deg, #1890ff 0%, #096dd9 100%)',
+              color: 'white',
+              border: 'none',
+              fontWeight: 700,
+              height: '45px',
+              padding: '0 20px',
+              borderRadius: '25px',
+              fontSize: '14px',
+              boxShadow: '0 4px 16px rgba(24, 144, 255, 0.3)',
+              textTransform: 'uppercase',
+              letterSpacing: '0.5px'
+            }}
           >
-            Print (Ctrl+P)
+            🖨️ PRINT (F3)
           </Button>
         </div>
         
-        <div style={{ textAlign: 'right' }}>
-          <Text style={{ color: '#666', fontSize: '11px', display: 'block' }}>
-            <strong>⚡ Fast Keys:</strong> F1(New) • F2(Save) • F3(Print) • F4(Customer) • Tab(Navigate)
-          </Text>
-          <Text style={{ color: '#666', fontSize: '11px' }}>
-            <strong>Items:</strong> Ctrl+N(Add) • Del(Remove) • Enter(Edit) • Esc(Cancel)
-          </Text>
+        <div style={{ 
+          background: 'rgba(255,255,255,0.08)',
+          padding: '12px 16px',
+          borderRadius: '8px',
+          border: '1px solid rgba(255,255,255,0.1)',
+          backdropFilter: 'blur(10px)',
+          position: 'relative',
+          zIndex: 1
+        }}>
+          <div style={{ textAlign: 'right' }}>
+            <Text style={{ 
+              color: 'rgba(255,255,255,0.9)', 
+              fontSize: '11px', 
+              display: 'block',
+              fontWeight: 600,
+              lineHeight: '16px',
+              textShadow: '0 1px 2px rgba(0,0,0,0.2)'
+            }}>
+              ⚡ <strong>LIGHTNING KEYS:</strong> F1(➕Item) • F2(💾Save) • F3(🖨️Print) • F4(👤Customer)
+            </Text>
+            <Text style={{ 
+              color: 'rgba(255,255,255,0.8)', 
+              fontSize: '10px',
+              fontWeight: 500,
+              lineHeight: '14px',
+              marginTop: 2,
+              display: 'block'
+            }}>
+              <strong>NAVIGATION:</strong> Tab(Next) • Enter(Edit) • Esc(Cancel) • Ctrl+N(Add) • Del(Remove)
+            </Text>
+          </div>
         </div>
       </div>
     </div>
