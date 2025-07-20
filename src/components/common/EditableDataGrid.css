@@ -1,0 +1,178 @@
+.editable-data-grid {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: #fff;
+  border: 1px solid #d9d9d9;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.editable-data-grid-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: #fafafa;
+  border-bottom: 1px solid #d9d9d9;
+  flex-shrink: 0;
+}
+
+.editable-data-grid-info {
+  font-size: 12px;
+  color: #666;
+  font-weight: 500;
+}
+
+.editable-data-grid-shortcuts {
+  padding: 8px 16px;
+  background: #f5f5f5;
+  border-top: 1px solid #d9d9d9;
+  flex-shrink: 0;
+}
+
+.editable-data-grid-shortcuts small {
+  color: #666;
+  font-size: 11px;
+}
+
+/* React Data Grid Customizations */
+.rdg {
+  flex: 1;
+  border: none !important;
+  font-size: 14px;
+}
+
+.rdg-cell {
+  border-right: 1px solid #f0f0f0 !important;
+  border-bottom: 1px solid #f0f0f0 !important;
+  display: flex;
+  align-items: center;
+  padding: 0 8px;
+}
+
+.rdg-header-row {
+  background-color: #fafafa !important;
+  font-weight: 600;
+  color: #262626;
+  border-bottom: 2px solid #d9d9d9 !important;
+}
+
+.rdg-header-row .rdg-cell {
+  border-right: 1px solid #d9d9d9 !important;
+  border-bottom: none !important;
+}
+
+.rdg-row {
+  background-color: #fff;
+}
+
+.rdg-row:hover {
+  background-color: #f5f5f5 !important;
+}
+
+.rdg-row[aria-selected="true"] {
+  background-color: #e6f7ff !important;
+}
+
+.rdg-row[aria-selected="true"]:hover {
+  background-color: #bae7ff !important;
+}
+
+/* Custom cell styles */
+.rdg-cell:focus-within {
+  outline: 2px solid #1890ff;
+  outline-offset: -2px;
+}
+
+.rdg-cell input,
+.rdg-cell .ant-select,
+.rdg-cell .ant-input-number,
+.rdg-cell .ant-picker {
+  border: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  height: 100% !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+.rdg-cell .ant-select-selector {
+  border: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  padding: 0 !important;
+}
+
+.rdg-cell .ant-select-selection-search-input {
+  height: 100% !important;
+}
+
+/* Loading overlay */
+.editable-data-grid.loading {
+  position: relative;
+}
+
+.editable-data-grid.loading::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .editable-data-grid-toolbar {
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-start;
+  }
+  
+  .editable-data-grid-info {
+    font-size: 11px;
+  }
+  
+  .rdg {
+    font-size: 12px;
+  }
+}
+
+/* Custom scrollbar */
+.rdg-viewport::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.rdg-viewport::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.rdg-viewport::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+.rdg-viewport::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* Action buttons in cells */
+.rdg-cell .ant-btn {
+  border: none;
+  box-shadow: none;
+  padding: 0;
+  height: auto;
+  width: auto;
+  min-width: auto;
+}
+
+.rdg-cell .ant-btn:hover {
+  background: rgba(255, 77, 79, 0.1);
+} 

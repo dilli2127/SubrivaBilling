@@ -26,7 +26,7 @@ import dayjs from "dayjs";
 import GlobalDrawer from "../../components/antd/GlobalDrawer";
 import { useApiActions } from "../../services/api/useApiActions";
 import { useDynamicSelector } from "../../services/redux";
-import RetailBillingTable from "./retaill_bill";
+import BillDataGrid from "./components/BillDataGrid";
 import BillViewModal from "./components/BillViewModal";
 import GlobalTable from "../../components/antd/GlobalTable";
 import { useHandleApiResponse } from "../../components/common/useHandleApiResponse";
@@ -282,7 +282,7 @@ const BillListPage = () => {
         open={isDrawerOpen}
         width={1200}
       >
-        <RetailBillingTable
+        <BillDataGrid
           billdata={selectedBill}
           onSuccess={() => {
             setIsDrawerOpen(false);

@@ -12,7 +12,7 @@ const ProductCrud = lazy(() => import("../pages/Products/crud"));
 const UnitCrud = lazy(() => import("../pages/Unit/crud"));
 const CategoryCrud = lazy(() => import("../pages/Category/crud"));
 const VariantCrud = lazy(() => import("../pages/Variant/crud"));
-const RetailBillForm = lazy(() => import("../pages/RetaillBill/retaill_bill"));
+const BillingPage = lazy(() => import("../pages/RetaillBill/BillingPage"));
 const BillListPage = lazy(() => import("../pages/RetaillBill/BillListPage"));
 const CustomerCrud = lazy(() => import("../pages/Customer/crud"));
 const PaymentHistory = lazy(() => import("../pages/Payment/PaymentHistory"));
@@ -151,7 +151,7 @@ const routerData: RouteConfig[] = [
         path: "retaill_billing",
         element: (
           <Suspense fallback={<Loader />}>
-            <RetailBillForm billdata={""} />
+            <BillingPage />
           </Suspense>
         ),
         children: [],
