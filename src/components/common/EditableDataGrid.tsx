@@ -65,6 +65,8 @@ const EditableDataGrid: React.FC<EditableDataGridProps> = ({
   const createEditor = (column: EditableColumn) => {
     return ({ row, onRowChange, onClose }: any) => {
       const value = row[column.field];
+      
+
 
       const handleChange = (newValue: any) => {
         onRowChange({ ...row, [column.field]: newValue });
@@ -82,17 +84,23 @@ const EditableDataGrid: React.FC<EditableDataGridProps> = ({
         case 'select':
           return (
             <Select
-              value={value}
+              value={value || undefined}
               onChange={handleChange}
               onKeyDown={handleKeyDown}
-              options={column.options}
+              options={column.options || []}
               style={{ width: '100%' }}
               placeholder={`Select ${column.name}`}
               showSearch
               allowClear
               autoFocus
-              open
               onBlur={() => onClose(true)}
+              onDropdownVisibleChange={(open) => {
+                if (!open) onClose(true);
+              }}
+              filterOption={(input, option) =>
+                (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+              }
+              notFoundContent="No options found"
             />
           );
 
@@ -118,15 +126,17 @@ const EditableDataGrid: React.FC<EditableDataGridProps> = ({
               style={{ width: '100%' }}
               placeholder={`Select ${column.name}`}
               autoFocus
-              open
               onBlur={() => onClose(true)}
+              onOpenChange={(open) => {
+                if (!open) onClose(true);
+              }}
             />
           );
 
         case 'boolean':
           return (
             <Select
-              value={value}
+              value={value || undefined}
               onChange={handleChange}
               onKeyDown={handleKeyDown}
               options={[
@@ -136,8 +146,10 @@ const EditableDataGrid: React.FC<EditableDataGridProps> = ({
               style={{ width: '100%' }}
               placeholder={`Select ${column.name}`}
               autoFocus
-              open
               onBlur={() => onClose(true)}
+              onDropdownVisibleChange={(open) => {
+                if (!open) onClose(true);
+              }}
             />
           );
 
@@ -168,6 +180,15 @@ const EditableDataGrid: React.FC<EditableDataGridProps> = ({
     editor: col.editable !== false ? createEditor(col) : undefined,
     renderCell: ({ row }: RenderCellProps<any>) => {
       const value = row[col.field];
+      
+      // Handle empty values
+      if (value === null || value === undefined || value === '') {
+        if (col.type === 'select') {
+          return <span style={{ color: '#999', fontStyle: 'italic' }}>{`Select ${col.name}`}</span>;
+        }
+        return <span style={{ color: '#999', fontStyle: 'italic' }}>{`Enter ${col.name}`}</span>;
+      }
+      
       if (col.type === 'date' && value) {
         return dayjs(value).format('YYYY-MM-DD');
       }

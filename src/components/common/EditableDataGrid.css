@@ -118,6 +118,32 @@
   height: 100% !important;
 }
 
+/* Ensure Select dropdowns appear above the grid */
+.rdg-cell .ant-select-dropdown {
+  z-index: 9999 !important;
+}
+
+.rdg-cell .ant-select {
+  z-index: 1;
+}
+
+.rdg-cell .ant-select-focused {
+  z-index: 9999;
+}
+
+/* Ensure DatePicker dropdowns appear above the grid */
+.rdg-cell .ant-picker-dropdown {
+  z-index: 9999 !important;
+}
+
+.rdg-cell .ant-picker {
+  z-index: 1;
+}
+
+.rdg-cell .ant-picker-focused {
+  z-index: 9999;
+}
+
 /* Loading overlay */
 .editable-data-grid.loading {
   position: relative;
