@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Typography, message } from 'antd';
-import EditableDataGrid, { EditableColumn } from '../../components/common/EditableDataGrid';
+import AntdEditableTable, { AntdEditableColumn } from '../../components/common/AntdEditableTable';
 import { useApiActions } from '../../services/api/useApiActions';
 import { useDynamicSelector } from '../../services/redux';
 import { useHandleApiResponse } from '../../components/common/useHandleApiResponse';
+import './CustomerDataGrid.css';
 
 const { Title } = Typography;
 
@@ -43,11 +44,11 @@ const CustomerDataGrid: React.FC = () => {
   }, [customerList]);
 
   // Define columns for the data grid
-  const columns: EditableColumn[] = [
+  const columns: AntdEditableColumn[] = [
     {
       key: 'full_name',
-      name: 'Full Name',
-      field: 'full_name',
+      title: 'Full Name',
+      dataIndex: 'full_name',
       type: 'text',
       required: true,
       width: 200,
@@ -60,8 +61,8 @@ const CustomerDataGrid: React.FC = () => {
     },
     {
       key: 'email',
-      name: 'Email Address',
-      field: 'email',
+      title: 'Email Address',
+      dataIndex: 'email',
       type: 'text',
       width: 220,
       validation: (value: string) => {
@@ -73,8 +74,8 @@ const CustomerDataGrid: React.FC = () => {
     },
     {
       key: 'mobile',
-      name: 'Mobile Number',
-      field: 'mobile',
+      title: 'Mobile Number',
+      dataIndex: 'mobile',
       type: 'text',
       required: true,
       width: 150,
@@ -87,15 +88,15 @@ const CustomerDataGrid: React.FC = () => {
     },
     {
       key: 'address',
-      name: 'Address',
-      field: 'address',
+      title: 'Address',
+      dataIndex: 'address',
       type: 'text',
       width: 250
     },
     {
       key: 'customer_type',
-      name: 'Customer Type',
-      field: 'customer_type',
+      title: 'Customer Type',
+      dataIndex: 'customer_type',
       type: 'select',
       required: true,
       width: 150,
@@ -205,34 +206,30 @@ const CustomerDataGrid: React.FC = () => {
   });
 
   return (
-    <div style={{ padding: 24 }}>
-      <Title level={2} style={{ marginBottom: 24, color: '#1890ff' }}>
+    <div className="customer-data-grid">
+      <Title level={2} className="customer-data-grid-title">
         Customer Management
       </Title>
       
-      <div style={{ 
-        background: '#fff', 
-        padding: 16, 
-        borderRadius: 8,
-        boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-      }}>
-        <EditableDataGrid
+      <div className="customer-data-grid-container">
+        <AntdEditableTable
           columns={columns}
-          data={customers}
+          dataSource={customers.map((customer, index) => ({ ...customer, key: customer._id || index.toString() }))}
           onSave={handleSave}
           onAdd={handleAdd}
           onDelete={handleDelete}
-          height={500}
           loading={loading}
           allowAdd={true}
           allowDelete={true}
           allowEdit={true}
+          size="middle"
+          rowKey="key"
         />
       </div>
 
-      <div style={{ marginTop: 16, fontSize: 12, color: '#666' }}>
+      <div className="customer-data-grid-tips">
         <strong>Tips:</strong>
-        <ul style={{ margin: '8px 0', paddingLeft: 20 }}>
+        <ul>
           <li>Use Tab/Shift+Tab to navigate between cells</li>
           <li>Press Enter to edit a cell, Escape to cancel editing</li>
           <li>Ctrl+N to add new customer, Ctrl+S to save all changes</li>

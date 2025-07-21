@@ -1,0 +1,190 @@
+.antd-editable-table {
+  width: 100%;
+}
+
+.antd-editable-table .ant-table-thead > tr > th {
+  background-color: #f5f5f5;
+  font-weight: 600;
+  color: #262626;
+  border-bottom: 2px solid #d9d9d9;
+  padding: 8px 12px;
+}
+
+.antd-editable-table .ant-table-tbody > tr {
+  transition: background-color 0.2s;
+}
+
+.antd-editable-table .ant-table-tbody > tr:hover {
+  background-color: #f9f9f9;
+}
+
+.antd-editable-table .ant-table-tbody > tr.ant-table-row-selected {
+  background-color: #e6f7ff;
+}
+
+.antd-editable-table .ant-table-tbody > tr > td {
+  padding: 8px 12px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.antd-editable-table .ant-form-item {
+  margin-bottom: 0;
+}
+
+.antd-editable-table .editable-cell-input-wrapper {
+  padding: 4px 0;
+}
+
+.antd-editable-table .ant-btn-link {
+  padding: 0 4px;
+  height: auto;
+  line-height: 1;
+}
+
+.antd-editable-table .ant-table-selection-column {
+  width: 50px;
+}
+
+.antd-editable-table .ant-table-thead > tr > th.ant-table-selection-column {
+  padding: 8px 16px;
+}
+
+.antd-editable-table .ant-table-tbody > tr > td.ant-table-selection-column {
+  padding: 8px 16px;
+}
+
+/* Compact mode styles */
+.antd-editable-table.compact {
+  font-size: 12px;
+}
+
+.antd-editable-table.compact .ant-table-thead > tr > th,
+.antd-editable-table.compact .ant-table-tbody > tr > td {
+  padding: 4px 8px;
+}
+
+/* Focus styles for keyboard navigation */
+.antd-editable-table .ant-input:focus,
+.antd-editable-table .ant-input-number:focus,
+.antd-editable-table .ant-select:focus,
+.antd-editable-table .ant-picker:focus {
+  border-color: #1890ff;
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+  outline: none;
+}
+
+/* Enhanced keyboard navigation */
+.antd-editable-table .editable-cell-content {
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.antd-editable-table .editable-cell-content:hover {
+  background-color: #f5f5f5;
+}
+
+.antd-editable-table .editable-cell-content:focus {
+  background-color: #e6f7ff;
+  outline: 2px solid #1890ff;
+  outline-offset: -2px;
+}
+
+.antd-editable-table .ant-table-tbody > tr > td {
+  padding: 8px 12px;
+  position: relative;
+}
+
+.antd-editable-table .ant-table-tbody > tr > td:focus-within {
+  background-color: #e6f7ff;
+}
+
+/* Tab and Arrow navigation improvements */
+.antd-editable-table .ant-table-tbody > tr > td[tabindex="0"]:focus,
+.antd-editable-table .ant-table-tbody > tr > td:focus {
+  outline: 2px solid #1890ff;
+  outline-offset: -2px;
+  background-color: #e6f7ff;
+  position: relative;
+}
+
+.antd-editable-table .ant-table-tbody > tr > td:focus::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border: 2px solid #1890ff;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Arrow key navigation indicator */
+.antd-editable-table .ant-table-tbody > tr > td.navigation-active {
+  background-color: #e6f7ff;
+  outline: 2px solid #1890ff;
+  outline-offset: -2px;
+}
+
+/* Auto-focus for editing cells */
+.antd-editable-table .editable-cell-input-wrapper .ant-input,
+.antd-editable-table .editable-cell-input-wrapper .ant-input-number,
+.antd-editable-table .editable-cell-input-wrapper .ant-select,
+.antd-editable-table .editable-cell-input-wrapper .ant-picker {
+  border: 2px solid #1890ff;
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+}
+
+/* Toolbar styles */
+.antd-editable-table .table-toolbar {
+  margin-bottom: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.antd-editable-table .table-info {
+  color: rgba(0, 0, 0, 0.45);
+  font-size: 12px;
+}
+
+/* Keyboard shortcuts info */
+.antd-editable-table .keyboard-shortcuts {
+  margin-top: 8px;
+  text-align: center;
+}
+
+.antd-editable-table .keyboard-shortcuts .ant-typography {
+  color: rgba(0, 0, 0, 0.45);
+  font-size: 11px;
+}
+
+/* Action buttons hover effects */
+.antd-editable-table .ant-btn-link:hover {
+  color: #40a9ff;
+}
+
+.antd-editable-table .ant-btn-link.ant-btn-dangerous:hover {
+  color: #ff7875;
+}
+
+/* Loading overlay */
+.antd-editable-table .ant-spin-nested-loading > .ant-spin {
+  z-index: 10;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .antd-editable-table .ant-table-thead > tr > th,
+  .antd-editable-table .ant-table-tbody > tr > td {
+    padding: 6px 8px;
+  }
+  
+  .antd-editable-table .table-toolbar {
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-start;
+  }
+} 

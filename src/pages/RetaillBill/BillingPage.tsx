@@ -2,6 +2,7 @@ import React from 'react';
 import { Typography } from 'antd';
 import BillDataGrid from './components/BillDataGrid';
 import { useNavigate } from 'react-router-dom';
+import './BillingPage.css';
 
 const { Title } = Typography;
 
@@ -16,21 +17,10 @@ const BillingPage: React.FC = () => {
   };
 
   return (
-    <div style={{ 
-      padding: 0, 
-      minHeight: '100vh',
-      background: '#f5f5f5',
-      width: '100%'
-    }}>
-      <div style={{ 
-        width: '100%',
-        background: '#fff',
-        minHeight: '100vh'
-      }}>
+    <div className="billing-page">
+      <div className="billing-page-content">
         <BillDataGrid onSuccess={handleSuccess} />
       </div>
-
-
     </div>
   );
 };

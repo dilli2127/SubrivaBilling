@@ -1,7 +1,7 @@
 # React Data Grid Implementation Guide
 
 ## Overview
-This project has been updated to replace all form-based interfaces with keyboard-navigable editable data grids using `react-data-grid`. This provides a complete mouse-free experience for data entry and management.
+This project has been updated to replace all form-based interfaces with keyboard-navigable editable data grids using Antd's `Table` component. This provides a complete mouse-free experience for data entry and management.
 
 ## Key Features
 
@@ -27,8 +27,8 @@ This project has been updated to replace all form-based interfaces with keyboard
 
 ## Components Converted
 
-### 1. EditableDataGrid (Core Component)
-**Location**: `src/components/common/EditableDataGrid.tsx`
+### 1. AntdEditableTable (Core Component)
+**Location**: `src/components/common/AntdEditableTable.tsx`
 
 **Features**:
 - Keyboard-only navigation
@@ -39,7 +39,7 @@ This project has been updated to replace all form-based interfaces with keyboard
 
 **Usage**:
 ```tsx
-import EditableDataGrid, { EditableColumn } from '../../components/common/EditableDataGrid';
+import AntdEditableTable, { AntdEditableColumn } from '../../components/common/AntdEditableTable';
 
 const columns: EditableColumn[] = [
   {
@@ -63,11 +63,12 @@ const columns: EditableColumn[] = [
   }
 ];
 
-<EditableDataGrid
+<AntdEditableTable
   columns={columns}
-  data={data}
+  dataSource={data}
   onSave={handleSave}
   onAdd={handleAdd}
+  rowKey="id"
   onDelete={handleDelete}
   height={400}
   loading={loading}
@@ -186,13 +187,12 @@ const column: EditableColumn = {
 
 ### Grid Configuration
 ```tsx
-<EditableDataGrid
+<AntdEditableTable
   columns={columns}
-  data={data}
-  height={400} // Grid height
-  rowHeight={35} // Row height
-  headerRowHeight={35} // Header height
+  dataSource={data}
   allowAdd={true} // Enable add button
+  size="small" // Table size
+  rowKey="id" // Unique row identifier
   allowDelete={true} // Enable delete functionality
   allowEdit={true} // Enable editing
   loading={false} // Show loading state
@@ -288,7 +288,7 @@ const columns: EditableColumn[] = [
 
 ## Support
 
-For questions or issues with the DataGrid implementation:
+For questions or issues with the AntdEditableTable implementation:
 
 1. Check this guide first
 2. Review component documentation

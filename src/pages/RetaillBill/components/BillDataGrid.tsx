@@ -8,9 +8,9 @@ import {
   Badge,
 } from 'antd';
 import dayjs from 'dayjs';
-import EditableDataGrid, {
-  EditableColumn,
-} from '../../../components/common/EditableDataGrid';
+import AntdEditableTable, {
+  AntdEditableColumn,
+} from '../../../components/common/AntdEditableTable';
 import { useApiActions } from '../../../services/api/useApiActions';
 import { useDynamicSelector } from '../../../services/redux';
 import { calculateBillTotals } from '../../../helpers/amount_calculations';
@@ -191,27 +191,27 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
   };
 
   // Column definitions for bill header
-  const headerColumns: EditableColumn[] = [
+  const headerColumns: AntdEditableColumn[] = [
     {
       key: 'invoice_no',
-      name: '📄 INVOICE #',
-      field: 'invoice_no',
+      title: '📄 INVOICE #',
+      dataIndex: 'invoice_no',
       type: 'text',
       required: true,
       width: 180,
     },
     {
       key: 'date',
-      name: '📅 DATE',
-      field: 'date',
+      title: '📅 DATE',
+      dataIndex: 'date',
       type: 'date',
       required: true,
       width: 150,
     },
     {
       key: 'customer_id',
-      name: '👤 CUSTOMER',
-      field: 'customer_id',
+      title: '👤 CUSTOMER',
+      dataIndex: 'customer_id',
       type: 'select',
       options: customerOptions,
       required: true,
@@ -219,8 +219,8 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
     },
     {
       key: 'payment_mode',
-      name: '💳 PAYMENT',
-      field: 'payment_mode',
+      title: '💳 PAYMENT',
+      dataIndex: 'payment_mode',
       type: 'select',
       options: [
         { label: '💵 Cash', value: 'cash' },
@@ -240,11 +240,11 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
   }];
 
   // Column definitions for bill items
-  const itemColumns: EditableColumn[] = [
+  const itemColumns: AntdEditableColumn[] = [
     {
       key: 'product_id',
-      name: '🛒 PRODUCT',
-      field: 'product_id',
+      title: '🛒 PRODUCT',
+      dataIndex: 'product_id',
       type: 'select',
       options: productOptions,
       required: true,
@@ -252,8 +252,8 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
     },
     {
       key: 'stock_id',
-      name: '📦 STOCK',
-      field: 'stock_id',
+      title: '📦 STOCK',
+      dataIndex: 'stock_id',
       type: 'select',
       options: [], // Dynamic based on selected product
       required: true,
@@ -261,30 +261,30 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
     },
     {
       key: 'qty',
-      name: '📊 QTY',
-      field: 'qty',
+      title: '📊 QTY',
+      dataIndex: 'qty',
       type: 'number',
       width: 90,
     },
     {
       key: 'loose_qty',
-      name: '📋 LOOSE',
-      field: 'loose_qty',
+      title: '📋 LOOSE',
+      dataIndex: 'loose_qty',
       type: 'number',
       width: 90,
     },
     {
       key: 'price',
-      name: '💰 RATE',
-      field: 'price',
+      title: '💰 RATE',
+      dataIndex: 'price',
       type: 'number',
       required: true,
       width: 120,
     },
     {
       key: 'amount',
-      name: '💵 AMOUNT',
-      field: 'amount',
+      title: '💵 AMOUNT',
+      dataIndex: 'amount',
       type: 'number',
       editable: false,
       width: 130,
@@ -329,9 +329,23 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
   };
 
   // Handle item changes
-  const handleItemsChange = (items: BillItem[]) => {
+  const handleItemsChange = (items: any[]) => {
+    // Convert back to BillItem format
+    const billItems: BillItem[] = items.map(item => ({
+      product_id: item.product_id || '',
+      product_name: item.product_name || '',
+      variant_name: item.variant_name || '',
+      stock_id: item.stock_id || '',
+      qty: item.qty || 0,
+      loose_qty: item.loose_qty || 0,
+      price: item.price || 0,
+      mrp: item.mrp || 0,
+      amount: item.amount || 0,
+      tax_percentage: item.tax_percentage || 0,
+      _id: item._id
+    }));
     // Update items with calculated amounts
-    const updatedItems = items.map(item => {
+    const updatedItems = billItems.map(item => {
       if (!item.product_id || !item.stock_id) return item;
 
       // Get stock info
@@ -538,7 +552,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
       } else if (e.key === 'F4') {
         e.preventDefault();
         // Focus customer field
-        const customerField = document.querySelector('.rdg-cell[data-column-key="customer_id"]') as HTMLElement;
+        const customerField = document.querySelector('.ant-table-tbody td[data-column-key="customer_id"]') as HTMLElement;
         customerField?.focus();
       } 
       
@@ -553,6 +567,36 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
         } else if (e.key === 'p') {
           e.preventDefault();
           message.info('Print functionality - Ctrl+P pressed');
+        }
+      }
+      
+      // Enhanced Tab and Arrow navigation for billing
+      else if (e.key === 'Tab' || e.key === 'ArrowRight') {
+        const target = e.target as HTMLElement;
+        if (target.closest('.ant-table-tbody')) {
+          // Ensure smooth navigation between product and stock fields
+          const currentCell = target.closest('td');
+          if (currentCell) {
+            const currentColumn = currentCell.getAttribute('data-column-key');
+            if (currentColumn === 'product_id') {
+              // When leaving product field, ensure stock options are updated
+              setTimeout(() => {
+                const stockCell = document.querySelector('td[data-column-key="stock_id"]') as HTMLElement;
+                if (stockCell) {
+                  stockCell.focus();
+                }
+              }, 50);
+            }
+          }
+        }
+      }
+      
+      // Arrow key navigation for billing
+      else if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+        const target = e.target as HTMLElement;
+        if (target.closest('.ant-table-tbody')) {
+          // Let the table handle arrow navigation
+          return;
         }
       }
       
@@ -941,15 +985,16 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
         boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)',
         animation: 'slideInUp 0.8s ease-out 0.9s both'
       }}>
-        <EditableDataGrid
+        <AntdEditableTable
           columns={headerColumns}
-          data={headerData}
+          dataSource={headerData}
           onSave={handleHeaderChange}
           allowAdd={false}
           allowDelete={false}
-          height={100}
           loading={customerLoading}
           className="compact-header-grid"
+          size="small"
+          rowKey="invoice_no"
         />
       </div>
 
@@ -1023,15 +1068,16 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
             </Badge>
           </div>
           
-          <EditableDataGrid
+          <AntdEditableTable
             columns={itemColumns}
-            data={billFormData.items}
+            dataSource={billFormData.items.map((item, index) => ({ ...item, key: index.toString() }))}
             onSave={handleItemsChange}
             onAdd={handleAddItem}
             onDelete={handleDeleteItems}
-            height={320}
             loading={productLoading || stockLoading || branchStockLoading}
             className="modern-bill-grid"
+            size="small"
+            rowKey="key"
           />
         </div>
 
