@@ -56,7 +56,7 @@ const CustomerDataGrid: React.FC = () => {
         if (!value || value.trim().length < 2) {
           return 'Full name must be at least 2 characters';
         }
-        return null;
+        return undefined;
       }
     },
     {
@@ -69,7 +69,7 @@ const CustomerDataGrid: React.FC = () => {
         if (value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
           return 'Please enter a valid email address';
         }
-        return null;
+        return undefined;
       }
     },
     {
@@ -83,7 +83,7 @@ const CustomerDataGrid: React.FC = () => {
         if (!value || !/^[0-9]{10}$/.test(value)) {
           return 'Mobile number must be exactly 10 digits';
         }
-        return null;
+        return undefined;
       }
     },
     {
@@ -221,7 +221,6 @@ const CustomerDataGrid: React.FC = () => {
           loading={loading}
           allowAdd={true}
           allowDelete={true}
-          allowEdit={true}
           size="middle"
           rowKey="key"
         />
