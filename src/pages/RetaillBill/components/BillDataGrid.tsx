@@ -258,6 +258,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
       options: [], // Dynamic based on selected product
       required: true,
       width: 200,
+      editable: false, // Auto-populated, no manual selection needed
     },
     {
       key: 'qty',
@@ -330,20 +331,41 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
 
   // Handle item changes
   const handleItemsChange = (items: any[]) => {
-    // Convert back to BillItem format
-    const billItems: BillItem[] = items.map(item => ({
-      product_id: item.product_id || '',
-      product_name: item.product_name || '',
-      variant_name: item.variant_name || '',
-      stock_id: item.stock_id || '',
-      qty: item.qty || 0,
-      loose_qty: item.loose_qty || 0,
-      price: item.price || 0,
-      mrp: item.mrp || 0,
-      amount: item.amount || 0,
-      tax_percentage: item.tax_percentage || 0,
-      _id: item._id
-    }));
+    // Convert back to BillItem format and auto-populate stock
+    const billItems: BillItem[] = items.map(item => {
+      const billItem: BillItem = {
+        product_id: item.product_id || '',
+        product_name: item.product_name || '',
+        variant_name: item.variant_name || '',
+        stock_id: item.stock_id || '',
+        qty: item.qty || 0,
+        loose_qty: item.loose_qty || 0,
+        price: item.price || 0,
+        mrp: item.mrp || 0,
+        amount: item.amount || 0,
+        tax_percentage: item.tax_percentage || 0,
+        _id: item._id
+      };
+
+      // Auto-populate stock if product is selected but stock is not
+      if (item.product_id && !item.stock_id) {
+        const availableStocks = getStockOptionsForProduct(item.product_id);
+        if (availableStocks.length > 0) {
+          const firstStock = availableStocks[0];
+          billItem.stock_id = firstStock.value;
+          
+          // Auto-focus quantity field after auto-selecting stock
+          setTimeout(() => {
+            const qtyCell = document.querySelector(`td[data-row-key="${item.key}"][data-column-key="qty"]`) as HTMLElement;
+            if (qtyCell) {
+              qtyCell.focus();
+            }
+          }, 300);
+        }
+      }
+
+      return billItem;
+    });
     // Update items with calculated amounts
     const updatedItems = billItems.map(item => {
       if (!item.product_id || !item.stock_id) return item;
@@ -535,28 +557,66 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
     }
   }, [updateItems]);
 
-  // Enhanced keyboard shortcuts for fast billing
+  // Ultra-fast keyboard shortcuts for lightning billing
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // F-key shortcuts
+      // Handle product selection completion
+      const handleProductSelection = () => {
+        const activeElement = document.activeElement as HTMLElement;
+        if (activeElement?.closest('td[data-column-key="product_id"]')) {
+          setTimeout(() => {
+            const currentCell = activeElement.closest('td');
+            const currentRow = currentCell?.closest('tr');
+            const rowKey = currentRow?.getAttribute('data-row-key');
+            if (rowKey) {
+              const qtyCell = document.querySelector(`td[data-row-key="${rowKey}"][data-column-key="qty"]`) as HTMLElement;
+              qtyCell?.focus();
+            }
+          }, 300);
+        }
+      };
+
+      // Listen for dropdown close events
+      const handleDropdownClose = () => {
+        setTimeout(handleProductSelection, 100);
+      };
+
+      // Add event listeners for dropdown close
+      document.addEventListener('click', (e) => {
+        const target = e.target as HTMLElement;
+        if (!target?.closest('.ant-select-dropdown')) {
+          handleDropdownClose();
+        }
+      });
+      // Ultra-fast F-key shortcuts
       if (e.key === 'F1') {
         e.preventDefault();
         handleAddItem();
+        // Auto-focus first product field
+        setTimeout(() => {
+          const firstProductCell = document.querySelector('.ant-table-tbody td[data-column-key="product_id"]') as HTMLElement;
+          firstProductCell?.focus();
+        }, 100);
       } else if (e.key === 'F2') {
         e.preventDefault();
         handleSaveBill();
       } else if (e.key === 'F3') {
         e.preventDefault();
-        // Print functionality can be added here
         message.info('Print feature - F3 pressed');
       } else if (e.key === 'F4') {
         e.preventDefault();
         // Focus customer field
         const customerField = document.querySelector('.ant-table-tbody td[data-column-key="customer_id"]') as HTMLElement;
         customerField?.focus();
-      } 
+      } else if (e.key === 'F5') {
+        e.preventDefault();
+        // Quick add 5 items
+        for (let i = 0; i < 5; i++) {
+          handleAddItem();
+        }
+      }
       
-      // Ctrl shortcuts
+      // Lightning Ctrl shortcuts
       else if (e.ctrlKey) {
         if (e.key === 's') {
           e.preventDefault();
@@ -567,36 +627,133 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
         } else if (e.key === 'p') {
           e.preventDefault();
           message.info('Print functionality - Ctrl+P pressed');
+        } else if (e.key === 'r') {
+          e.preventDefault();
+          // Reset form
+          setBillFormData({
+            invoice_no: '',
+            date: dayjs().format('YYYY-MM-DD'),
+            customer_id: '',
+            customer_name: '',
+            payment_mode: 'cash',
+            items: [],
+          });
         }
       }
       
-      // Enhanced Tab and Arrow navigation for billing
+      // Ultra-fast navigation
       else if (e.key === 'Tab' || e.key === 'ArrowRight') {
         const target = e.target as HTMLElement;
         if (target.closest('.ant-table-tbody')) {
-          // Ensure smooth navigation between product and stock fields
           const currentCell = target.closest('td');
           if (currentCell) {
             const currentColumn = currentCell.getAttribute('data-column-key');
+            const currentRow = currentCell.closest('tr');
+            const rowKey = currentRow?.getAttribute('data-row-key');
+            
+            // Auto-navigate through billing flow
             if (currentColumn === 'product_id') {
-              // When leaving product field, ensure stock options are updated
               setTimeout(() => {
-                const stockCell = document.querySelector('td[data-column-key="stock_id"]') as HTMLElement;
-                if (stockCell) {
-                  stockCell.focus();
+                const qtyCell = document.querySelector(`td[data-row-key="${rowKey}"][data-column-key="qty"]`) as HTMLElement;
+                if (qtyCell) {
+                  qtyCell.focus();
+                } else {
+                  // Fallback to next cell
+                  const nextCell = currentCell.nextElementSibling as HTMLElement;
+                  nextCell?.focus();
                 }
-              }, 50);
+              }, 100);
+            } else if (currentColumn === 'qty') {
+              setTimeout(() => {
+                const priceCell = document.querySelector(`td[data-row-key="${rowKey}"][data-column-key="price"]`) as HTMLElement;
+                if (priceCell) {
+                  priceCell.focus();
+                } else {
+                  // Fallback to next cell
+                  const nextCell = currentCell.nextElementSibling as HTMLElement;
+                  nextCell?.focus();
+                }
+              }, 100);
+            } else if (currentColumn === 'price') {
+              // Move to next row or add new item
+              setTimeout(() => {
+                const nextRow = currentRow?.nextElementSibling as HTMLElement;
+                if (nextRow) {
+                  const firstCell = nextRow.querySelector('td[data-column-key="product_id"]') as HTMLElement;
+                  firstCell?.focus();
+                } else {
+                  // Add new item if no next row
+                  handleAddItem();
+                  setTimeout(() => {
+                    const newRow = document.querySelector('.ant-table-tbody tr:last-child td[data-column-key="product_id"]') as HTMLElement;
+                    newRow?.focus();
+                  }, 200);
+                }
+              }, 100);
             }
           }
         }
       }
       
-      // Arrow key navigation for billing
-      else if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+      // Arrow key navigation for rows
+      else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+        e.preventDefault();
         const target = e.target as HTMLElement;
         if (target.closest('.ant-table-tbody')) {
-          // Let the table handle arrow navigation
-          return;
+          const currentCell = target.closest('td');
+          if (currentCell) {
+            const currentColumn = currentCell.getAttribute('data-column-key');
+            const currentRow = currentCell.closest('tr');
+            
+            if (e.key === 'ArrowDown') {
+              // Move to next row
+              const nextRow = currentRow?.nextElementSibling as HTMLElement;
+              if (nextRow) {
+                const sameColumnCell = nextRow.querySelector(`td[data-column-key="${currentColumn}"]`) as HTMLElement;
+                if (sameColumnCell) {
+                  sameColumnCell.focus();
+                } else {
+                  // Fallback to first editable cell in next row
+                  const firstCell = nextRow.querySelector('td[data-column-key="product_id"]') as HTMLElement;
+                  firstCell?.focus();
+                }
+              } else {
+                // If no next row, add new item
+                handleAddItem();
+                setTimeout(() => {
+                  const newRow = document.querySelector('.ant-table-tbody tr:last-child td[data-column-key="product_id"]') as HTMLElement;
+                  newRow?.focus();
+                }, 200);
+              }
+            } else if (e.key === 'ArrowUp') {
+              // Move to previous row
+              const prevRow = currentRow?.previousElementSibling as HTMLElement;
+              if (prevRow) {
+                const sameColumnCell = prevRow.querySelector(`td[data-column-key="${currentColumn}"]`) as HTMLElement;
+                if (sameColumnCell) {
+                  sameColumnCell.focus();
+                } else {
+                  // Fallback to first editable cell in previous row
+                  const firstCell = prevRow.querySelector('td[data-column-key="product_id"]') as HTMLElement;
+                  firstCell?.focus();
+                }
+              }
+            }
+          }
+        }
+      }
+      
+      // Quick number entry shortcuts
+      else if (e.key >= '0' && e.key <= '9' && e.ctrlKey) {
+        e.preventDefault();
+        const activeElement = document.activeElement as HTMLElement;
+        if (activeElement?.closest('td[data-column-key="qty"]')) {
+          // Quick quantity entry
+          const input = activeElement.querySelector('input');
+          if (input) {
+            input.value = e.key;
+            input.dispatchEvent(new Event('change', { bubbles: true }));
+          }
         }
       }
       
@@ -783,16 +940,16 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
               >
                 {billdata ? '⚡ EDIT INVOICE' : '🚀 NEW INVOICE'}
               </Title>
-              <Text style={{ 
-                color: '#64748b', 
-                fontSize: '14px',
-                fontWeight: 500,
-                display: 'block',
-                marginTop: 4,
-                animation: 'fadeInUp 1s ease-out 0.2s both'
-              }}>
-                Ultra-Fast Billing • {dayjs().format('DD MMM YYYY, dddd')}
-              </Text>
+                              <Text style={{ 
+                  color: '#64748b', 
+                  fontSize: '14px',
+                  fontWeight: 500,
+                  display: 'block',
+                  marginTop: 4,
+                  animation: 'fadeInUp 1s ease-out 0.2s both'
+                }}>
+                  ⚡ 100% Keyboard • No Mouse • Lightning Fast • {dayjs().format('DD MMM YYYY, dddd')}
+                </Text>
             </div>
           </div>
           

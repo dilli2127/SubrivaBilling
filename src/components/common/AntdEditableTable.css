@@ -94,10 +94,18 @@
 .antd-editable-table .ant-table-tbody > tr > td {
   padding: 8px 12px;
   position: relative;
+  cursor: pointer;
+  outline: none;
 }
 
 .antd-editable-table .ant-table-tbody > tr > td:focus-within {
   background-color: #e6f7ff;
+}
+
+.antd-editable-table .ant-table-tbody > tr > td:focus {
+  background-color: #e6f7ff;
+  border-color: #1890ff;
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
 }
 
 /* Tab and Arrow navigation improvements */

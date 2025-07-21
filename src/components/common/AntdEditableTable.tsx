@@ -59,12 +59,125 @@ const EditableCell: React.FC<EditableCellProps> = ({
     setValue(newValue);
     if (record && onCellChange) {
       onCellChange(record, dataIndex, newValue);
+      
+      // Auto-navigate to next field after selection
+      if (inputType === 'select' && newValue) {
+        setTimeout(() => {
+          const currentCell = document.activeElement?.closest('td');
+          if (currentCell) {
+            const nextCell = currentCell.nextElementSibling as HTMLElement;
+            if (nextCell) {
+              nextCell.focus();
+            }
+          }
+        }, 200);
+      }
     }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
+    // For Select components, only handle arrow keys when dropdown is closed
+    if (inputType === 'select') {
+      const selectElement = e.target as HTMLElement;
+      const dropdownOpen = selectElement?.closest('.ant-select-dropdown');
+      
+      if (dropdownOpen) {
+        // Let Select handle arrow keys when dropdown is open
+        return;
+      }
+    }
+    
     if (e.key === 'Enter' || e.key === 'Tab') {
       setEditing(false);
+      
+      // Auto-navigate to next field
+      setTimeout(() => {
+        const currentCell = document.activeElement?.closest('td');
+        if (currentCell) {
+          const nextCell = currentCell.nextElementSibling as HTMLElement;
+          if (nextCell) {
+            nextCell.focus();
+          }
+        }
+      }, 50);
+    } else if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      e.stopPropagation();
+      setEditing(false);
+      
+      // Move to next row
+      setTimeout(() => {
+        const currentCell = document.activeElement?.closest('td');
+        if (currentCell) {
+          const currentRow = currentCell.closest('tr');
+          const nextRow = currentRow?.nextElementSibling as HTMLElement;
+          if (nextRow) {
+            // Find the same column in the next row
+            const sameColumnCell = nextRow.querySelector(`td[data-column-key="${dataIndex}"]`) as HTMLElement;
+            if (sameColumnCell) {
+              sameColumnCell.focus();
+            } else {
+              // Fallback: find first editable cell in next row
+              const firstEditableCell = nextRow.querySelector('td[data-column-key="product_id"]') as HTMLElement;
+              firstEditableCell?.focus();
+            }
+          }
+        }
+      }, 100);
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      e.stopPropagation();
+      setEditing(false);
+      
+      // Move to previous row
+      setTimeout(() => {
+        const currentCell = document.activeElement?.closest('td');
+        if (currentCell) {
+          const currentRow = currentCell.closest('tr');
+          const prevRow = currentRow?.previousElementSibling as HTMLElement;
+          if (prevRow) {
+            // Find the same column in the previous row
+            const sameColumnCell = prevRow.querySelector(`td[data-column-key="${dataIndex}"]`) as HTMLElement;
+            if (sameColumnCell) {
+              sameColumnCell.focus();
+            } else {
+              // Fallback: find first editable cell in previous row
+              const firstEditableCell = prevRow.querySelector('td[data-column-key="product_id"]') as HTMLElement;
+              firstEditableCell?.focus();
+            }
+          }
+        }
+      }, 100);
+    } else if (e.key === 'ArrowRight') {
+      e.preventDefault();
+      e.stopPropagation();
+      setEditing(false);
+      
+      // Move to next column
+      setTimeout(() => {
+        const currentCell = document.activeElement?.closest('td');
+        if (currentCell) {
+          const nextCell = currentCell.nextElementSibling as HTMLElement;
+          if (nextCell) {
+            nextCell.focus();
+          }
+        }
+      }, 50);
+    } else if (e.key === 'ArrowLeft') {
+      e.preventDefault();
+      e.stopPropagation();
+      setEditing(false);
+      
+      // Move to previous column
+      setTimeout(() => {
+        const currentCell = document.activeElement?.closest('td');
+        if (currentCell) {
+          const prevCell = currentCell.previousElementSibling as HTMLElement;
+          if (prevCell) {
+            prevCell.focus();
+          }
+        }
+      }, 50);
     } else if (e.key === 'Escape') {
       setEditing(false);
       setValue(record?.[dataIndex] || ''); // Reset to original value
@@ -95,7 +208,6 @@ const EditableCell: React.FC<EditableCellProps> = ({
         <Select
           value={value}
           onChange={handleChange}
-          onKeyDown={handleKeyDown}
           onBlur={handleBlur}
           style={{ width: '100%' }}
           options={options}
@@ -105,6 +217,46 @@ const EditableCell: React.FC<EditableCellProps> = ({
           filterOption={(input, option) =>
             (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
           }
+          onDropdownVisibleChange={(open) => {
+            if (!open && value) {
+              // Auto-navigate when dropdown closes
+              setTimeout(() => {
+                const currentCell = document.activeElement?.closest('td');
+                if (currentCell) {
+                  const nextCell = currentCell.nextElementSibling as HTMLElement;
+                  if (nextCell) {
+                    nextCell.focus();
+                  }
+                }
+              }, 200);
+            }
+          }}
+          onSelect={(selectedValue) => {
+            // Force navigation after selection
+            setTimeout(() => {
+              const currentCell = document.activeElement?.closest('td');
+              if (currentCell) {
+                const nextCell = currentCell.nextElementSibling as HTMLElement;
+                if (nextCell) {
+                  nextCell.focus();
+                }
+              }
+            }, 300);
+          }}
+          onKeyDown={(e) => {
+            // Custom key handler for Select
+            if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+              const selectElement = e.target as HTMLElement;
+              const dropdownOpen = selectElement?.closest('.ant-select-dropdown');
+              
+              if (!dropdownOpen) {
+                // If dropdown is closed, handle arrow navigation
+                e.preventDefault();
+                e.stopPropagation();
+                handleKeyDown(e);
+              }
+            }
+          }}
         />
       );
       break;
