@@ -132,3 +132,28 @@ export interface StockAuditList<T>{
     };
   };
 };
+
+// Bill Item entity
+export interface BillItem {
+  _id?: string;
+  product_id: string;
+  product_name: string;
+  variant_name: string;
+  stock_id: string;
+  qty: number;
+  loose_qty: number;
+  price: number;
+  mrp: number;
+  amount: number;
+  tax_percentage: number;
+}
+
+// Bill Form Data entity
+export interface BillFormData {
+  invoice_no: string;
+  date: string;
+  customer_id: string;
+  customer_name: string;
+  payment_mode: string;
+  items: BillItem[];
+}

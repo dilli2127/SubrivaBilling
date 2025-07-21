@@ -27,6 +27,7 @@ import { useApiActions } from '../../../services/api/useApiActions';
 import { useDynamicSelector } from '../../../services/redux';
 import { calculateBillTotals } from '../../../helpers/amount_calculations';
 import { useHandleApiResponse } from '../../../components/common/useHandleApiResponse';
+import { BillItem, BillFormData } from '../../../types/entities';
 import { 
   SaveOutlined, 
   PrinterOutlined, 
@@ -45,29 +46,6 @@ const { Title, Text } = Typography;
 interface BillDataGridProps {
   billdata?: any;
   onSuccess?: (formattedBill?: any) => void;
-}
-
-interface BillItem {
-  _id?: string;
-  product_id: string;
-  product_name: string;
-  variant_name: string;
-  stock_id: string;
-  qty: number;
-  loose_qty: number;
-  price: number;
-  mrp: number;
-  amount: number;
-  tax_percentage: number;
-}
-
-interface BillFormData {
-  invoice_no: string;
-  date: string;
-  customer_id: string;
-  customer_name: string;
-  payment_mode: string;
-  items: BillItem[];
 }
 
 const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
