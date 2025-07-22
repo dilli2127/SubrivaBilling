@@ -588,16 +588,16 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
         customerSelect?.focus();
       }
       // F5: Add 5 items
-      else if (e.key === 'F5') {
-        e.preventDefault();
-        for (let i = 0; i < 5; i++) {
-          handleAddItem();
-        }
-        setTimeout(() => {
-          const productCell = document.querySelector('.ant-table-tbody tr:last-child td[data-column-key="product_id"]') as HTMLElement;
-          productCell?.focus();
-        }, 200);
-      }
+      // else if (e.key === 'F5') {
+      //   e.preventDefault();
+      //   for (let i = 0; i < 5; i++) {
+      //     handleAddItem();
+      //   }
+      //   setTimeout(() => {
+      //     const productCell = document.querySelector('.ant-table-tbody tr:last-child td[data-column-key="product_id"]') as HTMLElement;
+      //     productCell?.focus();
+      //   }, 200);
+      // }
       // Ctrl shortcuts
       else if (e.ctrlKey) {
         switch (e.key) {

@@ -22,7 +22,6 @@ import "./AntdEditableTable.css";
 
 const { Text } = Typography;
 
-// Column type
 export interface AntdEditableColumn {
   title: string;
   dataIndex: string;
@@ -36,7 +35,6 @@ export interface AntdEditableColumn {
   validation?: (value: any) => string | undefined;
 }
 
-// Props
 export interface AntdEditableTableProps {
   columns: AntdEditableColumn[];
   dataSource: any[];
@@ -47,7 +45,7 @@ export interface AntdEditableTableProps {
   allowDelete?: boolean;
   rowKey?: string;
   loading?: boolean;
-  compact?: boolean; // ✅ added compact toggle
+  compact?: boolean;
   enableKeyboardNav?: boolean;
   size?: SizeType;
   className?: string;
@@ -63,22 +61,33 @@ const AntdEditableTable: React.FC<AntdEditableTableProps> = ({
   allowDelete = true,
   rowKey = "key",
   loading = false,
-  compact = false, // ✅ use compact mode
+  compact = false,
   enableKeyboardNav = true,
   size = "middle",
   className,
 }) => {
   const [data, setData] = useState<any[]>([]);
-  const [editingCell, setEditingCell] = useState<{
-    row: number;
-    col: number;
-  } | null>(null);
+  const [editingCell, setEditingCell] = useState<{ row: number; col: number } | null>(null);
+  const firstLoadRef = useRef(true);
 
   useEffect(() => {
     setData(dataSource);
-  }, [dataSource]);
 
-  // Add new row
+    const firstProductColIndex = columns.findIndex(
+      (col) => col.dataIndex === "product_id"
+    );
+
+    // ✅ Auto-focus only if table is empty on first load
+    if (
+      firstLoadRef.current &&
+      dataSource.length === 0 &&
+      firstProductColIndex >= 0
+    ) {
+      setEditingCell({ row: 0, col: firstProductColIndex });
+      firstLoadRef.current = false; // Prevent repeat auto-focus
+    }
+  }, [dataSource, columns]);
+
   const handleAddRow = () => {
     const newRow: any = { [rowKey]: Date.now().toString() };
     columns.forEach((col) => {
@@ -88,9 +97,16 @@ const AntdEditableTable: React.FC<AntdEditableTableProps> = ({
     setData(newData);
     onSave(newData);
     onAdd?.();
+    
+    // Auto-focus the first editable column in the new row
+    const firstEditableColIndex = columns.findIndex(col => col.editable !== false);
+    if (firstEditableColIndex >= 0) {
+      setTimeout(() => {
+        setEditingCell({ row: newData.length - 1, col: firstEditableColIndex });
+      }, 100);
+    }
   };
 
-  // Delete last row
   const handleDeleteRow = () => {
     if (data.length === 0) {
       message.warning("No rows to delete");
@@ -107,15 +123,30 @@ const AntdEditableTable: React.FC<AntdEditableTableProps> = ({
     });
   };
 
-  // Save individual cell value
   const saveCell = (row: number, col: number, value: any) => {
+    const column = columns[col];
+    
+    // Basic validation
+    if (column.required && (!value || value === "")) {
+      message.error(`${column.title} is required`);
+      return;
+    }
+    
+    // Custom validation
+    if (column.validation) {
+      const error = column.validation(value);
+      if (error) {
+        message.error(error);
+        return;
+      }
+    }
+    
     const newData = [...data];
     newData[row][columns[col].dataIndex] = value;
     setData(newData);
     onSave(newData);
   };
 
-  // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.ctrlKey && e.key === "s") {
@@ -131,9 +162,8 @@ const AntdEditableTable: React.FC<AntdEditableTableProps> = ({
       document.addEventListener("keydown", handleKeyDown);
       return () => document.removeEventListener("keydown", handleKeyDown);
     }
-  }, [data, allowAdd, onSave, enableKeyboardNav]);
+  }, [data, allowAdd, onSave, enableKeyboardNav, handleAddRow]);
 
-  // Editable cell
   const EditableCell = ({
     row,
     col,
@@ -149,15 +179,11 @@ const AntdEditableTable: React.FC<AntdEditableTableProps> = ({
 
     useEffect(() => {
       setCellValue(value);
-      if (column.type === 'select') {
-        // For select, focus and open dropdown after a small delay
-        setTimeout(() => {
-          inputRef.current?.focus();
-        }, 100);
-      } else {
+      // ✅ Focus input/select when cell enters edit mode
+      setTimeout(() => {
         inputRef.current?.focus();
-      }
-    }, [value, column.type]);
+      }, 50);
+    }, [value]);
 
     const handleChange = (val: any) => {
       setCellValue(val);
@@ -170,6 +196,14 @@ const AntdEditableTable: React.FC<AntdEditableTableProps> = ({
         const nextCol = e.shiftKey ? col - 1 : col + 1;
         const nextRow = row + (nextCol >= columns.length ? 1 : 0);
         const colIndex = (nextCol + columns.length) % columns.length;
+        
+        // Validate current cell before moving
+        const column = columns[col];
+        if (column.required && (!cellValue || cellValue === "")) {
+          message.error(`${column.title} is required`);
+          return;
+        }
+        
         if (nextRow < data.length) {
           setEditingCell({ row: nextRow, col: colIndex });
         } else if (allowAdd) {
@@ -192,7 +226,6 @@ const AntdEditableTable: React.FC<AntdEditableTableProps> = ({
               onBlur={() => setEditingCell(null)}
               onKeyDown={handleKeyDown}
               style={{ width: "100%" }}
-              autoFocus
             />
           </div>
         );
@@ -205,19 +238,11 @@ const AntdEditableTable: React.FC<AntdEditableTableProps> = ({
               options={column.options}
               onChange={(val) => {
                 handleChange(val);
-                // Close edit mode after selection
                 setEditingCell(null);
               }}
               style={{ width: "100%" }}
               onKeyDown={handleKeyDown}
-              autoFocus
               open
-              dropdownStyle={{ zIndex: 9999 }}
-              onDropdownVisibleChange={(open) => {
-                if (!open) {
-                  setEditingCell(null);
-                }
-              }}
             />
           </div>
         );
@@ -234,7 +259,6 @@ const AntdEditableTable: React.FC<AntdEditableTableProps> = ({
               onBlur={() => setEditingCell(null)}
               onKeyDown={handleKeyDown}
               style={{ width: "100%" }}
-              autoFocus
             />
           </div>
         );
@@ -247,7 +271,6 @@ const AntdEditableTable: React.FC<AntdEditableTableProps> = ({
               onChange={(e) => handleChange(e.target.value)}
               onBlur={() => setEditingCell(null)}
               onKeyDown={handleKeyDown}
-              autoFocus
             />
           </div>
         );
@@ -262,12 +285,12 @@ const AntdEditableTable: React.FC<AntdEditableTableProps> = ({
           setEditingCell({ row: rowIndex, col: colIndex });
         }
       },
-      onContextMenu: (e: React.MouseEvent) => {
-        e.preventDefault();
-        if (typeof rowIndex === "number") {
-          setEditingCell({ row: rowIndex, col: colIndex });
-        }
-      },
+             onContextMenu: (e: React.MouseEvent) => {
+         e.preventDefault(); // ✅ Prevent default context menu
+         if (typeof rowIndex === "number") {
+           setEditingCell({ row: rowIndex, col: colIndex });
+         }
+       },
     }),
     render: (_val: any, record: any, rowIndex: number) => {
       if (
@@ -284,21 +307,21 @@ const AntdEditableTable: React.FC<AntdEditableTableProps> = ({
           />
         );
       }
-      
-      // For select columns, show the label instead of the value
-      if (col.type === 'select' && col.options) {
-        const option = col.options.find(opt => opt.value === record[col.dataIndex]);
+      if (col.type === "select" && col.options) {
+        const option = col.options.find(
+          (opt) => opt.value === record[col.dataIndex]
+        );
         return option ? option.label : record[col.dataIndex];
       }
-      
       return record[col.dataIndex];
     },
   }));
 
   return (
     <div
-      className={`antd-editable-table ${compact ? "compact" : ""} ${className || ""}`}
-      tabIndex={-1}
+      className={`antd-editable-table ${compact ? "compact" : ""} ${
+        className || ""
+      }`}
     >
       <div className="table-toolbar">
         <Space>
