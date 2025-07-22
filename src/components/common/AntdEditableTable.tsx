@@ -2,6 +2,9 @@ import React, { useState, useEffect, useRef } from "react";
 import {
   Table,
   Input,
+  InputNumber,
+  Select,
+  DatePicker,
   Button,
   Space,
   Modal,
@@ -12,6 +15,7 @@ import {
   DeleteOutlined,
   SaveOutlined,
 } from "@ant-design/icons";
+import dayjs from "dayjs";
 import "./AntdEditableTable.css";
 
 const { Text } = Typography;
@@ -66,31 +70,105 @@ const AntdEditableTable: React.FC<AntdEditableTableProps> = ({
     col: number;
   } | null>(null);
   const tableRef = useRef<HTMLDivElement>(null);
+  const lastEditingCellRef = useRef<{ row: number; col: number } | null>(null);
+
+  // Prevent unnecessary state updates
+  const setEditingCellSafely = (cell: { row: number; col: number } | null) => {
+    const current = lastEditingCellRef.current;
+    const newCell = cell;
+    
+    // Only update if the cell actually changed
+    if (!current || !newCell || current.row !== newCell.row || current.col !== newCell.col) {
+      lastEditingCellRef.current = newCell;
+      setEditingCell(newCell);
+    }
+  };
 
   useEffect(() => {
     setData(dataSource);
   }, [dataSource]);
+
+  // Global listener for dropdown selection
+  useEffect(() => {
+    const handleGlobalClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      
+      // Check if click is on a Select option
+      if (target.closest('.ant-select-item-option')) {
+        setTimeout(() => {
+          const currentCell = document.activeElement?.closest('td');
+          if (currentCell) {
+            const currentRow = currentCell.closest('tr');
+            
+            // For product selection, move to quantity field
+            if (currentCell.getAttribute('data-column-key') === 'product_id') {
+              const qtyCell = currentRow?.querySelector('td[data-column-key="qty"]') as HTMLElement;
+              if (qtyCell) {
+                qtyCell.focus();
+              }
+            } else {
+              const nextCell = currentCell.nextElementSibling as HTMLElement;
+              nextCell?.focus();
+            }
+          }
+        }, 400);
+      }
+    };
+
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      // Handle Enter key for Select option selection
+      if (e.key === 'Enter') {
+        const target = e.target as HTMLElement;
+        const dropdownOpen = target.closest('.ant-select-dropdown');
+        const selectOption = target.closest('.ant-select-item-option');
+        
+        if (dropdownOpen && selectOption) {
+          // Enter was pressed on a Select option, handle navigation after selection
+          setTimeout(() => {
+            const currentCell = document.activeElement?.closest('td');
+            if (currentCell) {
+              const currentRow = currentCell.closest('tr');
+              
+              // For product selection, move to quantity field
+              if (currentCell.getAttribute('data-column-key') === 'product_id') {
+                const qtyCell = currentRow?.querySelector('td[data-column-key="qty"]') as HTMLElement;
+                if (qtyCell) {
+                  qtyCell.focus();
+                }
+              } else {
+                const nextCell = currentCell.nextElementSibling as HTMLElement;
+                nextCell?.focus();
+              }
+            }
+          }, 300);
+        }
+      }
+    };
+
+    document.addEventListener('click', handleGlobalClick);
+    document.addEventListener('keydown', handleGlobalKeyDown);
+    return () => {
+      document.removeEventListener('click', handleGlobalClick);
+      document.removeEventListener('keydown', handleGlobalKeyDown);
+    };
+  }, []);
 
   useEffect(() => {
     if (!enableAdvancedKeyboardNav) return;
     const handleKeyDown = (e: KeyboardEvent) => {
       // Only act if focus is inside this table
       if (!tableRef.current || !tableRef.current.contains(document.activeElement)) return;
+      
       // Helper: get column keys
       const columnKeys = columns.map(col => col.dataIndex);
-      // Helper: get first editable column key
       const firstEditableCol = columns.find(col => col.editable !== false)?.dataIndex || columnKeys[0];
-      // Helper: get last editable column key
-      const lastEditableCol = [...columns].reverse().find(col => col.editable !== false)?.dataIndex || columnKeys[columnKeys.length - 1];
-      // Helper: get cell by row/col key
-      const getCell = (rowKeyVal: string, colKey: string) =>
-        tableRef.current?.querySelector(`td[data-row-key="${rowKeyVal}"][data-column-key="${colKey}"]`) as HTMLElement;
+      
       // Helper: get current cell info
       const active = document.activeElement as HTMLElement;
-      const currentCell = active?.closest('td[data-row-key]');
-      const currentRowKey = currentCell?.getAttribute('data-row-key');
+      const currentCell = active?.closest('td');
       const currentColKey = currentCell?.getAttribute('data-column-key');
       const currentRow = currentCell?.closest('tr');
+      const currentRowIndex = currentRow ? Array.from(currentRow.parentElement?.children || []).indexOf(currentRow) : -1;
              // F-key shortcuts
        if (e.key === 'F1' && onAdd) {
          e.preventDefault();
@@ -126,50 +204,58 @@ const AntdEditableTable: React.FC<AntdEditableTableProps> = ({
       }
       // Tab/ArrowRight navigation
       else if (e.key === 'Tab' || e.key === 'ArrowRight') {
-        if (currentCell && currentRowKey && currentColKey) {
+        if (currentCell && currentColKey && currentRowIndex >= 0) {
           e.preventDefault();
           const colIdx = columnKeys.indexOf(currentColKey);
           let nextColIdx = e.shiftKey ? colIdx - 1 : colIdx + 1;
-          let nextRow = currentRow as HTMLTableRowElement | null;
-          let nextRowKey = currentRowKey;
+          let nextRowIndex = currentRowIndex;
+          
           // Move to next/prev row if at end/start
           if (nextColIdx < 0) {
             nextColIdx = columnKeys.length - 1;
-            nextRow = currentRow?.previousElementSibling as HTMLTableRowElement;
-            nextRowKey = nextRow?.getAttribute('data-row-key') || '';
+            nextRowIndex--;
           } else if (nextColIdx >= columnKeys.length) {
             nextColIdx = 0;
-            nextRow = currentRow?.nextElementSibling as HTMLTableRowElement;
-            nextRowKey = nextRow?.getAttribute('data-row-key') || '';
+            nextRowIndex++;
             // If no next row, add new row if allowed
-            if (!nextRow && allowAdd && onAdd) {
+            if (nextRowIndex >= data.length && allowAdd && onAdd) {
               onAdd();
               setTimeout(() => {
                 const rows = tableRef.current?.querySelectorAll('.ant-table-tbody tr');
                 if (rows && rows.length > 0) {
                   const lastRow = rows[rows.length - 1];
                   const firstCell = lastRow.querySelector(`td[data-column-key="${firstEditableCol}"]`) as HTMLElement;
-                  firstCell?.focus();
+                  if (firstCell) {
+                    firstCell.focus();
+                    // Auto-start editing for the new row
+                    const colIdx = columnKeys.indexOf(firstEditableCol);
+                    setEditingCellSafely({ row: data.length, col: colIdx });
+                  }
                 }
               }, 200);
               return;
             }
           }
-          // Focus next cell
+          
+          // Focus next cell and auto-start editing
           const nextColKey = columnKeys[nextColIdx];
-          const nextCell = getCell(nextRowKey, nextColKey);
-          nextCell?.focus();
+          const nextCell = tableRef.current?.querySelector(`.ant-table-tbody tr:nth-child(${nextRowIndex + 1}) td[data-column-key="${nextColKey}"]`) as HTMLElement;
+          if (nextCell) {
+            nextCell.focus();
+            // Auto-start editing for the focused cell
+            setEditingCellSafely({ row: nextRowIndex, col: nextColIdx });
+          }
         }
       }
       // ArrowUp/ArrowDown navigation
       else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
-        if (currentCell && currentRowKey && currentColKey) {
+        if (currentCell && currentColKey && currentRowIndex >= 0) {
           e.preventDefault();
-          const row = currentRow as HTMLTableRowElement | null;
-          let targetRow: HTMLTableRowElement | null = null;
+          let targetRowIndex = currentRowIndex;
+          
           if (e.key === 'ArrowDown') {
-            targetRow = row?.nextElementSibling as HTMLTableRowElement;
-            if (!targetRow && allowAdd && onAdd) {
+            targetRowIndex++;
+            if (targetRowIndex >= data.length && allowAdd && onAdd) {
               onAdd();
               setTimeout(() => {
                 const rows = tableRef.current?.querySelectorAll('.ant-table-tbody tr');
@@ -182,16 +268,25 @@ const AntdEditableTable: React.FC<AntdEditableTableProps> = ({
               return;
             }
           } else if (e.key === 'ArrowUp') {
-            targetRow = row?.previousElementSibling as HTMLTableRowElement;
+            targetRowIndex--;
           }
-          if (targetRow) {
-            const cell = targetRow.querySelector(`td[data-column-key="${currentColKey}"]`) as HTMLElement;
+          
+          if (targetRowIndex >= 0 && targetRowIndex < data.length) {
+            const cell = tableRef.current?.querySelector(`.ant-table-tbody tr:nth-child(${targetRowIndex + 1}) td[data-column-key="${currentColKey}"]`) as HTMLElement;
             if (cell) {
               cell.focus();
+              // Auto-start editing for the focused cell
+              const colIdx = columnKeys.indexOf(currentColKey);
+              setEditingCellSafely({ row: targetRowIndex, col: colIdx });
             } else {
               // Fallback to first editable cell
-              const fallback = targetRow.querySelector(`td[data-column-key="${firstEditableCol}"]`) as HTMLElement;
-              fallback?.focus();
+              const fallback = tableRef.current?.querySelector(`.ant-table-tbody tr:nth-child(${targetRowIndex + 1}) td[data-column-key="${firstEditableCol}"]`) as HTMLElement;
+              if (fallback) {
+                fallback.focus();
+                // Auto-start editing for the fallback cell
+                const colIdx = columnKeys.indexOf(firstEditableCol);
+                setEditingCellSafely({ row: targetRowIndex, col: colIdx });
+              }
             }
           }
         }
@@ -206,26 +301,7 @@ const AntdEditableTable: React.FC<AntdEditableTableProps> = ({
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [enableAdvancedKeyboardNav, columns, data, allowAdd, onAdd, onSave]);
 
-  // Focus and edit a cell
-  const focusCell = (row: number, col: number) => {
-    const colCount = columns.length;
-    const rowCount = data.length;
 
-    // Clamp row/col within bounds
-    if (row < 0) row = 0;
-    if (col < 0) col = 0;
-    if (row >= rowCount) {
-      if (allowAdd) {
-        handleAddRow();
-        row = rowCount;
-      } else {
-        row = rowCount - 1;
-      }
-    }
-    if (col >= colCount) col = colCount - 1;
-
-    setEditingCell({ row, col });
-  };
 
   // Add a new row
   const handleAddRow = () => {
@@ -302,13 +378,20 @@ const AntdEditableTable: React.FC<AntdEditableTableProps> = ({
         nextRow++;
       }
 
-      focusCell(nextRow, nextCol);
+      // Navigate to next cell
+      if (nextRow >= 0 && nextRow < data.length && nextCol >= 0 && nextCol < columns.length) {
+        const nextCell = tableRef.current?.querySelector(`.ant-table-tbody tr:nth-child(${nextRow + 1}) td[data-column-key="${columns[nextCol].dataIndex}"]`) as HTMLElement;
+        if (nextCell) {
+          nextCell.focus();
+          setEditingCellSafely({ row: nextRow, col: nextCol });
+        }
+      }
     } else if (e.key === "Escape") {
       setEditingCell(null);
     }
   };
 
-  // Editable cell
+  // Editable cell with support for different input types
   const EditableCell = ({
     row,
     col,
@@ -319,19 +402,218 @@ const AntdEditableTable: React.FC<AntdEditableTableProps> = ({
     value: any;
   }) => {
     const [cellValue, setCellValue] = useState(value);
+    const [editing, setEditing] = useState(true);
+    const column = columns[col];
+    const inputRef = useRef<any>(null);
 
     useEffect(() => {
       setCellValue(value);
     }, [value]);
 
+    useEffect(() => {
+      // Auto-focus the input when cell becomes editable
+      if (editing && inputRef.current) {
+        // Use requestAnimationFrame for smoother focus
+        requestAnimationFrame(() => {
+          if (inputRef.current) {
+            inputRef.current.focus();
+          }
+        });
+      }
+    }, [editing]);
+
+    useEffect(() => {
+      setCellValue(value);
+    }, [value]);
+
+    const handleChange = (newValue: any) => {
+      setCellValue(newValue);
+      saveCell(row, col, newValue);
+    };
+
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+      if (e.key === 'Enter' || e.key === 'Tab') {
+        setEditing(false);
+        // Auto-navigate to next field
+        setTimeout(() => {
+          const currentCell = document.activeElement?.closest('td');
+          if (currentCell) {
+            const currentRow = currentCell.closest('tr');
+            
+            // For product selection, move to quantity field
+            if (column.dataIndex === 'product_id') {
+              const qtyCell = currentRow?.querySelector('td[data-column-key="qty"]') as HTMLElement;
+              if (qtyCell) {
+                qtyCell.focus();
+              } else {
+                const nextCell = currentCell.nextElementSibling as HTMLElement;
+                nextCell?.focus();
+              }
+            } else {
+              const nextCell = currentCell.nextElementSibling as HTMLElement;
+              if (nextCell) {
+                nextCell.focus();
+              }
+            }
+          }
+        }, 100);
+      } else if (e.key === 'ArrowDown' || e.key === 'ArrowUp' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+        e.preventDefault();
+        e.stopPropagation();
+        setEditing(false);
+        // Let parent handle arrow navigation
+      } else if (e.key === 'Escape') {
+        setEditing(false);
+        setCellValue(value); // Reset to original value
+      }
+    };
+
+    const handleBlur = () => {
+      setEditing(false);
+    };
+
+    let inputNode: React.ReactNode;
+
+    switch (column.type) {
+      case 'number':
+        inputNode = (
+          <InputNumber 
+            ref={inputRef}
+            value={cellValue}
+            onChange={handleChange}
+            onKeyDown={handleKeyDown}
+            onBlur={handleBlur}
+            style={{ width: '100%' }}
+            autoFocus
+          />
+        );
+        break;
+      case 'select':
+        inputNode = (
+          <Select
+            ref={inputRef}
+            value={cellValue}
+            onChange={handleChange}
+            onBlur={handleBlur}
+            style={{ width: '100%' }}
+            options={column.options}
+            showSearch
+            allowClear
+            autoFocus
+            filterOption={(input, option) =>
+              (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+            }
+            onDropdownVisibleChange={(open) => {
+              if (!open && cellValue) {
+                // Auto-navigate when dropdown closes
+                setTimeout(() => {
+                  const currentCell = document.activeElement?.closest('td');
+                  if (currentCell) {
+                    const currentRow = currentCell.closest('tr');
+                    
+                    // For product selection, move to quantity field
+                    if (column.dataIndex === 'product_id') {
+                      const qtyCell = currentRow?.querySelector('td[data-column-key="qty"]') as HTMLElement;
+                      if (qtyCell) {
+                        qtyCell.focus();
+                      } else {
+                        const nextCell = currentCell.nextElementSibling as HTMLElement;
+                        nextCell?.focus();
+                      }
+                    } else {
+                      const nextCell = currentCell.nextElementSibling as HTMLElement;
+                      if (nextCell) {
+                        nextCell.focus();
+                      }
+                    }
+                  }
+                }, 300);
+              }
+            }}
+            onSelect={(selectedValue) => {
+              // Force navigation after selection
+              setTimeout(() => {
+                const currentCell = document.activeElement?.closest('td');
+                if (currentCell) {
+                  const currentRow = currentCell.closest('tr');
+                  const rowKey = currentRow?.getAttribute('data-row-key');
+                  
+                  // Find the next editable field in the same row (skip stock_id)
+                  const nextEditableCell = currentRow?.querySelector('td[data-column-key="qty"]') as HTMLElement;
+                  if (nextEditableCell) {
+                    nextEditableCell.focus();
+                  } else {
+                    // Fallback to next cell
+                    const nextCell = currentCell.nextElementSibling as HTMLElement;
+                    nextCell?.focus();
+                  }
+                }
+              }, 500);
+            }}
+            onKeyDown={(e) => {
+              // Custom key handler for Select
+              if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+                const selectElement = e.target as HTMLElement;
+                const dropdownOpen = selectElement?.closest('.ant-select-dropdown');
+                
+                if (!dropdownOpen) {
+                  // If dropdown is closed, handle arrow navigation
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleKeyDown(e);
+                }
+              } else if (e.key === 'Enter') {
+                const selectElement = e.target as HTMLElement;
+                const dropdownOpen = selectElement?.closest('.ant-select-dropdown');
+                
+                if (dropdownOpen) {
+                  // If dropdown is open, let Select handle Enter for option selection
+                  // The onSelect will handle navigation after selection
+                  return;
+                } else {
+                  // If dropdown is closed, open it
+                  e.preventDefault();
+                  const select = selectElement.closest('.ant-select-selector')?.parentElement as HTMLElement;
+                  if (select) {
+                    select.click();
+                  }
+                }
+              }
+            }}
+          />
+        );
+        break;
+      case 'date':
+        inputNode = (
+          <DatePicker
+            ref={inputRef}
+            value={cellValue ? dayjs(cellValue) : null}
+            onChange={(date) => handleChange(date ? date.format('YYYY-MM-DD') : null)}
+            onKeyDown={handleKeyDown}
+            onBlur={handleBlur}
+            style={{ width: '100%' }}
+            format="YYYY-MM-DD"
+            autoFocus
+          />
+        );
+        break;
+      default:
+        inputNode = (
+          <Input 
+            ref={inputRef}
+            value={cellValue}
+            onChange={(e) => handleChange(e.target.value)}
+            onKeyDown={handleKeyDown}
+            onBlur={handleBlur}
+            autoFocus
+          />
+        );
+    }
+
     return (
-      <Input
-        value={cellValue}
-        onChange={(e) => setCellValue(e.target.value)}
-        onBlur={() => saveCell(row, col, cellValue)}
-        onKeyDown={(e) => handleKeyNavigation(e, row, col, cellValue)}
-        autoFocus
-      />
+      <div className="editable-cell-input-wrapper">
+        {inputNode}
+      </div>
     );
   };
 
@@ -341,22 +623,55 @@ const AntdEditableTable: React.FC<AntdEditableTableProps> = ({
       onClick: () => {
         if (typeof rowIndex === "number") setEditingCell({ row: rowIndex, col: colIndex });
       },
+      'data-column-key': col.dataIndex,
+      tabIndex: 0,
+      onKeyDown: (e: React.KeyboardEvent) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          if (typeof rowIndex === "number") setEditingCellSafely({ row: rowIndex, col: colIndex });
+        }
+      },
+      onFocus: () => {
+        // Auto-start editing when cell is focused
+        if (typeof rowIndex === "number") {
+          setEditingCellSafely({ row: rowIndex, col: colIndex });
+        }
+      },
     }),
     render: (_value: any, record: any, rowIndex: number) => {
-      if (
-        editingCell &&
-        editingCell.row === rowIndex &&
-        editingCell.col === colIndex
-      ) {
+      const isEditing = editingCell && editingCell.row === rowIndex && editingCell.col === colIndex;
+      
+      if (isEditing) {
         return (
           <EditableCell
+            key={`${rowIndex}-${colIndex}-${record[col.dataIndex]}`}
             row={rowIndex}
             col={colIndex}
             value={record[col.dataIndex]}
           />
         );
       }
-      return record[col.dataIndex];
+      
+      // Display value based on column type
+      const value = record[col.dataIndex];
+      if (value === null || value === undefined || value === '') {
+        return <Text type="secondary" italic>Enter {col.title}</Text>;
+      }
+      
+      switch (col.type) {
+        case 'date':
+          return value ? dayjs(value).format('YYYY-MM-DD') : '';
+        case 'select':
+          if (col.options) {
+            const option = col.options.find(opt => opt.value === value);
+            return option ? option.label : value;
+          }
+          return value;
+        case 'number':
+          return value;
+        default:
+          return value;
+      }
     },
   }));
 
