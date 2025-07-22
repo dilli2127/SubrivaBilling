@@ -9,7 +9,9 @@ import {
   Space,
   Modal,
   Typography,
+  message,
 } from "antd";
+import type { SizeType } from "antd/es/config-provider/SizeContext";
 import {
   PlusOutlined,
   DeleteOutlined,
@@ -45,9 +47,10 @@ export interface AntdEditableTableProps {
   allowDelete?: boolean;
   rowKey?: string;
   loading?: boolean;
-  size?: "small" | "middle" | "large";
+  compact?: boolean; // ✅ added compact toggle
+  enableKeyboardNav?: boolean;
+  size?: SizeType;
   className?: string;
-  enableAdvancedKeyboardNav?: boolean;
 }
 
 const AntdEditableTable: React.FC<AntdEditableTableProps> = ({
@@ -60,47 +63,51 @@ const AntdEditableTable: React.FC<AntdEditableTableProps> = ({
   allowDelete = true,
   rowKey = "key",
   loading = false,
-  size = "small",
+  compact = false, // ✅ use compact mode
+  enableKeyboardNav = true,
+  size = "middle",
   className,
-  enableAdvancedKeyboardNav = true,
 }) => {
   const [data, setData] = useState<any[]>([]);
   const [editingCell, setEditingCell] = useState<{
     row: number;
     col: number;
   } | null>(null);
-  const tableRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setData(dataSource);
   }, [dataSource]);
 
-  // Add a new row
+  // Add new row
   const handleAddRow = () => {
     const newRow: any = { [rowKey]: Date.now().toString() };
     columns.forEach((col) => {
-      newRow[col.dataIndex] = col.defaultValue || "";
+      newRow[col.dataIndex] = col.defaultValue ?? "";
     });
     const newData = [...data, newRow];
     setData(newData);
     onSave(newData);
-    if (onAdd) onAdd();
+    onAdd?.();
   };
 
   // Delete last row
   const handleDeleteRow = () => {
+    if (data.length === 0) {
+      message.warning("No rows to delete");
+      return;
+    }
     Modal.confirm({
-      title: "Delete last row?",
+      title: "Delete the last row?",
       onOk: () => {
         const newData = data.slice(0, -1);
         setData(newData);
         onSave(newData);
-        if (onDelete) onDelete([data.length - 1]);
+        onDelete?.([data.length - 1]);
       },
     });
   };
 
-  // Save cell value
+  // Save individual cell value
   const saveCell = (row: number, col: number, value: any) => {
     const newData = [...data];
     newData[row][columns[col].dataIndex] = value;
@@ -120,11 +127,11 @@ const AntdEditableTable: React.FC<AntdEditableTableProps> = ({
         handleAddRow();
       }
     };
-    document.addEventListener("keydown", handleKeyDown);
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [data, allowAdd, onSave]);
+    if (enableKeyboardNav) {
+      document.addEventListener("keydown", handleKeyDown);
+      return () => document.removeEventListener("keydown", handleKeyDown);
+    }
+  }, [data, allowAdd, onSave, enableKeyboardNav]);
 
   // Editable cell
   const EditableCell = ({
@@ -142,14 +149,12 @@ const AntdEditableTable: React.FC<AntdEditableTableProps> = ({
 
     useEffect(() => {
       setCellValue(value);
-      requestAnimationFrame(() => {
-        inputRef.current?.focus();
-      });
+      inputRef.current?.focus();
     }, [value]);
 
-    const handleChange = (newValue: any) => {
-      setCellValue(newValue);
-      saveCell(row, col, newValue);
+    const handleChange = (val: any) => {
+      setCellValue(val);
+      saveCell(row, col, val);
     };
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -158,10 +163,9 @@ const AntdEditableTable: React.FC<AntdEditableTableProps> = ({
         const nextCol = e.shiftKey ? col - 1 : col + 1;
         const nextRow = row + (nextCol >= columns.length ? 1 : 0);
         const colIndex = (nextCol + columns.length) % columns.length;
-
         if (nextRow < data.length) {
           setEditingCell({ row: nextRow, col: colIndex });
-        } else if (allowAdd && onAdd) {
+        } else if (allowAdd) {
           handleAddRow();
           setEditingCell({ row: data.length, col: colIndex });
         }
@@ -170,10 +174,9 @@ const AntdEditableTable: React.FC<AntdEditableTableProps> = ({
       }
     };
 
-    let inputNode: React.ReactNode;
     switch (column.type) {
       case "number":
-        inputNode = (
+        return (
           <InputNumber
             ref={inputRef}
             value={cellValue}
@@ -182,9 +185,8 @@ const AntdEditableTable: React.FC<AntdEditableTableProps> = ({
             style={{ width: "100%" }}
           />
         );
-        break;
       case "select":
-        inputNode = (
+        return (
           <Select
             ref={inputRef}
             value={cellValue}
@@ -195,23 +197,20 @@ const AntdEditableTable: React.FC<AntdEditableTableProps> = ({
             onKeyDown={handleKeyDown}
           />
         );
-        break;
       case "date":
-        inputNode = (
+        return (
           <DatePicker
             ref={inputRef}
             value={cellValue ? dayjs(cellValue) : null}
             onChange={(date) =>
               handleChange(date ? date.format("YYYY-MM-DD") : null)
             }
-            format="YYYY-MM-DD"
             onKeyDown={handleKeyDown}
             style={{ width: "100%" }}
           />
         );
-        break;
       default:
-        inputNode = (
+        return (
           <Input
             ref={inputRef}
             value={cellValue}
@@ -220,23 +219,23 @@ const AntdEditableTable: React.FC<AntdEditableTableProps> = ({
           />
         );
     }
-
-    return <div>{inputNode}</div>;
   };
 
   const mergedColumns = columns.map((col, colIndex) => ({
     ...col,
     onCell: (_record: any, rowIndex?: number) => ({
-      onClick: () =>
-        typeof rowIndex === "number" && setEditingCell({ row: rowIndex, col: colIndex }),
-      "data-column-key": col.dataIndex,
+      onClick: () => {
+        if (typeof rowIndex === "number") {
+          setEditingCell({ row: rowIndex, col: colIndex });
+        }
+      },
     }),
-    render: (_value: any, record: any, rowIndex: number) => {
-      const isEditing =
+    render: (_val: any, record: any, rowIndex: number) => {
+      if (
         editingCell &&
         editingCell.row === rowIndex &&
-        editingCell.col === colIndex;
-      if (isEditing) {
+        editingCell.col === colIndex
+      ) {
         return (
           <EditableCell
             key={`${rowIndex}-${colIndex}`}
@@ -246,50 +245,62 @@ const AntdEditableTable: React.FC<AntdEditableTableProps> = ({
           />
         );
       }
-      const value = record[col.dataIndex];
-      if (col.type === "date") {
-        return value ? dayjs(value).format("YYYY-MM-DD") : "";
+      
+      // For select columns, show the label instead of the value
+      if (col.type === 'select' && col.options) {
+        const option = col.options.find(opt => opt.value === record[col.dataIndex]);
+        return option ? option.label : record[col.dataIndex];
       }
-      if (col.type === "select") {
-        return col.options?.find((opt) => opt.value === value)?.label || value;
-      }
-      return value;
+      
+      return record[col.dataIndex];
     },
   }));
 
   return (
-    <div ref={tableRef} className={`editable-table ${className || ""}`}>
-      <Space style={{ marginBottom: 8 }}>
-        {allowAdd && (
-          <Button type="primary" icon={<PlusOutlined />} onClick={handleAddRow}>
-            Add Row (Shift+A)
-          </Button>
-        )}
-        {allowDelete && (
+    <div
+      className={`antd-editable-table ${compact ? "compact" : ""} ${className || ""}`}
+      tabIndex={-1}
+    >
+      <div className="table-toolbar">
+        <Space>
+          {allowAdd && (
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={handleAddRow}
+            >
+              Add Row (Shift+A)
+            </Button>
+          )}
+          {allowDelete && (
+            <Button
+              danger
+              icon={<DeleteOutlined />}
+              onClick={handleDeleteRow}
+            >
+              Delete Last Row
+            </Button>
+          )}
           <Button
-            danger
-            icon={<DeleteOutlined />}
-            onClick={handleDeleteRow}
+            type="primary"
+            icon={<SaveOutlined />}
+            onClick={() => onSave(data)}
           >
-            Delete Last Row
+            Save (Ctrl+S)
           </Button>
-        )}
-        <Button
-          type="primary"
-          icon={<SaveOutlined />}
-          onClick={() => onSave(data)}
-        >
-          Save (Ctrl+S)
-        </Button>
-      </Space>
+        </Space>
+        <Text type="secondary" className="table-info">
+          Use Tab / Shift+Tab to navigate cells
+        </Text>
+      </div>
       <Table
         bordered
-        size={size}
         dataSource={data}
         columns={mergedColumns}
-        pagination={false}
         rowKey={rowKey}
         loading={loading}
+        pagination={false}
+        size={size}
         scroll={{ y: 400 }}
       />
     </div>
