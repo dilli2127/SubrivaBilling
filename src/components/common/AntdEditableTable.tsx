@@ -91,26 +91,29 @@ const AntdEditableTable: React.FC<AntdEditableTableProps> = ({
       const currentRowKey = currentCell?.getAttribute('data-row-key');
       const currentColKey = currentCell?.getAttribute('data-column-key');
       const currentRow = currentCell?.closest('tr');
-      // F-key shortcuts
-      if (e.key === 'F1' && onAdd) {
-        e.preventDefault();
-        onAdd();
-        setTimeout(() => {
-          // Focus first cell in new row
-          const rows = tableRef.current?.querySelectorAll('.ant-table-tbody tr');
-          if (rows && rows.length > 0) {
-            const lastRow = rows[rows.length - 1];
-            const firstCell = lastRow.querySelector(`td[data-column-key="${firstEditableCol}"]`) as HTMLElement;
-            firstCell?.focus();
-          }
-        }, 100);
-      } else if (e.key === 'F2') {
-        e.preventDefault();
-        onSave(data);
-      } else if (e.key === 'F5' && onAdd) {
-        e.preventDefault();
-        for (let i = 0; i < 5; i++) onAdd();
-      }
+             // F-key shortcuts
+       if (e.key === 'F1' && onAdd) {
+         e.preventDefault();
+         onAdd();
+         setTimeout(() => {
+           // Focus first cell in new row
+           const rows = tableRef.current?.querySelectorAll('.ant-table-tbody tr');
+           if (rows && rows.length > 0) {
+             const lastRow = rows[rows.length - 1];
+             const firstCell = lastRow.querySelector(`td[data-column-key="${firstEditableCol}"]`) as HTMLElement;
+             firstCell?.focus();
+           }
+         }, 100);
+       } else if (e.key === 'F2') {
+         e.preventDefault();
+         onSave(data);
+       } else if (e.key === 'F3' || e.key === 'F4') {
+         // Let parent component handle F3 and F4
+         return;
+       } else if (e.key === 'F5' && onAdd) {
+         e.preventDefault();
+         for (let i = 0; i < 5; i++) onAdd();
+       }
       // Ctrl shortcuts
       else if (e.ctrlKey) {
         if (e.key === 's') {

@@ -558,6 +558,98 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
     }
   }, [updateItems]);
 
+  // Ultra-Fast Billing Keyboard Shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // F1: Add item and focus first product field
+      if (e.key === 'F1') {
+        e.preventDefault();
+        handleAddItem();
+        setTimeout(() => {
+          const productCell = document.querySelector('.ant-table-tbody tr:last-child td[data-column-key="product_id"]') as HTMLElement;
+          productCell?.focus();
+        }, 200);
+      }
+      // F2: Save bill
+      else if (e.key === 'F2') {
+        e.preventDefault();
+        handleSaveBill();
+      }
+      // F3: Print bill
+      else if (e.key === 'F3') {
+        e.preventDefault();
+        // TODO: Implement print functionality
+        message.info('Print functionality coming soon!');
+      }
+      // F4: Focus customer field
+      else if (e.key === 'F4') {
+        e.preventDefault();
+        const customerSelect = document.querySelector('input[placeholder*="customer" i], input[placeholder*="Customer" i]') as HTMLElement;
+        customerSelect?.focus();
+      }
+      // F5: Add 5 items
+      else if (e.key === 'F5') {
+        e.preventDefault();
+        for (let i = 0; i < 5; i++) {
+          handleAddItem();
+        }
+        setTimeout(() => {
+          const productCell = document.querySelector('.ant-table-tbody tr:last-child td[data-column-key="product_id"]') as HTMLElement;
+          productCell?.focus();
+        }, 200);
+      }
+      // Ctrl shortcuts
+      else if (e.ctrlKey) {
+        switch (e.key) {
+          case 's':
+            e.preventDefault();
+            handleSaveBill();
+            break;
+          case 'n':
+            e.preventDefault();
+            handleAddItem();
+            setTimeout(() => {
+              const productCell = document.querySelector('.ant-table-tbody tr:last-child td[data-column-key="product_id"]') as HTMLElement;
+              productCell?.focus();
+            }, 200);
+            break;
+          case 'p':
+            e.preventDefault();
+            // TODO: Implement print functionality
+            message.info('Print functionality coming soon!');
+            break;
+          case 'r':
+            e.preventDefault();
+            // Reset form
+            setBillFormData({
+              invoice_no: '',
+              date: dayjs().format('YYYY-MM-DD'),
+              customer_id: '',
+              customer_name: '',
+              payment_mode: 'cash',
+              items: [],
+            });
+            break;
+        }
+      }
+      // Quick quantity entry (Ctrl + 0-9)
+      else if (e.ctrlKey && /^[0-9]$/.test(e.key)) {
+        e.preventDefault();
+        const activeElement = document.activeElement as HTMLElement;
+        if (activeElement?.closest('td[data-column-key="qty"]')) {
+          const input = activeElement.querySelector('input') as HTMLInputElement;
+          if (input) {
+            input.value = e.key;
+            input.dispatchEvent(new Event('change', { bubbles: true }));
+          }
+        }
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [billFormData, billSettings]);
+
   return (
     <div
       style={{
