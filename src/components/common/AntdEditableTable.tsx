@@ -149,8 +149,15 @@ const AntdEditableTable: React.FC<AntdEditableTableProps> = ({
 
     useEffect(() => {
       setCellValue(value);
-      inputRef.current?.focus();
-    }, [value]);
+      if (column.type === 'select') {
+        // For select, focus and open dropdown after a small delay
+        setTimeout(() => {
+          inputRef.current?.focus();
+        }, 100);
+      } else {
+        inputRef.current?.focus();
+      }
+    }, [value, column.type]);
 
     const handleChange = (val: any) => {
       setCellValue(val);
@@ -204,7 +211,13 @@ const AntdEditableTable: React.FC<AntdEditableTableProps> = ({
               style={{ width: "100%" }}
               onKeyDown={handleKeyDown}
               autoFocus
+              open
               dropdownStyle={{ zIndex: 9999 }}
+              onDropdownVisibleChange={(open) => {
+                if (!open) {
+                  setEditingCell(null);
+                }
+              }}
             />
           </div>
         );
