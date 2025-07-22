@@ -177,46 +177,66 @@ const AntdEditableTable: React.FC<AntdEditableTableProps> = ({
     switch (column.type) {
       case "number":
         return (
-          <InputNumber
-            ref={inputRef}
-            value={cellValue}
-            onChange={handleChange}
-            onKeyDown={handleKeyDown}
-            style={{ width: "100%" }}
-          />
+          <div onClick={(e) => e.stopPropagation()}>
+            <InputNumber
+              ref={inputRef}
+              value={cellValue}
+              onChange={handleChange}
+              onBlur={() => setEditingCell(null)}
+              onKeyDown={handleKeyDown}
+              style={{ width: "100%" }}
+              autoFocus
+            />
+          </div>
         );
       case "select":
         return (
-          <Select
-            ref={inputRef}
-            value={cellValue}
-            options={column.options}
-            onChange={handleChange}
-            open
-            style={{ width: "100%" }}
-            onKeyDown={handleKeyDown}
-          />
+          <div onClick={(e) => e.stopPropagation()}>
+            <Select
+              ref={inputRef}
+              value={cellValue}
+              options={column.options}
+              onChange={(val) => {
+                handleChange(val);
+                // Close edit mode after selection
+                setEditingCell(null);
+              }}
+              style={{ width: "100%" }}
+              onKeyDown={handleKeyDown}
+              autoFocus
+              dropdownStyle={{ zIndex: 9999 }}
+            />
+          </div>
         );
       case "date":
         return (
-          <DatePicker
-            ref={inputRef}
-            value={cellValue ? dayjs(cellValue) : null}
-            onChange={(date) =>
-              handleChange(date ? date.format("YYYY-MM-DD") : null)
-            }
-            onKeyDown={handleKeyDown}
-            style={{ width: "100%" }}
-          />
+          <div onClick={(e) => e.stopPropagation()}>
+            <DatePicker
+              ref={inputRef}
+              value={cellValue ? dayjs(cellValue) : null}
+              onChange={(date) => {
+                handleChange(date ? date.format("YYYY-MM-DD") : null);
+                setEditingCell(null);
+              }}
+              onBlur={() => setEditingCell(null)}
+              onKeyDown={handleKeyDown}
+              style={{ width: "100%" }}
+              autoFocus
+            />
+          </div>
         );
       default:
         return (
-          <Input
-            ref={inputRef}
-            value={cellValue}
-            onChange={(e) => handleChange(e.target.value)}
-            onKeyDown={handleKeyDown}
-          />
+          <div onClick={(e) => e.stopPropagation()}>
+            <Input
+              ref={inputRef}
+              value={cellValue}
+              onChange={(e) => handleChange(e.target.value)}
+              onBlur={() => setEditingCell(null)}
+              onKeyDown={handleKeyDown}
+              autoFocus
+            />
+          </div>
         );
     }
   };
@@ -225,6 +245,12 @@ const AntdEditableTable: React.FC<AntdEditableTableProps> = ({
     ...col,
     onCell: (_record: any, rowIndex?: number) => ({
       onClick: () => {
+        if (typeof rowIndex === "number") {
+          setEditingCell({ row: rowIndex, col: colIndex });
+        }
+      },
+      onContextMenu: (e: React.MouseEvent) => {
+        e.preventDefault();
         if (typeof rowIndex === "number") {
           setEditingCell({ row: rowIndex, col: colIndex });
         }
