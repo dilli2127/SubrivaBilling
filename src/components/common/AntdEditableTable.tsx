@@ -123,13 +123,13 @@ const AntdEditableTable: React.FC<AntdEditableTableProps> = ({
     });
   };
 
-  const saveCell = (row: number, col: number, value: any) => {
+  const saveCell = (row: number, col: number, value: any): boolean => {
     const column = columns[col];
     
     // Basic validation
     if (column.required && (!value || value === "")) {
       message.error(`${column.title} is required`);
-      return;
+      return false;
     }
     
     // Custom validation
@@ -137,7 +137,7 @@ const AntdEditableTable: React.FC<AntdEditableTableProps> = ({
       const error = column.validation(value);
       if (error) {
         message.error(error);
-        return;
+        return false;
       }
     }
     
@@ -145,6 +145,7 @@ const AntdEditableTable: React.FC<AntdEditableTableProps> = ({
     newData[row][columns[col].dataIndex] = value;
     setData(newData);
     onSave(newData);
+    return true;
   };
 
   useEffect(() => {
@@ -229,23 +230,46 @@ const AntdEditableTable: React.FC<AntdEditableTableProps> = ({
             />
           </div>
         );
-      case "select":
-        return (
-          <div onClick={(e) => e.stopPropagation()}>
-            <Select
-              ref={inputRef}
-              value={cellValue}
-              options={column.options}
-              onChange={(val) => {
-                handleChange(val);
-                setEditingCell(null);
-              }}
-              style={{ width: "100%" }}
-              onKeyDown={handleKeyDown}
-              open
-            />
-          </div>
-        );
+        case "select":
+          return (
+            <div onClick={(e) => e.stopPropagation()}>
+              <Select
+                ref={inputRef}
+                value={cellValue}
+                options={column.options}
+                onChange={(val) => {
+                  const success = saveCell(row, col, val);
+                  if (success) {
+                    // Move to next editable cell
+                    const nextCol = col + 1;
+                    const nextRow = row + (nextCol >= columns.length ? 1 : 0);
+                    const colIndex = (nextCol + columns.length) % columns.length;
+        
+                    if (nextRow < data.length) {
+                      setEditingCell({ row: nextRow, col: colIndex });
+                    } else if (allowAdd) {
+                      handleAddRow();
+                      setEditingCell({ row: data.length, col: colIndex });
+                    }
+                  } else {
+                    // Validation failed; keep focus
+                    setTimeout(() => {
+                      inputRef.current?.focus();
+                    }, 50);
+                  }
+                }}
+                style={{ width: "100%" }}
+                open
+                // Prevent Enter key double-validation
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === "Tab") {
+                    e.preventDefault(); // Block default key behavior
+                  }
+                }}
+              />
+            </div>
+          );
+        
       case "date":
         return (
           <div onClick={(e) => e.stopPropagation()}>
