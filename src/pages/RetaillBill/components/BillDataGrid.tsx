@@ -241,7 +241,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
     {
       key: 'product_id',
       title: '🛒 PRODUCT',
-      dataIndex: 'product_name',
+      dataIndex: 'product_id',
       type: 'product',
       required: true,
       width: 280,
@@ -330,10 +330,12 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
   // Handle item changes
   const handleItemsChange = (items: any[]) => {
     // Convert back to BillItem format and auto-populate stock
+    console.log(items);
     const billItems: BillItem[] = items.map(item => {
       const billItem: BillItem = {
         product_id: item.product_id || '',
-        product_name: item.product_name || '',
+        product_name:
+          productOptions.find((opt: { label: string; value: string }) => opt.value === item.product_id)?.label || '',
         variant_name: item.variant_name || '',
         stock_id: item.stock_id || '',
         qty: item.qty || 0,
@@ -414,9 +416,10 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
 
   const handleProductSelect = (product: any, rowIndex: number) => {
     const newItems = [...billFormData.items];
-    newItems[rowIndex].product_id = product.id;
-    newItems[rowIndex].product_name = product.name;
-    newItems[rowIndex].price = product.selling_price;
+    // Robustly set product_id from product.id or product._id
+    newItems[rowIndex].product_id = product.id || product._id || '';
+    newItems[rowIndex].product_name = product.name || '';
+    newItems[rowIndex].price = product.selling_price || 0;
     handleItemsChange(newItems);
   };
 
