@@ -241,7 +241,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
     {
       key: 'product_id',
       title: '🛒 PRODUCT',
-      dataIndex: 'product_id',
+      dataIndex: 'product_name',
       type: 'product',
       required: true,
       width: 280,
