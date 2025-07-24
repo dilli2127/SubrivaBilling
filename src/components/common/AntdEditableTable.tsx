@@ -200,20 +200,18 @@ const AntdEditableTable: React.FC<AntdEditableTableProps> = ({
       if (column.type === 'product' && e.key === 'Enter') {
         e.stopPropagation();
         setIsProductModalVisible(true);
+        return; // Do not validate or move cell yet!
       }
-      if (e.key === 'Enter' || e.key === 'Tab') {
+      if (e.key === 'Tab') {
         e.preventDefault();
-        const nextCol = e.shiftKey ? col - 1 : col + 1;
-        const nextRow = row + (nextCol >= columns.length ? 1 : 0);
-        const colIndex = (nextCol + columns.length) % columns.length;
-
-        // Validate current cell before moving
-        const column = columns[col];
+        // Only validate on Tab
         if (column.required && (!cellValue || cellValue === '')) {
           message.error(`${column.title} is required`);
           return;
         }
-
+        const nextCol = e.shiftKey ? col - 1 : col + 1;
+        const nextRow = row + (nextCol >= columns.length ? 1 : 0);
+        const colIndex = (nextCol + columns.length) % columns.length;
         if (nextRow < data.length) {
           setEditingCell({ row: nextRow, col: colIndex });
         } else if (allowAdd) {
