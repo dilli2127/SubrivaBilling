@@ -15,6 +15,7 @@ import type { SizeType } from 'antd/es/config-provider/SizeContext';
 import { PlusOutlined, DeleteOutlined, SaveOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import './AntdEditableTable.css';
+import ProductSelectionModal from '../../pages/RetaillBill/components/ProductSelectionModal';
 
 const { Text } = Typography;
 
@@ -23,7 +24,7 @@ export interface AntdEditableColumn {
   dataIndex: string;
   key?: string;
   defaultValue?: any;
-  type?: 'text' | 'number' | 'select' | 'date';
+  type?: 'text' | 'number' | 'select' | 'date' | 'product';
   options?: { label: string; value: any }[];
   required?: boolean;
   width?: number;
@@ -37,6 +38,7 @@ export interface AntdEditableTableProps {
   onSave: (data: any[]) => void;
   onAdd?: () => void;
   onDelete?: (indices: number[]) => void;
+  onProductSelect?: (product: any, rowIndex: number) => void;
   allowAdd?: boolean;
   allowDelete?: boolean;
   rowKey?: string;
@@ -61,6 +63,7 @@ const AntdEditableTable: React.FC<AntdEditableTableProps> = ({
   enableKeyboardNav = true,
   size = 'middle',
   className,
+  onProductSelect,
 }) => {
   const [data, setData] = useState<any[]>([]);
   const [editingCell, setEditingCell] = useState<{
@@ -178,6 +181,7 @@ const AntdEditableTable: React.FC<AntdEditableTableProps> = ({
     const [cellValue, setCellValue] = useState(value);
     const inputRef = useRef<any>(null);
     const column = columns[col];
+    const [isProductModalVisible, setIsProductModalVisible] = useState(false);
 
     useEffect(() => {
       setCellValue(value);
@@ -193,6 +197,10 @@ const AntdEditableTable: React.FC<AntdEditableTableProps> = ({
     };
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
+      if (column.type === 'product' && e.key === 'Enter') {
+        e.stopPropagation();
+        setIsProductModalVisible(true);
+      }
       if (e.key === 'Enter' || e.key === 'Tab') {
         e.preventDefault();
         const nextCol = e.shiftKey ? col - 1 : col + 1;
@@ -217,7 +225,35 @@ const AntdEditableTable: React.FC<AntdEditableTableProps> = ({
       }
     };
 
+    const handleProductSelect = (product: any) => {
+      if (onProductSelect) {
+        onProductSelect(product, row);
+      }
+      setIsProductModalVisible(false);
+      setEditingCell(null);
+    };
+
     switch (column.type) {
+      case 'product':
+        return (
+          <>
+            <div onClick={e => e.stopPropagation()}>
+              <Input
+                ref={inputRef}
+                value={cellValue}
+                onKeyDown={handleKeyDown}
+                placeholder="Press Enter to select product"
+              />
+            </div>
+            {isProductModalVisible && (
+              <ProductSelectionModal
+                visible={isProductModalVisible}
+                onSelect={handleProductSelect}
+                onCancel={() => setIsProductModalVisible(false)}
+              />
+            )}
+          </>
+        );
       case 'number':
         return (
           <div onClick={e => e.stopPropagation()}>

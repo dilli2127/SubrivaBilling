@@ -242,8 +242,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
       key: 'product_id',
       title: '🛒 PRODUCT',
       dataIndex: 'product_id',
-      type: 'select',
-      options: productOptions,
+      type: 'product',
       required: true,
       width: 280,
     },
@@ -411,6 +410,14 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
     });
 
     setBillFormData(prev => ({ ...prev, items: updatedItems }));
+  };
+
+  const handleProductSelect = (product: any, rowIndex: number) => {
+    const newItems = [...billFormData.items];
+    newItems[rowIndex].product_id = product.id;
+    newItems[rowIndex].product_name = product.name;
+    newItems[rowIndex].price = product.selling_price;
+    handleItemsChange(newItems);
   };
 
   // Handle item addition
@@ -1236,6 +1243,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
             onSave={handleItemsChange}
             onAdd={handleAddItem}
             onDelete={handleDeleteItems}
+            onProductSelect={handleProductSelect}
             loading={productLoading || stockLoading || branchStockLoading}
             className="modern-bill-grid"
             size="small"
