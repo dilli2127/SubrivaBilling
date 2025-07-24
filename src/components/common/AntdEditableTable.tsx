@@ -366,6 +366,10 @@ const AntdEditableTable: React.FC<AntdEditableTableProps> = ({
           />
         );
       }
+      // Show product_name for product_id column when not editing
+      if (col.dataIndex === 'product_id') {
+        return record.product_name || record[col.dataIndex];
+      }
       if (col.type === 'select' && col.options) {
         const option = col.options.find(
           opt => opt.value === record[col.dataIndex]
