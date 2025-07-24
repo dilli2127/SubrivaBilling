@@ -140,6 +140,7 @@ export interface BillItem {
   product_name: string;
   variant_name: string;
   stock_id: string;
+  batch_no?: string;
   qty: number;
   loose_qty: number;
   price: number;

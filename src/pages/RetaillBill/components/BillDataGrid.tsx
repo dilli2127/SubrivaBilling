@@ -14,6 +14,7 @@ import {
   PrinterOutlined,
   FileTextOutlined,
 } from '@ant-design/icons';
+import StockSelectionModal from './StockSelectionModal';
 
 const { Title, Text } = Typography;
 
@@ -71,6 +72,8 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
     discountType: 'percentage' as 'percentage' | 'amount',
     paidAmount: 0,
   });
+
+  const [stockModalRowIndex, setStockModalRowIndex] = useState<number | null>(null);
 
   // User info
   const user = JSON.parse(sessionStorage.getItem('user') || '{}');
@@ -251,11 +254,10 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
       key: 'stock_id',
       title: '📦 STOCK',
       dataIndex: 'stock_id',
-      type: 'select',
-      options: [], // Dynamic based on selected product
+      type: 'stock',
       required: true,
       width: 200,
-      editable: false, // Auto-populated, no manual selection needed
+      editable: true, // allow editing to open modal
     },
     {
       key: 'qty',
@@ -422,6 +424,16 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
     newItems[rowIndex].product_name = product.name || '';
     newItems[rowIndex].price = product.selling_price || 0;
     handleItemsChange(newItems);
+    setStockModalRowIndex(rowIndex); // Open stock modal for this row
+  };
+
+  const handleStockSelect = (stock: any) => {
+    if (stockModalRowIndex === null) return;
+    const newItems = [...billFormData.items];
+    newItems[stockModalRowIndex].stock_id = stock.id || stock._id || stock.invoice_id || '';
+    newItems[stockModalRowIndex].batch_no = stock.batch_no || '';
+    handleItemsChange(newItems);
+    setStockModalRowIndex(null); // Close stock modal
   };
 
   // Handle item addition
@@ -1857,6 +1869,13 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
           </div>
         </div>
       </div>
+      {stockModalRowIndex !== null && (
+        <StockSelectionModal
+          visible={true}
+          onSelect={handleStockSelect}
+          onCancel={() => setStockModalRowIndex(null)}
+        />
+      )}
     </div>
   );
 };

@@ -16,6 +16,7 @@ import { PlusOutlined, DeleteOutlined, SaveOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import './AntdEditableTable.css';
 import ProductSelectionModal from '../../pages/RetaillBill/components/ProductSelectionModal';
+import StockSelectionModal from '../../pages/RetaillBill/components/StockSelectionModal';
 
 const { Text } = Typography;
 
@@ -24,7 +25,7 @@ export interface AntdEditableColumn {
   dataIndex: string;
   key?: string;
   defaultValue?: any;
-  type?: 'text' | 'number' | 'select' | 'date' | 'product';
+  type?: 'text' | 'number' | 'select' | 'date' | 'product' | 'stock';
   options?: { label: string; value: any }[];
   required?: boolean;
   width?: number;
@@ -182,6 +183,7 @@ const AntdEditableTable: React.FC<AntdEditableTableProps> = ({
     const inputRef = useRef<any>(null);
     const column = columns[col];
     const [isProductModalVisible, setIsProductModalVisible] = useState(false);
+    const [isStockModalVisible, setIsStockModalVisible] = useState(false);
 
     useEffect(() => {
       setCellValue(value);
@@ -201,6 +203,11 @@ const AntdEditableTable: React.FC<AntdEditableTableProps> = ({
         e.stopPropagation();
         setIsProductModalVisible(true);
         return; // Do not validate or move cell yet!
+      }
+      if (column.type === 'stock' && e.key === 'Enter') {
+        e.stopPropagation();
+        setIsStockModalVisible(true);
+        return;
       }
       if (e.key === 'Tab') {
         e.preventDefault();
@@ -231,6 +238,17 @@ const AntdEditableTable: React.FC<AntdEditableTableProps> = ({
       setEditingCell(null);
     };
 
+    const handleStockSelect = (stock: any) => {
+      // Set both stock_id and stock_name in the row
+      const newData = [...data];
+      newData[row].stock_id = stock.id || stock._id || '';
+      newData[row].stock_name = stock.name || '';
+      setData(newData);
+      onSave(newData);
+      setIsStockModalVisible(false);
+      setEditingCell(null);
+    };
+
     switch (column.type) {
       case 'product':
         return (
@@ -248,6 +266,26 @@ const AntdEditableTable: React.FC<AntdEditableTableProps> = ({
                 visible={isProductModalVisible}
                 onSelect={handleProductSelect}
                 onCancel={() => setIsProductModalVisible(false)}
+              />
+            )}
+          </>
+        );
+      case 'stock':
+        return (
+          <>
+            <div onClick={e => e.stopPropagation()}>
+              <Input
+                ref={inputRef}
+                value={cellValue}
+                onKeyDown={handleKeyDown}
+                placeholder="Press Enter to select stock"
+              />
+            </div>
+            {isStockModalVisible && (
+              <StockSelectionModal
+                visible={isStockModalVisible}
+                onSelect={handleStockSelect}
+                onCancel={() => setIsStockModalVisible(false)}
               />
             )}
           </>
@@ -365,6 +403,10 @@ const AntdEditableTable: React.FC<AntdEditableTableProps> = ({
             value={record[col.dataIndex]}
           />
         );
+      }
+      // Show batch_no for stock_id column when not editing
+      if (col.dataIndex === 'stock_id') {
+        return record.batch_no || record[col.dataIndex];
       }
       // Show product_name for product_id column when not editing
       if (col.dataIndex === 'product_id') {
