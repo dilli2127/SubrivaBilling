@@ -286,6 +286,7 @@ const AntdEditableTable: React.FC<AntdEditableTableProps> = ({
                 visible={isStockModalVisible}
                 onSelect={handleStockSelect}
                 onCancel={() => setIsStockModalVisible(false)}
+                productId={data[row]?.product_id || ''}
               />
             )}
           </>
@@ -405,7 +406,7 @@ const AntdEditableTable: React.FC<AntdEditableTableProps> = ({
         );
       }
       // Show batch_no for stock_id column when not editing
-      if (col.dataIndex === 'stock_id') {
+      if (col.dataIndex === 'batch_no') {
         return record.batch_no || record[col.dataIndex];
       }
       // Show product_name for product_id column when not editing

@@ -19,12 +19,14 @@ interface StockSelectionModalProps {
   visible: boolean;
   onSelect: (stock: Stock) => void;
   onCancel: () => void;
+  productId: string; // <-- Add this
 }
 
 const StockSelectionModal: FC<StockSelectionModalProps> = ({
   visible,
   onSelect,
   onCancel,
+  productId, // <-- Destructure
 }) => {
   const { getEntityApi } = useApiActions();
   const StockApi = getEntityApi('StockAudit');
@@ -70,6 +72,12 @@ const StockSelectionModal: FC<StockSelectionModalProps> = ({
       row?.scrollIntoView({ block: 'nearest' });
     }
   }, [highlightedIndex, filteredStocks]);
+
+  useEffect(() => {
+    if (visible && productId) {
+      StockApi('GetAll', { product_id: productId });
+    }
+  }, [visible, productId, StockApi]);
 
   const columns: ColumnType<Stock>[] = [
     { title: 'Name', dataIndex: 'name', key: 'name' },

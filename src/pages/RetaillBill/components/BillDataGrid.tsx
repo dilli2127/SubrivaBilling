@@ -253,7 +253,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
     {
       key: 'stock_id',
       title: '📦 STOCK',
-      dataIndex: 'stock_id',
+      dataIndex: 'batch_no',
       type: 'stock',
       required: true,
       width: 200,
@@ -1874,6 +1874,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
           visible={true}
           onSelect={handleStockSelect}
           onCancel={() => setStockModalRowIndex(null)}
+          productId={billFormData.items[stockModalRowIndex]?.product_id || ''}
         />
       )}
     </div>
