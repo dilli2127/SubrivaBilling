@@ -140,6 +140,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
           product_name: '',
           variant_name: '',
           stock_id: '',
+          batch_no: '',
           qty: 0,
           loose_qty: 0,
           price: 0,
@@ -183,8 +184,9 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
       ) || [];
 
     return stocks.map((stock: any) => ({
-      label: `Stock: ${stock.available_quantity || 0} pcs, ₹${stock.sell_price || 0}`,
+      label: `Batch: ${stock.batch_no || 'N/A'}, Qty: ${stock.available_quantity || 0} pcs, ₹${stock.sell_price || 0}`,
       value: stock._id,
+      batch_no: stock.batch_no,
     }));
   };
 
@@ -356,6 +358,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
         if (availableStocks.length > 0) {
           const firstStock = availableStocks[0];
           billItem.stock_id = firstStock.value;
+          billItem.batch_no = firstStock.batch_no || '';
 
           // Auto-focus quantity field after auto-selecting stock
           setTimeout(() => {
@@ -408,6 +411,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
           tax_percentage: taxPercentage,
           product_name: product?.name || '',
           variant_name: product?.VariantItem?.variant_name || '',
+          batch_no: stock.batch_no || '',
         };
       }
 
@@ -443,6 +447,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
       product_name: '',
       variant_name: '',
       stock_id: '',
+      batch_no: '',
       qty: 0,
       loose_qty: 0,
       price: 0,
@@ -901,7 +906,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
                   animation: 'fadeInUp 1s ease-out 0.2s both',
                 }}
               >
-                ⚡ 100% Keyboard • No Mouse • Lightning Fast •{' '}
+                ⚡Lightning Fast •{' '}
                 {dayjs().format('DD MMM YYYY, dddd')}
               </Text>
             </div>

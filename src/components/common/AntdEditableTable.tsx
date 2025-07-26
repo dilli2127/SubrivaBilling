@@ -239,10 +239,10 @@ const AntdEditableTable: React.FC<AntdEditableTableProps> = ({
     };
 
     const handleStockSelect = (stock: any) => {
-      // Set both stock_id and stock_name in the row
+      // Set stock_id and batch_no in the row
       const newData = [...data];
       newData[row].stock_id = stock.id || stock._id || '';
-      newData[row].stock_name = stock.name || '';
+      newData[row].batch_no = stock.batch_no || '';
       setData(newData);
       onSave(newData);
       setIsStockModalVisible(false);
@@ -276,9 +276,10 @@ const AntdEditableTable: React.FC<AntdEditableTableProps> = ({
             <div onClick={e => e.stopPropagation()}>
               <Input
                 ref={inputRef}
-                value={cellValue}
+                value={data[row]?.batch_no || cellValue}
                 onKeyDown={handleKeyDown}
                 placeholder="Press Enter to select stock"
+                readOnly
               />
             </div>
             {isStockModalVisible && (
