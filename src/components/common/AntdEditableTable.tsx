@@ -48,6 +48,7 @@ export interface AntdEditableTableProps {
   enableKeyboardNav?: boolean;
   size?: SizeType;
   className?: string;
+  externalEditingCell?: { row: number; col: number } | null;
 }
 
 const AntdEditableTable: React.FC<AntdEditableTableProps> = ({
@@ -65,6 +66,7 @@ const AntdEditableTable: React.FC<AntdEditableTableProps> = ({
   size = 'middle',
   className,
   onProductSelect,
+  externalEditingCell,
 }) => {
   const [data, setData] = useState<any[]>([]);
   const [editingCell, setEditingCell] = useState<{
@@ -90,6 +92,13 @@ const AntdEditableTable: React.FC<AntdEditableTableProps> = ({
       firstLoadRef.current = false; // Prevent repeat auto-focus
     }
   }, [dataSource, columns]);
+
+  // Sync editingCell with externalEditingCell prop
+  useEffect(() => {
+    if (externalEditingCell) {
+      setEditingCell(externalEditingCell);
+    }
+  }, [externalEditingCell]);
 
   const handleAddRow = () => {
     const newRow: any = { [rowKey]: Date.now().toString() };

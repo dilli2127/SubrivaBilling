@@ -15,6 +15,7 @@ import {
   FileTextOutlined,
 } from '@ant-design/icons';
 import StockSelectionModal from './StockSelectionModal';
+import { useRef } from 'react';
 
 const { Title, Text } = Typography;
 
@@ -74,6 +75,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
   });
 
   const [stockModalRowIndex, setStockModalRowIndex] = useState<number | null>(null);
+  const [externalEditingCell, setExternalEditingCell] = useState<{ row: number; col: number } | null>(null);
 
   // User info
   const user = JSON.parse(sessionStorage.getItem('user') || '{}');
@@ -293,6 +295,9 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
     },
   ];
 
+  // Find the column index for qty
+  const qtyColIndex = itemColumns.findIndex(col => col.key === 'qty' || col.dataIndex === 'qty');
+
   // Calculate bill totals
   const billCalculations = useMemo(() => {
     if (!billFormData.items.length)
@@ -438,6 +443,11 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
     newItems[stockModalRowIndex].batch_no = stock.batch_no || '';
     handleItemsChange(newItems);
     setStockModalRowIndex(null); // Close stock modal
+
+    // Set external editing cell to qty cell in the same row
+    if (qtyColIndex !== -1) {
+      setExternalEditingCell({ row: stockModalRowIndex, col: qtyColIndex });
+    }
   };
 
   // Handle item addition
@@ -1269,6 +1279,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
             className="modern-bill-grid"
             size="small"
             rowKey="key"
+            externalEditingCell={externalEditingCell}
           />
         </div>
 
