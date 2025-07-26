@@ -180,6 +180,16 @@ const AntdEditableTable: React.FC<AntdEditableTableProps> = ({
     }
   }, [data, allowAdd, onSave, enableKeyboardNav, handleAddRow]);
 
+  // Helper to find the next editable column index
+  function getNextEditableCol(startCol: number, direction: 1 | -1, columns: AntdEditableColumn[]): number {
+    let col = startCol + direction;
+    while (col >= 0 && col < columns.length) {
+      if (columns[col].editable !== false) return col;
+      col += direction;
+    }
+    return -1; // No editable column found
+  }
+
   const EditableCell = ({
     row,
     col,
@@ -311,7 +321,7 @@ const AntdEditableTable: React.FC<AntdEditableTableProps> = ({
               onChange={handleChange}
               onBlur={() => setEditingCell(null)}
               onKeyDown={e => {
-                // Allow Enter to move to next cell, like Tab
+                // Allow Enter/Tab to move to next editable cell
                 if (e.key === 'Tab' || e.key === 'Enter') {
                   e.preventDefault();
                   // Only validate on Tab or Enter
@@ -319,14 +329,29 @@ const AntdEditableTable: React.FC<AntdEditableTableProps> = ({
                     message.error(`${column.title} is required`);
                     return;
                   }
-                  const nextCol = e.shiftKey ? col - 1 : col + 1;
-                  const nextRow = row + (nextCol >= columns.length ? 1 : 0);
-                  const colIndex = (nextCol + columns.length) % columns.length;
-                  if (nextRow < data.length) {
-                    setEditingCell({ row: nextRow, col: colIndex });
-                  } else if (allowAdd) {
-                    handleAddRow();
-                    setEditingCell({ row: data.length, col: colIndex });
+                  const direction = e.shiftKey ? -1 : 1;
+                  const nextCol = getNextEditableCol(col, direction, columns);
+                  if (nextCol !== -1) {
+                    setEditingCell({ row, col: nextCol });
+                  } else {
+                    // Move to next/previous row's first editable cell
+                    const nextRow = direction > 0 ? row + 1 : row - 1;
+                    if (nextRow >= 0 && nextRow < data.length) {
+                      const firstEditableCol = getNextEditableCol(-1, 1, columns);
+                      if (firstEditableCol !== -1) {
+                        setEditingCell({ row: nextRow, col: firstEditableCol });
+                      }
+                    } else if (direction > 0 && allowAdd) {
+                      // Add new row if moving forward and at the end
+                      handleAddRow();
+                      const firstEditableCol = getNextEditableCol(-1, 1, columns);
+                      if (firstEditableCol !== -1) {
+                        setEditingCell({ row: data.length, col: firstEditableCol });
+                      }
+                    } else {
+                      // Exit edit mode if no more rows
+                      setEditingCell(null);
+                    }
                   }
                 } else if (e.key === 'Escape') {
                   setEditingCell(null);
