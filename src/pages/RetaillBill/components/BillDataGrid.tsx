@@ -351,6 +351,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
           productOptions.find((opt: { label: string; value: string }) => opt.value === item.product_id)?.label || '',
         variant_name: item.variant_name || '',
         stock_id: item.stock_id || '',
+        batch_no: item.batch_no || '', // ✅ Preserve batch_no from input
         qty: item.qty || 0,
         loose_qty: item.loose_qty || 0,
         price: item.price || 0,
@@ -362,10 +363,14 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
 
       // Auto-populate stock if product is selected but stock is not
       if (item.product_id && !item.stock_id) {
-        const availableStocks = getStockOptionsForProduct(item.product_id);
+        const stockList = branchId ? branchStockList : stockAuditList;
+        const availableStocks = stockList?.result?.filter(
+          (stock: any) => stock.product === item.product_id || stock.ProductItem?._id === item.product_id
+        ) || [];
+        
         if (availableStocks.length > 0) {
           const firstStock = availableStocks[0];
-          billItem.stock_id = firstStock.value;
+          billItem.stock_id = firstStock._id;
           billItem.batch_no = firstStock.batch_no || '';
 
           // Auto-focus quantity field after auto-selecting stock
