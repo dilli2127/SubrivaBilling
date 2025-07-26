@@ -284,14 +284,17 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
       type: 'number',
       required: true,
       width: 120,
+      editable: false, // Make rate not editable
+      render: (value) => <InputNumber value={value} disabled style={{ width: '100%' }} />,
     },
     {
       key: 'amount',
       title: '💵 AMOUNT',
       dataIndex: 'amount',
       type: 'number',
-      editable: false,
+      editable: false, // Make amount not editable
       width: 130,
+      render: (value) => <InputNumber value={value} disabled style={{ width: '100%' }} />,
     },
   ];
 

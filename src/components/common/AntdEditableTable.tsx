@@ -31,6 +31,7 @@ export interface AntdEditableColumn {
   width?: number;
   editable?: boolean;
   validation?: (value: any) => string | undefined;
+  render?: (value: any, record?: any, rowIndex?: number) => React.ReactNode;
 }
 
 export interface AntdEditableTableProps {
@@ -421,7 +422,7 @@ const AntdEditableTable: React.FC<AntdEditableTableProps> = ({
         }
       },
     }),
-    render: (_val: any, record: any, rowIndex: number) => {
+    render: (val: any, record: any, rowIndex: number) => {
       if (
         editingCell &&
         editingCell.row === rowIndex &&
@@ -435,6 +436,10 @@ const AntdEditableTable: React.FC<AntdEditableTableProps> = ({
             value={record[col.dataIndex]}
           />
         );
+      }
+      // Use custom render if provided and not editing
+      if (typeof col.render === 'function') {
+        return col.render(val, record, rowIndex);
       }
       // Show batch_no for stock_id column when not editing
       if (col.dataIndex === 'batch_no') {
