@@ -309,7 +309,28 @@ const AntdEditableTable: React.FC<AntdEditableTableProps> = ({
               value={cellValue}
               onChange={handleChange}
               onBlur={() => setEditingCell(null)}
-              onKeyDown={handleKeyDown}
+              onKeyDown={e => {
+                // Allow Enter to move to next cell, like Tab
+                if (e.key === 'Tab' || e.key === 'Enter') {
+                  e.preventDefault();
+                  // Only validate on Tab or Enter
+                  if (column.required && (!cellValue || cellValue === '')) {
+                    message.error(`${column.title} is required`);
+                    return;
+                  }
+                  const nextCol = e.shiftKey ? col - 1 : col + 1;
+                  const nextRow = row + (nextCol >= columns.length ? 1 : 0);
+                  const colIndex = (nextCol + columns.length) % columns.length;
+                  if (nextRow < data.length) {
+                    setEditingCell({ row: nextRow, col: colIndex });
+                  } else if (allowAdd) {
+                    handleAddRow();
+                    setEditingCell({ row: data.length, col: colIndex });
+                  }
+                } else if (e.key === 'Escape') {
+                  setEditingCell(null);
+                }
+              }}
               style={{ width: '100%' }}
             />
           </div>
