@@ -74,14 +74,10 @@ const AntdEditableTable: React.FC<AntdEditableTableProps> = ({
     row: number;
     col: number;
   } | null>(null);
-  const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
   const firstLoadRef = useRef(true);
 
   useEffect(() => {
     setData(dataSource);
-    
-    // Clear selections when data changes to avoid stale selections
-    setSelectedRowKeys([]);
 
     const firstProductColIndex = columns.findIndex(
       col => col.dataIndex === 'product_id'
@@ -106,19 +102,23 @@ const AntdEditableTable: React.FC<AntdEditableTableProps> = ({
   }, [externalEditingCell]);
 
   const handleAddRow = () => {
-    if (onAdd) {
-      // If parent provides onAdd handler, let parent handle the addition
-      onAdd();
-    } else {
-      // Otherwise, handle internally
-      const newRow: any = {};
-      columns.forEach(col => {
-        newRow[col.dataIndex] = col.defaultValue || '';
-      });
-      
-      const newData = [...data, newRow];
-      setData(newData);
-      onSave(newData);
+    const newRow: any = { [rowKey]: Date.now().toString() };
+    columns.forEach(col => {
+      newRow[col.dataIndex] = col.defaultValue ?? '';
+    });
+    const newData = [...data, newRow];
+    setData(newData);
+    onSave(newData);
+    onAdd?.();
+
+    // Auto-focus the first editable column in the new row
+    const firstEditableColIndex = columns.findIndex(
+      col => col.editable !== false
+    );
+    if (firstEditableColIndex >= 0) {
+      setTimeout(() => {
+        setEditingCell({ row: newData.length - 1, col: firstEditableColIndex });
+      }, 100);
     }
   };
 
@@ -127,53 +127,13 @@ const AntdEditableTable: React.FC<AntdEditableTableProps> = ({
       message.warning('No rows to delete');
       return;
     }
-
-    // If no rows are selected, delete the last row (backward compatibility)
-    if (selectedRowKeys.length === 0) {
-      Modal.confirm({
-        title: 'Delete the last row?',
-        onOk: () => {
-          const newData = data.slice(0, -1);
-          setData(newData);
-          onSave(newData);
-          onDelete?.([data.length - 1]);
-        },
-      });
-      return;
-    }
-
-    // Delete selected rows - map selected keys to actual array indices
-    const selectedIndices: number[] = [];
-    selectedRowKeys.forEach(key => {
-      const index = data.findIndex(row => row[rowKey] === key);
-      if (index !== -1) {
-        selectedIndices.push(index);
-      }
-    });
-
-    if (selectedIndices.length === 0) {
-      message.warning('No valid rows selected for deletion');
-      return;
-    }
-
-    // Sort indices in descending order to avoid index shifting issues
-    selectedIndices.sort((a, b) => b - a);
-
     Modal.confirm({
-      title: `Delete ${selectedIndices.length} selected row(s)?`,
-      content: 'This action cannot be undone.',
+      title: 'Delete the last row?',
       onOk: () => {
-        if (onDelete) {
-          // If parent provides onDelete handler, let parent handle the deletion
-          onDelete(selectedIndices.sort((a, b) => a - b));
-        } else {
-          // Otherwise, handle deletion internally
-          const newData = data.filter((_, index) => !selectedIndices.includes(index));
-          setData(newData);
-          onSave(newData);
-        }
-        setSelectedRowKeys([]); // Clear selection after deletion
-        message.success(`${selectedIndices.length} row(s) deleted successfully`);
+        const newData = data.slice(0, -1);
+        setData(newData);
+        onSave(newData);
+        onDelete?.([data.length - 1]);
       },
     });
   };
@@ -213,17 +173,12 @@ const AntdEditableTable: React.FC<AntdEditableTableProps> = ({
         e.preventDefault();
         handleAddRow();
       }
-      // Delete key to delete selected rows
-      if (e.key === 'Delete' && allowDelete) {
-        e.preventDefault();
-        handleDeleteRow();
-      }
     };
     if (enableKeyboardNav) {
       document.addEventListener('keydown', handleKeyDown);
       return () => document.removeEventListener('keydown', handleKeyDown);
     }
-  }, [data, allowAdd, allowDelete, onSave, enableKeyboardNav, handleAddRow, handleDeleteRow, selectedRowKeys]);
+  }, [data, allowAdd, onSave, enableKeyboardNav, handleAddRow]);
 
   // Helper to find the next editable column index
   function getNextEditableCol(startCol: number, direction: 1 | -1, columns: AntdEditableColumn[]): number {
@@ -267,48 +222,28 @@ const AntdEditableTable: React.FC<AntdEditableTableProps> = ({
       if (column.type === 'product' && e.key === 'Enter') {
         e.stopPropagation();
         setIsProductModalVisible(true);
-        return;
+        return; // Do not validate or move cell yet!
       }
-
       if (column.type === 'stock' && e.key === 'Enter') {
         e.stopPropagation();
         setIsStockModalVisible(true);
         return;
       }
-
-      if (e.key === 'Enter') {
+      if (e.key === 'Tab') {
         e.preventDefault();
-        setEditingCell(null);
-        // Move to next editable cell
-        const nextCol = getNextEditableCol(col, 1, columns);
-        if (nextCol !== -1) {
-          setEditingCell({ row, col: nextCol });
-        } else {
-          // Move to next row
-          const nextRow = row + 1;
-          if (nextRow < data.length) {
-            const firstEditableCol = getNextEditableCol(-1, 1, columns);
-            if (firstEditableCol !== -1) {
-              setEditingCell({ row: nextRow, col: firstEditableCol });
-            }
-          }
+        // Only validate on Tab
+        if (column.required && (!cellValue || cellValue === '')) {
+          message.error(`${column.title} is required`);
+          return;
         }
-      } else if (e.key === 'Tab') {
-        e.preventDefault();
-        setEditingCell(null);
-        const direction = e.shiftKey ? -1 : 1;
-        const nextCol = getNextEditableCol(col, direction, columns);
-        if (nextCol !== -1) {
-          setEditingCell({ row, col: nextCol });
-        } else {
-          // Move to next/previous row
-          const nextRow = row + direction;
-          if (nextRow >= 0 && nextRow < data.length) {
-            const targetCol = direction === 1 ? getNextEditableCol(-1, 1, columns) : getNextEditableCol(columns.length, -1, columns);
-            if (targetCol !== -1) {
-              setEditingCell({ row: nextRow, col: targetCol });
-            }
-          }
+        const nextCol = e.shiftKey ? col - 1 : col + 1;
+        const nextRow = row + (nextCol >= columns.length ? 1 : 0);
+        const colIndex = (nextCol + columns.length) % columns.length;
+        if (nextRow < data.length) {
+          setEditingCell({ row: nextRow, col: colIndex });
+        } else if (allowAdd) {
+          handleAddRow();
+          setEditingCell({ row: data.length, col: colIndex });
         }
       } else if (e.key === 'Escape') {
         setEditingCell(null);
@@ -316,60 +251,36 @@ const AntdEditableTable: React.FC<AntdEditableTableProps> = ({
     };
 
     const handleProductSelect = (product: any) => {
+      if (onProductSelect) {
+        onProductSelect(product, row);
+      }
       setIsProductModalVisible(false);
-      onProductSelect?.(product, row);
+      setEditingCell(null);
     };
 
     const handleStockSelect = (stock: any) => {
-      setIsStockModalVisible(false);
-      // Handle stock selection
+      // Set stock_id and batch_no in the row
       const newData = [...data];
-      newData[row].stock_id = stock._id;
-      newData[row].batch_no = stock.batch_no;
+      newData[row].stock_id = stock.id || stock._id || '';
+      newData[row].batch_no = stock.batch_no || '';
       setData(newData);
       onSave(newData);
+      setIsStockModalVisible(false);
+      setEditingCell(null);
     };
 
     switch (column.type) {
-      case 'number':
-        return (
-          <div onClick={e => e.stopPropagation()}>
-            <InputNumber
-              ref={inputRef}
-              value={cellValue}
-              onChange={handleChange}
-              onBlur={() => setEditingCell(null)}
-              onKeyDown={handleKeyDown}
-              style={{ width: '100%' }}
-            />
-          </div>
-        );
-
-      case 'select':
-        return (
-          <div onClick={e => e.stopPropagation()}>
-            <Select
-              ref={inputRef}
-              value={cellValue}
-              onChange={handleChange}
-              onBlur={() => setEditingCell(null)}
-              onKeyDown={handleKeyDown}
-              style={{ width: '100%' }}
-              options={column.options}
-            />
-          </div>
-        );
-
       case 'product':
         return (
-          <div onClick={e => e.stopPropagation()}>
-            <Input
-              ref={inputRef}
-              value={cellValue}
-              placeholder="Press Enter to select product"
-              onKeyDown={handleKeyDown}
-              readOnly
-            />
+          <>
+            <div onClick={e => e.stopPropagation()}>
+              <Input
+                ref={inputRef}
+                value={cellValue}
+                onKeyDown={handleKeyDown}
+                placeholder="Press Enter to select product"
+              />
+            </div>
             {isProductModalVisible && (
               <ProductSelectionModal
                 visible={isProductModalVisible}
@@ -377,19 +288,20 @@ const AntdEditableTable: React.FC<AntdEditableTableProps> = ({
                 onCancel={() => setIsProductModalVisible(false)}
               />
             )}
-          </div>
+          </>
         );
-
       case 'stock':
         return (
-          <div onClick={e => e.stopPropagation()}>
-            <Input
-              ref={inputRef}
-              value={cellValue}
-              placeholder="Press Enter to select stock"
-              onKeyDown={handleKeyDown}
-              readOnly
-            />
+          <>
+            <div onClick={e => e.stopPropagation()}>
+              <Input
+                ref={inputRef}
+                value={data[row]?.batch_no || cellValue}
+                onKeyDown={handleKeyDown}
+                placeholder="Press Enter to select stock"
+                readOnly
+              />
+            </div>
             {isStockModalVisible && (
               <StockSelectionModal
                 visible={isStockModalVisible}
@@ -398,6 +310,94 @@ const AntdEditableTable: React.FC<AntdEditableTableProps> = ({
                 productId={data[row]?.product_id || ''}
               />
             )}
+          </>
+        );
+      case 'number':
+        return (
+          <div onClick={e => e.stopPropagation()}>
+            <InputNumber
+              ref={inputRef}
+              value={cellValue}
+              onChange={handleChange}
+              onBlur={() => setEditingCell(null)}
+              onKeyDown={e => {
+                // Allow Enter/Tab to move to next editable cell
+                if (e.key === 'Tab' || e.key === 'Enter') {
+                  e.preventDefault();
+                  // Only validate on Tab or Enter
+                  if (column.required && (!cellValue || cellValue === '')) {
+                    message.error(`${column.title} is required`);
+                    return;
+                  }
+                  const direction = e.shiftKey ? -1 : 1;
+                  const nextCol = getNextEditableCol(col, direction, columns);
+                  if (nextCol !== -1) {
+                    setEditingCell({ row, col: nextCol });
+                  } else {
+                    // Move to next/previous row's first editable cell
+                    const nextRow = direction > 0 ? row + 1 : row - 1;
+                    if (nextRow >= 0 && nextRow < data.length) {
+                      const firstEditableCol = getNextEditableCol(-1, 1, columns);
+                      if (firstEditableCol !== -1) {
+                        setEditingCell({ row: nextRow, col: firstEditableCol });
+                      }
+                    } else if (direction > 0 && allowAdd) {
+                      // Add new row if moving forward and at the end
+                      handleAddRow();
+                      const firstEditableCol = getNextEditableCol(-1, 1, columns);
+                      if (firstEditableCol !== -1) {
+                        setEditingCell({ row: data.length, col: firstEditableCol });
+                      }
+                    } else {
+                      // Exit edit mode if no more rows
+                      setEditingCell(null);
+                    }
+                  }
+                } else if (e.key === 'Escape') {
+                  setEditingCell(null);
+                }
+              }}
+              style={{ width: '100%' }}
+            />
+          </div>
+        );
+      case 'select':
+        return (
+          <div onClick={e => e.stopPropagation()}>
+            <Select
+              ref={inputRef}
+              value={cellValue}
+              options={column.options}
+              onChange={val => {
+                const success = saveCell(row, col, val);
+                if (success) {
+                  // Move to next editable cell
+                  const nextCol = col + 1;
+                  const nextRow = row + (nextCol >= columns.length ? 1 : 0);
+                  const colIndex = (nextCol + columns.length) % columns.length;
+
+                  if (nextRow < data.length) {
+                    setEditingCell({ row: nextRow, col: colIndex });
+                  } else if (allowAdd) {
+                    handleAddRow();
+                    setEditingCell({ row: data.length, col: colIndex });
+                  }
+                } else {
+                  // Validation failed; keep focus
+                  setTimeout(() => {
+                    inputRef.current?.focus();
+                  }, 50);
+                }
+              }}
+              style={{ width: '100%' }}
+              open
+              // Prevent Enter key double-validation
+              onKeyDown={e => {
+                if (e.key === 'Enter' || e.key === 'Tab') {
+                  e.preventDefault(); // Block default key behavior
+                }
+              }}
+            />
           </div>
         );
 
@@ -484,17 +484,6 @@ const AntdEditableTable: React.FC<AntdEditableTableProps> = ({
     },
   }));
 
-  // Row selection configuration
-  const rowSelection = allowDelete ? {
-    selectedRowKeys,
-    onChange: (newSelectedRowKeys: React.Key[]) => {
-      setSelectedRowKeys(newSelectedRowKeys);
-    },
-    getCheckboxProps: (record: any) => ({
-      disabled: false, // You can add logic here to disable selection for certain rows
-    }),
-  } : undefined;
-
   return (
     <div
       className={`antd-editable-table ${compact ? 'compact' : ''} ${
@@ -513,16 +502,8 @@ const AntdEditableTable: React.FC<AntdEditableTableProps> = ({
             </Button>
           )}
           {allowDelete && (
-            <Button 
-              danger 
-              icon={<DeleteOutlined />} 
-              onClick={handleDeleteRow}
-              disabled={selectedRowKeys.length === 0 && data.length === 0}
-            >
-              {selectedRowKeys.length > 0 
-                ? `Delete ${selectedRowKeys.length} Selected` 
-                : 'Delete Last Row'
-              }
+            <Button danger icon={<DeleteOutlined />} onClick={handleDeleteRow}>
+              Delete Last Row
             </Button>
           )}
           <Button
@@ -534,7 +515,7 @@ const AntdEditableTable: React.FC<AntdEditableTableProps> = ({
           </Button>
         </Space>
         <Text type="secondary" className="table-info">
-          Use Tab / Shift+Tab to navigate cells • Select rows to delete specific items • Delete key to delete selected rows
+          Use Tab / Shift+Tab to navigate cells
         </Text>
       </div>
       <Table
@@ -546,7 +527,6 @@ const AntdEditableTable: React.FC<AntdEditableTableProps> = ({
         pagination={false}
         size={size}
         scroll={{ y: 400 }}
-        rowSelection={rowSelection}
       />
     </div>
   );
