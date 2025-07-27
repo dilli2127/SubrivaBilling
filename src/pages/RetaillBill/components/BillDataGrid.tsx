@@ -482,10 +482,16 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
 
   // Handle item deletion
   const handleDeleteItems = (indices: number[]) => {
-    setBillFormData(prev => ({
-      ...prev,
-      items: prev.items.filter((_, index) => !indices.includes(index)),
-    }));
+    console.log('Deleting items at indices:', indices);
+    console.log('Current items count:', billFormData.items.length);
+    setBillFormData(prev => {
+      const newItems = prev.items.filter((_, index) => !indices.includes(index));
+      console.log('New items count after deletion:', newItems.length);
+      return {
+        ...prev,
+        items: newItems,
+      };
+    });
   };
 
   // Handle final save
