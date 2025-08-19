@@ -134,7 +134,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
   // Initialize with 5 default empty items if no existing data
   useEffect(() => {
     if (!billdata && billFormData.items.length === 0) {
-      const defaultItems = Array(5)
+      const defaultItems = Array(1)
         .fill(null)
         .map((_, index) => ({
           product_id: '',
