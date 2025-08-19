@@ -106,23 +106,11 @@ const AntdEditableTable: React.FC<AntdEditableTableProps> = ({
   }, [externalEditingCell]);
 
   const handleAddRow = () => {
-    const newRow: any = { [rowKey]: Date.now().toString() };
-    columns.forEach(col => {
-      newRow[col.dataIndex] = col.defaultValue ?? '';
-    });
-    const newData = [...data, newRow];
-    setData(newData);
-    onSave(newData);
     onAdd?.();
-
-    // Auto-focus the first editable column in the new row
-    const firstEditableColIndex = columns.findIndex(
-      col => col.editable !== false
-    );
-    if (firstEditableColIndex >= 0) {
-      setTimeout(() => {
-        setEditingCell({ row: newData.length - 1, col: firstEditableColIndex });
-      }, 100);
+    // Set focus to the first editable cell of the new row (after parent updates data)
+    const firstEditableCol = columns.findIndex(col => col.editable !== false);
+    if (firstEditableCol >= 0) {
+      setEditingCell({ row: data.length, col: firstEditableCol });
     }
   };
 
