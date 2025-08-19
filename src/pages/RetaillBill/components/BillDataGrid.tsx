@@ -15,7 +15,6 @@ import {
   FileTextOutlined,
 } from '@ant-design/icons';
 import StockSelectionModal from './StockSelectionModal';
-import { useRef } from 'react';
 
 const { Title, Text } = Typography;
 
@@ -343,7 +342,6 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
   // Handle item changes
   const handleItemsChange = (items: any[]) => {
     // Convert back to BillItem format and auto-populate stock
-    console.log(items);
     const billItems: BillItem[] = items.map(item => {
       const billItem: BillItem = {
         product_id: item.product_id || '',
@@ -485,7 +483,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
     console.log('Deleting items at indices:', indices);
     console.log('Current items count:', billFormData.items.length);
     setBillFormData(prev => {
-      const newItems = prev.items.filter((_, index) => !indices.includes(index));
+      const newItems = prev.items.filter((_, index:any) => !indices.includes(index?.toString()));
       console.log('New items count after deletion:', newItems.length);
       return {
         ...prev,
@@ -517,6 +515,14 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
 
     if (incompleteItems) {
       message.error('Please complete all item details');
+      return;
+    }
+    if(!billFormData.customer_id){
+      message.error('Please select a customer');
+      return;
+    }
+    if(!billFormData.payment_mode){
+      message.error('Please select a payment mode');
       return;
     }
 
@@ -613,6 +619,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
   // Ultra-Fast Billing Keyboard Shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      console.log(e.key,e.ctrlKey);
       // F1: Add item and focus first product field
       if (e.key === 'F1') {
         e.preventDefault();

@@ -10,6 +10,7 @@ import {
   Modal,
   Typography,
   message,
+  TableProps,
 } from 'antd';
 import type { SizeType } from 'antd/es/config-provider/SizeContext';
 import { PlusOutlined, DeleteOutlined, SaveOutlined } from '@ant-design/icons';
@@ -70,6 +71,7 @@ const AntdEditableTable: React.FC<AntdEditableTableProps> = ({
   externalEditingCell,
 }) => {
   const [data, setData] = useState<any[]>([]);
+  const [selectedRows, setSelectedRows] = useState<any[]>([]);
   const [editingCell, setEditingCell] = useState<{
     row: number;
     col: number;
@@ -91,6 +93,8 @@ const AntdEditableTable: React.FC<AntdEditableTableProps> = ({
     ) {
       setEditingCell({ row: 0, col: firstProductColIndex });
       firstLoadRef.current = false; // Prevent repeat auto-focus
+    }else{
+      setSelectedRows(dataSource.length>0?[String(dataSource.length-1)]:[])
     }
   }, [dataSource, columns]);
 
@@ -128,12 +132,12 @@ const AntdEditableTable: React.FC<AntdEditableTableProps> = ({
       return;
     }
     Modal.confirm({
-      title: 'Delete the last row?',
+      title: 'Are you sure you want to delete the selected Bill Items?',
       onOk: () => {
         const newData = data.slice(0, -1);
         setData(newData);
         onSave(newData);
-        onDelete?.([data.length - 1]);
+        onDelete?.(selectedRows);
       },
     });
   };
@@ -180,6 +184,12 @@ const AntdEditableTable: React.FC<AntdEditableTableProps> = ({
     }
   }, [data, allowAdd, onSave, enableKeyboardNav, handleAddRow]);
 
+  const rowSelection: TableProps<any>['rowSelection'] = {
+    onChange: (selectedRowKeys: React.Key[], selectedRows:any[]) => {
+      setSelectedRows([...selectedRowKeys]);
+    },
+  };
+  
   // Helper to find the next editable column index
   function getNextEditableCol(startCol: number, direction: 1 | -1, columns: AntdEditableColumn[]): number {
     let col = startCol + direction;
@@ -320,6 +330,7 @@ const AntdEditableTable: React.FC<AntdEditableTableProps> = ({
               value={cellValue}
               onChange={handleChange}
               onBlur={() => setEditingCell(null)}
+              controls={false}
               onKeyDown={e => {
                 // Allow Enter/Tab to move to next editable cell
                 if (e.key === 'Tab' || e.key === 'Enter') {
@@ -382,7 +393,7 @@ const AntdEditableTable: React.FC<AntdEditableTableProps> = ({
                     handleAddRow();
                     setEditingCell({ row: data.length, col: colIndex });
                   }
-                } else {
+                }else {
                   // Validation failed; keep focus
                   setTimeout(() => {
                     inputRef.current?.focus();
@@ -390,8 +401,6 @@ const AntdEditableTable: React.FC<AntdEditableTableProps> = ({
                 }
               }}
               style={{ width: '100%' }}
-              open
-              // Prevent Enter key double-validation
               onKeyDown={e => {
                 if (e.key === 'Enter' || e.key === 'Tab') {
                   e.preventDefault(); // Block default key behavior
@@ -503,7 +512,7 @@ const AntdEditableTable: React.FC<AntdEditableTableProps> = ({
           )}
           {allowDelete && (
             <Button danger icon={<DeleteOutlined />} onClick={handleDeleteRow}>
-              Delete Last Row
+              Delete Row
             </Button>
           )}
           <Button
@@ -527,6 +536,7 @@ const AntdEditableTable: React.FC<AntdEditableTableProps> = ({
         pagination={false}
         size={size}
         scroll={{ y: 400 }}
+        rowSelection={{...rowSelection,type:"checkbox",selectedRowKeys:selectedRows}}
       />
     </div>
   );
