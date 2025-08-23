@@ -105,8 +105,8 @@ const ClassicBillingTemplate: React.FC<ClassicBillingTemplateProps> = ({
       {/* Total Section */}
       <div style={{ textAlign: 'right', fontWeight: 'bold' }}>
         <div>Subtotal: ₹ {billData?.total}</div>
-        <div>CGST: ₹ {((billData?.total_gst || 0) / 2).toFixed(2)}</div>
-        <div>SGST: ₹ {((billData?.total_gst || 0) / 2).toFixed(2)}</div>
+        <div>CGST: ₹ {(billData?.cgst || (billData?.total_gst || 0) / 2).toFixed(2)}</div>
+        <div>SGST: ₹ {(billData?.sgst || (billData?.total_gst || 0) / 2).toFixed(2)}</div>
         <div style={{ fontSize: '14px' }}>
           NET AMOUNT: ₹ {billData?.total}
         </div>

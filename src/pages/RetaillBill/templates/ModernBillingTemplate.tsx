@@ -134,8 +134,8 @@ const ModernBillingTemplate: React.FC<ModernBillingTemplateProps> = ({
               : `₹ ${billData.discount}`}
           </p>
         )}
-        <p>CGST: ₹ {((billData?.total_gst || 0) / 2).toFixed(2)}</p>
-        <p>SGST: ₹ {((billData?.total_gst || 0) / 2).toFixed(2)}</p>
+        <p>CGST: ₹ {(billData?.cgst || (billData?.total_gst || 0) / 2).toFixed(2)}</p>
+        <p>SGST: ₹ {(billData?.sgst || (billData?.total_gst || 0) / 2).toFixed(2)}</p>
         <h2 style={{ margin: 0 }}>Grand Total: ₹ {billData?.total}</h2>
       </div>
 

@@ -15,6 +15,8 @@ interface BillViewModalProps {
     payment_mode: string;
     Items: any[];
     total_gst: number;
+    cgst: number;
+    sgst: number;
     total_amount: number;
     is_paid: boolean;
     is_partially_paid: boolean;
@@ -176,6 +178,8 @@ const BillViewModal: React.FC<BillViewModalProps> = ({
                 : ""
             }
             <p>Total GST: ₹ ${formatAmount(billData.total_gst)}</p>
+            <p>CGST: ₹ ${formatAmount(billData.cgst || billData.total_gst / 2)}</p>
+            <p>SGST: ₹ ${formatAmount(billData.sgst || billData.total_gst / 2)}</p>
             <p><strong>${
               billData.sale_type === "retail" ? "Bill Value" : "Invoice Value"
             }: ₹ ${formatAmount(billData.total_amount)}</strong></p>
@@ -337,6 +341,28 @@ const BillViewModal: React.FC<BillViewModalProps> = ({
           >
             <Text strong>Total GST:</Text>
             <Text>₹ {formatAmount(billData.total_gst)}</Text>
+          </div>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "flex-end",
+              gap: "8px",
+              marginBottom: "8px",
+            }}
+          >
+            <Text strong>CGST:</Text>
+            <Text>₹ {formatAmount(billData.cgst || billData.total_gst / 2)}</Text>
+          </div>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "flex-end",
+              gap: "8px",
+              marginBottom: "8px",
+            }}
+          >
+            <Text strong>SGST:</Text>
+            <Text>₹ {formatAmount(billData.sgst || billData.total_gst / 2)}</Text>
           </div>
           <div
             style={{

@@ -307,6 +307,8 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
         sub_total: 0,
         value_of_goods: 0,
         total_gst: 0,
+        cgst: 0,
+        sgst: 0,
         total_amount: 0,
         discountValue: 0,
       };
@@ -1386,7 +1388,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
               <Text
                 style={{ fontWeight: 600, color: '#495057', fontSize: '12px' }}
               >
-                Net Value:
+                Sub Total:
               </Text>
               <Text
                 style={{
@@ -1410,6 +1412,54 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
               <Text
                 style={{ fontWeight: 600, color: '#495057', fontSize: '12px' }}
               >
+                Value of Goods:
+              </Text>
+              <Text
+                style={{
+                  fontWeight: 700,
+                  color: '#2c3e50',
+                  fontSize: '12px',
+                  fontFamily: 'monospace',
+                }}
+              >
+                ₹{billCalculations.value_of_goods.toFixed(2)}
+              </Text>
+            </div>
+
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+              }}
+            >
+              <Text
+                style={{ fontWeight: 600, color: '#495057', fontSize: '12px' }}
+              >
+                Total GST:
+              </Text>
+              <Text
+                style={{
+                  fontWeight: 700,
+                  color: '#2c3e50',
+                  fontSize: '12px',
+                  fontFamily: 'monospace',
+                }}
+              >
+                ₹{billCalculations.total_gst.toFixed(2)}
+              </Text>
+            </div>
+
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+              }}
+            >
+              <Text
+                style={{ fontWeight: 600, color: '#495057', fontSize: '12px' }}
+              >
                 CGST:
               </Text>
               <Text
@@ -1420,7 +1470,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
                   fontFamily: 'monospace',
                 }}
               >
-                ₹{(billCalculations.total_gst / 2).toFixed(2)}
+                ₹{billCalculations.cgst.toFixed(2)}
               </Text>
             </div>
 
@@ -1444,7 +1494,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
                   fontFamily: 'monospace',
                 }}
               >
-                ₹{(billCalculations.total_gst / 2).toFixed(2)}
+                ₹{billCalculations.sgst.toFixed(2)}
               </Text>
             </div>
 
