@@ -13,9 +13,13 @@ import {
   SaveOutlined,
   PrinterOutlined,
   FileTextOutlined,
+  ClearOutlined,
 } from '@ant-design/icons';
 import StockSelectionModal from './StockSelectionModal';
 import CustomerSelectionModal from './CustomerSelectionModal';
+import BillSaveConfirmationModal from './BillSaveConfirmationModal';
+import BillListDrawer from './BillListDrawer';
+import styles from './BillDataGrid.module.css';
 
 const { Title, Text } = Typography;
 
@@ -77,6 +81,9 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
   const [stockModalRowIndex, setStockModalRowIndex] = useState<number | null>(null);
   const [externalEditingCell, setExternalEditingCell] = useState<{ row: number; col: number } | null>(null);
   const [customerModalVisible, setCustomerModalVisible] = useState(false);
+  const [saveConfirmationVisible, setSaveConfirmationVisible] = useState(false);
+  const [billListDrawerVisible, setBillListDrawerVisible] = useState(false);
+  const [savedBillData, setSavedBillData] = useState<any>(null);
 
   // User info
   const user = JSON.parse(sessionStorage.getItem('user') || '{}');
@@ -572,6 +579,458 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
     message.success(`Customer "${customer.full_name}" selected successfully!`);
   };
 
+  // Handle new bill creation
+  const handleNewBill = () => {
+    // Clear all form data for new bill
+    setBillFormData({
+      invoice_no: '',
+      date: dayjs().format('YYYY-MM-DD'),
+      customer_id: '',
+      customer_name: '',
+      payment_mode: 'cash',
+      items: [],
+    });
+    
+    // Reset bill settings
+    setBillSettings({
+      isPaid: true,
+      isPartiallyPaid: false,
+      isRetail: true,
+      isGstIncluded: true,
+      discount: 0,
+      discountType: 'percentage',
+      paidAmount: 0,
+    });
+    
+    setSaveConfirmationVisible(false);
+    setSavedBillData(null);
+    
+    // Generate new invoice number
+    InvoiceNumberApi('Create');
+    setTimeout(() => InvoiceNumberApi('GetAll'), 500);
+    
+    message.success('New bill form cleared successfully!');
+  };
+
+  // Handle continue with current bill
+  const handleContinueBill = () => {
+    setSaveConfirmationVisible(false);
+    setSavedBillData(null);
+  };
+
+  // Handle clear bill form
+  const handleClearBill = () => {
+    // Reset all form data to initial state
+    setBillFormData({
+      invoice_no: '',
+      date: dayjs().format('YYYY-MM-DD'),
+      customer_id: '',
+      customer_name: '',
+      payment_mode: 'cash',
+      items: [
+        {
+          product_id: '',
+          product_name: '',
+          variant_name: '',
+          stock_id: '',
+          batch_no: '',
+          qty: 0,
+          loose_qty: 0,
+          price: 0,
+          mrp: 0,
+          amount: 0,
+          tax_percentage: 0,
+        },
+      ],
+    });
+
+    // Reset bill settings
+    setBillSettings({
+      isPaid: true,
+      isPartiallyPaid: false,
+      isRetail: true,
+      isGstIncluded: true,
+      discount: 0,
+      discountType: 'percentage',
+      paidAmount: 0,
+    });
+
+    // Reset any other states
+    setSavedBillData(null);
+    
+    // Show success message
+    message.success('Bill form cleared successfully!');
+  };
+
+    // Handle view bill from drawer
+  const handleViewBill = (bill: any) => {
+    console.log('Loading bill data:', bill); // Debug log
+    
+    if (!bill) {
+      message.error('No bill data received');
+      return;
+    }
+    
+    // Ensure we have the latest data loaded
+    ProductsApi('GetAll');
+    CustomerApi('GetAll');
+    if (branchId) {
+      BranchStock('GetAll');
+    } else {
+      StockAuditApi('GetAll');
+    }
+    
+    // Force immediate data loading if not already loaded
+    if (!productList?.result) {
+      console.log('Product list not loaded, forcing immediate load...');
+      ProductsApi('GetAll');
+    }
+    
+    if (!customerList?.result) {
+      console.log('Customer list not loaded, forcing immediate load...');
+      CustomerApi('GetAll');
+    }
+    
+    const currentStockList = branchId ? branchStockList : stockAuditList;
+    if (!currentStockList?.result) {
+      console.log('Stock list not loaded, forcing immediate load...');
+      if (branchId) {
+        BranchStock('GetAll');
+      } else {
+        StockAuditApi('GetAll');
+      }
+    }
+    
+    // Handle different possible data structures for items
+    let items = [];
+    if (bill.Items && Array.isArray(bill.Items)) {
+      items = bill.Items;
+      console.log('Found items in bill.Items:', items);
+    } else if (bill.items && Array.isArray(bill.items)) {
+      items = bill.items;
+      console.log('Found items in bill.items:', items);
+    } else if (bill.sales_items && Array.isArray(bill.sales_items)) {
+      items = bill.sales_items;
+      console.log('Found items in bill.sales_items:', items);
+    } else if (bill.result && bill.result.Items && Array.isArray(bill.result.Items)) {
+      items = bill.result.Items;
+      console.log('Found items in bill.result.Items:', items);
+    } else if (bill.result && bill.result.items && Array.isArray(bill.result.items)) {
+      items = bill.result.items;
+      console.log('Found items in bill.result.items:', items);
+    } else {
+      console.log('No items found in bill. Available keys:', Object.keys(bill));
+      console.log('bill.Items:', bill.Items);
+      console.log('bill.items:', bill.items);
+      console.log('bill.sales_items:', bill.sales_items);
+      if (bill.result) {
+        console.log('bill.result keys:', Object.keys(bill.result));
+        console.log('bill.result.Items:', bill.result.Items);
+        console.log('bill.result.items:', bill.result.items);
+      }
+    }
+    
+    console.log('Extracted items:', items); // Debug log
+    
+    // Debug stock information
+    items.forEach((item: any, index: number) => {
+      console.log(`Item ${index} stock info:`, {
+        stock_id: item.stock_id,
+        branch_stock_id: item.branch_stock_id,
+        stock: item.stock,
+        batch_no: item.batch_no
+      });
+    });
+    
+    // Map items with proper fallbacks and enhanced product name resolution
+    const mappedItems = items.map((item: any, index: number) => {
+      console.log(`Processing item ${index}:`, item);
+      
+      // Try to get the best product name from various sources
+      let productName = '';
+      let variantName = '';
+      
+      if (item.productItems?.name) {
+        productName = item.productItems.name;
+        variantName = item.productItems.VariantItem?.variant_name || '';
+        console.log(`Found product name in productItems.name: ${productName}`);
+      } else if (item.product_name) {
+        productName = item.product_name;
+        variantName = item.variant_name || '';
+        console.log(`Found product name in product_name: ${productName}`);
+      } else if (item.product?.name) {
+        productName = item.product.name;
+        variantName = item.product.VariantItem?.variant_name || '';
+        console.log(`Found product name in product.name: ${productName}`);
+      } else if (item.product_id) {
+        // Try to find product name from productList if available
+        const product = productList?.result?.find((p: any) => p._id === item.product_id);
+        if (product) {
+          productName = product.name;
+          variantName = product.VariantItem?.variant_name || '';
+          console.log(`Found product name from productList: ${productName}`);
+        } else {
+          // If product list is not loaded yet, try to load it and mark for later update
+          if (!productList?.result) {
+            ProductsApi('GetAll');
+          }
+          // Use a more descriptive placeholder that will be updated later
+          productName = `Loading... (ID: ${item.product_id})`;
+          console.log(`Product not found in productList, using placeholder: ${productName}`);
+          
+          // Try to force load and resolve immediately
+          setTimeout(() => {
+            if (productList?.result) {
+              const foundProduct = productList.result.find((p: any) => p._id === item.product_id);
+              if (foundProduct) {
+                console.log(`Immediate resolution found product: ${foundProduct.name}`);
+                // Update the item directly
+                const updatedItems = [...billFormData.items];
+                const itemIndex = updatedItems.findIndex(i => i.product_id === item.product_id);
+                if (itemIndex !== -1) {
+                  updatedItems[itemIndex].product_name = foundProduct.name;
+                  updatedItems[itemIndex].variant_name = foundProduct.VariantItem?.variant_name || '';
+                  setBillFormData(prev => ({ ...prev, items: updatedItems }));
+                }
+              }
+            }
+          }, 100);
+        }
+      } else {
+        console.log(`No product name found for item ${index}`);
+      }
+      
+      // Handle stock information with proper fallbacks
+      let stockId = '';
+      let batchNo = '';
+      
+      if (item.stock_id) {
+        stockId = item.stock_id;
+        batchNo = item.batch_no || '';
+      } else if (item.branch_stock_id) {
+        stockId = item.branch_stock_id;
+        batchNo = item.batch_no || '';
+      } else if (item.stock) {
+        stockId = item.stock;
+        batchNo = item.batch_no || '';
+      }
+      
+      // If we have stock_id but no batch_no, try to find it from stock list
+      if (stockId && !batchNo) {
+        const stockList = branchId ? branchStockList : stockAuditList;
+        const stock = stockList?.result?.find((s: any) => s._id === stockId);
+        if (stock) {
+          batchNo = stock.batch_no || '';
+          console.log(`Found batch_no from stock list: ${batchNo}`);
+        } else {
+          // If stock list is not loaded yet, mark for later update
+          if (!stockList?.result) {
+            if (branchId) {
+              BranchStock('GetAll');
+            } else {
+              StockAuditApi('GetAll');
+            }
+          }
+          batchNo = `Loading... (Stock: ${stockId})`;
+          console.log(`Stock not found in stock list, using placeholder: ${batchNo}`);
+          
+          // Try to force load and resolve immediately
+          setTimeout(() => {
+            const currentStockList = branchId ? branchStockList : stockAuditList;
+            if (currentStockList?.result) {
+              const foundStock = currentStockList.result.find((s: any) => s._id === stockId);
+              if (foundStock) {
+                console.log(`Immediate resolution found stock batch: ${foundStock.batch_no}`);
+                // Update the item directly
+                const updatedItems = [...billFormData.items];
+                const itemIndex = updatedItems.findIndex(i => i.stock_id === stockId);
+                if (itemIndex !== -1) {
+                  updatedItems[itemIndex].batch_no = foundStock.batch_no || '';
+                  setBillFormData(prev => ({ ...prev, items: updatedItems }));
+                }
+              }
+            }
+          }, 100);
+        }
+      }
+      
+      const mappedItem = {
+        _id: item._id || '',
+        product_id: item.product_id || item.product || '',
+        product_name: productName,
+        variant_name: variantName,
+        stock_id: stockId,
+        batch_no: batchNo,
+        qty: item.qty || 0,
+        loose_qty: item.loose_qty || 0,
+        price: item.price || 0,
+        mrp: item.mrp || item.price || 0,
+        amount: item.amount || 0,
+        tax_percentage: item.tax_percentage || 0,
+      };
+      
+      console.log(`Mapped item ${index}:`, mappedItem);
+      return mappedItem;
+    });
+    
+    console.log('Final mapped items:', mappedItems); // Debug log
+    
+    // Handle customer information with fallbacks
+    const customerId = bill.customer_id || '';
+    let customerName = '';
+    
+    if (bill.customerDetails?.full_name) {
+      customerName = bill.customerDetails.full_name;
+    } else if (bill.customer_name) {
+      customerName = bill.customer_name;
+    } else if (bill.customer?.full_name) {
+      customerName = bill.customer.full_name;
+    } else if (bill.customer_id) {
+      // Try to find customer name from customerList if available
+      const customer = customerList?.result?.find((c: any) => c._id === bill.customer_id);
+      customerName = customer?.full_name || `Customer ID: ${bill.customer_id}`;
+    }
+    
+    console.log('Customer info - ID:', customerId, 'Name:', customerName);
+    
+    // Handle date with fallback
+    let formattedDate = dayjs().format('YYYY-MM-DD'); // Default to today
+    if (bill.date) {
+      try {
+        formattedDate = dayjs(bill.date).format('YYYY-MM-DD');
+      } catch (error) {
+        console.log('Error formatting date:', bill.date, error);
+        formattedDate = dayjs().format('YYYY-MM-DD');
+      }
+    }
+    
+    console.log('Date info - Original:', bill.date, 'Formatted:', formattedDate);
+    
+    // Immediately resolve any available product names and stock info if data is already loaded
+    let finalMappedItems = [...mappedItems];
+    
+    // If product list is already loaded, resolve product names immediately
+    if (productList?.result) {
+      finalMappedItems = finalMappedItems.map(item => {
+        if (item.product_id && (item.product_name.includes('Loading...') || item.product_name.includes('Product ID:'))) {
+          const product = productList.result.find((p: any) => p._id === item.product_id);
+          if (product) {
+            console.log(`Immediately resolving product name for ${item.product_id}: ${item.product_name} -> ${product.name}`);
+            return {
+              ...item,
+              product_name: product.name,
+              variant_name: product.VariantItem?.variant_name || ''
+            };
+          }
+        }
+        return item;
+      });
+    }
+    
+    // If stock list is already loaded, resolve batch numbers immediately
+    const stockList = branchId ? branchStockList : stockAuditList;
+    if (stockList?.result) {
+      finalMappedItems = finalMappedItems.map(item => {
+        if (item.stock_id && (item.batch_no.includes('Loading...') || !item.batch_no)) {
+          const stock = stockList.result.find((s: any) => s._id === item.stock_id);
+          if (stock) {
+            console.log(`Immediately resolving batch_no for stock ${item.stock_id}: ${item.batch_no} -> ${stock.batch_no}`);
+            return {
+              ...item,
+              batch_no: stock.batch_no || ''
+            };
+          }
+        }
+        return item;
+      });
+    }
+    
+    console.log('Final resolved items:', finalMappedItems);
+    
+    // Load bill data into form with resolved items
+    setBillFormData({
+      invoice_no: bill.invoice_no || '',
+      date: formattedDate,
+      customer_id: customerId,
+      customer_name: customerName,
+      payment_mode: bill.payment_mode || 'cash',
+      items: finalMappedItems,
+    });
+    
+    // Load bill settings with proper fallbacks
+    setBillSettings({
+      isPaid: bill.is_paid ?? true,
+      isPartiallyPaid: bill.is_partially_paid ?? false,
+      isRetail: bill.sale_type === 'retail' || bill.sale_type === undefined,
+      isGstIncluded: bill.is_gst_included ?? true,
+      discount: bill.discount || 0,
+      discountType: bill.discount_type || 'percentage',
+      paidAmount: bill.paid_amount || 0,
+    });
+    
+    // Show success message
+    message.success(`Bill "${bill.invoice_no}" loaded successfully!`);
+    
+    // Force immediate resolution after a short delay to catch any data that loads asynchronously
+    setTimeout(() => {
+      forceResolveProductNamesAndStock();
+    }, 100);
+    
+    // Add a more aggressive resolution approach
+    setTimeout(() => {
+      forceResolveProductNamesAndStock();
+    }, 500);
+    
+    setTimeout(() => {
+      forceResolveProductNamesAndStock();
+    }, 1000);
+  };
+
+  // Force resolve product names and stock information
+  const forceResolveProductNamesAndStock = () => {
+    if (billFormData.items.length === 0) return;
+    
+    let hasChanges = false;
+    const updatedItems = billFormData.items.map(item => {
+      let updated = false;
+      
+      // Resolve product names
+      if (item.product_id && productList?.result) {
+        const product = productList.result.find((p: any) => p._id === item.product_id);
+        if (product && (item.product_name.includes('Loading...') || item.product_name.includes('Product ID:') || !item.product_name)) {
+          item.product_name = product.name;
+          item.variant_name = product.VariantItem?.variant_name || '';
+          updated = true;
+          console.log(`Force resolved product name for ${item.product_id}: ${product.name}`);
+        }
+      }
+      
+      // Resolve stock batch numbers
+      if (item.stock_id) {
+        const stockList = branchId ? branchStockList : stockAuditList;
+        if (stockList?.result) {
+          const stock = stockList.result.find((s: any) => s._id === item.stock_id);
+          if (stock && (item.batch_no?.includes('Loading...') || !item.batch_no)) {
+            item.batch_no = stock.batch_no || '';
+            updated = true;
+            console.log(`Force resolved batch_no for stock ${item.stock_id}: ${stock.batch_no}`);
+          }
+        }
+      }
+      
+      if (updated) hasChanges = true;
+      return item;
+    });
+    
+    if (hasChanges) {
+      setBillFormData(prev => ({
+        ...prev,
+        items: updatedItems
+      }));
+      console.log('Force resolved items:', updatedItems);
+    }
+  };
+
   // Handle item addition
   const handleAddItem = () => {
     const newItem: BillItem = {
@@ -671,10 +1130,24 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
     };
 
     try {
+      let response: any;
       if (billdata) {
-        await SalesRecord('Update', payload, billdata._id);
+        response = await SalesRecord('Update', payload, billdata._id);
       } else {
-        await SalesRecord('Create', payload);
+        response = await SalesRecord('Create', payload);
+      }
+      
+      // Show confirmation modal after successful save
+      if (response?.statusCode === 200) {
+        const savedData = {
+          ...payload,
+          customer_name: billFormData.customer_name,
+          total_amount: billCalculations.total_amount,
+          invoice_no: payload.invoice_no,
+          date: payload.date
+        };
+        setSavedBillData(savedData);
+        setSaveConfirmationVisible(true);
       }
     } catch (error) {
       console.error('Bill save failed:', error);
@@ -709,16 +1182,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
       onSuccess?.();
       InvoiceNumberApi('Create');
       setTimeout(() => InvoiceNumberApi('GetAll'), 500);
-
-      // Reset form
-      setBillFormData({
-        invoice_no: '',
-        date: dayjs().format('YYYY-MM-DD'),
-        customer_id: '',
-        customer_name: '',
-        payment_mode: 'cash',
-        items: [],
-      });
+      // Note: Form reset is now handled by the confirmation modal
     }
   }, [createItems]);
 
@@ -728,6 +1192,128 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
       onSuccess?.();
     }
   }, [updateItems]);
+
+  // Update product names when product list is loaded (for bill viewing)
+  useEffect(() => {
+    if (productList?.result && billFormData.items.length > 0) {
+      // Check if any items have product_id but no product_name or have placeholder text
+      const needsUpdate = billFormData.items.some(item => 
+        item.product_id && (!item.product_name || item.product_name.includes('Loading...') || item.product_name.includes('Product ID:'))
+      );
+      
+      if (needsUpdate) {
+        console.log('Product list loaded, updating product names...');
+        const updatedItems = billFormData.items.map(item => {
+          if (item.product_id && (!item.product_name || item.product_name.includes('Loading...') || item.product_name.includes('Product ID:'))) {
+            const product = productList.result.find((p: any) => p._id === item.product_id);
+            if (product) {
+              console.log(`Updating product name for ${item.product_id}: ${item.product_name} -> ${product.name}`);
+              return {
+                ...item,
+                product_name: product.name,
+                variant_name: product.VariantItem?.variant_name || ''
+              };
+            }
+          }
+          return item;
+        });
+        
+        // Only update if we actually made changes
+        const hasChanges = updatedItems.some((item, index) => 
+          item.product_name !== billFormData.items[index].product_name
+        );
+        
+        if (hasChanges) {
+          setBillFormData(prev => ({
+            ...prev,
+            items: updatedItems
+          }));
+          console.log('Updated bill items with resolved product names:', updatedItems);
+        }
+      }
+    }
+  }, [productList, billFormData.items]);
+
+  // Force resolve product names when product list changes
+  useEffect(() => {
+    if (productList?.result && billFormData.items.length > 0) {
+      // Force resolve any remaining unresolved product names
+      setTimeout(() => {
+        forceResolveProductNamesAndStock();
+      }, 200);
+    }
+  }, [productList]);
+
+  // Update stock information when stock list is loaded (for bill viewing)
+  useEffect(() => {
+    const stockList = branchId ? branchStockList : stockAuditList;
+    if (stockList?.result && billFormData.items.length > 0) {
+      // Check if any items have stock_id but no batch_no or have placeholder text
+      const needsUpdate = billFormData.items.some(item => 
+        item.stock_id && (!item.batch_no || item.batch_no.includes('Loading...'))
+      );
+      
+      if (needsUpdate) {
+        console.log('Stock list loaded, updating batch numbers...');
+        const updatedItems = billFormData.items.map(item => {
+          if (item.stock_id && (!item.batch_no || item.batch_no.includes('Loading...'))) {
+            const stock = stockList.result.find((s: any) => s._id === item.stock_id);
+            if (stock) {
+              console.log(`Updating batch_no for stock ${item.stock_id}: ${item.batch_no} -> ${stock.batch_no}`);
+              return {
+                ...item,
+                batch_no: stock.batch_no || ''
+              };
+            }
+          }
+          return item;
+        });
+        
+        // Only update if we actually made changes
+        const hasChanges = updatedItems.some((item, index) => 
+          item.batch_no !== billFormData.items[index].batch_no
+        );
+        
+        if (hasChanges) {
+          setBillFormData(prev => ({
+            ...prev,
+            items: updatedItems
+          }));
+          console.log('Updated bill items with resolved stock information:', updatedItems);
+        }
+      }
+    }
+  }, [branchStockList, stockAuditList, billFormData.items, branchId]);
+
+  // Force resolve stock information when stock list changes
+  useEffect(() => {
+    const stockList = branchId ? branchStockList : stockAuditList;
+    if (stockList?.result && billFormData.items.length > 0) {
+      // Force resolve any remaining unresolved stock information
+      setTimeout(() => {
+        forceResolveProductNamesAndStock();
+      }, 200);
+    }
+  }, [branchStockList, stockAuditList, branchId]);
+
+  // Periodic check to resolve any remaining unresolved data
+  useEffect(() => {
+    if (billFormData.items.length > 0) {
+      const interval = setInterval(() => {
+        const hasUnresolvedItems = billFormData.items.some(item => 
+          (item.product_id && (!item.product_name || item.product_name.includes('Loading...') || item.product_name.includes('Product ID:'))) ||
+          (item.stock_id && (!item.batch_no || item.batch_no.includes('Loading...')))
+        );
+        
+        if (hasUnresolvedItems && (productList?.result || (branchId ? branchStockList?.result : stockAuditList?.result))) {
+          console.log('Periodic check: Resolving unresolved items...');
+          forceResolveProductNamesAndStock();
+        }
+      }, 1000); // Check every second
+      
+      return () => clearInterval(interval);
+    }
+  }, [billFormData.items, productList, branchStockList, stockAuditList, branchId]);
 
   // Ultra-Fast Billing Keyboard Shortcuts
   useEffect(() => {
@@ -752,16 +1338,20 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
         // TODO: Implement print functionality
         message.info('Print functionality coming soon!');
       }
-      // F4: Focus customer field
+      // F4: Clear bill form
       else if (e.key === 'F4') {
         e.preventDefault();
-        const customerSelect = document.querySelector('input[placeholder*="customer" i], input[placeholder*="Customer" i]') as HTMLElement;
-        customerSelect?.focus();
+        handleClearBill();
       }
       // End: Open customer selection modal
       else if (e.key === 'End') {
         e.preventDefault();
         setCustomerModalVisible(true);
+      }
+      // F6: Open bill list drawer
+      else if (e.key === 'F6') {
+        e.preventDefault();
+        setBillListDrawerVisible(true);
       }
       // F5: Add 5 items
       // else if (e.key === 'F5') {
@@ -827,233 +1417,33 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
   }, [billFormData, billSettings]);
 
   return (
-    <div
-      style={{
-        padding: '8px 0',
-        background:
-          'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #cbd5e1 100%)',
-        minHeight: '100vh',
-        width: '100%',
-        animation: 'gradientShift 8s ease-in-out infinite',
-        position: 'relative',
-        overflow: 'hidden',
-      }}
-    >
+    <div className={styles.mainContainer}>
       {/* Background Half Circles */}
-      <div
-        style={{
-          position: 'absolute',
-          top: '10%',
-          right: '-15%',
-          width: '40%',
-          height: '40%',
-          background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
-          borderRadius: '50%',
-          opacity: 0.15,
-          animation: 'float 10s ease-in-out infinite',
-        }}
-      />
-      <div
-        style={{
-          position: 'absolute',
-          top: '60%',
-          left: '-10%',
-          width: '30%',
-          height: '30%',
-          background: 'linear-gradient(135deg, #10b981 0%, #06b6d4 100%)',
-          borderRadius: '50%',
-          opacity: 0.12,
-          animation: 'float 12s ease-in-out infinite reverse',
-        }}
-      />
-      <div
-        style={{
-          position: 'absolute',
-          bottom: '20%',
-          right: '5%',
-          width: '25%',
-          height: '25%',
-          background: 'linear-gradient(135deg, #f59e0b 0%, #ef4444 100%)',
-          borderRadius: '50%',
-          opacity: 0.1,
-          animation: 'float 8s ease-in-out infinite 2s',
-        }}
-      />
-      <div
-        style={{
-          position: 'absolute',
-          top: '30%',
-          left: '20%',
-          width: '20%',
-          height: '20%',
-          background: 'linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%)',
-          borderRadius: '50%',
-          opacity: 0.08,
-          animation: 'float 15s ease-in-out infinite 1s',
-        }}
-      />
-      <div
-        style={{
-          position: 'absolute',
-          bottom: '60%',
-          right: '30%',
-          width: '15%',
-          height: '15%',
-          background: 'linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%)',
-          borderRadius: '50%',
-          opacity: 0.06,
-          animation: 'float 6s ease-in-out infinite 3s',
-        }}
-      />
+      <div className={styles.backgroundCircle1} />
+      <div className={styles.backgroundCircle2} />
+      <div className={styles.backgroundCircle3} />
+      <div className={styles.backgroundCircle4} />
+      <div className={styles.backgroundCircle5} />
       {/* Ultra-Fast Billing Header */}
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'row',
-          alignItems: 'center',
-          gap: 16,
-          marginBottom: 8,
-          background:
-            'linear-gradient(135deg, #ffffff 0%, #f1f5f9 50%, #e2e8f0 100%)',
-          padding: '20px',
-          margin: '0 8px',
-          borderRadius: '16px',
-          boxShadow:
-            '0 10px 25px rgba(0, 0, 0, 0.08), 0 4px 10px rgba(0, 0, 0, 0.04)',
-          position: 'relative',
-          overflow: 'hidden',
-          border: '1px solid rgba(255, 255, 255, 0.8)',
-          backdropFilter: 'blur(20px)',
-          animation: 'slideInDown 0.6s ease-out',
-        }}
-      >
+      <div className={styles.headerContainer}>
         {/* Animated decorative background elements */}
-        <div
-          style={{
-            position: 'absolute',
-            top: -30,
-            right: -30,
-            width: 80,
-            height: 80,
-            background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
-            borderRadius: '50%',
-            opacity: 0.18,
-            animation: 'float 6s ease-in-out infinite',
-          }}
-        />
-        <div
-          style={{
-            position: 'absolute',
-            bottom: -20,
-            left: -20,
-            width: 60,
-            height: 60,
-            background: 'linear-gradient(135deg, #10b981 0%, #06b6d4 100%)',
-            borderRadius: '50%',
-            opacity: 0.15,
-            animation: 'float 8s ease-in-out infinite reverse',
-          }}
-        />
-        <div
-          style={{
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            width: 100,
-            height: 100,
-            background: 'linear-gradient(135deg, #f59e0b 0%, #ef4444 100%)',
-            borderRadius: '50%',
-            opacity: 0.12,
-            transform: 'translate(-50%, -50%)',
-            animation: 'pulse 4s ease-in-out infinite',
-          }}
-        />
-        <div
-          style={{
-            position: 'absolute',
-            top: -15,
-            left: '20%',
-            width: 40,
-            height: 40,
-            background: 'linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%)',
-            borderRadius: '50%',
-            opacity: 0.1,
-            animation: 'float 10s ease-in-out infinite 1s',
-          }}
-        />
-        <div
-          style={{
-            position: 'absolute',
-            bottom: -10,
-            right: '15%',
-            width: 50,
-            height: 50,
-            background: 'linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%)',
-            borderRadius: '50%',
-            opacity: 0.12,
-            animation: 'float 7s ease-in-out infinite 2s',
-          }}
-        />
+        <div className={styles.headerCircle1} />
+        <div className={styles.headerCircle2} />
+        <div className={styles.headerCircle3} />
+        <div className={styles.headerCircle4} />
+        <div className={styles.headerCircle5} />
 
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 16,
-            justifyContent: 'space-between',
-            flexWrap: 'wrap',
-            width: '100%',
-          }}
-        >
+        <div className={styles.headerContent}>
           {/* Title Section */}
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 16,
-              animation: 'fadeInLeft 0.8s ease-out',
-            }}
-          >
-            <div
-              style={{
-                background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
-                padding: '12px',
-                borderRadius: '50%',
-                boxShadow: '0 8px 20px rgba(59, 130, 246, 0.3)',
-                animation: 'bounce 2s ease-in-out infinite',
-                transition: 'all 0.3s ease',
-              }}
-            >
+          <div className={styles.titleSection}>
+            <div className={styles.titleIcon}>
               <FileTextOutlined style={{ fontSize: '24px', color: 'white' }} />
             </div>
             <div>
-              <Title
-                level={4}
-                style={{
-                  color: '#1e293b',
-                  margin: 0,
-                  fontSize: '24px',
-                  fontWeight: 800,
-                  background:
-                    'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  backgroundClip: 'text',
-                  animation: 'slideInRight 0.8s ease-out',
-                }}
-              >
+              <Title level={4} className={styles.titleText}>
                 {billdata ? '⚡ EDIT INVOICE' : '🚀 NEW INVOICE'}
               </Title>
-              <Text
-                style={{
-                  color: '#64748b',
-                  fontSize: '14px',
-                  fontWeight: 500,
-                  display: 'block',
-                  marginTop: 4,
-                  animation: 'fadeInUp 1s ease-out 0.2s both',
-                }}
-              >
+              <Text className={styles.subtitleText}>
                 ⚡Lightning Fast •{' '}
                 {dayjs().format('DD MMM YYYY, dddd')}
               </Text>
@@ -1061,36 +1451,9 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
           </div>
 
           {/* Controls Section */}
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 12,
-              animation: 'fadeInRight 0.8s ease-out 0.3s both',
-            }}
-          >
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 10,
-                background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
-                padding: '10px 16px',
-                borderRadius: '25px',
-                border: '1px solid #e2e8f0',
-                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)',
-                transition: 'all 0.3s ease',
-                animation: 'slideInUp 0.6s ease-out 0.4s both',
-              }}
-            >
-              <Text
-                style={{
-                  fontSize: '13px',
-                  fontWeight: 600,
-                  color: '#475569',
-                  marginRight: 4,
-                }}
-              >
+          <div className={styles.controlsSection}>
+            <div className={`${styles.controlGroup} ${styles.saleTypeControl}`}>
+              <Text className={styles.controlLabel}>
                 🏪 SALE TYPE
               </Text>
               <Switch
@@ -1100,37 +1463,13 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
                 onChange={checked =>
                   setBillSettings(prev => ({ ...prev, isRetail: checked }))
                 }
-                style={{
-                  backgroundColor: billSettings.isRetail
-                    ? '#10b981'
-                    : '#3b82f6',
-                }}
+                className={styles.saleTypeSwitch}
                 size="small"
               />
             </div>
 
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 10,
-                background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
-                padding: '10px 16px',
-                borderRadius: '25px',
-                border: '1px solid #e2e8f0',
-                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)',
-                transition: 'all 0.3s ease',
-                animation: 'slideInUp 0.6s ease-out 0.5s both',
-              }}
-            >
-              <Text
-                style={{
-                  fontSize: '13px',
-                  fontWeight: 600,
-                  color: '#475569',
-                  marginRight: 4,
-                }}
-              >
+            <div className={`${styles.controlGroup} ${styles.gstControl}`}>
+              <Text className={styles.controlLabel}>
                 📊 GST
               </Text>
               <Switch
@@ -1140,41 +1479,17 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
                 onChange={checked =>
                   setBillSettings(prev => ({ ...prev, isGstIncluded: checked }))
                 }
-                style={{
-                  backgroundColor: billSettings.isGstIncluded
-                    ? '#10b981'
-                    : '#f59e0b',
-                }}
+                className={styles.gstSwitch}
                 size="small"
               />
             </div>
 
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 10,
-                background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
-                padding: '10px 16px',
-                borderRadius: '25px',
-                border: '1px solid #e2e8f0',
-                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)',
-                transition: 'all 0.3s ease',
-                animation: 'slideInUp 0.6s ease-out 0.6s both',
-              }}
-            >
-              <Text
-                style={{
-                  fontSize: '13px',
-                  fontWeight: 600,
-                  color: '#475569',
-                  marginRight: 4,
-                }}
-              >
+            <div className={`${styles.controlGroup} ${styles.paymentControl}`}>
+              <Text className={styles.controlLabel}>
                 💳 PAYMENT
               </Text>
               <Switch
-                checkedChildren="PAID"
+                checkedChildren="PAID"  
                 unCheckedChildren="UNPAID"
                 checked={billSettings.isPaid}
                 onChange={checked =>
@@ -1184,37 +1499,14 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
                     isPartiallyPaid: checked ? false : prev.isPartiallyPaid,
                   }))
                 }
-                style={{
-                  backgroundColor: billSettings.isPaid ? '#10b981' : '#ef4444',
-                }}
+                className={styles.paymentSwitch}
                 size="small"
               />
             </div>
 
             {!billSettings.isPaid && (
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 10,
-                  background:
-                    'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
-                  padding: '10px 16px',
-                  borderRadius: '25px',
-                  border: '1px solid #e2e8f0',
-                  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)',
-                  transition: 'all 0.3s ease',
-                  animation: 'slideInUp 0.6s ease-out 0.7s both',
-                }}
-              >
-                <Text
-                  style={{
-                    fontSize: '13px',
-                    fontWeight: 600,
-                    color: '#475569',
-                    marginRight: 4,
-                  }}
-                >
+              <div className={`${styles.controlGroup} ${styles.partialPaymentControl}`}>
+                <Text className={styles.controlLabel}>
                   💰 PARTIAL
                 </Text>
                 <Switch
@@ -1227,58 +1519,21 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
                       isPartiallyPaid: checked,
                     }))
                   }
-                  style={{
-                    backgroundColor: billSettings.isPartiallyPaid
-                      ? '#f59e0b'
-                      : '#94a3b8',
-                  }}
+                  className={styles.partialPaymentSwitch}
                   size="small"
                 />
               </div>
             )}
 
             {/* Items and Amount Badges - Moved to the end */}
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 10,
-                animation: 'fadeInUp 0.8s ease-out 0.8s both',
-              }}
-            >
-              <div
-                style={{
-                  background:
-                    'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
-                  padding: '10px 16px',
-                  borderRadius: '25px',
-                  border: '1px solid rgba(59, 130, 246, 0.2)',
-                  boxShadow: '0 6px 16px rgba(59, 130, 246, 0.2)',
-                  transition: 'all 0.3s ease',
-                  animation: 'pulse 2s ease-in-out infinite',
-                }}
-              >
-                <Text
-                  style={{ color: 'white', fontSize: '13px', fontWeight: 700 }}
-                >
+            <div className={styles.badgesContainer}>
+              <div className={styles.itemsBadge}>
+                <Text className={styles.badgeText}>
                   🎯 ITEMS: {billFormData.items.length}
                 </Text>
               </div>
-              <div
-                style={{
-                  background:
-                    'linear-gradient(135deg, #10b981 0%, #06b6d4 100%)',
-                  padding: '10px 16px',
-                  borderRadius: '25px',
-                  border: '1px solid rgba(16, 185, 129, 0.2)',
-                  boxShadow: '0 6px 16px rgba(16, 185, 129, 0.2)',
-                  transition: 'all 0.3s ease',
-                  animation: 'pulse 2s ease-in-out infinite 1s',
-                }}
-              >
-                <Text
-                  style={{ color: 'white', fontSize: '13px', fontWeight: 700 }}
-                >
+              <div className={styles.amountBadge}>
+                <Text className={styles.badgeText}>
                   💰 ₹{billCalculations.total_amount.toFixed(2)}
                 </Text>
               </div>
@@ -1288,17 +1543,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
       </div>
 
       {/* Invoice Details Data Grid */}
-      <div
-        style={{
-          background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
-          borderRadius: '12px',
-          padding: '8px',
-          margin: '0 8px 12px 8px',
-          border: '1px solid #e2e8f0',
-          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)',
-          animation: 'slideInUp 0.8s ease-out 0.9s both',
-        }}
-      >
+      <div className={styles.invoiceDetailsGrid}>
         <AntdEditableTable
           columns={headerColumns}
           dataSource={headerData}
@@ -1314,80 +1559,14 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
       </div>
 
       {/* Items Section with Summary */}
-      <div
-        style={{
-          display: 'flex',
-          gap: 16,
-          margin: '0 8px 12px 8px',
-          alignItems: 'flex-start',
-          animation: 'fadeInUp 1s ease-out 1s both',
-          position: 'relative',
-        }}
-      >
+      <div className={styles.itemsSection}>
         {/* Decorative half circles for items section */}
-        <div
-          style={{
-            position: 'absolute',
-            top: '10%',
-            right: '5%',
-            width: 60,
-            height: 60,
-            background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
-            borderRadius: '50%',
-            opacity: 0.08,
-            animation: 'rotate 20s linear infinite',
-          }}
-        />
-        <div
-          style={{
-            position: 'absolute',
-            bottom: '20%',
-            left: '2%',
-            width: 40,
-            height: 40,
-            background: 'linear-gradient(135deg, #10b981 0%, #06b6d4 100%)',
-            borderRadius: '50%',
-            opacity: 0.06,
-            animation: 'scaleIn 3s ease-out infinite',
-          }}
-        />
+        <div className={styles.itemsCircle1} />
+        <div className={styles.itemsCircle2} />
         {/* Bill Items Grid */}
-        <div
-          style={{
-            flex: 1,
-            minWidth: 0,
-            background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
-            borderRadius: '12px',
-            padding: '12px',
-            border: '1px solid #e2e8f0',
-            boxShadow: '0 6px 20px rgba(0, 0, 0, 0.08)',
-            transition: 'all 0.3s ease',
-          }}
-        >
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              marginBottom: 16,
-              padding: '12px 16px',
-              background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
-              borderRadius: '8px',
-              border: '1px solid rgba(59, 130, 246, 0.2)',
-              boxShadow: '0 4px 12px rgba(59, 130, 246, 0.15)',
-              animation: 'slideInDown 0.6s ease-out 1.1s both',
-            }}
-          >
-            <Text
-              style={{
-                fontWeight: 800,
-                color: 'white',
-                fontSize: '16px',
-                textTransform: 'uppercase',
-                letterSpacing: '1px',
-                textShadow: '0 2px 4px rgba(0,0,0,0.2)',
-              }}
-            >
+        <div className={styles.billItemsGrid}>
+          <div className={styles.billItemsHeader}>
+            <Text className={styles.billItemsTitle}>
               🛒 BILL ITEMS
             </Text>
             <Badge
@@ -1396,9 +1575,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
               size="small"
               style={{ backgroundColor: 'rgba(255,255,255,0.2)' }}
             >
-              <Text
-                style={{ fontSize: '12px', color: 'white', fontWeight: 700 }}
-              >
+              <Text className={styles.billItemsBadge}>
                 Items
               </Text>
             </Badge>
@@ -1423,348 +1600,110 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
         </div>
 
         {/* Bill Summary - Right Side */}
-        <div
-          style={{
-            width: '350px',
-            maxWidth: '350px',
-            flexShrink: 0,
-            background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
-            border: '1px solid #e2e8f0',
-            borderRadius: '12px',
-            padding: '16px',
-            boxShadow: '0 6px 20px rgba(0, 0, 0, 0.08)',
-            alignSelf: 'flex-start',
-            transition: 'all 0.3s ease',
-            animation: 'slideInRight 0.8s ease-out 1.2s both',
-            position: 'relative',
-            overflow: 'hidden',
-          }}
-        >
+        <div className={styles.billSummary}>
           {/* Decorative half circles for summary */}
-          <div
-            style={{
-              position: 'absolute',
-              top: -10,
-              right: -10,
-              width: 30,
-              height: 30,
-              background: 'linear-gradient(135deg, #f59e0b 0%, #ef4444 100%)',
-              borderRadius: '50%',
-              opacity: 0.1,
-              animation: 'float 8s ease-in-out infinite',
-            }}
-          />
-          <div
-            style={{
-              position: 'absolute',
-              bottom: -5,
-              left: -5,
-              width: 25,
-              height: 25,
-              background: 'linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%)',
-              borderRadius: '50%',
-              opacity: 0.08,
-              animation: 'float 6s ease-in-out infinite reverse',
-            }}
-          />
+          <div className={styles.summaryCircle1} />
+          <div className={styles.summaryCircle2} />
           {/* Header */}
-          <div
-            style={{
-              borderBottom: '2px solid #e2e8f0',
-              paddingBottom: '8px',
-              marginBottom: '12px',
-              animation: 'fadeInUp 0.6s ease-out 1.3s both',
-            }}
-          >
-            <Text
-              style={{
-                fontWeight: 800,
-                fontSize: '14px',
-                background: 'linear-gradient(135deg, #10b981 0%, #06b6d4 100%)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                backgroundClip: 'text',
-                textTransform: 'uppercase',
-                letterSpacing: '1px',
-              }}
-            >
+          <div className={styles.summaryHeader}>
+            <Text className={styles.summaryTitle}>
               💰 BILL SUMMARY
             </Text>
           </div>
 
           {/* Summary Table */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-              }}
-            >
-              <Text
-                style={{ fontWeight: 600, color: '#495057', fontSize: '12px' }}
-              >
+          <div className={styles.summaryTable}>
+            <div className={styles.summaryRow}>
+              <Text className={styles.summaryLabel}>
                 Sub Total:
               </Text>
-              <Text
-                style={{
-                  fontWeight: 700,
-                  color: '#2c3e50',
-                  fontSize: '12px',
-                  fontFamily: 'monospace',
-                }}
-              >
+              <Text className={styles.summaryValue}>
                 ₹{billCalculations.sub_total.toFixed(2)}
               </Text>
             </div>
 
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-              }}
-            >
-              <Text
-                style={{ fontWeight: 600, color: '#495057', fontSize: '12px' }}
-              >
+            <div className={styles.summaryRow}>
+              <Text className={styles.summaryLabel}>
                 Value of Goods:
               </Text>
-              <Text
-                style={{
-                  fontWeight: 700,
-                  color: '#2c3e50',
-                  fontSize: '12px',
-                  fontFamily: 'monospace',
-                }}
-              >
+              <Text className={styles.summaryValue}>
                 ₹{billCalculations.value_of_goods.toFixed(2)}
               </Text>
             </div>
 
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-              }}
-            >
-              <Text
-                style={{ fontWeight: 600, color: '#495057', fontSize: '12px' }}
-              >
+            <div className={styles.summaryRow}>
+              <Text className={styles.summaryLabel}>
                 Total GST:
               </Text>
-              <Text
-                style={{
-                  fontWeight: 700,
-                  color: '#2c3e50',
-                  fontSize: '12px',
-                  fontFamily: 'monospace',
-                }}
-              >
+              <Text className={styles.summaryValue}>
                 ₹{billCalculations.total_gst.toFixed(2)}
               </Text>
             </div>
 
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-              }}
-            >
-              <Text
-                style={{ fontWeight: 600, color: '#495057', fontSize: '12px' }}
-              >
+            <div className={styles.summaryRow}>
+              <Text className={styles.summaryLabel}>
                 CGST:
               </Text>
-              <Text
-                style={{
-                  fontWeight: 700,
-                  color: '#2c3e50',
-                  fontSize: '12px',
-                  fontFamily: 'monospace',
-                }}
-              >
+              <Text className={styles.summaryValue}>
                 ₹{billCalculations.cgst.toFixed(2)}
               </Text>
             </div>
 
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-              }}
-            >
-              <Text
-                style={{ fontWeight: 600, color: '#495057', fontSize: '12px' }}
-              >
+            <div className={styles.summaryRow}>
+              <Text className={styles.summaryLabel}>
                 SGST:
               </Text>
-              <Text
-                style={{
-                  fontWeight: 700,
-                  color: '#2c3e50',
-                  fontSize: '12px',
-                  fontFamily: 'monospace',
-                }}
-              >
+              <Text className={styles.summaryValue}>
                 ₹{billCalculations.sgst.toFixed(2)}
               </Text>
             </div>
 
             {billSettings.discount > 0 && (
-              <div
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                }}
-              >
-                <Text
-                  style={{
-                    fontWeight: 600,
-                    color: '#495057',
-                    fontSize: '12px',
-                  }}
-                >
+              <div className={styles.summaryRow}>
+                <Text className={styles.summaryLabel}>
                   DISCOUNT:
                 </Text>
-                <Text
-                  style={{
-                    fontWeight: 700,
-                    color: '#dc3545',
-                    fontSize: '12px',
-                    fontFamily: 'monospace',
-                  }}
-                >
+                <Text className={styles.discountValue}>
                   -₹
                   {billSettings.discountType === 'percentage'
                     ? (
                         ((billCalculations.sub_total +
                           billCalculations.total_gst) *
-                          billSettings.discount) /
+                          (typeof billSettings.discount === 'number' ? billSettings.discount : 0)) /
                         100
                       ).toFixed(2)
-                    : billSettings.discount.toFixed(2)}
+                    : (typeof billSettings.discount === 'number' ? billSettings.discount : 0).toFixed(2)}
                 </Text>
               </div>
             )}
 
-            <div
-              style={{
-                borderTop: '2px solid #e2e8f0',
-                paddingTop: '8px',
-                marginTop: '8px',
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                background: 'linear-gradient(135deg, #10b981 0%, #06b6d4 100%)',
-                padding: '12px 16px',
-                borderRadius: '8px',
-                color: 'white',
-                boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)',
-                transition: 'all 0.3s ease',
-                transform: 'scale(1)',
-              }}
-              onMouseEnter={e => {
-                e.currentTarget.style.transform = 'scale(1.02)';
-                e.currentTarget.style.boxShadow =
-                  '0 6px 16px rgba(16, 185, 129, 0.4)';
-              }}
-              onMouseLeave={e => {
-                e.currentTarget.style.transform = 'scale(1)';
-                e.currentTarget.style.boxShadow =
-                  '0 4px 12px rgba(16, 185, 129, 0.3)';
-              }}
-            >
-              <Text
-                style={{
-                  fontWeight: 800,
-                  fontSize: '14px',
-                  textShadow: '0 2px 4px rgba(0,0,0,0.3)',
-                }}
-              >
+            <div className={styles.totalAmountRow}>
+              <Text className={styles.totalAmountLabel}>
                 NET/EXC/REPL:
               </Text>
-              <Text
-                style={{
-                  fontWeight: 900,
-                  fontSize: '18px',
-                  fontFamily: 'monospace',
-                  textShadow: '0 2px 4px rgba(0,0,0,0.3)',
-                }}
-              >
+              <Text className={styles.totalAmountValue}>
                 ₹{billCalculations.total_amount.toFixed(2)}
               </Text>
             </div>
 
             {billSettings.isPartiallyPaid && (
-              <div
-                style={{
-                  background: '#fff3cd',
-                  border: '1px solid #ffeaa7',
-                  borderRadius: '4px',
-                  padding: '6px 8px',
-                  marginTop: '6px',
-                }}
-              >
-                <div
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    marginBottom: '3px',
-                  }}
-                >
-                  <Text
-                    style={{
-                      fontWeight: 600,
-                      color: '#856404',
-                      fontSize: '11px',
-                    }}
-                  >
+              <div className={styles.partialPaymentInfo}>
+                <div className={styles.partialPaymentRow}>
+                  <Text className={styles.partialPaymentLabel}> 
                     Paid Amount:
                   </Text>
-                  <Text
-                    style={{
-                      fontWeight: 700,
-                      color: '#856404',
-                      fontSize: '11px',
-                      fontFamily: 'monospace',
-                    }}
-                  >
-                    ₹{billSettings.paidAmount.toFixed(2)}
+                  <Text className={styles.partialPaymentValue}>
+                    ₹{(typeof billSettings.paidAmount === 'number' ? billSettings.paidAmount : 0).toFixed(2)}
                   </Text>
                 </div>
-                <div
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                  }}
-                >
-                  <Text
-                    style={{
-                      fontWeight: 600,
-                      color: '#856404',
-                      fontSize: '11px',
-                    }}
-                  >
+                <div className={styles.partialPaymentRow}>
+                  <Text className={styles.partialPaymentLabel}>
                     Balance:
                   </Text>
-                  <Text
-                    style={{
-                      fontWeight: 700,
-                      color: '#dc3545',
-                      fontSize: '11px',
-                      fontFamily: 'monospace',
-                    }}
-                  >
+                  <Text className={styles.partialPaymentValue}>
                     ₹
                     {(
-                      billCalculations.total_amount - billSettings.paidAmount
+                      billCalculations.total_amount - (typeof billSettings.paidAmount === 'number' ? billSettings.paidAmount : 0)
                     ).toFixed(2)}
                   </Text>
                 </div>
@@ -1773,53 +1712,13 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
           </div>
 
           {/* Discount & Payment Controls */}
-          <div
-            style={{
-              marginTop: '16px',
-              paddingTop: '12px',
-              borderTop: '2px solid #e2e8f0',
-              display: 'flex',
-              flexDirection: 'row',
-              gap: 12,
-              alignItems: 'flex-start',
-              justifyContent: 'center',
-              animation: 'fadeInUp 0.8s ease-out 1.4s both',
-            }}
-          >
+          <div className={styles.controlsContainer}>
             {/* Discount Controls */}
-            <div
-              style={{
-                textAlign: 'center',
-                background: 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)',
-                padding: '10px 12px',
-                borderRadius: '8px',
-                border: '1px solid #f59e0b',
-                minWidth: 120,
-                boxShadow: '0 4px 12px rgba(245, 158, 11, 0.15)',
-                transition: 'all 0.3s ease',
-              }}
-            >
-              <Text
-                style={{
-                  color: '#92400e',
-                  fontSize: '10px',
-                  display: 'block',
-                  fontWeight: 700,
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.5px',
-                  marginBottom: 4,
-                }}
-              >
+            <div className={styles.discountControl}>
+              <Text className={styles.discountControlLabel}>
                 💸 DISCOUNT
               </Text>
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 6,
-                  justifyContent: 'center',
-                }}
-              >
+              <div className={styles.discountControlInputs}>
                 <InputNumber
                   min={0}
                   value={billSettings.discount}
@@ -1846,30 +1745,8 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
 
             {/* Partial Payment Controls */}
             {billSettings.isPartiallyPaid && (
-              <div
-                style={{
-                  textAlign: 'center',
-                  background:
-                    'linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)',
-                  padding: '10px 12px',
-                  borderRadius: '8px',
-                  border: '1px solid #3b82f6',
-                  minWidth: 130,
-                  boxShadow: '0 4px 12px rgba(59, 130, 246, 0.15)',
-                  transition: 'all 0.3s ease',
-                }}
-              >
-                <Text
-                  style={{
-                    color: '#1e40af',
-                    fontSize: '10px',
-                    display: 'block',
-                    fontWeight: 700,
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.5px',
-                    marginBottom: 4,
-                  }}
-                >
+              <div className={styles.partialPaymentControl}>
+                <Text className={styles.partialPaymentControlLabel}>
                   💰 PARTIAL PAY
                 </Text>
                 <InputNumber
@@ -1896,149 +1773,47 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
       </div>
 
       {/* Ultra-Fast Action Hub */}
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
-          padding: '16px 20px',
-          margin: '0 8px 12px 8px',
-          borderRadius: '12px',
-          position: 'relative',
-          overflow: 'hidden',
-          boxShadow: '0 8px 25px rgba(0, 0, 0, 0.08)',
-          border: '1px solid #e2e8f0',
-          animation: 'slideInUp 0.8s ease-out 1.5s both',
-        }}
-      >
+      <div className={styles.actionHub}>
         {/* Background decoration */}
-        <div
-          style={{
-            position: 'absolute',
-            top: -30,
-            right: -30,
-            width: 80,
-            height: 80,
-            background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
-            borderRadius: '50%',
-            opacity: 0.16,
-            animation: 'float 6s ease-in-out infinite',
-          }}
-        />
-        <div
-          style={{
-            position: 'absolute',
-            bottom: -20,
-            left: -20,
-            width: 60,
-            height: 60,
-            background: 'linear-gradient(135deg, #10b981 0%, #06b6d4 100%)',
-            borderRadius: '50%',
-            opacity: 0.14,
-            animation: 'float 8s ease-in-out infinite reverse',
-          }}
-        />
-        <div
-          style={{
-            position: 'absolute',
-            top: '50%',
-            left: -15,
-            width: 45,
-            height: 45,
-            background: 'linear-gradient(135deg, #f59e0b 0%, #ef4444 100%)',
-            borderRadius: '50%',
-            opacity: 0.12,
-            animation: 'float 9s ease-in-out infinite 1s',
-          }}
-        />
-        <div
-          style={{
-            position: 'absolute',
-            bottom: -15,
-            right: '10%',
-            width: 35,
-            height: 35,
-            background: 'linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%)',
-            borderRadius: '50%',
-            opacity: 0.1,
-            animation: 'float 11s ease-in-out infinite 2s',
-          }}
-        />
+        <div className={styles.actionHubCircle1} />
+        <div className={styles.actionHubCircle2} />
+        <div className={styles.actionHubCircle3} />
+        <div className={styles.actionHubCircle4} />
 
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 16,
-            position: 'relative',
-            zIndex: 1,
-          }}
-        >
+        <div className={styles.actionButtonsContainer}>
           <Button
             type="primary"
             size="large"
             icon={<SaveOutlined />}
             onClick={handleSaveBill}
             loading={saleCreateLoading}
-            style={{
-              background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-              border: 'none',
-              fontWeight: 800,
-              height: '48px',
-              padding: '0 28px',
-              borderRadius: '25px',
-              fontSize: '16px',
-              boxShadow: '0 6px 20px rgba(16, 185, 129, 0.3)',
-              textTransform: 'uppercase',
-              letterSpacing: '0.5px',
-              transition: 'all 0.3s ease',
-              transform: 'scale(1)',
-              cursor: 'pointer',
-            }}
-            onMouseEnter={e => {
-              e.currentTarget.style.transform = 'scale(1.05)';
-              e.currentTarget.style.boxShadow =
-                '0 8px 25px rgba(16, 185, 129, 0.4)';
-            }}
-            onMouseLeave={e => {
-              e.currentTarget.style.transform = 'scale(1)';
-              e.currentTarget.style.boxShadow =
-                '0 6px 20px rgba(16, 185, 129, 0.3)';
-            }}
+            className={styles.saveButton}
           >
             🚀 {billdata ? 'UPDATE' : 'SAVE BILL'} (F2)
           </Button>
 
+                     <Button
+             size="large"
+             icon={<FileTextOutlined />}
+             onClick={() => setBillListDrawerVisible(true)}
+             className={styles.billListButton}
+           >
+             📋 BILL LIST (F6)
+           </Button>
+
+           <Button
+             size="large"
+             icon={<ClearOutlined />}
+             onClick={handleClearBill}
+             className={styles.clearButton}
+           >
+             🧹 CLEAR (F4)
+           </Button>
+
           <Button
             size="large"
             icon={<PrinterOutlined />}
-            style={{
-              background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
-              color: 'white',
-              border: 'none',
-              fontWeight: 800,  
-              height: '48px',
-              padding: '0 24px',
-              borderRadius: '25px',
-              fontSize: '15px',
-              boxShadow: '0 6px 20px rgba(59, 130, 246, 0.3)',
-              textTransform: 'uppercase',
-              letterSpacing: '0.5px',
-              transition: 'all 0.3s ease',
-              transform: 'scale(1)',
-              cursor: 'pointer',
-            }}
-            onMouseEnter={e => {
-              e.currentTarget.style.transform = 'scale(1.05)';
-              e.currentTarget.style.boxShadow =
-                '0 8px 25px rgba(59, 130, 246, 0.4)';
-            }}
-            onMouseLeave={e => {
-              e.currentTarget.style.transform = 'scale(1)';
-              e.currentTarget.style.boxShadow =
-                '0 6px 20px rgba(59, 130, 246, 0.3)';
-            }}
+            className={styles.printButton}
           >
             🖨️ PRINT (F3)
           </Button>
@@ -2067,7 +1842,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
             >
               ⚡ <strong>Keyboard Shortcuts:</strong> Ctrl+S (Save) • Ctrl+N
               (Add) • Ctrl+D/Del (Delete) • Tab/Shift+Tab (Navigate) • Enter
-              (Edit) • Esc (Cancel) • End (Customer Modal)
+              (Edit) • Esc (Cancel) • End (Customer Modal) • F4 (Clear) • F6 (Bill List)
             </Text>
           </div>
         </div>
@@ -2086,6 +1861,23 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
         visible={customerModalVisible}
         onSelect={handleCustomerSelect}
         onCancel={() => setCustomerModalVisible(false)}
+      />
+
+      {/* Bill Save Confirmation Modal */}
+      <BillSaveConfirmationModal
+        visible={saveConfirmationVisible}
+        onNewBill={handleNewBill}
+        onContinueBill={handleContinueBill}
+        onCancel={() => setSaveConfirmationVisible(false)}
+        savedBillData={savedBillData}
+      />
+
+      {/* Bill List Drawer */}
+      <BillListDrawer
+        visible={billListDrawerVisible}
+        onClose={() => setBillListDrawerVisible(false)}
+        onViewBill={handleViewBill}
+        onNewBill={handleNewBill}
       />
     </div>
   );

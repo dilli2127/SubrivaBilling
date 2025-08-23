@@ -117,7 +117,7 @@ const CustomerSelectionModal: React.FC<CustomerSelectionModalProps> = ({
   // Table columns definition
   const columns = [
     {
-      title: 'Select',
+      title: '',
       key: 'select',
       width: 60,
       render: (text: string, record: Customer) => (
@@ -205,28 +205,6 @@ const CustomerSelectionModal: React.FC<CustomerSelectionModalProps> = ({
          </div>
        ),
      },
-     {
-       title: 'Action',
-       key: 'action',
-       width: 120,
-       render: (text: string, record: Customer) => (
-         <Button
-           type="primary"
-           size="small"
-           onClick={(e) => {
-             e.stopPropagation();
-             handleCustomerSelect(record);
-           }}
-           style={{
-             background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-             border: 'none',
-             fontWeight: 600,
-           }}
-         >
-           Select
-         </Button>
-       ),
-     },
    ];
 
   return (
@@ -243,9 +221,6 @@ const CustomerSelectionModal: React.FC<CustomerSelectionModalProps> = ({
         onKeyDown={handleKeyDown}
         tabIndex={0}
       >
-                           <Text style={{ fontSize: '12px', color: '#666', display: 'block', marginBottom: 8 }}>
-            💡 <strong>Instructions:</strong> Click the "Select" button, radio button, or any row to select a customer. Modal will auto-close after selection.
-          </Text>
          <Space.Compact style={{ width: '100%' }}>
            <Input
              ref={searchInputRef}

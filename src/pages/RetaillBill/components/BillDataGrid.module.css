@@ -77,8 +77,8 @@
   display: flex;
   flex-direction: row;
   align-items: center;
-  gap: 16;
-  margin-bottom: 8;
+  gap: 16px;
+  margin-bottom: 8px;
   background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 50%, #e2e8f0 100%);
   padding: 20px;
   margin: 0 8px;
@@ -94,10 +94,10 @@
 /* Header Decorative Elements */
 .headerCircle1 {
   position: absolute;
-  top: -30;
-  right: -30;
-  width: 80;
-  height: 80;
+  top: -30px;
+  right: -30px;
+  width: 80px;
+  height: 80px;
   background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
   border-radius: 50%;
   opacity: 0.18;
@@ -106,10 +106,10 @@
 
 .headerCircle2 {
   position: absolute;
-  bottom: -20;
-  left: -20;
-  width: 60;
-  height: 60;
+  bottom: -20px;
+  left: -20px;
+  width: 60px;
+  height: 60px;
   background: linear-gradient(135deg, #10b981 0%, #06b6d4 100%);
   border-radius: 50%;
   opacity: 0.15;
@@ -120,8 +120,8 @@
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 100;
-  height: 100;
+  width: 100px;
+  height: 100px;
   background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%);
   border-radius: 50%;
   opacity: 0.12;
@@ -131,10 +131,10 @@
 
 .headerCircle4 {
   position: absolute;
-  top: -15;
+  top: -15px;
   left: 20%;
-  width: 40;
-  height: 40;
+  width: 40px;
+  height: 40px;
   background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%);
   border-radius: 50%;
   opacity: 0.1;
@@ -143,10 +143,10 @@
 
 .headerCircle5 {
   position: absolute;
-  bottom: -10;
+  bottom: -10px;
   right: 15%;
-  width: 50;
-  height: 50;
+  width: 50px;
+  height: 50px;
   background: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%);
   border-radius: 50%;
   opacity: 0.12;
@@ -156,7 +156,7 @@
 .headerContent {
   display: flex;
   align-items: center;
-  gap: 16;
+  gap: 16px;
   justify-content: space-between;
   flex-wrap: wrap;
   width: 100%;
@@ -166,7 +166,7 @@
 .titleSection {
   display: flex;
   align-items: center;
-  gap: 16;
+  gap: 16px;
   animation: fadeInLeft 0.8s ease-out;
 }
 
@@ -204,14 +204,14 @@
 .controlsSection {
   display: flex;
   align-items: center;
-  gap: 12;
+  gap: 12px;
   animation: fadeInRight 0.8s ease-out 0.3s both;
 }
 
 .controlGroup {
   display: flex;
   align-items: center;
-  gap: 10;
+  gap: 10px;
   background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
   padding: 10px 16px;
   border-radius: 25px;
@@ -221,89 +221,18 @@
 }
 
 .saleTypeControl {
-  display: flex;
-  align-items: center;
-  gap: 10;
-  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-  padding: 10px 16px;
-  border-radius: 25px;
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  transition: all 0.3s ease;
   animation: slideInUp 0.6s ease-out 0.4s both;
 }
 
 .gstControl {
-  display: flex;
-  align-items: center;
-  gap: 10;
-  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-  padding: 10px 16px;
-  border-radius: 25px;
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  transition: all 0.3s ease;
   animation: slideInUp 0.6s ease-out 0.5s both;
 }
 
 .paymentControl {
-  display: flex;
-  align-items: center;
-  gap: 10;
-  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-  padding: 10px 16px;
-  border-radius: 25px;
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  transition: all 0.3s ease;
   animation: slideInUp 0.6s ease-out 0.6s both;
 }
 
-.saleTypeSwitch {
-  background-color: #10b981;
-}
-
-.saleTypeSwitch:not(.ant-switch-checked) {
-  background-color: #3b82f6;
-}
-
-.gstSwitch {
-  background-color: #10b981;
-}
-
-.gstSwitch:not(.ant-switch-checked) {
-  background-color: #f59e0b;
-}
-
-.paymentSwitch {
-  background-color: #10b981;
-}
-
-.paymentSwitch:not(.ant-switch-checked) {
-  background-color: #ef4444;
-}
-
-.partialPaymentSwitch {
-  background-color: #f59e0b;
-}
-
-.partialPaymentSwitch:not(.ant-switch-checked) {
-  background-color: #94a3b8;
-}
-
-.controlGroup1 {
-  animation: slideInUp 0.6s ease-out 0.4s both;
-}
-
-.controlGroup2 {
-  animation: slideInUp 0.6s ease-out 0.5s both;
-}
-
-.controlGroup3 {
-  animation: slideInUp 0.6s ease-out 0.6s both;
-}
-
-.controlGroup4 {
+.partialPaymentControl {
   animation: slideInUp 0.6s ease-out 0.7s both;
 }
 
@@ -317,21 +246,11 @@
 .badgesContainer {
   display: flex;
   align-items: center;
-  gap: 10;
+  gap: 10px;
   animation: fadeInUp 0.8s ease-out 0.8s both;
 }
 
 .itemsBadge {
-  background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
-  padding: 10px 16px;
-  border-radius: 25px;
-  border: 1px solid rgba(59, 130, 246, 0.2);
-  box-shadow: 0 6px 16px rgba(59, 130, 246, 0.2);
-  transition: all 0.3s ease;
-  animation: pulse 2s ease-in-out infinite;
-}
-
-.itemBadge {
   background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
   padding: 10px 16px;
   border-radius: 25px;
@@ -371,7 +290,7 @@
 /* Items Section */
 .itemsSection {
   display: flex;
-  gap: 16;
+  gap: 16px;
   margin: 0 8px 12px 8px;
   align-items: flex-start;
   animation: fadeInUp 1s ease-out 1s both;
@@ -382,8 +301,8 @@
   position: absolute;
   top: 10%;
   right: 5%;
-  width: 60;
-  height: 60;
+  width: 60px;
+  height: 60px;
   background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
   border-radius: 50%;
   opacity: 0.08;
@@ -394,8 +313,8 @@
   position: absolute;
   bottom: 20%;
   left: 2%;
-  width: 40;
-  height: 40;
+  width: 40px;
+  height: 40px;
   background: linear-gradient(135deg, #10b981 0%, #06b6d4 100%);
   border-radius: 50%;
   opacity: 0.06;
@@ -417,7 +336,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16;
+  margin-bottom: 16px;
   padding: 12px 16px;
   background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
   border-radius: 8px;
@@ -460,10 +379,10 @@
 
 .summaryCircle1 {
   position: absolute;
-  top: -10;
-  right: -10;
-  width: 30;
-  height: 30;
+  top: -10px;
+  right: -10px;
+  width: 30px;
+  height: 30px;
   background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%);
   border-radius: 50%;
   opacity: 0.1;
@@ -472,14 +391,14 @@
 
 .summaryCircle2 {
   position: absolute;
-  bottom: -5;
-  left: -5;
-  width: 25;
-  height: 25;
+  bottom: -5px;
+  left: -5px;
+  width: 25px;
+  height: 25px;
   background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%);
   border-radius: 50%;
   opacity: 0.08;
-  animation: float 6s ease-out infinite reverse;
+  animation: float 6s ease-in-out infinite reverse;
 }
 
 .summaryHeader {
@@ -506,42 +425,6 @@
   align-items: center;
 }
 
-.summaryRowContainer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.summaryRowItem {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.summaryRowDiscount {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.summaryRowPartial {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.summaryRowAction {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.summaryRowShortcuts {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
 .summaryLabel {
   font-weight: 600;
   color: #495057;
@@ -549,78 +432,6 @@
 }
 
 .summaryValue {
-  font-weight: 700;
-  color: #2c3e50;
-  font-size: 12px;
-  font-family: monospace;
-}
-
-.summaryValueContainer {
-  font-weight: 700;
-  color: #2c3e50;
-  font-size: 12px;
-  font-family: monospace;
-}
-
-.summaryLabelItem {
-  font-weight: 600;
-  color: #495057;
-  font-size: 12px;
-}
-
-.summaryValueItem {
-  font-weight: 700;
-  color: #2c3e50;
-  font-size: 12px;
-  font-family: monospace;
-}
-
-.summaryLabelDiscount {
-  font-weight: 600;
-  color: #495057;
-  font-size: 12px;
-}
-
-.summaryValueDiscount {
-  font-weight: 700;
-  color: #dc3545;
-  font-size: 12px;
-  font-family: monospace;
-}
-
-.summaryLabelPartial {
-  font-weight: 600;
-  color: #495057;
-  font-size: 12px;
-}
-
-.summaryValuePartial {
-  font-weight: 700;
-  color: #2c3e50;
-  font-size: 12px;
-  font-family: monospace;
-}
-
-.summaryLabelAction {
-  font-weight: 600;
-  color: #495057;
-  font-size: 12px;
-}
-
-.summaryValueAction {
-  font-weight: 700;
-  color: #2c3e50;
-  font-size: 12px;
-  font-family: monospace;
-}
-
-.summaryLabelShortcuts {
-  font-weight: 600;
-  color: #495057;
-  font-size: 12px;
-}
-
-.summaryValueShortcuts {
   font-weight: 700;
   color: #2c3e50;
   font-size: 12px;
@@ -643,36 +454,24 @@
   transform: scale(1);
 }
 
-.summaryTotalContainer {
-  border-top: 2px solid #e2e8f0;
-  padding-top: 8px;
-  margin-top: 8px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: linear-gradient(135deg, #10b981 0%, #06b6d4 100%);
-  padding: 12px 16px;
-  border-radius: 8px;
-  color: white;
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-  transition: all 0.3s ease;
-  transform: scale(1);
-}
-
 .summaryTotal:hover {
   transform: scale(1.02);
   box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
 }
 
-.summaryTotalContainer:hover {
-  transform: scale(1.02);
-  box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
+/* Summary Table */
+.summaryTable {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
 }
 
-.summaryTotalItem {
+/* Total Amount Row */
+.totalAmountRow {
   border-top: 2px solid #e2e8f0;
-  padding-top: 8px;
-  margin-top: 8px;
+  padding-top: 12px;
+  margin-top: 12px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -685,18 +484,101 @@
   transform: scale(1);
 }
 
-.summaryTotalItem:hover {
+.totalAmountRow:hover {
   transform: scale(1.02);
   box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
 }
 
-.summaryTotalLabel {
-  font-weight: 800;
-  font-size: 14px;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+.totalAmountLabel {
+  font-weight: 700;
+  font-size: 13px;
+  color: white;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
-.summaryTotalLabelItem {
+.totalAmountValue {
+  font-weight: 800;
+  font-size: 14px;
+  color: white;
+  font-family: monospace;
+}
+
+/* Discount Value */
+.discountValue {
+  font-weight: 700;
+  color: #ef4444;
+  font-size: 12px;
+  font-family: monospace;
+}
+
+/* Partial Payment Info */
+.partialPaymentInfo {
+  border-top: 1px solid #e2e8f0;
+  padding-top: 12px;
+  margin-top: 12px;
+}
+
+.partialPaymentRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.partialPaymentLabel {
+  font-weight: 600;
+  color: #6b7280;
+  font-size: 11px;
+}
+
+.partialPaymentValue {
+  font-weight: 700;
+  color: #059669;
+  font-size: 11px;
+  font-family: monospace;
+}
+
+/* Controls Container */
+.controlsContainer {
+  border-top: 1px solid #e2e8f0;
+  padding-top: 16px;
+  margin-top: 16px;
+}
+
+/* Discount Control */
+.discountControl {
+  margin-bottom: 16px;
+}
+
+.discountControlLabel {
+  font-weight: 600;
+  color: #7c3aed;
+  font-size: 12px;
+  margin-bottom: 8px;
+  display: block;
+}
+
+.discountControlInputs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Partial Payment Control */
+.partialPaymentControl {
+  margin-bottom: 16px;
+}
+
+.partialPaymentControlLabel {
+  font-weight: 600;
+  color: #dc2626;
+  font-size: 12px;
+  margin-bottom: 8px;
+  display: block;
+}
+
+.summaryTotalLabel {
   font-weight: 800;
   font-size: 14px;
   text-shadow: 0 2px 4px rgba(0,0,0,0.3);
@@ -709,211 +591,7 @@
   text-shadow: 0 2px 4px rgba(0,0,0,0.3);
 }
 
-.summaryTotalValueItem {
-  font-weight: 900;
-  font-size: 18px;
-  font-family: monospace;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-}
-
-.summaryTotalDiscount {
-  border-top: 2px solid #e2e8f0;
-  padding-top: 8px;
-  margin-top: 8px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: linear-gradient(135deg, #10b981 0%, #06b6d4 100%);
-  padding: 12px 16px;
-  border-radius: 8px;
-  color: white;
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-  transition: all 0.3s ease;
-  transform: scale(1);
-}
-
-.summaryTotalDiscount:hover {
-  transform: scale(1.02);
-  box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
-}
-
-.summaryTotalPartial {
-  border-top: 2px solid #e2e8f0;
-  padding-top: 8px;
-  margin-top: 8px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: linear-gradient(135deg, #10b981 0%, #06b6d4 100%);
-  padding: 12px 16px;
-  border-radius: 8px;
-  color: white;
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-  transition: all 0.3s ease;
-  transform: scale(1);
-}
-
-.summaryTotalPartial:hover {
-  transform: scale(1.02);
-  box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
-}
-
-.summaryTotalAction {
-  border-top: 2px solid #e2e8f0;
-  padding-top: 8px;
-  margin-top: 8px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: linear-gradient(135deg, #10b981 0%, #06b6d4 100%);
-  padding: 12px 16px;
-  border-radius: 8px;
-  color: white;
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-  transition: all 0.3s ease;
-  transform: scale(1);
-}
-
-.summaryTotalAction:hover {
-  transform: scale(1.02);
-  box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
-}
-
-.summaryTotalShortcuts {
-  border-top: 2px solid #e2e8f0;
-  padding-top: 8px;
-  margin-top: 8px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: linear-gradient(135deg, #10b981 0%, #06b6d4 100%);
-  padding: 12px 16px;
-  border-radius: 8px;
-  color: white;
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-  transition: all 0.3s ease;
-  transform: scale(1);
-}
-
-.summaryTotalShortcuts:hover {
-  transform: scale(1.02);
-  box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
-}
-
-.summaryTotalLabelContainer {
-  font-weight: 800;
-  font-size: 14px;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-}
-
-.summaryTotalValueContainer {
-  font-weight: 900;
-  font-size: 18px;
-  font-family: monospace;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-}
-
-.summaryTotalLabelDiscount {
-  font-weight: 800;
-  font-size: 14px;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-}
-
-.summaryTotalValueDiscount {
-  font-weight: 900;
-  font-size: 18px;
-  font-family: monospace;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-}
-
-.summaryTotalLabelPartial {
-  font-weight: 800;
-  font-size: 14px;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-}
-
-.summaryTotalValuePartial {
-  font-weight: 900;
-  font-size: 18px;
-  font-family: monospace;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-}
-
-.summaryTotalLabelAction {
-  font-weight: 800;
-  font-size: 14px;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-}
-
-.summaryTotalValueAction {
-  font-weight: 900;
-  font-size: 18px;
-  font-family: monospace;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-}
-
-.summaryTotalLabelShortcuts {
-  font-weight: 800;
-  font-size: 14px;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-}
-
-.summaryTotalValueShortcuts {
-  font-weight: 900;
-  font-size: 18px;
-  font-family: monospace;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-}
-
 .partialPaymentInfo {
-  background: #fff3cd;
-  border: 1px solid #ffeaa7;
-  border-radius: 4px;
-  padding: 6px 8px;
-  margin-top: 6px;
-}
-
-.partialPaymentInfoContainer {
-  background: #fff3cd;
-  border: 1px solid #ffeaa7;
-  border-radius: 4px;
-  padding: 6px 8px;
-  margin-top: 6px;
-}
-
-.partialPaymentInfoItem {
-  background: #fff3cd;
-  border: 1px solid #ffeaa7;
-  border-radius: 4px;
-  padding: 6px 8px;
-  margin-top: 6px;
-}
-
-.partialPaymentInfoDiscount {
-  background: #fff3cd;
-  border: 1px solid #ffeaa7;
-  border-radius: 4px;
-  padding: 6px 8px;
-  margin-top: 6px;
-}
-
-.partialPaymentInfoPartial {
-  background: #fff3cd;
-  border: 1px solid #ffeaa7;
-  border-radius: 4px;
-  padding: 6px 8px;
-  margin-top: 6px;
-}
-
-.partialPaymentInfoAction {
-  background: #fff3cd;
-  border: 1px solid #ffeaa7;
-  border-radius: 4px;
-  padding: 6px 8px;
-  margin-top: 6px;
-}
-
-.partialPaymentInfoShortcuts {
   background: #fff3cd;
   border: 1px solid #ffeaa7;
   border-radius: 4px;
@@ -929,72 +607,6 @@
 }
 
 .partialPaymentRow:last-child {
-  margin-bottom: 0;
-}
-
-.partialPaymentRowContainer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 3px;
-}
-
-.partialPaymentRowContainer:last-child {
-  margin-bottom: 0;
-}
-
-.partialPaymentRowItem {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 3px;
-}
-
-.partialPaymentRowItem:last-child {
-  margin-bottom: 0;
-}
-
-.partialPaymentRowDiscount {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 3px;
-}
-
-.partialPaymentRowDiscount:last-child {
-  margin-bottom: 0;
-}
-
-.partialPaymentRowPartial {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 3px;
-}
-
-.partialPaymentRowPartial:last-child {
-  margin-bottom: 0;
-}
-
-.partialPaymentRowAction {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 3px;
-}
-
-.partialPaymentRowAction:last-child {
-  margin-bottom: 0;
-}
-
-.partialPaymentRowShortcuts {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 3px;
-}
-
-.partialPaymentRowShortcuts:last-child {
   margin-bottom: 0;
 }
 
@@ -1015,108 +627,6 @@
   color: #dc3545;
 }
 
-.partialPaymentLabelContainer {
-  font-weight: 600;
-  color: #856404;
-  font-size: 11px;
-}
-
-.partialPaymentValueContainer {
-  font-weight: 700;
-  color: #856404;
-  font-size: 11px;
-  font-family: monospace;
-}
-
-.partialPaymentBalanceContainer {
-  color: #dc3545;
-}
-
-.partialPaymentLabelItem {
-  font-weight: 600;
-  color: #856404;
-  font-size: 11px;
-}
-
-.partialPaymentValueItem {
-  font-weight: 700;
-  color: #856404;
-  font-size: 11px;
-  font-family: monospace;
-}
-
-.partialPaymentBalanceItem {
-  color: #dc3545;
-}
-
-.partialPaymentLabelDiscount {
-  font-weight: 600;
-  color: #856404;
-  font-size: 11px;
-}
-
-.partialPaymentValueDiscount {
-  font-weight: 700;
-  color: #856404;
-  font-size: 11px;
-  font-family: monospace;
-}
-
-.partialPaymentBalanceDiscount {
-  color: #dc3545;
-}
-
-.partialPaymentLabelPartial {
-  font-weight: 600;
-  color: #856404;
-  font-size: 11px;
-}
-
-.partialPaymentValuePartial {
-  font-weight: 700;
-  color: #856404;
-  font-size: 11px;
-  font-family: monospace;
-}
-
-.partialPaymentBalancePartial {
-  color: #dc3545;
-}
-
-.partialPaymentLabelAction {
-  font-weight: 600;
-  color: #856404;
-  font-size: 11px;
-}
-
-.partialPaymentValueAction {
-  font-weight: 700;
-  color: #856404;
-  font-size: 11px;
-  font-family: monospace;
-}
-
-.partialPaymentBalanceAction {
-  color: #dc3545;
-}
-
-.partialPaymentLabelShortcuts {
-  font-weight: 600;
-  color: #856404;
-  font-size: 11px;
-}
-
-.partialPaymentValueShortcuts {
-  font-weight: 700;
-  color: #856404;
-  font-size: 11px;
-  font-family: monospace;
-}
-
-.partialPaymentBalanceShortcuts {
-  color: #dc3545;
-}
-
 /* Controls Section */
 .controlsContainer {
   margin-top: 16px;
@@ -1124,19 +634,7 @@
   border-top: 2px solid #e2e8f0;
   display: flex;
   flex-direction: row;
-  gap: 12;
-  align-items: flex-start;
-  justify-content: center;
-  animation: fadeInUp 0.8s ease-out 1.4s both;
-}
-
-.discountPaymentControls {
-  margin-top: 16px;
-  padding-top: 12px;
-  border-top: 2px solid #e2e8f0;
-  display: flex;
-  flex-direction: row;
-  gap: 12;
+  gap: 12px;
   align-items: flex-start;
   justify-content: center;
   animation: fadeInUp 0.8s ease-out 1.4s both;
@@ -1148,73 +646,7 @@
   padding: 10px 12px;
   border-radius: 8px;
   border: 1px solid #f59e0b;
-  min-width: 120;
-  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.15);
-  transition: all 0.3s ease;
-}
-
-.discountControlContainer {
-  text-align: center;
-  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-  padding: 10px 12px;
-  border-radius: 8px;
-  border: 1px solid #f59e0b;
-  min-width: 120;
-  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.15);
-  transition: all 0.3s ease;
-}
-
-.discountControlItem {
-  text-align: center;
-  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-  padding: 10px 12px;
-  border-radius: 8px;
-  border: 1px solid #f59e0b;
-  min-width: 120;
-  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.15);
-  transition: all 0.3s ease;
-}
-
-.discountControlDiscount {
-  text-align: center;
-  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-  padding: 10px 12px;
-  border-radius: 8px;
-  border: 1px solid #f59e0b;
-  min-width: 120;
-  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.15);
-  transition: all 0.3s ease;
-}
-
-.discountControlPartial {
-  text-align: center;
-  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-  padding: 10px 12px;
-  border-radius: 8px;
-  border: 1px solid #f59e0b;
-  min-width: 120;
-  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.15);
-  transition: all 0.3s ease;
-}
-
-.discountControlAction {
-  text-align: center;
-  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-  padding: 10px 12px;
-  border-radius: 8px;
-  border: 1px solid #f59e0b;
-  min-width: 120;
-  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.15);
-  transition: all 0.3s ease;
-}
-
-.discountControlShortcuts {
-  text-align: center;
-  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-  padding: 10px 12px;
-  border-radius: 8px;
-  border: 1px solid #f59e0b;
-  min-width: 120;
+  min-width: 120px;
   box-shadow: 0 4px 12px rgba(245, 158, 11, 0.15);
   transition: all 0.3s ease;
 }
@@ -1229,112 +661,10 @@
   margin-bottom: 4px;
 }
 
-.discountLabelContainer {
-  color: #92400e;
-  font-size: 10px;
-  display: block;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: 4px;
-}
-
-.discountLabelItem {
-  color: #92400e;
-  font-size: 10px;
-  display: block;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: 4px;
-}
-
-.discountLabelDiscount {
-  color: #92400e;
-  font-size: 10px;
-  display: block;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: 4px;
-}
-
-.discountLabelPartial {
-  color: #92400e;
-  font-size: 10px;
-  display: block;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: 4px;
-}
-
-.discountLabelAction {
-  color: #92400e;
-  font-size: 10px;
-  display: block;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: 4px;
-}
-
-.discountLabelShortcuts {
-  color: #92400e;
-  font-size: 10px;
-  display: block;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: 4px;
-}
-
 .discountInputs {
   display: flex;
   align-items: center;
-  gap: 6;
-  justify-content: center;
-}
-
-.discountInputsContainer {
-  display: flex;
-  align-items: center;
-  gap: 6;
-  justify-content: center;
-}
-
-.discountInputsItem {
-  display: flex;
-  align-items: center;
-  gap: 6;
-  justify-content: center;
-}
-
-.discountInputsDiscount {
-  display: flex;
-  align-items: center;
-  gap: 6;
-  justify-content: center;
-}
-
-.discountInputsPartial {
-  display: flex;
-  align-items: center;
-  gap: 6;
-  justify-content: center;
-}
-
-.discountInputsAction {
-  display: flex;
-  align-items: center;
-  gap: 6;
-  justify-content: center;
-}
-
-.discountInputsShortcuts {
-  display: flex;
-  align-items: center;
-  gap: 6;
+  gap: 6px;
   justify-content: center;
 }
 
@@ -1344,73 +674,7 @@
   padding: 10px 12px;
   border-radius: 8px;
   border: 1px solid #3b82f6;
-  min-width: 130;
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
-  transition: all 0.3s ease;
-}
-
-.partialPaymentControlContainer {
-  text-align: center;
-  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
-  padding: 10px 12px;
-  border-radius: 8px;
-  border: 1px solid #3b82f6;
-  min-width: 130;
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
-  transition: all 0.3s ease;
-}
-
-.partialPaymentControlItem {
-  text-align: center;
-  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
-  padding: 10px 12px;
-  border-radius: 8px;
-  border: 1px solid #3b82f6;
-  min-width: 130;
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
-  transition: all 0.3s ease;
-}
-
-.partialPaymentControlDiscount {
-  text-align: center;
-  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
-  padding: 10px 12px;
-  border-radius: 8px;
-  border: 1px solid #3b82f6;
-  min-width: 130;
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
-  transition: all 0.3s ease;
-}
-
-.partialPaymentControlPartial {
-  text-align: center;
-  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
-  padding: 10px 12px;
-  border-radius: 8px;
-  border: 1px solid #3b82f6;
-  min-width: 130;
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
-  transition: all 0.3s ease;
-}
-
-.partialPaymentControlAction {
-  text-align: center;
-  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
-  padding: 10px 12px;
-  border-radius: 8px;
-  border: 1px solid #3b82f6;
-  min-width: 130;
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
-  transition: all 0.3s ease;
-}
-
-.partialPaymentControlShortcuts {
-  text-align: center;
-  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
-  padding: 10px 12px;
-  border-radius: 8px;
-  border: 1px solid #3b82f6;
-  min-width: 130;
+  min-width: 130px;
   box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
   transition: all 0.3s ease;
 }
@@ -1425,61 +689,10 @@
   margin-bottom: 4px;
 }
 
-.partialPaymentControlLabelContainer {
-  color: #1e40af;
-  font-size: 10px;
-  display: block;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: 4px;
-}
-
-.partialPaymentControlLabelItem {
-  color: #1e40af;
-  font-size: 10px;
-  display: block;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: 4px;
-}
-
-.partialPaymentControlLabelDiscount {
-  color: #1e40af;
-  font-size: 10px;
-  display: block;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: 4px;
-}
-
-.partialPaymentControlLabelPartial {
-  color: #1e40af;
-  font-size: 10px;
-  display: block;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: 4px;
-}
-
-.partialPaymentControlLabelAction {
-  color: #1e40af;
-  font-size: 10px;
-  display: block;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: 4px;
-}
-
 /* Action Hub */
 .actionHub {
   display: flex;
   justify-content: space-between;
-  align-items: center;
   background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
   padding: 16px 20px;
   margin: 0 8px 12px 8px;
@@ -1489,14 +702,21 @@
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
   border: 1px solid #e2e8f0;
   animation: slideInUp 0.8s ease-out 1.5s both;
+  flex-direction: column;
+  gap: 10px;
+}
+.actionButtonsContainer{
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .actionHubCircle1 {
   position: absolute;
-  top: -30;
-  right: -30;
-  width: 80;
-  height: 80;
+  top: -30px;
+  right: -30px;
+  width: 80px;
+  height: 80px;
   background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
   border-radius: 50%;
   opacity: 0.16;
@@ -1505,10 +725,10 @@
 
 .actionHubCircle2 {
   position: absolute;
-  bottom: -20;
-  left: -20;
-  width: 60;
-  height: 60;
+  bottom: -20px;
+  left: -20px;
+  width: 60px;
+  height: 60px;
   background: linear-gradient(135deg, #10b981 0%, #06b6d4 100%);
   border-radius: 50%;
   opacity: 0.14;
@@ -1518,9 +738,9 @@
 .actionHubCircle3 {
   position: absolute;
   top: 50%;
-  left: -15;
-  width: 45;
-  height: 45;
+  left: -15px;
+  width: 45px;
+  height: 45px;
   background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%);
   border-radius: 50%;
   opacity: 0.12;
@@ -1529,10 +749,10 @@
 
 .actionHubCircle4 {
   position: absolute;
-  bottom: -15;
+  bottom: -15px;
   right: 10%;
-  width: 35;
-  height: 35;
+  width: 35px;
+  height: 35px;
   background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%);
   border-radius: 50%;
   opacity: 0.1;
@@ -1542,50 +762,24 @@
 .actionButtons {
   display: flex;
   align-items: center;
-  gap: 16;
+  gap: 16px;
   position: relative;
   z-index: 1;
-}
-
-.actionHubContent {
-  display: flex;
-  align-items: center;
-  gap: 16;
-  position: relative;
-  z-index: 1;
-}
-
-.actionHubButtons {
-  display: flex;
-  align-items: center;
-  gap: 16;
-  position: relative;
-  z-index: 1;
-}
-
-.actionHubShortcuts {
-  background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
-  padding: 14px 18px;
-  border-radius: 10px;
-  border: 1px solid #cbd5e1;
-  position: relative;
-  z-index: 1;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
 .saveButton {
   background: linear-gradient(135deg, #10b981 0%, #059669 100%);
   border: none;
   font-weight: 800;
-  height: 48px;
-  padding: 0 28px;
+  /* height: 48px; */
+  /* padding: 0 28px; */
   border-radius: 25px;
-  font-size: 16px;
+  font-size: 13px;
   box-shadow: 0 6px 20px rgba(16, 185, 129, 0.3);
   text-transform: uppercase;
   letter-spacing: 0.5px;
   transition: all 0.3s ease;
-  transform: scale(1);
+  /* transform: scale(1); */
   cursor: pointer;
 }
 
@@ -1594,109 +788,48 @@
   box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
 }
 
-.saveButtonContainer {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+.billListButton {
+  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+  color: white;
   border: none;
   font-weight: 800;
-  height: 48px;
-  padding: 0 28px;
+  /* height: 48px; */
+  /* padding: 0 24px; */
   border-radius: 25px;
-  font-size: 16px;
-  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.3);
+  font-size: 13px;
+  box-shadow: 0 6px 20px rgba(139, 92, 246, 0.3);
   text-transform: uppercase;
   letter-spacing: 0.5px;
   transition: all 0.3s ease;
-  transform: scale(1);
+  /* transform: scale(1); */
   cursor: pointer;
 }
 
-.saveButtonContainer:hover {
+.billListButton:hover {
   transform: scale(1.05);
-  box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+  box-shadow: 0 8px 25px rgba(139, 92, 246, 0.4);
 }
 
-.saveButtonItem {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+.refreshButton {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: white;
   border: none;
   font-weight: 800;
-  height: 48px;
-  padding: 0 28px;
+  /* height: 48px;
+  padding: 0 20px; */
   border-radius: 25px;
-  font-size: 16px;
-  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.3);
+  font-size: 13px;
+  box-shadow: 0 6px 20px rgba(245, 158, 11, 0.3);
   text-transform: uppercase;
   letter-spacing: 0.5px;
   transition: all 0.3s ease;
-  transform: scale(1);
+  /* transform: scale(1); */
   cursor: pointer;
 }
 
-.saveButtonItem:hover {
+.refreshButton:hover {
   transform: scale(1.05);
-  box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
-}
-
-.saveButtonDiscount {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-  border: none;
-  font-weight: 800;
-  height: 48px;
-  padding: 0 28px;
-  border-radius: 25px;
-  font-size: 16px;
-  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.3);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  transition: all 0.3s ease;
-  transform: scale(1);
-  cursor: pointer;
-}
-
-.saveButtonDiscount:hover {
-  transform: scale(1.05);
-  box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
-}
-
-.saveButtonPartial {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-  border: none;
-  font-weight: 800;
-  height: 48px;
-  padding: 0 28px;
-  border-radius: 25px;
-  font-size: 16px;
-  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.3);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  transition: all 0.3s ease;
-  transform: scale(1);
-  cursor: pointer;
-}
-
-.saveButtonPartial:hover {
-  transform: scale(1.05);
-  box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
-}
-
-.saveButtonAction {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-  border: none;
-  font-weight: 800;
-  height: 48px;
-  padding: 0 28px;
-  border-radius: 25px;
-  font-size: 16px;
-  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.3);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  transition: all 0.3s ease;
-  transform: scale(1);
-  cursor: pointer;
-}
-
-.saveButtonAction:hover {
-  transform: scale(1.05);
-  box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+  box-shadow: 0 8px 25px rgba(245, 158, 11, 0.4);
 }
 
 .printButton {
@@ -1704,15 +837,15 @@
   color: white;
   border: none;
   font-weight: 800;
-  height: 48px;
-  padding: 0 24px;
+  /* height: 48px;
+  padding: 0 24px; */
   border-radius: 25px;
-  font-size: 15px;
+  font-size: 13px;
   box-shadow: 0 6px 20px rgba(59, 130, 246, 0.3);
   text-transform: uppercase;
   letter-spacing: 0.5px;
   transition: all 0.3s ease;
-  transform: scale(1);
+  /* transform: scale(1); */
   cursor: pointer;
 }
 
@@ -1721,167 +854,29 @@
   box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
 }
 
-.printButtonContainer {
-  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+.clearButton {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
   color: white;
   border: none;
   font-weight: 800;
-  height: 48px;
-  padding: 0 24px;
+  /* height: 48px;
+  padding: 0 24px; */
   border-radius: 25px;
-  font-size: 15px;
-  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.3);
+  font-size: 13px;
+  box-shadow: 0 6px 20px rgba(239, 68, 68, 0.3);
   text-transform: uppercase;
   letter-spacing: 0.5px;
   transition: all 0.3s ease;
-  transform: scale(1);
+  /* transform: scale(1); */
   cursor: pointer;
 }
 
-.printButtonContainer:hover {
+.clearButton:hover {
   transform: scale(1.05);
-  box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
-}
-
-.printButtonItem {
-  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
-  color: white;
-  border: none;
-  font-weight: 800;
-  height: 48px;
-  padding: 0 24px;
-  border-radius: 25px;
-  font-size: 15px;
-  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.3);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  transition: all 0.3s ease;
-  transform: scale(1);
-  cursor: pointer;
-}
-
-.printButtonItem:hover {
-  transform: scale(1.05);
-  box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
-}
-
-.printButtonDiscount {
-  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
-  color: white;
-  border: none;
-  font-weight: 800;
-  height: 48px;
-  padding: 0 24px;
-  border-radius: 25px;
-  font-size: 15px;
-  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.3);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  transition: all 0.3s ease;
-  transform: scale(1);
-  cursor: pointer;
-}
-
-.printButtonDiscount:hover {
-  transform: scale(1.05);
-  box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
-}
-
-.printButtonPartial {
-  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
-  color: white;
-  border: none;
-  font-weight: 800;
-  height: 48px;
-  padding: 0 24px;
-  border-radius: 25px;
-  font-size: 15px;
-  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.3);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  transition: all 0.3s ease;
-  transform: scale(1);
-  cursor: pointer;
-}
-
-.printButtonPartial:hover {
-  transform: scale(1.05);
-  box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
-}
-
-.printButtonAction {
-  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
-  color: white;
-  border: none;
-  font-weight: 800;
-  height: 48px;
-  padding: 0 24px;
-  border-radius: 25px;
-  font-size: 15px;
-  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.3);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  transition: all 0.3s ease;
-  transform: scale(1);
-  cursor: pointer;
-}
-
-.printButtonAction:hover {
-  transform: scale(1.05);
-  box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+  box-shadow: 0 8px 25px rgba(239, 68, 68, 0.4);
 }
 
 .shortcutsInfo {
-  background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
-  padding: 14px 18px;
-  border-radius: 10px;
-  border: 1px solid #cbd5e1;
-  position: relative;
-  z-index: 1;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-}
-
-.shortcutsInfoContainer {
-  background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
-  padding: 14px 18px;
-  border-radius: 10px;
-  border: 1px solid #cbd5e1;
-  position: relative;
-  z-index: 1;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-}
-
-.shortcutsInfoItem {
-  background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
-  padding: 14px 18px;
-  border-radius: 10px;
-  border: 1px solid #cbd5e1;
-  position: relative;
-  z-index: 1;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-}
-
-.shortcutsInfoDiscount {
-  background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
-  padding: 14px 18px;
-  border-radius: 10px;
-  border: 1px solid #cbd5e1;
-  position: relative;
-  z-index: 1;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-}
-
-.shortcutsInfoPartial {
-  background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
-  padding: 14px 18px;
-  border-radius: 10px;
-  border: 1px solid #cbd5e1;
-  position: relative;
-  z-index: 1;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-}
-
-.shortcutsInfoAction {
   background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
   padding: 14px 18px;
   border-radius: 10px;
@@ -1900,49 +895,99 @@
   text-align: right;
 }
 
-.shortcutsTextContainer {
-  color: #475569;
-  font-size: 12px;
-  display: block;
-  font-weight: 600;
-  line-height: 18px;
-  text-align: right;
+/* Customer Field Styles */
+.customerField {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: 1px solid #d9d9d9;
+  background-color: #fafafa;
+  transition: all 0.2s ease;
 }
 
-.shortcutsTextItem {
-  color: #475569;
-  font-size: 12px;
-  display: block;
-  font-weight: 600;
-  line-height: 18px;
-  text-align: right;
+.customerField:hover {
+  background-color: #f0f0f0;
+  border-color: #1890ff;
 }
 
-.shortcutsTextDiscount {
-  color: #475569;
-  font-size: 12px;
-  display: block;
-  font-weight: 600;
-  line-height: 18px;
-  text-align: right;
+.customerFieldEndKey {
+  font-size: 10px;
+  color: #1890ff;
+  background-color: #f0f8ff;
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid #d6e4ff;
 }
 
-.shortcutsTextPartial {
-  color: #475569;
-  font-size: 12px;
-  display: block;
-  font-weight: 600;
-  line-height: 18px;
-  text-align: right;
+/* Stock Field Styles */
+.stockField {
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: 1px solid #d9d9d9;
+  background-color: #fafafa;
+  transition: all 0.2s ease;
+  min-height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
-.shortcutsTextAction {
-  color: #475569;
+.stockField:hover {
+  background-color: #f0f0f0;
+  border-color: #1890ff;
+}
+
+.stockFieldSelected {
+  border: 1px solid #52c41a;
+  background-color: #f6ffed;
+}
+
+.stockFieldIcon {
   font-size: 12px;
-  display: block;
-  font-weight: 600;
-  line-height: 18px;
-  text-align: right;
+  color: #1890ff;
+}
+
+.stockFieldWarning {
+  font-size: 10px;
+  color: #ff4d4f;
+  margin-top: 2px;
+}
+
+/* Switch Styles */
+.saleTypeSwitch {
+  background-color: #10b981;
+}
+
+.saleTypeSwitch:not(.ant-switch-checked) {
+  background-color: #3b82f6;
+}
+
+.gstSwitch {
+  background-color: #10b981;
+}
+
+.gstSwitch:not(.ant-switch-checked) {
+  background-color: #f59e0b;
+}
+
+.paymentSwitch {
+  background-color: #10b981;
+}
+
+.paymentSwitch:not(.ant-switch-checked) {
+  background-color: #ef4444;
+}
+
+.partialPaymentSwitch {
+  background-color: #f59e0b;
+}
+
+.partialPaymentSwitch:not(.ant-switch-checked) {
+  background-color: #94a3b8;
 }
 
 /* Animations */
@@ -2077,112 +1122,25 @@
   }
 }
 
-/* Customer Modal Animations */
-@keyframes customerModalSlideIn {
-  from {
-    opacity: 0;
-    transform: translateY(-50px) scale(0.9);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
+/* Keyboard Shortcuts */
+.keyboardShortcuts {
+  background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+  padding: 14px 18px;
+  border-radius: 10px;
+  border: 1px solid #cbd5e1;
+  position: relative;
+  z-index: 1;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
-@keyframes customerModalFadeIn {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
+.keyboardShortcutsContent {
+  text-align: right;
 }
 
-@keyframes customerItemHover {
-  from {
-    transform: translateX(0);
-  }
-  to {
-    transform: translateX(5px);
-  }
-}
-
-@keyframes customerSearchPulse {
-  0%, 100% {
-    box-shadow: 0 0 0 0 rgba(24, 144, 255, 0.4);
-  }
-  50% {
-    box-shadow: 0 0 0 10px rgba(24, 144, 255, 0);
-  }
-}
-
-/* Customer Field Highlight Animation */
-@keyframes customerFieldGlow {
-  0%, 100% {
-    box-shadow: 0 0 5px rgba(24, 144, 255, 0.3);
-  }
-  50% {
-    box-shadow: 0 0 20px rgba(24, 144, 255, 0.6);
-  }
-}
-
-.customerFieldHighlight {
-  animation: customerFieldGlow 2s ease-in-out infinite;
-}
-
-.customerModalOpen {
-  animation: customerModalSlideIn 0.3s ease-out;
-}
-
-.customerModalContent {
-  animation: customerModalFadeIn 0.4s ease-out 0.1s both;
-}
-
-.customerItemHover {
-  transition: all 0.2s ease;
-}
-
-.customerItemHover:hover {
-  animation: customerItemHover 0.2s ease-out forwards;
-}
-
-.customerSearchActive {
-  animation: customerSearchPulse 2s infinite;
-}
-
-/* Radio Button Animations */
-@keyframes radioButtonPulse {
-  0% {
-    transform: scale(1);
-    box-shadow: 0 0 0 0 rgba(24, 144, 255, 0.7);
-  }
-  70% {
-    transform: scale(1.1);
-    box-shadow: 0 0 0 10px rgba(24, 144, 255, 0);
-  }
-  100% {
-    transform: scale(1);
-    box-shadow: 0 0 0 0 rgba(24, 144, 255, 0);
-  }
-}
-
-.customerRadioButton {
-  transition: all 0.3s ease;
-}
-
-.customerRadioButton:hover {
-  transform: scale(1.1);
-}
-
-.customerRadioButtonSelected {
-  animation: radioButtonPulse 0.6s ease-out;
-}
-
-.customerItemSelected {
-  background: linear-gradient(135deg, #f0f8ff 0%, #e6f7ff 100%) !important;
-  border: 2px solid #1890ff !important;
-  box-shadow: 0 4px 12px rgba(24, 144, 255, 0.15);
-  transform: translateX(5px);
+.keyboardShortcutsText {
+  color: #475569;
+  font-size: 12px;
+  display: block;
+  font-weight: 600;
+  line-height: 18px;
 }
