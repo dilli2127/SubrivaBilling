@@ -15,6 +15,7 @@ import {
   FileTextOutlined,
 } from '@ant-design/icons';
 import StockSelectionModal from './StockSelectionModal';
+import CustomerSelectionModal from './CustomerSelectionModal';
 
 const { Title, Text } = Typography;
 
@@ -75,6 +76,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
 
   const [stockModalRowIndex, setStockModalRowIndex] = useState<number | null>(null);
   const [externalEditingCell, setExternalEditingCell] = useState<{ row: number; col: number } | null>(null);
+  const [customerModalVisible, setCustomerModalVisible] = useState(false);
 
   // User info
   const user = JSON.parse(sessionStorage.getItem('user') || '{}');
@@ -156,6 +158,11 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
     }
   }, [billdata, billFormData.items.length]);
 
+  // Debug: Monitor billFormData changes
+  useEffect(() => {
+    console.log('billFormData changed:', billFormData);
+  }, [billFormData]);
+
   // Product and stock options
   const productOptions = useMemo(
     () =>
@@ -168,11 +175,14 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
   );
 
   const customerOptions = useMemo(
-    () =>
-      customerList?.result?.map((customer: any) => ({
+    () => {
+      const options = customerList?.result?.map((customer: any) => ({
         label: `${customer.full_name} - ${customer.mobile}`,
         value: customer._id,
-      })) || [],
+      })) || [];
+      console.log('Customer options:', options); // Debug log
+      return options;
+    },
     [customerList]
   );
 
@@ -204,6 +214,47 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
       options: customerOptions,
       required: true,
       width: 250,
+      render: (value: any, record: any) => {
+        const selectedCustomer = customerOptions.find((opt: any) => opt.value === value);
+        return (
+          <Tooltip title="Click to open customer selection modal (or press End key)">
+            <div 
+              style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'space-between',
+                cursor: 'pointer',
+                padding: '4px 8px',
+                borderRadius: '4px',
+                border: '1px solid #d9d9d9',
+                backgroundColor: '#fafafa',
+                transition: 'all 0.2s ease'
+              }}
+              onClick={() => setCustomerModalVisible(true)}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = '#f0f0f0';
+                e.currentTarget.style.borderColor = '#1890ff';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = '#fafafa';
+                e.currentTarget.style.borderColor = '#d9d9d9';
+              }}
+            >
+              <span>{selectedCustomer ? selectedCustomer.label : 'Select customer'}</span>
+              <span style={{ 
+                fontSize: '10px', 
+                color: '#1890ff', 
+                backgroundColor: '#f0f8ff', 
+                padding: '2px 6px', 
+                borderRadius: '4px',
+                border: '1px solid #d6e4ff'
+              }}>
+                End
+              </span>
+            </div>
+          </Tooltip>
+        );
+      },
     },
     {
       key: 'payment_mode',
@@ -220,21 +271,21 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
     },
   ];
 
-  const headerData = [
+  const headerData = useMemo(() => [
     {
       invoice_no: billFormData.invoice_no,
       date: billFormData.date,
       customer_id: billFormData.customer_id,
       payment_mode: billFormData.payment_mode,
     },
-  ];
+  ], [billFormData.invoice_no, billFormData.date, billFormData.customer_id, billFormData.payment_mode]);
 
   // Column definitions for bill items
   const itemColumns: AntdEditableColumn[] = [
     {
       key: 'product_id',
       title: '🛒 PRODUCT',
-      dataIndex: 'product_name',
+      dataIndex: 'product_id',
       type: 'product', // triggers modal
       required: true,
       width: 280,
@@ -493,15 +544,6 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
     const newItems = [...billFormData.items];
     newItems[stockModalRowIndex].stock_id = stock.id || stock._id || stock.invoice_id || '';
     newItems[stockModalRowIndex].batch_no = stock.batch_no || '';
-    
-    // Auto-populate price and other details from selected stock
-    if (stock.sell_price) {
-      newItems[stockModalRowIndex].price = stock.sell_price;
-    }
-    if (stock.mrp) {
-      newItems[stockModalRowIndex].mrp = stock.mrp;
-    }
-    
     handleItemsChange(newItems);
     setStockModalRowIndex(null); // Close stock modal
 
@@ -509,9 +551,25 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
     if (qtyColIndex !== -1) {
       setExternalEditingCell({ row: stockModalRowIndex, col: qtyColIndex });
     }
-    
-    // Show success message
-    message.success(`Stock selected: ${stock.batch_no || 'Batch'} - Qty: ${stock.quantity || 'N/A'}`);
+  };
+
+  // Handle customer selection from modal
+  const handleCustomerSelect = (customer: any) => {
+    console.log('Customer selected:', customer); // Debug log
+    setBillFormData(prev => {
+      const updated = {
+        ...prev,
+        customer_id: customer._id,
+        customer_name: customer.full_name,
+      };
+      console.log('Updated billFormData:', updated); // Debug log
+      return updated;
+    });
+    // Ensure modal closes
+    setTimeout(() => {
+      setCustomerModalVisible(false);
+    }, 50);
+    message.success(`Customer "${customer.full_name}" selected successfully!`);
   };
 
   // Handle item addition
@@ -700,6 +758,11 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
         const customerSelect = document.querySelector('input[placeholder*="customer" i], input[placeholder*="Customer" i]') as HTMLElement;
         customerSelect?.focus();
       }
+      // End: Open customer selection modal
+      else if (e.key === 'End') {
+        e.preventDefault();
+        setCustomerModalVisible(true);
+      }
       // F5: Add 5 items
       // else if (e.key === 'F5') {
       //   e.preventDefault();
@@ -754,20 +817,6 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
           if (input) {
             input.value = e.key;
             input.dispatchEvent(new Event('change', { bubbles: true }));
-          }
-        }
-      }
-      // Enter key on stock field to open stock modal
-      else if (e.key === 'Enter') {
-        const activeElement = document.activeElement as HTMLElement;
-        const stockCell = activeElement?.closest('td[data-column-key="stock_id"]');
-        if (stockCell) {
-          e.preventDefault();
-          const rowIndex = stockCell.closest('tr')?.getAttribute('data-row-key');
-          if (rowIndex && billFormData.items[parseInt(rowIndex)]?.product_id) {
-            setStockModalRowIndex(parseInt(rowIndex));
-          } else {
-            message.warning('Please select a product first');
           }
         }
       }
@@ -1261,6 +1310,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
           size="small"
           rowKey="invoice_no"
         />
+      
       </div>
 
       {/* Items Section with Summary */}
@@ -1967,7 +2017,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
               background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
               color: 'white',
               border: 'none',
-              fontWeight: 800,
+              fontWeight: 800,  
               height: '48px',
               padding: '0 24px',
               borderRadius: '25px',
@@ -2017,7 +2067,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
             >
               ⚡ <strong>Keyboard Shortcuts:</strong> Ctrl+S (Save) • Ctrl+N
               (Add) • Ctrl+D/Del (Delete) • Tab/Shift+Tab (Navigate) • Enter
-              (Edit) • Esc (Cancel) • Enter on Stock field (Open Stock Modal)
+              (Edit) • Esc (Cancel) • End (Customer Modal)
             </Text>
           </div>
         </div>
@@ -2030,6 +2080,13 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
           productId={billFormData.items[stockModalRowIndex]?.product_id || ''}
         />
       )}
+      
+      {/* Customer Selection Modal */}
+      <CustomerSelectionModal
+        visible={customerModalVisible}
+        onSelect={handleCustomerSelect}
+        onCancel={() => setCustomerModalVisible(false)}
+      />
     </div>
   );
 };

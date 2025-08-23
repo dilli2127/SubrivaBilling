@@ -2076,3 +2076,113 @@
     opacity: 1;
   }
 }
+
+/* Customer Modal Animations */
+@keyframes customerModalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-50px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes customerModalFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes customerItemHover {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(5px);
+  }
+}
+
+@keyframes customerSearchPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(24, 144, 255, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 10px rgba(24, 144, 255, 0);
+  }
+}
+
+/* Customer Field Highlight Animation */
+@keyframes customerFieldGlow {
+  0%, 100% {
+    box-shadow: 0 0 5px rgba(24, 144, 255, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(24, 144, 255, 0.6);
+  }
+}
+
+.customerFieldHighlight {
+  animation: customerFieldGlow 2s ease-in-out infinite;
+}
+
+.customerModalOpen {
+  animation: customerModalSlideIn 0.3s ease-out;
+}
+
+.customerModalContent {
+  animation: customerModalFadeIn 0.4s ease-out 0.1s both;
+}
+
+.customerItemHover {
+  transition: all 0.2s ease;
+}
+
+.customerItemHover:hover {
+  animation: customerItemHover 0.2s ease-out forwards;
+}
+
+.customerSearchActive {
+  animation: customerSearchPulse 2s infinite;
+}
+
+/* Radio Button Animations */
+@keyframes radioButtonPulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(24, 144, 255, 0.7);
+  }
+  70% {
+    transform: scale(1.1);
+    box-shadow: 0 0 0 10px rgba(24, 144, 255, 0);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(24, 144, 255, 0);
+  }
+}
+
+.customerRadioButton {
+  transition: all 0.3s ease;
+}
+
+.customerRadioButton:hover {
+  transform: scale(1.1);
+}
+
+.customerRadioButtonSelected {
+  animation: radioButtonPulse 0.6s ease-out;
+}
+
+.customerItemSelected {
+  background: linear-gradient(135deg, #f0f8ff 0%, #e6f7ff 100%) !important;
+  border: 2px solid #1890ff !important;
+  box-shadow: 0 4px 12px rgba(24, 144, 255, 0.15);
+  transform: translateX(5px);
+}
