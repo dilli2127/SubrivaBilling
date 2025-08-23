@@ -482,11 +482,8 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
 
   // Handle item deletion
   const handleDeleteItems = (indices: number[]) => {
-    console.log('Deleting items at indices:', indices);
-    console.log('Current items count:', billFormData.items.length);
     setBillFormData(prev => {
       const newItems = prev.items.filter((_, index:any) => !indices.includes(index?.toString()));
-      console.log('New items count after deletion:', newItems.length);
       return {
         ...prev,
         items: newItems,
@@ -621,7 +618,6 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
   // Ultra-Fast Billing Keyboard Shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      console.log(e.key,e.ctrlKey);
       // F1: Add item and focus first product field
       if (e.key === 'F1') {
         e.preventDefault();
