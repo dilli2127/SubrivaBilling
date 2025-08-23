@@ -176,20 +176,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
     [customerList]
   );
 
-  const getStockOptionsForProduct = (productId: string) => {
-    const stockList = branchId ? branchStockList : stockAuditList;
-    const stocks =
-      stockList?.result?.filter(
-        (stock: any) =>
-          stock.product === productId || stock.ProductItem?._id === productId
-      ) || [];
 
-    return stocks.map((stock: any) => ({
-      label: `Batch: ${stock.batch_no || 'N/A'}, Qty: ${stock.available_quantity || 0} pcs, ₹${stock.sell_price || 0}`,
-      value: stock._id,
-      batch_no: stock.batch_no,
-    }));
-  };
 
   // Column definitions for bill header
   const headerColumns: AntdEditableColumn[] = [
