@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { Button, Typography, message, Switch, InputNumber, Badge } from 'antd';
+import { Button, Typography, message, Switch, InputNumber, Badge, Tooltip } from 'antd';
 import dayjs from 'dayjs';
 import AntdEditableTable, {
   AntdEditableColumn,
@@ -234,7 +234,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
     {
       key: 'product_id',
       title: '🛒 PRODUCT',
-      dataIndex: 'product_id',
+      dataIndex: 'product_name',
       type: 'product', // triggers modal
       required: true,
       width: 280,
@@ -248,6 +248,63 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
       required: true,
       width: 200,
       editable: true, // allow editing to open modal
+      render: (value, record, index) => (
+        <Tooltip
+          title={
+            record.product_id
+              ? value
+                ? `Stock: ${value} - Click to change`
+                : 'Click to select stock from available inventory'
+              : 'Please select a product first to choose stock'
+          }
+          placement="top"
+        >
+          <div
+            style={{
+              cursor: 'pointer',
+              padding: '4px 8px',
+              borderRadius: '4px',
+              border: value ? '1px solid #52c41a' : '1px solid #d9d9d9',
+              backgroundColor: value ? '#f6ffed' : '#fafafa',
+              transition: 'all 0.2s ease',
+              minHeight: '32px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between'
+            }}
+            onClick={() => {
+              if (record.product_id && typeof index === 'number') {
+                setStockModalRowIndex(index);
+              } else if (!record.product_id) {
+                message.warning('Please select a product first');
+              }
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = '#f0f0f0';
+              e.currentTarget.style.borderColor = '#1890ff';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = '#fafafa';
+              e.currentTarget.style.borderColor = '#d9d9d9';
+            }}
+          >
+            <span style={{ 
+              color: value ? '#52c41a' : record.product_id ? '#1890ff' : '#bfbfbf',
+              fontWeight: value ? 600 : 400
+            }}>
+              {value }
+            </span>
+            {record.product_id && (
+              <span style={{ fontSize: '12px', color: '#1890ff' }}>📋</span>
+            )}
+            {record.product_id && !value && (
+              <div style={{ fontSize: '10px', color: '#ff4d4f', marginTop: '2px' }}>
+                ⚠️ Stock required
+              </div>
+            )}
+          </div>
+        </Tooltip>
+      ),
     },
     {
       key: 'qty',
@@ -436,6 +493,15 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
     const newItems = [...billFormData.items];
     newItems[stockModalRowIndex].stock_id = stock.id || stock._id || stock.invoice_id || '';
     newItems[stockModalRowIndex].batch_no = stock.batch_no || '';
+    
+    // Auto-populate price and other details from selected stock
+    if (stock.sell_price) {
+      newItems[stockModalRowIndex].price = stock.sell_price;
+    }
+    if (stock.mrp) {
+      newItems[stockModalRowIndex].mrp = stock.mrp;
+    }
+    
     handleItemsChange(newItems);
     setStockModalRowIndex(null); // Close stock modal
 
@@ -443,6 +509,9 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
     if (qtyColIndex !== -1) {
       setExternalEditingCell({ row: stockModalRowIndex, col: qtyColIndex });
     }
+    
+    // Show success message
+    message.success(`Stock selected: ${stock.batch_no || 'Batch'} - Qty: ${stock.quantity || 'N/A'}`);
   };
 
   // Handle item addition
@@ -685,6 +754,20 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
           if (input) {
             input.value = e.key;
             input.dispatchEvent(new Event('change', { bubbles: true }));
+          }
+        }
+      }
+      // Enter key on stock field to open stock modal
+      else if (e.key === 'Enter') {
+        const activeElement = document.activeElement as HTMLElement;
+        const stockCell = activeElement?.closest('td[data-column-key="stock_id"]');
+        if (stockCell) {
+          e.preventDefault();
+          const rowIndex = stockCell.closest('tr')?.getAttribute('data-row-key');
+          if (rowIndex && billFormData.items[parseInt(rowIndex)]?.product_id) {
+            setStockModalRowIndex(parseInt(rowIndex));
+          } else {
+            message.warning('Please select a product first');
           }
         }
       }
@@ -1934,7 +2017,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
             >
               ⚡ <strong>Keyboard Shortcuts:</strong> Ctrl+S (Save) • Ctrl+N
               (Add) • Ctrl+D/Del (Delete) • Tab/Shift+Tab (Navigate) • Enter
-              (Edit) • Esc (Cancel)
+              (Edit) • Esc (Cancel) • Enter on Stock field (Open Stock Modal)
             </Text>
           </div>
         </div>
