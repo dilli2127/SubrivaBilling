@@ -221,19 +221,19 @@
 }
 
 .saleTypeControl {
-  animation: slideInUp 0.6s ease-out 0.4s both;
+  animation: slideInUp 0.3s ease-out 0.2s both;
 }
 
 .gstControl {
-  animation: slideInUp 0.6s ease-out 0.5s both;
+  animation: slideInUp 0.3s ease-out 0.2s both;
 }
 
 .paymentControl {
-  animation: slideInUp 0.6s ease-out 0.6s both;
+  animation: slideInUp 0.3s ease-out 0.2s both;
 }
 
 .partialPaymentControl {
-  animation: slideInUp 0.6s ease-out 0.7s both;
+  animation: slideInUp 0.3s ease-out 0.2s both;
 }
 
 .controlLabel {
