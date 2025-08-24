@@ -127,18 +127,29 @@ const StockSelectionModal: FC<StockSelectionModalProps> = ({
 
     if (e.key === 'ArrowDown') {
       e.preventDefault();
-      setHighlightedIndex(0);
-      setSelectedRowKey(filteredStocks[0]._id);
-      setTimeout(() => {
-        tableBodyRef.current?.focus();
-      }, 0);
+      setHighlightedIndex(prev => {
+        const next = Math.min(prev + 1, filteredStocks.length - 1);
+        setSelectedRowKey(filteredStocks[next]._id);
+        return next;
+      });
+      // Keep focus on search input
+      searchInputRef.current?.focus();
     } else if (e.key === 'ArrowUp') {
       e.preventDefault();
-      setHighlightedIndex(filteredStocks.length - 1);
-      setSelectedRowKey(filteredStocks[filteredStocks.length - 1]._id);
-      setTimeout(() => {
-        tableBodyRef.current?.focus();
-      }, 0);
+      setHighlightedIndex(prev => {
+        const prevIndex = Math.max(prev - 1, 0);
+        setSelectedRowKey(filteredStocks[prevIndex]._id);
+        return prevIndex;
+      });
+      // Keep focus on search input
+      searchInputRef.current?.focus();
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      const selectedStock = filteredStocks[highlightedIndex];
+      if (selectedStock) {
+        handleSelectRow(selectedStock);
+        onCancel(); // Close the modal after selection
+      }
     }
   };
 
@@ -152,6 +163,8 @@ const StockSelectionModal: FC<StockSelectionModalProps> = ({
         setSelectedRowKey(filteredStocks[next]._id);
         return next;
       });
+      // Keep focus on search input
+      searchInputRef.current?.focus();
     } else if (e.key === 'ArrowUp') {
       e.preventDefault();
       setHighlightedIndex(i => {
@@ -159,11 +172,13 @@ const StockSelectionModal: FC<StockSelectionModalProps> = ({
         setSelectedRowKey(filteredStocks[prev]._id);
         return prev;
       });
+      // Keep focus on search input
     } else if (e.key === 'Enter') {
       e.preventDefault();
       const selectedStock = filteredStocks[highlightedIndex];
       if (selectedStock) {
         handleSelectRow(selectedStock);
+        onCancel(); // Close the modal after selection
       }
     } else if (e.key === 'Escape') {
       e.preventDefault();
@@ -172,6 +187,11 @@ const StockSelectionModal: FC<StockSelectionModalProps> = ({
       e.preventDefault();
       searchInputRef.current?.focus();
     }
+  };
+
+  // Auto-focus back to search input when clicking outside
+  const handleModalClick = () => {
+    searchInputRef.current?.focus();
   };
 
   return (
@@ -183,14 +203,23 @@ const StockSelectionModal: FC<StockSelectionModalProps> = ({
       footer={null}
       destroyOnClose
     >
-      <Search
-        ref={searchInputRef}
-        placeholder="Search stocks"
-        onChange={e => setSearchTerm(e.target.value)}
-        style={{ marginBottom: 16 }}
-        autoFocus
-        onKeyDown={handleSearchKeyDown}
-      />
+      <div onClick={handleModalClick}>
+        <Search
+          ref={searchInputRef}
+          placeholder="Search stocks (use ↑↓ arrows to navigate, Enter to select)"
+          onChange={e => setSearchTerm(e.target.value)}
+          style={{ marginBottom: 16 }}
+          autoFocus
+          onKeyDown={handleSearchKeyDown}
+          onBlur={() => {
+            // Re-focus after a short delay to ensure it stays focused
+            setTimeout(() => {
+              if (visible) {
+                searchInputRef.current?.focus();
+              }
+            }, 10);
+          }}
+        />
       <div
         onKeyDown={handleTableKeyDown}
         tabIndex={0}
@@ -205,7 +234,13 @@ const StockSelectionModal: FC<StockSelectionModalProps> = ({
           size="small"
           pagination={false}
           onRow={(record, idx) => ({
-            onClick: () => handleSelectRow(record),
+            onClick: () => {
+              handleSelectRow(record);
+              // Keep focus on search input after selection
+              setTimeout(() => {
+                searchInputRef.current?.focus();
+              }, 10);
+            },
             onDoubleClick: () => handleSelectRow(record),
             className:
               idx === highlightedIndex
@@ -223,6 +258,10 @@ const StockSelectionModal: FC<StockSelectionModalProps> = ({
             },
           }}
         />
+        <div style={{ marginTop: 16, fontSize: '12px', color: '#666' }}>
+          <strong>Keyboard Shortcuts:</strong> ↑↓ Navigate stocks | Enter Select | Escape Cancel
+        </div>
+      </div>
       </div>
     </Modal>
   );

@@ -8,7 +8,7 @@ import { useDynamicSelector } from '../../../services/redux';
 const { Search } = Input;
 
 interface Product {
-  id: string;
+  _id: string;
   name: string;
   sku: string;
   selling_price: number;
@@ -46,7 +46,7 @@ const ProductSelectionModal: FC<ProductSelectionModalProps> = ({
   useEffect(() => {
     setHighlightedIndex(0);
     if (filteredProducts.length > 0) {
-      setSelectedRowKey(filteredProducts[0].id);
+              setSelectedRowKey(filteredProducts[0]._id);
     } else {
       setSelectedRowKey(null);
     }
@@ -77,7 +77,7 @@ const ProductSelectionModal: FC<ProductSelectionModalProps> = ({
       e.preventDefault();
       setHighlightedIndex(prev => {
         const next = Math.min(prev + 1, filteredProducts.length - 1);
-        setSelectedRowKey(filteredProducts[next].id);
+        setSelectedRowKey(filteredProducts[next]._id);
         return next;
       });
       // Keep focus on search input
@@ -86,7 +86,7 @@ const ProductSelectionModal: FC<ProductSelectionModalProps> = ({
       e.preventDefault();
       setHighlightedIndex(prev => {
         const prevIndex = Math.max(prev - 1, 0);
-        setSelectedRowKey(filteredProducts[prevIndex].id);
+        setSelectedRowKey(filteredProducts[prevIndex]._id);
         return prevIndex;
       });
       // Keep focus on search input
@@ -138,7 +138,7 @@ const ProductSelectionModal: FC<ProductSelectionModalProps> = ({
           dataSource={filteredProducts}
           columns={columns}
           loading={loading}
-          rowKey="id"
+          rowKey="_id"
           size="small"
           pagination={false}
           onRow={(record, idx) => ({
@@ -164,7 +164,7 @@ const ProductSelectionModal: FC<ProductSelectionModalProps> = ({
             selectedRowKeys: selectedRowKey ? [selectedRowKey] : [],
             onChange: keys => {
               setSelectedRowKey(keys[0]);
-              const idx = filteredProducts.findIndex(p => p.id === keys[0]);
+              const idx = filteredProducts.findIndex(p => p._id === keys[0]);
               if (idx !== -1) setHighlightedIndex(idx);
             },
           }}
