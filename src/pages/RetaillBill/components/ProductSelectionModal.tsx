@@ -34,7 +34,6 @@ const ProductSelectionModal: FC<ProductSelectionModalProps> = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedRowKey, setSelectedRowKey] = useState<React.Key | null>(null);
   const [highlightedIndex, setHighlightedIndex] = useState<number>(0);
-  const tableBodyRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<InputRef>(null);
 
   const filteredProducts: Product[] =
@@ -57,18 +56,9 @@ const ProductSelectionModal: FC<ProductSelectionModalProps> = ({
     if (visible) {
       setTimeout(() => {
         searchInputRef.current?.focus();
-      }, 0);
+      }, 100);
     }
   }, [visible]);
-
-  useEffect(() => {
-    if (tableBodyRef.current) {
-      const row = tableBodyRef.current.querySelector(
-        `.ant-table-row[data-row-key='${filteredProducts[highlightedIndex]?.id}']`
-      ) as HTMLElement;
-      row?.scrollIntoView({ block: 'nearest' });
-    }
-  }, [highlightedIndex, filteredProducts]);
 
   const columns: ColumnType<Product>[] = [
     { title: 'Name', dataIndex: 'name', key: 'name' },
@@ -85,38 +75,22 @@ const ProductSelectionModal: FC<ProductSelectionModalProps> = ({
 
     if (e.key === 'ArrowDown') {
       e.preventDefault();
-      setHighlightedIndex(0);
-      setSelectedRowKey(filteredProducts[0].id);
-      setTimeout(() => {
-        tableBodyRef.current?.focus();
-      }, 0);
-    } else if (e.key === 'ArrowUp') {
-      e.preventDefault();
-      setHighlightedIndex(filteredProducts.length - 1);
-      setSelectedRowKey(filteredProducts[filteredProducts.length - 1].id);
-      setTimeout(() => {
-        tableBodyRef.current?.focus();
-      }, 0);
-    }
-  };
-
-  const handleTableKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
-    if (!filteredProducts.length) return;
-
-    if (e.key === 'ArrowDown') {
-      e.preventDefault();
-      setHighlightedIndex(i => {
-        const next = Math.min(i + 1, filteredProducts.length - 1);
+      setHighlightedIndex(prev => {
+        const next = Math.min(prev + 1, filteredProducts.length - 1);
         setSelectedRowKey(filteredProducts[next].id);
         return next;
       });
+      // Keep focus on search input
+      searchInputRef.current?.focus();
     } else if (e.key === 'ArrowUp') {
       e.preventDefault();
-      setHighlightedIndex(i => {
-        const prev = Math.max(i - 1, 0);
-        setSelectedRowKey(filteredProducts[prev].id);
-        return prev;
+      setHighlightedIndex(prev => {
+        const prevIndex = Math.max(prev - 1, 0);
+        setSelectedRowKey(filteredProducts[prevIndex].id);
+        return prevIndex;
       });
+      // Keep focus on search input
+      searchInputRef.current?.focus();
     } else if (e.key === 'Enter') {
       e.preventDefault();
       const selectedProduct = filteredProducts[highlightedIndex];
@@ -125,11 +99,13 @@ const ProductSelectionModal: FC<ProductSelectionModalProps> = ({
       }
     } else if (e.key === 'Escape') {
       e.preventDefault();
-      searchInputRef.current?.focus();
-    } else if (e.key === 'Tab' && e.shiftKey) {
-      e.preventDefault();
-      searchInputRef.current?.focus();
+      onCancel();
     }
+  };
+
+  // Auto-focus back to search input when clicking outside
+  const handleModalClick = () => {
+    searchInputRef.current?.focus();
   };
 
   return (
@@ -141,20 +117,23 @@ const ProductSelectionModal: FC<ProductSelectionModalProps> = ({
       footer={null}
       destroyOnClose
     >
-      <Search
-        ref={searchInputRef}
-        placeholder="Search products"
-        onChange={e => setSearchTerm(e.target.value)}
-        style={{ marginBottom: 16 }}
-        autoFocus
-        onKeyDown={handleSearchKeyDown}
-      />
-      <div
-        onKeyDown={handleTableKeyDown}
-        tabIndex={0}
-        ref={tableBodyRef}
-        style={{ outline: 'none' }}
-      >
+      <div onClick={handleModalClick}>
+        <Search
+          ref={searchInputRef}
+          placeholder="Search products (use ↑↓ arrows to navigate, Enter to select)"
+          onChange={e => setSearchTerm(e.target.value)}
+          style={{ marginBottom: 16 }}
+          autoFocus
+          onKeyDown={handleSearchKeyDown}
+          onBlur={() => {
+            // Re-focus after a short delay to ensure it stays focused
+            setTimeout(() => {
+              if (visible) {
+                searchInputRef.current?.focus();
+              }
+            }, 10);
+          }}
+        />
         <Table
           dataSource={filteredProducts}
           columns={columns}
@@ -163,12 +142,22 @@ const ProductSelectionModal: FC<ProductSelectionModalProps> = ({
           size="small"
           pagination={false}
           onRow={(record, idx) => ({
-            onClick: () => handleSelectRow(record),
+            onClick: () => {
+              handleSelectRow(record);
+              // Keep focus on search input after selection
+              setTimeout(() => {
+                searchInputRef.current?.focus();
+              }, 10);
+            },
             onDoubleClick: () => handleSelectRow(record),
             className:
               idx === highlightedIndex
                 ? 'ant-table-row ant-table-row-selected'
                 : 'ant-table-row',
+            style: {
+              backgroundColor: idx === highlightedIndex ? '#e6f7ff' : undefined,
+              border: idx === highlightedIndex ? '2px solid #1890ff' : undefined,
+            },
           })}
           rowSelection={{
             type: 'radio',
@@ -179,7 +168,11 @@ const ProductSelectionModal: FC<ProductSelectionModalProps> = ({
               if (idx !== -1) setHighlightedIndex(idx);
             },
           }}
+          scroll={{ y: 300 }}
         />
+        <div style={{ marginTop: 16, fontSize: '12px', color: '#666' }}>
+          <strong>Keyboard Shortcuts:</strong> ↑↓ Navigate products | Enter Select | Escape Cancel
+        </div>
       </div>
     </Modal>
   );
