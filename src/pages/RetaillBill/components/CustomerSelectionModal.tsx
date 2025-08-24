@@ -1,6 +1,7 @@
 import React, {
   useState,
   useEffect,
+  useLayoutEffect,
   useRef,
   useCallback,
   useMemo,
@@ -17,6 +18,8 @@ import {
   Divider,
   Tag,
   Table,
+  Row,
+  Col,
 } from 'antd';
 import {
   SearchOutlined,
@@ -25,15 +28,27 @@ import {
   PhoneOutlined,
   MailOutlined,
   HomeOutlined,
+  PlusOutlined,
+  SaveOutlined,
+  CloseOutlined,
 } from '@ant-design/icons';
 import { useApiActions } from '../../../services/api/useApiActions';
 import { useDynamicSelector } from '../../../services/redux';
+import { useHandleApiResponse } from '../../../components/common/useHandleApiResponse';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
 
 interface Customer {
   _id: string;
+  full_name: string;
+  email: string;
+  mobile: string;
+  address: string;
+  customer_type: 'regular' | 'vip' | 'wholesale';
+}
+
+interface NewCustomerData {
   full_name: string;
   email: string;
   mobile: string;
@@ -62,22 +77,40 @@ const CustomerSelectionModal: React.FC<CustomerSelectionModalProps> = ({
     CustomerApi.getIdentifier('Create')
   );
 
+  // Extract items from customerList if it exists
+  const customers = customerList?.items || customerList?.result || [];
+
   const [searchTerm, setSearchTerm] = useState('');
   const [showAddForm, setShowAddForm] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(
     null
   );
   const [selectedRowIndex, setSelectedRowIndex] = useState<number>(-1);
+  const [showCreateGrid, setShowCreateGrid] = useState(false);
+  const [newCustomerData, setNewCustomerData] = useState<NewCustomerData>({
+    full_name: '',
+    email: '',
+    mobile: '',
+    address: '',
+    customer_type: 'regular',
+  });
+
   const [form] = Form.useForm();
   const searchInputRef = useRef<any>(null);
   const modalRef = useRef<HTMLDivElement>(null);
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const createGridRef = useRef<HTMLDivElement>(null);
+  const firstFormInputRef = useRef<any>(null);
 
   // Memoized filtered customers
-  const filteredCustomers = useMemo(
-    () => customerList?.result || [],
-    [customerList?.result]
-  );
+  const filteredCustomers = useMemo(() => customers, [customers]);
+
+  // Check if search has no results and should show create grid
+  const shouldShowCreateGrid = useMemo(() => {
+    return (
+      searchTerm.trim() && !customerLoading && filteredCustomers.length === 0
+    );
+  }, [searchTerm, customerLoading, filteredCustomers.length]);
 
   // Memoized customer type color function
   const getCustomerTypeColor = useCallback((type: string) => {
@@ -154,7 +187,7 @@ const CustomerSelectionModal: React.FC<CustomerSelectionModalProps> = ({
 
       searchTimeoutRef.current = setTimeout(() => {
         if (value.trim()) {
-          CustomerApi('GetAll', { search: value.trim() });
+          CustomerApi('GetAll', { searchString: value.trim() });
         } else {
           CustomerApi('GetAll');
         }
@@ -173,25 +206,54 @@ const CustomerSelectionModal: React.FC<CustomerSelectionModalProps> = ({
     [onSelect, onCancel]
   );
 
-  // Handle new customer creation
-  const handleCreateCustomer = useCallback(
-    async (values: any) => {
-      try {
-        const response: any = await CustomerApi('Create', values);
-        if (response?.statusCode === 200) {
-          message.success('Customer created successfully!');
-          setShowAddForm(false);
-          form.resetFields();
-          CustomerApi('GetAll');
-          // Don't auto-select the newly created customer
-          // User can manually select it if needed
-        }
-      } catch (error) {
-        message.error('Failed to create customer');
+  // Handle new customer creation from unified form
+  const handleCreateCustomerFromForm = useCallback(async () => {
+    try {
+      // Validate required fields - only Full Name and Mobile are mandatory
+      if (!newCustomerData.full_name.trim()) {
+        message.error('Full name is required');
+        return;
       }
+      if (!newCustomerData.mobile.trim()) {
+        message.error('Mobile number is required');
+        return;
+      }
+
+      // Call the API - the response will be handled by the useEffect watching createResult
+      await CustomerApi('Create', newCustomerData);
+
+      // Note: The modal will be automatically closed by the useEffect when the API response comes back
+    } catch (error) {
+      message.error('Failed to create customer');
+      // Clear form data on error
+      clearFormData();
+    }
+  }, [newCustomerData, CustomerApi]);
+
+  // Function to clear form data
+  const clearFormData = useCallback(() => {
+    setNewCustomerData({
+      full_name: '',
+      email: '',
+      mobile: '',
+      address: '',
+      customer_type: 'regular',
+    });
+    form.resetFields();
+  }, [form]);
+
+  // Handle form field changes
+  const handleFormFieldChange = useCallback(
+    (field: keyof NewCustomerData, value: string) => {
+      setNewCustomerData(prev => ({
+        ...prev,
+        [field]: value,
+      }));
     },
-    [CustomerApi, form]
+    []
   );
+
+  // Remove the navigateToNextField function as it's no longer needed
 
   // Handle keyboard events (excluding Enter key which is handled by input field)
   const handleKeyDown = useCallback(
@@ -220,6 +282,17 @@ const CustomerSelectionModal: React.FC<CustomerSelectionModalProps> = ({
     (e: KeyboardEvent) => {
       if (!visible) return;
 
+      // Don't interfere if user is typing in form inputs
+      const target = e.target as HTMLElement;
+      if (
+        target.tagName === 'INPUT' ||
+        target.tagName === 'TEXTAREA' ||
+        target.classList.contains('ant-select-selector') ||
+        target.closest('.ant-select-dropdown')
+      ) {
+        return;
+      }
+
       if (e.ctrlKey && e.key === 'f') {
         e.preventDefault();
         e.stopPropagation();
@@ -230,7 +303,28 @@ const CustomerSelectionModal: React.FC<CustomerSelectionModalProps> = ({
         return;
       }
 
-      // Only handle navigation keys globally, not Enter key
+      // Handle Ctrl+N for new customer creation
+      if (e.ctrlKey && e.key === 'n') {
+        e.preventDefault();
+        e.stopPropagation();
+        if (shouldShowCreateGrid) {
+          setShowCreateGrid(true);
+          setTimeout(() => {
+            if (createGridRef.current) {
+              const firstInput = createGridRef.current.querySelector(
+                'input'
+              ) as HTMLInputElement;
+              if (firstInput) {
+                firstInput.focus();
+                firstInput.select();
+              }
+            }
+          }, 100);
+        }
+        return;
+      }
+
+      // Only handle navigation keys globally when not in form inputs
       if (['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(e.key)) {
         e.preventDefault();
         e.stopPropagation();
@@ -245,7 +339,7 @@ const CustomerSelectionModal: React.FC<CustomerSelectionModalProps> = ({
         navigateToCustomer(directionMap[e.key]);
       }
     },
-    [visible, navigateToCustomer]
+    [visible, navigateToCustomer, shouldShowCreateGrid]
   );
 
   // Memoized table columns
@@ -394,10 +488,14 @@ const CustomerSelectionModal: React.FC<CustomerSelectionModalProps> = ({
       CustomerApi('GetAll');
       setSelectedCustomer(null);
       setSelectedRowIndex(-1);
+      setShowCreateGrid(false);
     } else {
       setSearchTerm('');
       setSelectedCustomer(null);
       setSelectedRowIndex(-1);
+      setShowCreateGrid(false);
+      setShowAddForm(false);
+      clearFormData();
       if (searchTimeoutRef.current) {
         clearTimeout(searchTimeoutRef.current);
         searchTimeoutRef.current = null;
@@ -409,11 +507,18 @@ const CustomerSelectionModal: React.FC<CustomerSelectionModalProps> = ({
         clearTimeout(searchTimeoutRef.current);
       }
     };
-  }, [visible, CustomerApi]);
+  }, [visible, CustomerApi, clearFormData]);
 
-  // Focus search input when modal becomes visible
+  // Auto-show create form when search has no results
   useEffect(() => {
-    if (visible && searchInputRef.current) {
+    if (shouldShowCreateGrid && !showCreateGrid && !showAddForm) {
+      setShowCreateGrid(true);
+    }
+  }, [shouldShowCreateGrid, showCreateGrid, showAddForm]);
+
+  // Focus search input when modal becomes visible (but not when create form is shown)
+  useEffect(() => {
+    if (visible && searchInputRef.current && !showAddForm && !showCreateGrid) {
       const focusSearch = () => {
         if (searchInputRef.current) {
           searchInputRef.current.focus();
@@ -426,7 +531,22 @@ const CustomerSelectionModal: React.FC<CustomerSelectionModalProps> = ({
 
       return () => clearTimeout(timer);
     }
-  }, [visible]);
+  }, [visible, showAddForm, showCreateGrid]);
+
+  // Focus on first form field when create form is shown
+  useEffect(() => {
+    if ((showAddForm || showCreateGrid) && visible) {
+      const timer = setTimeout(() => {
+        if (firstFormInputRef.current) {
+          firstFormInputRef.current.focus();
+          firstFormInputRef.current.select();
+        }
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [showAddForm, showCreateGrid, visible]); // Depend on all three to trigger when form is shown
+
+  // Remove the useLayoutEffect that was causing focus to reset
 
   // Global keyboard event listener
   useEffect(() => {
@@ -436,6 +556,68 @@ const CustomerSelectionModal: React.FC<CustomerSelectionModalProps> = ({
         document.removeEventListener('keydown', handleGlobalKeyDown, true);
     }
   }, [visible, handleGlobalKeyDown]);
+
+  // Handle API responses using the standard pattern
+  useHandleApiResponse({
+    action: 'create',
+    title: 'Customer',
+    identifier: CustomerApi.getIdentifier('Create'),
+    entityApi: CustomerApi,
+  });
+
+  // Watch for successful customer creation and select the new customer
+  const { items: createResult } = useDynamicSelector(
+    CustomerApi.getIdentifier('Create')
+  );
+
+  // Watch createLoading state to show/hide loading message
+  useEffect(() => {
+    if (createLoading) {
+      // Show loading message when API call starts
+      message.loading({
+        content: 'Creating customer...',
+        key: 'customer-creation',
+        duration: 0,
+      });
+    } else {
+      // Hide loading message when API call completes
+      message.destroy('customer-creation');
+    }
+  }, [createLoading]);
+
+  useEffect(() => {
+    if (createResult) {
+      if (createResult.statusCode === 200) {
+        // Customer created successfully, get the new customer data
+        const newCustomer = createResult.data || createResult.result;
+
+        if (newCustomer) {
+          message.success(
+            `Customer "${newCustomer.full_name}" created and selected successfully!`
+          );
+
+          // Clear form data on success
+          clearFormData();
+          setShowAddForm(false);
+          setShowCreateGrid(false);
+
+          // Refresh the customer list to include the new customer
+          CustomerApi('GetAll');
+
+          // Auto-select the newly created customer
+          setTimeout(() => {
+            onSelect(newCustomer);
+            onCancel();
+          }, 100);
+        }
+      } else if (createResult.statusCode && createResult.statusCode !== 200) {
+        // Handle error case
+        message.error(createResult.message || 'Failed to create customer');
+        // Clear form data on error
+        clearFormData();
+      }
+    }
+  }, [createResult, onSelect, onCancel, CustomerApi, clearFormData]);
 
   // Handle search input focus
   const handleSearchFocus = useCallback(() => {
@@ -452,7 +634,7 @@ const CustomerSelectionModal: React.FC<CustomerSelectionModalProps> = ({
       width={1000}
       style={{ top: 20 }}
       afterOpenChange={open => {
-        if (open && searchInputRef.current) {
+        if (open && searchInputRef.current && !showAddForm && !showCreateGrid) {
           setTimeout(() => {
             searchInputRef.current?.focus();
             searchInputRef.current?.select();
@@ -469,7 +651,7 @@ const CustomerSelectionModal: React.FC<CustomerSelectionModalProps> = ({
         <Space.Compact style={{ width: '100%' }}>
           <Input
             ref={searchInputRef}
-            placeholder="Search customers via API... (Use ↑↓ arrows to navigate, Enter to select, Esc to close)"
+            placeholder="Search customers... (Ctrl+N: New customer, ↑↓: Navigate, Enter: Select, Esc: Close)"
             value={searchTerm}
             onChange={e => handleSearch(e.target.value)}
             prefix={<SearchOutlined />}
@@ -481,14 +663,26 @@ const CustomerSelectionModal: React.FC<CustomerSelectionModalProps> = ({
               }
             }}
             onFocus={handleSearchFocus}
-            autoFocus
-            onBlur={() => {
-              setTimeout(() => {
-                if (visible && searchInputRef.current) {
-                  searchInputRef.current.focus();
-                }
-              }, 10);
-            }}
+            autoFocus={!showAddForm && !showCreateGrid}
+            onBlur={
+              !showAddForm && !showCreateGrid
+                ? () => {
+                    // Only auto-focus back to search if no forms are shown
+                    if (visible && searchInputRef.current) {
+                      setTimeout(() => {
+                        if (
+                          visible &&
+                          searchInputRef.current &&
+                          !showAddForm &&
+                          !showCreateGrid
+                        ) {
+                          searchInputRef.current.focus();
+                        }
+                      }, 10);
+                    }
+                  }
+                : undefined
+            }
             suffix={
               searchTerm && customerLoading ? (
                 <div style={{ fontSize: '12px', color: '#999' }}>
@@ -497,36 +691,79 @@ const CustomerSelectionModal: React.FC<CustomerSelectionModalProps> = ({
               ) : null
             }
           />
-          <Button
-            type={showAddForm ? 'default' : 'primary'}
-            icon={<UserAddOutlined />}
-            onClick={() => setShowAddForm(!showAddForm)}
-            style={{ minWidth: 120 }}
-          >
-            {showAddForm ? 'Cancel Add' : 'Add New'}
-          </Button>
+                     <Button
+             type={showAddForm ? 'default' : 'primary'}
+             icon={<UserAddOutlined />}
+             onClick={() => {
+               const newState = !showAddForm;
+               setShowAddForm(newState);
+               if (!newState) {
+                 // Clear form data when switching back to search mode
+                 clearFormData();
+               }
+               // Focus will be handled by the useEffect when visible changes
+             }}
+             style={{ minWidth: 120 }}
+           >
+             {showAddForm ? 'Cancel' : 'Add New'}
+           </Button>
         </Space.Compact>
       </div>
 
-      {showAddForm && (
+      {/* Unified Create Form - Shows when search has no results or when Add New is clicked */}
+      {(showCreateGrid || showAddForm) && (
         <div
+          ref={createGridRef}
           style={{
             marginBottom: 16,
             padding: 16,
-            border: '1px solid #d9d9d9',
+            border: '2px solid #1890ff',
             borderRadius: 8,
-            backgroundColor: '#fafafa',
+            backgroundColor: '#f0f8ff',
           }}
+          // Remove the onFocus handler that was interfering with field navigation
+          tabIndex={-1}
         >
-          <Title level={5} style={{ marginBottom: 16 }}>
-            <UserAddOutlined /> Add New Customer
-          </Title>
-          <Form
-            form={form}
-            layout="vertical"
-            onFinish={handleCreateCustomer}
-            size="small"
+          <Row
+            justify="space-between"
+            align="middle"
+            style={{ marginBottom: 16 }}
           >
+            <Col>
+              <Title level={5} style={{ margin: 0, color: '#1890ff' }}>
+                <PlusOutlined /> Create New Customer
+              </Title>
+              <Text type="secondary" style={{ fontSize: '12px' }}>
+                Fill in the details below to create a new customer
+              </Text>
+            </Col>
+            <Col>
+              <Space>
+                                 <Button
+                   size="small"
+                   icon={<CloseOutlined />}
+                   onClick={() => {
+                     setShowCreateGrid(false);
+                     setShowAddForm(false);
+                     clearFormData();
+                   }}
+                 >
+                   Cancel
+                 </Button>
+                <Button
+                  type="primary"
+                  size="small"
+                  icon={<SaveOutlined />}
+                  onClick={handleCreateCustomerFromForm}
+                  loading={createLoading}
+                >
+                  Create & Select
+                </Button>
+              </Space>
+            </Col>
+          </Row>
+
+          <Form form={form} layout="vertical" size="small">
             <div
               style={{
                 display: 'grid',
@@ -540,8 +777,21 @@ const CustomerSelectionModal: React.FC<CustomerSelectionModalProps> = ({
                 rules={[{ required: true, message: 'Please enter full name' }]}
               >
                 <Input
+                  ref={firstFormInputRef}
+                  name="full_name"
                   placeholder="Enter full name"
                   prefix={<UserOutlined />}
+                  autoFocus={showAddForm || showCreateGrid}
+                  value={newCustomerData.full_name}
+                  onChange={e =>
+                    handleFormFieldChange('full_name', e.target.value)
+                  }
+                  onKeyDown={e => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      handleCreateCustomerFromForm();
+                    }
+                  }}
                 />
               </Form.Item>
 
@@ -557,8 +807,19 @@ const CustomerSelectionModal: React.FC<CustomerSelectionModalProps> = ({
                 ]}
               >
                 <Input
+                  name="mobile"
                   placeholder="Enter mobile number"
                   prefix={<PhoneOutlined />}
+                  value={newCustomerData.mobile}
+                  onChange={e =>
+                    handleFormFieldChange('mobile', e.target.value)
+                  }
+                  onKeyDown={e => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      handleCreateCustomerFromForm();
+                    }
+                  }}
                 />
               </Form.Item>
 
@@ -567,7 +828,19 @@ const CustomerSelectionModal: React.FC<CustomerSelectionModalProps> = ({
                 label="Email"
                 rules={[{ type: 'email', message: 'Please enter valid email' }]}
               >
-                <Input placeholder="Enter email" prefix={<MailOutlined />} />
+                <Input
+                  name="email"
+                  placeholder="Enter email"
+                  prefix={<MailOutlined />}
+                  value={newCustomerData.email}
+                  onChange={e => handleFormFieldChange('email', e.target.value)}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      handleCreateCustomerFromForm();
+                    }
+                  }}
+                />
               </Form.Item>
 
               <Form.Item
@@ -575,7 +848,18 @@ const CustomerSelectionModal: React.FC<CustomerSelectionModalProps> = ({
                 label="Customer Type"
                 initialValue="regular"
               >
-                <Select>
+                <Select
+                  value={newCustomerData.customer_type}
+                  onChange={value =>
+                    handleFormFieldChange('customer_type', value)
+                  }
+                  onKeyDown={e => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      handleCreateCustomerFromForm();
+                    }
+                  }}
+                >
                   <Option value="regular">Regular</Option>
                   <Option value="vip">VIP</Option>
                   <Option value="wholesale">Wholesale</Option>
@@ -584,20 +868,20 @@ const CustomerSelectionModal: React.FC<CustomerSelectionModalProps> = ({
             </div>
 
             <Form.Item name="address" label="Address">
-              <Input.TextArea placeholder="Enter address" rows={2} />
-            </Form.Item>
-
-            <Form.Item style={{ marginBottom: 0, textAlign: 'right' }}>
-              <Space>
-                <Button onClick={() => setShowAddForm(false)}>Cancel</Button>
-                <Button
-                  type="primary"
-                  htmlType="submit"
-                  loading={createLoading}
-                >
-                  Create Customer
-                </Button>
-              </Space>
+              <Input.TextArea
+                name="address"
+                placeholder="Enter address"
+                rows={2}
+                value={newCustomerData.address}
+                onChange={e => handleFormFieldChange('address', e.target.value)}
+                onKeyDown={e => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    // If it's the last field, create the customer
+                    handleCreateCustomerFromForm();
+                  }
+                }}
+              />
             </Form.Item>
           </Form>
         </div>
@@ -617,6 +901,13 @@ const CustomerSelectionModal: React.FC<CustomerSelectionModalProps> = ({
                 ? 'No customers found matching your search.'
                 : 'No customers available.'}
             </Text>
+            {searchTerm && (
+              <div style={{ marginTop: 16 }}>
+                <Text type="secondary">
+                  Press Ctrl+N to create a new customer instantly
+                </Text>
+              </div>
+            )}
           </div>
         ) : (
           <Table
