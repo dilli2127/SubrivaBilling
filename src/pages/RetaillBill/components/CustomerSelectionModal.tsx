@@ -691,22 +691,22 @@ const CustomerSelectionModal: React.FC<CustomerSelectionModalProps> = ({
               ) : null
             }
           />
-                     <Button
-             type={showAddForm ? 'default' : 'primary'}
-             icon={<UserAddOutlined />}
-             onClick={() => {
-               const newState = !showAddForm;
-               setShowAddForm(newState);
-               if (!newState) {
-                 // Clear form data when switching back to search mode
-                 clearFormData();
-               }
-               // Focus will be handled by the useEffect when visible changes
-             }}
-             style={{ minWidth: 120 }}
-           >
-             {showAddForm ? 'Cancel' : 'Add New'}
-           </Button>
+          <Button
+            type={showAddForm ? 'default' : 'primary'}
+            icon={<UserAddOutlined />}
+            onClick={() => {
+              const newState = !showAddForm;
+              setShowAddForm(newState);
+              if (!newState) {
+                // Clear form data when switching back to search mode
+                clearFormData();
+              }
+              // Focus will be handled by the useEffect when visible changes
+            }}
+            style={{ minWidth: 120 }}
+          >
+            {showAddForm ? 'Cancel' : 'Add New'}
+          </Button>
         </Space.Compact>
       </div>
 
@@ -715,47 +715,122 @@ const CustomerSelectionModal: React.FC<CustomerSelectionModalProps> = ({
         <div
           ref={createGridRef}
           style={{
-            marginBottom: 16,
-            padding: 16,
-            border: '2px solid #1890ff',
-            borderRadius: 8,
-            backgroundColor: '#f0f8ff',
+            marginBottom: 20,
+            padding: 24,
+            border: '2px solid #6366f1',
+            borderRadius: 16,
+            backgroundColor:
+              'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
+            background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
+            boxShadow:
+              '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+            position: 'relative',
+            overflow: 'hidden',
           }}
-          // Remove the onFocus handler that was interfering with field navigation
           tabIndex={-1}
         >
+          {/* Decorative background elements */}
+          <div
+            style={{
+              position: 'absolute',
+              top: -20,
+              right: -20,
+              width: 100,
+              height: 100,
+              borderRadius: '50%',
+              background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+              opacity: 0.1,
+              zIndex: 0,
+            }}
+          />
+          <div
+            style={{
+              position: 'absolute',
+              bottom: -30,
+              left: -30,
+              width: 80,
+              height: 80,
+              borderRadius: '50%',
+              background: 'linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%)',
+              opacity: 0.1,
+              zIndex: 0,
+            }}
+          />
+
           <Row
             justify="space-between"
             align="middle"
-            style={{ marginBottom: 16 }}
+            style={{ marginBottom: 24, position: 'relative', zIndex: 1 }}
           >
             <Col>
-              <Title level={5} style={{ margin: 0, color: '#1890ff' }}>
-                <PlusOutlined /> Create New Customer
+              <Title
+                level={4}
+                style={{
+                  margin: 0,
+                  background:
+                    'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text',
+                  fontWeight: 700,
+                  fontSize: '20px',
+                }}
+              >
+                <PlusOutlined style={{ marginRight: 8, color: '#6366f1' }} />
+                Create New Customer
               </Title>
-              <Text type="secondary" style={{ fontSize: '12px' }}>
-                Fill in the details below to create a new customer
+              <Text
+                style={{
+                  fontSize: '14px',
+                  color: '#64748b',
+                  fontWeight: 500,
+                  display: 'block',
+                  marginTop: 4,
+                }}
+              >
+                ✨ Fill in the details below to create a new customer
               </Text>
             </Col>
             <Col>
-              <Space>
-                                 <Button
-                   size="small"
-                   icon={<CloseOutlined />}
-                   onClick={() => {
-                     setShowCreateGrid(false);
-                     setShowAddForm(false);
-                     clearFormData();
-                   }}
-                 >
-                   Cancel
-                 </Button>
+              <Space size="middle">
+                <Button
+                  size="middle"
+                  icon={<CloseOutlined />}
+                  onClick={() => {
+                    setShowCreateGrid(false);
+                    setShowAddForm(false);
+                    clearFormData();
+                  }}
+                  style={{
+                    border: '2px solid #e2e8f0',
+                    borderRadius: 8,
+                    fontWeight: 600,
+                    color: '#64748b',
+                    background: 'white',
+                    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)',
+                    height: 40,
+                    padding: '0 20px',
+                  }}
+                >
+                  Cancel
+                </Button>
                 <Button
                   type="primary"
-                  size="small"
+                  size="middle"
                   icon={<SaveOutlined />}
                   onClick={handleCreateCustomerFromForm}
                   loading={createLoading}
+                  style={{
+                    background:
+                      'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+                    border: 'none',
+                    borderRadius: 8,
+                    fontWeight: 600,
+                    height: 40,
+                    padding: '0 24px',
+                    boxShadow: '0 4px 12px rgba(99, 102, 241, 0.3)',
+                    transition: 'all 0.3s ease',
+                  }}
                 >
                   Create & Select
                 </Button>
@@ -763,24 +838,44 @@ const CustomerSelectionModal: React.FC<CustomerSelectionModalProps> = ({
             </Col>
           </Row>
 
-          <Form form={form} layout="vertical" size="small">
+          <Form
+            form={form}
+            layout="vertical"
+            size="middle"
+            style={{ position: 'relative', zIndex: 1 }}
+          >
             <div
               style={{
                 display: 'grid',
                 gridTemplateColumns: '1fr 1fr',
-                gap: 16,
+                gap: 20,
+                marginBottom: 20,
               }}
             >
               <Form.Item
                 name="full_name"
-                label="Full Name"
+                label={
+                  <span
+                    style={{
+                      fontWeight: 600,
+                      color: '#374151',
+                      fontSize: '14px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 6,
+                    }}
+                  >
+                    <UserOutlined style={{ color: '#6366f1' }} />
+                    Full Name
+                  </span>
+                }
                 rules={[{ required: true, message: 'Please enter full name' }]}
               >
                 <Input
                   ref={firstFormInputRef}
                   name="full_name"
                   placeholder="Enter full name"
-                  prefix={<UserOutlined />}
+                  prefix={<UserOutlined style={{ color: '#9ca3af' }} />}
                   autoFocus={showAddForm || showCreateGrid}
                   value={newCustomerData.full_name}
                   onChange={e =>
@@ -792,12 +887,35 @@ const CustomerSelectionModal: React.FC<CustomerSelectionModalProps> = ({
                       handleCreateCustomerFromForm();
                     }
                   }}
+                  style={{
+                    borderRadius: 10,
+                    border: '2px solid #e5e7eb',
+                    padding: '12px 16px',
+                    fontSize: '14px',
+                    transition: 'all 0.3s ease',
+                    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)',
+                    background: 'white',
+                  }}
                 />
               </Form.Item>
 
               <Form.Item
                 name="mobile"
-                label="Mobile Number"
+                label={
+                  <span
+                    style={{
+                      fontWeight: 600,
+                      color: '#374151',
+                      fontSize: '14px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 6,
+                    }}
+                  >
+                    <PhoneOutlined style={{ color: '#10b981' }} />
+                    Mobile Number
+                  </span>
+                }
                 rules={[
                   { required: true, message: 'Please enter mobile number' },
                   {
@@ -809,7 +927,7 @@ const CustomerSelectionModal: React.FC<CustomerSelectionModalProps> = ({
                 <Input
                   name="mobile"
                   placeholder="Enter mobile number"
-                  prefix={<PhoneOutlined />}
+                  prefix={<PhoneOutlined style={{ color: '#9ca3af' }} />}
                   value={newCustomerData.mobile}
                   onChange={e =>
                     handleFormFieldChange('mobile', e.target.value)
@@ -820,18 +938,41 @@ const CustomerSelectionModal: React.FC<CustomerSelectionModalProps> = ({
                       handleCreateCustomerFromForm();
                     }
                   }}
+                  style={{
+                    borderRadius: 10,
+                    border: '2px solid #e5e7eb',
+                    padding: '12px 16px',
+                    fontSize: '14px',
+                    transition: 'all 0.3s ease',
+                    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)',
+                    background: 'white',
+                  }}
                 />
               </Form.Item>
 
               <Form.Item
                 name="email"
-                label="Email"
+                label={
+                  <span
+                    style={{
+                      fontWeight: 600,
+                      color: '#374151',
+                      fontSize: '14px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 6,
+                    }}
+                  >
+                    <MailOutlined style={{ color: '#f59e0b' }} />
+                    Email
+                  </span>
+                }
                 rules={[{ type: 'email', message: 'Please enter valid email' }]}
               >
                 <Input
                   name="email"
                   placeholder="Enter email"
-                  prefix={<MailOutlined />}
+                  prefix={<MailOutlined style={{ color: '#9ca3af' }} />}
                   value={newCustomerData.email}
                   onChange={e => handleFormFieldChange('email', e.target.value)}
                   onKeyDown={e => {
@@ -840,12 +981,48 @@ const CustomerSelectionModal: React.FC<CustomerSelectionModalProps> = ({
                       handleCreateCustomerFromForm();
                     }
                   }}
+                  style={{
+                    borderRadius: 10,
+                    border: '2px solid #e5e7eb',
+                    padding: '12px 16px',
+                    fontSize: '14px',
+                    transition: 'all 0.3s ease',
+                    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)',
+                    background: 'white',
+                  }}
                 />
               </Form.Item>
 
-              <Form.Item
+              {/* <Form.Item
                 name="customer_type"
-                label="Customer Type"
+                label={
+                  <span
+                    style={{
+                      fontWeight: 600,
+                      color: '#374151',
+                      fontSize: '14px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 6,
+                    }}
+                  >
+                    <Tag
+                      style={{
+                        background:
+                          'linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%)',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: 6,
+                        padding: '2px 8px',
+                        fontSize: '10px',
+                        fontWeight: 600,
+                      }}
+                    >
+                      TYPE
+                    </Tag>
+                    Customer Type
+                  </span>
+                }
                 initialValue="regular"
               >
                 <Select
@@ -859,19 +1036,44 @@ const CustomerSelectionModal: React.FC<CustomerSelectionModalProps> = ({
                       handleCreateCustomerFromForm();
                     }
                   }}
+                  style={{
+                    borderRadius: 10,
+                    border: '2px solid #e5e7eb',
+                    fontSize: '14px',
+                    transition: 'all 0.3s ease',
+                    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)',
+                    background: 'white',
+                  }}
                 >
                   <Option value="regular">Regular</Option>
                   <Option value="vip">VIP</Option>
                   <Option value="wholesale">Wholesale</Option>
                 </Select>
-              </Form.Item>
+              </Form.Item> */}
             </div>
 
-            <Form.Item name="address" label="Address">
+            <Form.Item
+              name="address"
+              label={
+                <span
+                  style={{
+                    fontWeight: 600,
+                    color: '#374151',
+                    fontSize: '14px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 6,
+                  }}
+                >
+                  <HomeOutlined style={{ color: '#ef4444' }} />
+                  Address
+                </span>
+              }
+            >
               <Input.TextArea
                 name="address"
                 placeholder="Enter address"
-                rows={2}
+                rows={3}
                 value={newCustomerData.address}
                 onChange={e => handleFormFieldChange('address', e.target.value)}
                 onKeyDown={e => {
@@ -880,6 +1082,16 @@ const CustomerSelectionModal: React.FC<CustomerSelectionModalProps> = ({
                     // If it's the last field, create the customer
                     handleCreateCustomerFromForm();
                   }
+                }}
+                style={{
+                  borderRadius: 10,
+                  border: '2px solid #e5e7eb',
+                  padding: '12px 16px',
+                  fontSize: '14px',
+                  transition: 'all 0.3s ease',
+                  boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)',
+                  background: 'white',
+                  resize: 'none',
                 }}
               />
             </Form.Item>
