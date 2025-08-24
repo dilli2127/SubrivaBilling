@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { Modal, Input, Button, Typography, message, Form, Select, Space, Divider, Tag, Table } from 'antd';
 import { SearchOutlined, UserAddOutlined, UserOutlined, PhoneOutlined, MailOutlined, HomeOutlined } from '@ant-design/icons';
 import { useApiActions } from '../../../services/api/useApiActions';
@@ -40,82 +40,159 @@ const CustomerSelectionModal: React.FC<CustomerSelectionModalProps> = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [showAddForm, setShowAddForm] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+  const [selectedRowIndex, setSelectedRowIndex] = useState<number>(-1);
   const [form] = Form.useForm();
   const searchInputRef = useRef<any>(null);
+  const modalRef = useRef<HTMLDivElement>(null);
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Load customers on mount
-  useEffect(() => {
-    if (visible) {
-      CustomerApi('GetAll');
-      // Focus search input when modal opens
-      setTimeout(() => {
-        searchInputRef.current?.focus();
-      }, 100);
+  // Memoized filtered customers
+  const filteredCustomers = useMemo(() => customerList?.result || [], [customerList?.result]);
+
+  // Memoized customer type color function
+  const getCustomerTypeColor = useCallback((type: string) => {
+    const colorMap: Record<string, string> = {
+      vip: 'gold',
+      wholesale: 'blue',
+      regular: 'green'
+    };
+    return colorMap[type] || 'green';
+  }, []);
+
+  // Consolidated keyboard navigation function
+  const navigateToCustomer = useCallback((direction: 'up' | 'down' | 'home' | 'end') => {
+    if (filteredCustomers.length === 0) return;
+
+    let newIndex: number;
+    switch (direction) {
+      case 'up':
+        newIndex = selectedRowIndex === -1 ? filteredCustomers.length - 1 : Math.max(selectedRowIndex - 1, 0);
+        break;
+      case 'down':
+        newIndex = selectedRowIndex === -1 ? 0 : Math.min(selectedRowIndex + 1, filteredCustomers.length - 1);
+        break;
+      case 'home':
+        newIndex = 0;
+        break;
+      case 'end':
+        newIndex = filteredCustomers.length - 1;
+        break;
+      default:
+        return;
     }
-  }, [visible]);
 
-  // Filter customers based on search term
-  const filteredCustomers = customerList?.result?.filter((customer: Customer) => {
-    if (!searchTerm) return true;
-    const searchLower = searchTerm.toLowerCase();
-    return (
-      customer.full_name.toLowerCase().includes(searchLower) ||
-      customer.mobile.includes(searchTerm) ||
-      customer.email.toLowerCase().includes(searchLower) ||
-      customer.address.toLowerCase().includes(searchLower)
-    );
-  }) || [];
+    setSelectedRowIndex(newIndex);
+    setSelectedCustomer(filteredCustomers[newIndex]);
+
+    // Scroll to the selected row
+    setTimeout(() => {
+      const rowElement = document.querySelector(`[data-row-key="${filteredCustomers[newIndex]._id}"]`) as HTMLElement;
+      if (rowElement) {
+        const scrollBehavior = direction === 'home' ? 'start' : direction === 'end' ? 'end' : 'nearest';
+        rowElement.scrollIntoView({ behavior: 'smooth', block: scrollBehavior });
+      }
+    }, 100);
+  }, [filteredCustomers, selectedRowIndex]);
+
+  // Debounced search function
+  const handleSearch = useCallback((value: string) => {
+    setSearchTerm(value);
+    
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+    
+    searchTimeoutRef.current = setTimeout(() => {
+      if (value.trim()) {
+        CustomerApi('GetAll', { search: value.trim() });
+      } else {
+        CustomerApi('GetAll');
+      }
+    }, 500);
+  }, [CustomerApi]);
 
   // Handle customer selection
-  const handleCustomerSelect = (customer: Customer) => {
+  const handleCustomerSelect = useCallback((customer: Customer) => {
+    console.log('CustomerSelectionModal handleCustomerSelect called for:', customer.full_name);
+    console.log('Timestamp:', new Date().toISOString());
+    
     setSelectedCustomer(customer);
     onSelect(customer);
-    // Close the modal after selection
-    setTimeout(() => {
-      onCancel();
-    }, 100);
-  };
+    setTimeout(() => onCancel(), 100);
+  }, [onSelect, onCancel]);
 
   // Handle new customer creation
-  const handleCreateCustomer = async (values: any) => {
+  const handleCreateCustomer = useCallback(async (values: any) => {
     try {
       const response: any = await CustomerApi('Create', values);
       if (response?.statusCode === 200) {
         message.success('Customer created successfully!');
         setShowAddForm(false);
         form.resetFields();
-        // Refresh customer list
         CustomerApi('GetAll');
-        // Select the newly created customer
-        if (response.result) {
-          handleCustomerSelect(response.result);
-        }
+        // Don't auto-select the newly created customer
+        // User can manually select it if needed
       }
     } catch (error) {
       message.error('Failed to create customer');
     }
-  };
+  }, [CustomerApi, form]);
 
-  // Handle keyboard navigation
-  const handleKeyDown = (e: React.KeyboardEvent) => {
+  // Handle keyboard events (excluding Enter key which is handled by input field)
+  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+    console.log('Local handleKeyDown called for key:', e.key);
+    
     if (e.key === 'Escape') {
       onCancel();
-    } else if (e.key === 'Enter' && selectedCustomer) {
-      handleCustomerSelect(selectedCustomer);
+    } else if (['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(e.key)) {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      const directionMap: Record<string, 'up' | 'down' | 'home' | 'end'> = {
+        ArrowDown: 'down',
+        ArrowUp: 'up',
+        Home: 'home',
+        End: 'end'
+      };
+      
+      navigateToCustomer(directionMap[e.key]);
     }
-  };
+  }, [navigateToCustomer, onCancel]);
 
-  // Get customer type color
-  const getCustomerTypeColor = (type: string) => {
-    switch (type) {
-      case 'vip': return 'gold';
-      case 'wholesale': return 'blue';
-      default: return 'green';
+  // Global keyboard event handler
+  const handleGlobalKeyDown = useCallback((e: KeyboardEvent) => {
+    if (!visible) return;
+    
+    console.log('Global handleKeyDown called for key:', e.key);
+    
+    if (e.ctrlKey && e.key === 'f') {
+      e.preventDefault();
+      e.stopPropagation();
+      if (searchInputRef.current) {
+        searchInputRef.current.focus();
+        searchInputRef.current.select();
+      }
+      return;
     }
-  };
+    
+    // Only handle navigation keys globally, not Enter key
+    if (['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(e.key)) {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      const directionMap: Record<string, 'up' | 'down' | 'home' | 'end'> = {
+        ArrowDown: 'down',
+        ArrowUp: 'up',
+        Home: 'home',
+        End: 'end'
+      };
+      
+      navigateToCustomer(directionMap[e.key]);
+    }
+  }, [visible, navigateToCustomer]);
 
-  // Table columns definition
-  const columns = [
+  // Memoized table columns
+  const columns = useMemo(() => [
     {
       title: '',
       key: 'select',
@@ -128,7 +205,12 @@ const CustomerSelectionModal: React.FC<CustomerSelectionModalProps> = ({
             justifyContent: 'center',
             alignItems: 'center'
           }}
-          onClick={() => setSelectedCustomer(record)}
+          onClick={() => {
+            setSelectedCustomer(record);
+            const index = filteredCustomers.findIndex((c: Customer) => c._id === record._id);
+            setSelectedRowIndex(index);
+            // Don't auto-select here, let user click the row or press Enter
+          }}
         >
           <div
             style={{
@@ -192,20 +274,100 @@ const CustomerSelectionModal: React.FC<CustomerSelectionModalProps> = ({
         </div>
       ),
     },
-         {
-       title: 'Address',
-       dataIndex: 'address',
-       key: 'address',
-       render: (text: string) => (
-         <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
-           <HomeOutlined style={{ color: '#666', marginTop: '2px' }} />
-           <Text type="secondary" style={{ fontSize: '12px' }}>
-             {text || '-'}
-           </Text>
-         </div>
-       ),
-     },
-   ];
+    {
+      title: 'Address',
+      dataIndex: 'address',
+      key: 'address',
+      render: (text: string) => (
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+          <HomeOutlined style={{ color: '#666', marginTop: '2px' }} />
+          <Text type="secondary" style={{ fontSize: '12px' }}>
+            {text || '-'}
+          </Text>
+        </div>
+      ),
+    },
+  ], [selectedCustomer, filteredCustomers, getCustomerTypeColor]);
+
+  // Memoized table row props
+  const getRowProps = useCallback((record: Customer, index?: number) => ({
+    onClick: () => {
+      setSelectedCustomer(record);
+      setSelectedRowIndex(index ?? 0);
+      // Don't auto-select on row click, let user press Enter to confirm
+    },
+    style: {
+      cursor: 'pointer',
+      backgroundColor: selectedCustomer?._id === record._id ? '#f0f8ff' : 'white',
+      border: selectedCustomer?._id === record._id ? '2px solid #1890ff' : '1px solid #f0f0f0',
+      borderRadius: '4px',
+      transition: 'all 0.2s ease',
+    },
+    onMouseEnter: (e: React.MouseEvent<HTMLElement>) => {
+      if (selectedCustomer?._id !== record._id) {
+        e.currentTarget.style.backgroundColor = '#f5f5f5';
+      }
+    },
+    onMouseLeave: (e: React.MouseEvent<HTMLElement>) => {
+      if (selectedCustomer?._id !== record._id) {
+        e.currentTarget.style.backgroundColor = 'white';
+      }
+    },
+  }), [selectedCustomer]);
+
+  // Load customers on mount and handle modal close
+  useEffect(() => {
+    if (visible) {
+      CustomerApi('GetAll');
+      setSelectedCustomer(null);
+      setSelectedRowIndex(-1);
+    } else {
+      setSearchTerm('');
+      setSelectedCustomer(null);
+      setSelectedRowIndex(-1);
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+        searchTimeoutRef.current = null;
+      }
+    }
+    
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+    };
+  }, [visible, CustomerApi]);
+
+  // Focus search input when modal becomes visible
+  useEffect(() => {
+    if (visible && searchInputRef.current) {
+      const focusSearch = () => {
+        if (searchInputRef.current) {
+          searchInputRef.current.focus();
+          searchInputRef.current.select();
+        }
+      };
+      
+      focusSearch();
+      const timer = setTimeout(focusSearch, 100);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [visible]);
+
+  // Global keyboard event listener
+  useEffect(() => {
+    if (visible) {
+      document.addEventListener('keydown', handleGlobalKeyDown, true);
+      return () => document.removeEventListener('keydown', handleGlobalKeyDown, true);
+    }
+  }, [visible, handleGlobalKeyDown]);
+
+  // Handle search input focus
+  const handleSearchFocus = useCallback(() => {
+    setSelectedCustomer(null);
+    setSelectedRowIndex(-1);
+  }, []);
 
   return (
     <Modal
@@ -215,31 +377,56 @@ const CustomerSelectionModal: React.FC<CustomerSelectionModalProps> = ({
       footer={null}
       width={1000}
       style={{ top: 20 }}
+      afterOpenChange={(open) => {
+        if (open && searchInputRef.current) {
+          setTimeout(() => {
+            searchInputRef.current?.focus();
+            searchInputRef.current?.select();
+          }, 100);
+        }
+      }}
     >
       <div 
+        ref={modalRef}
         style={{ marginBottom: 16 }}
         onKeyDown={handleKeyDown}
         tabIndex={0}
       >
-         <Space.Compact style={{ width: '100%' }}>
-           <Input
+        <Space.Compact style={{ width: '100%' }}>
+                     <Input
              ref={searchInputRef}
-             placeholder="Search customers by name, mobile, email, or address..."
+             placeholder="Search customers via API... (Use ↑↓ arrows to navigate, Enter to select, Esc to close)"
              value={searchTerm}
-             onChange={(e) => setSearchTerm(e.target.value)}
+             onChange={(e) => handleSearch(e.target.value)}
              prefix={<SearchOutlined />}
              style={{ flex: 1 }}
-             onKeyDown={handleKeyDown}
+             onKeyDown={(e) => {
+               // Only handle Enter key in search input, let other keys bubble up
+               if (e.key === 'Enter' && selectedCustomer) {
+                 console.log('Search input Enter key pressed');
+                 handleCustomerSelect(selectedCustomer);
+               }
+             }}
+             onFocus={handleSearchFocus}
+             autoFocus
+             onBlur={() => {
+               setTimeout(() => {
+                 if (visible && searchInputRef.current) {
+                   searchInputRef.current.focus();
+                 }
+               }, 10);
+             }}
+             suffix={searchTerm && customerLoading ? <div style={{ fontSize: '12px', color: '#999' }}>Searching...</div> : null}
            />
-           <Button
-             type={showAddForm ? 'default' : 'primary'}
-             icon={<UserAddOutlined />}
-             onClick={() => setShowAddForm(!showAddForm)}
-             style={{ minWidth: 120 }}
-           >
-             {showAddForm ? 'Cancel Add' : 'Add New'}
-           </Button>
-         </Space.Compact>
+          <Button
+            type={showAddForm ? 'default' : 'primary'}
+            icon={<UserAddOutlined />}
+            onClick={() => setShowAddForm(!showAddForm)}
+            style={{ minWidth: 120 }}
+          >
+            {showAddForm ? 'Cancel Add' : 'Add New'}
+          </Button>
+        </Space.Compact>
       </div>
 
       {showAddForm && (
@@ -339,42 +526,17 @@ const CustomerSelectionModal: React.FC<CustomerSelectionModalProps> = ({
               {searchTerm ? 'No customers found matching your search.' : 'No customers available.'}
             </Text>
           </div>
-                 ) : (
-           <Table
-             columns={columns}
-             dataSource={filteredCustomers}
-             rowKey="_id"
-             pagination={false}
-             size="small"
-             scroll={{ y: 300 }}
-                           onRow={(record) => ({
-                onClick: () => {
-                  setSelectedCustomer(record);
-                  // Auto-close modal after row click
-                  setTimeout(() => {
-                    handleCustomerSelect(record);
-                  }, 100);
-                },
-                style: {
-                  cursor: 'pointer',
-                  backgroundColor: selectedCustomer?._id === record._id ? '#f0f8ff' : 'white',
-                  border: selectedCustomer?._id === record._id ? '2px solid #1890ff' : '1px solid #f0f0f0',
-                  borderRadius: '4px',
-                  transition: 'all 0.2s ease',
-                },
-                onMouseEnter: (e) => {
-                  if (selectedCustomer?._id !== record._id) {
-                    e.currentTarget.style.backgroundColor = '#f5f5f5';
-                  }
-                },
-                onMouseLeave: (e) => {
-                  if (selectedCustomer?._id !== record._id) {
-                    e.currentTarget.style.backgroundColor = 'white';
-                  }
-                },
-              })}
-           />
-         )}
+        ) : (
+          <Table
+            columns={columns}
+            dataSource={filteredCustomers}
+            rowKey="_id"
+            pagination={false}
+            size="small"
+            scroll={{ y: 300 }}
+            onRow={getRowProps}
+          />
+        )}
       </div>
     </Modal>
   );

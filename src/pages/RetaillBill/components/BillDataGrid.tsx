@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { Button, Typography, message, Switch, InputNumber, Badge, Tooltip } from 'antd';
 import dayjs from 'dayjs';
 import AntdEditableTable, {
@@ -561,8 +561,16 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
   };
 
   // Handle customer selection from modal
-  const handleCustomerSelect = (customer: any) => {
+  const handleCustomerSelect = useCallback((customer: any) => {
     console.log('Customer selected:', customer); // Debug log
+    console.log('handleCustomerSelect called at:', new Date().toISOString()); // Debug timestamp
+    
+    // Prevent duplicate calls
+    if (billFormData.customer_id === customer._id) {
+      console.log('Customer already selected, skipping...');
+      return;
+    }
+    
     setBillFormData(prev => {
       const updated = {
         ...prev,
@@ -572,12 +580,14 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
       console.log('Updated billFormData:', updated); // Debug log
       return updated;
     });
+    
     // Ensure modal closes
     setTimeout(() => {
       setCustomerModalVisible(false);
     }, 50);
+    
     message.success(`Customer "${customer.full_name}" selected successfully!`);
-  };
+  }, [billFormData.customer_id]);
 
   // Handle new bill creation
   const handleNewBill = () => {
