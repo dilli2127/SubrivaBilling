@@ -393,9 +393,9 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
           title={
             record.product_id
               ? value
-                ? `Stock: ${value} - Click to change • Right-click for details`
-                : 'Click to select stock from available inventory • Right-click for details after selection'
-              : 'Please select a product first to choose stock'
+                ? `Stock: ${value} - Click to change • Right-click for details • F7 to reopen`
+                : 'Click to select stock from available inventory • Right-click for details after selection • F7 to open'
+              : 'Please select a product first to choose stock • F7 to open after product selection'
           }
           placement="top"
         >
@@ -674,6 +674,46 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
     setProductSelectionModalVisible(true);
     
     message.info(`Opening product selection for row ${targetRowIndex + 1}`);
+  };
+
+  const handleF7StockSelection = () => {
+    // Find the first row that has a product but needs stock or the currently focused row
+    let targetRowIndex = -1;
+    
+    // First, check if there's a currently focused row in the table
+    const activeElement = document.activeElement as HTMLElement;
+    const focusedRow = activeElement?.closest('tr');
+    if (focusedRow) {
+      const rowIndex = focusedRow.getAttribute('data-row-key');
+      if (rowIndex !== null) {
+        const rowIndexNum = parseInt(rowIndex);
+        // Check if the focused row has a product
+        if (billFormData.items[rowIndexNum]?.product_id) {
+          targetRowIndex = rowIndexNum;
+        }
+      }
+    }
+    
+    // If no focused row with product found, find the first row with product but without stock
+    if (targetRowIndex === -1) {
+      targetRowIndex = billFormData.items.findIndex(item => item.product_id && !item.stock_id);
+    }
+    
+    // If still no target row, find the first row with product (even if it has stock)
+    if (targetRowIndex === -1) {
+      targetRowIndex = billFormData.items.findIndex(item => item.product_id);
+    }
+    
+    // If no row with product found, show message
+    if (targetRowIndex === -1) {
+      message.warning('Please select a product first before selecting stock');
+      return;
+    }
+    
+    // Set the target row for stock selection
+    setStockModalRowIndex(targetRowIndex);
+    
+    message.info(`Opening stock selection for row ${targetRowIndex + 1}`);
   };
 
   const handleProductSelectionModalSelect = (product: any) => {
@@ -1519,6 +1559,11 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
         e.preventDefault();
         setBillListDrawerVisible(true);
       }
+      // F7: Open stock selection modal for current row or first row with product
+      else if (e.key === 'F7') {
+        e.preventDefault();
+        handleF7StockSelection();
+      }
       // Ctrl shortcuts
       else if (e.ctrlKey) {
         switch (e.key) {
@@ -1569,7 +1614,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [billFormData, billSettings]);
+  }, [billFormData, billSettings, handleF5ProductSelection, handleF7StockSelection]);
 
   return (
     <div className={styles.mainContainer}>

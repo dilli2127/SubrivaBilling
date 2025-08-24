@@ -196,7 +196,7 @@ const StockSelectionModal: FC<StockSelectionModalProps> = ({
 
   return (
     <Modal
-      title="Select Stock"
+      title="Select Stock (F7 to reopen anytime)"
       open={visible}
       onCancel={onCancel}
       width={800}
@@ -260,6 +260,8 @@ const StockSelectionModal: FC<StockSelectionModalProps> = ({
         />
         <div style={{ marginTop: 16, fontSize: '12px', color: '#666' }}>
           <strong>Keyboard Shortcuts:</strong> ↑↓ Navigate stocks | Enter Select | Escape Cancel
+          <br />
+          <strong>Tip:</strong> Press F7 anytime to reopen this modal for stock changes
         </div>
       </div>
       </div>
