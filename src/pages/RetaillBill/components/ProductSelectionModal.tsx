@@ -9,11 +9,11 @@ const { Search } = Input;
 
 interface Product {
   _id: string;
-  name: string;
-  sku: string;
-  selling_price: number;
+  name?: string;
+  sku?: string;
+  selling_price?: number;
   VariantItem?: {
-    variant_name: string;
+    variant_name?: string;
     variant_code?: string;
   };
 }
@@ -44,34 +44,34 @@ const ProductSelectionModal: FC<ProductSelectionModalProps> = ({
     products?.result?.filter((p: Product) => {
       const searchLower = searchTerm.toLowerCase();
       return (
-        p.name.toLowerCase().includes(searchLower) ||
-        p.sku.toLowerCase().includes(searchLower) ||
+        (p.name?.toLowerCase() || '').includes(searchLower) ||
+        (p.sku?.toLowerCase() || '').includes(searchLower) ||
         p.VariantItem?.variant_name?.toLowerCase().includes(searchLower) ||
         p.VariantItem?.variant_code?.toLowerCase().includes(searchLower) ||
-        p.selling_price.toString().includes(searchLower)
+        (p.selling_price?.toString() || '').includes(searchLower)
       );
     }).sort((a: Product, b: Product) => {
       // Prioritize exact matches and matches at the beginning
       const searchLower = searchTerm.toLowerCase();
       
       // Check for exact matches first
-      const aExactMatch = a.name.toLowerCase() === searchLower || 
+      const aExactMatch = (a.name?.toLowerCase() || '') === searchLower || 
                           a.VariantItem?.variant_name?.toLowerCase() === searchLower ||
-                          a.sku.toLowerCase() === searchLower;
-      const bExactMatch = b.name.toLowerCase() === searchLower || 
+                          (a.sku?.toLowerCase() || '') === searchLower;
+      const bExactMatch = (b.name?.toLowerCase() || '') === searchLower || 
                           b.VariantItem?.variant_name?.toLowerCase() === searchLower ||
-                          b.sku.toLowerCase() === searchLower;
+                          (b.sku?.toLowerCase() || '') === searchLower;
       
       if (aExactMatch && !bExactMatch) return -1;
       if (!aExactMatch && bExactMatch) return 1;
       
       // Then check for matches at the beginning
-      const aStartsWith = a.name.toLowerCase().startsWith(searchLower) || 
+      const aStartsWith = (a.name?.toLowerCase() || '').startsWith(searchLower) || 
                           a.VariantItem?.variant_name?.toLowerCase().startsWith(searchLower) ||
-                          a.sku.toLowerCase().startsWith(searchLower);
-      const bStartsWith = b.name.toLowerCase().startsWith(searchLower) || 
+                          (a.sku?.toLowerCase() || '').startsWith(searchLower);
+      const bStartsWith = (b.name?.toLowerCase() || '').startsWith(searchLower) || 
                           b.VariantItem?.variant_name?.toLowerCase().startsWith(searchLower) ||
-                          b.sku.toLowerCase().startsWith(searchLower);
+                          (b.sku?.toLowerCase() || '').startsWith(searchLower);
       
       if (aStartsWith && !bStartsWith) return -1;
       if (!aStartsWith && bStartsWith) return 1;
