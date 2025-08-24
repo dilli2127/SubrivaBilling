@@ -166,12 +166,6 @@ const CustomerSelectionModal: React.FC<CustomerSelectionModalProps> = ({
   // Handle customer selection
   const handleCustomerSelect = useCallback(
     (customer: Customer) => {
-      console.log(
-        'CustomerSelectionModal handleCustomerSelect called for:',
-        customer.full_name
-      );
-      console.log('Timestamp:', new Date().toISOString());
-
       setSelectedCustomer(customer);
       onSelect(customer);
       setTimeout(() => onCancel(), 100);
@@ -202,8 +196,6 @@ const CustomerSelectionModal: React.FC<CustomerSelectionModalProps> = ({
   // Handle keyboard events (excluding Enter key which is handled by input field)
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
-      console.log('Local handleKeyDown called for key:', e.key);
-
       if (e.key === 'Escape') {
         onCancel();
       } else if (['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(e.key)) {
@@ -227,8 +219,6 @@ const CustomerSelectionModal: React.FC<CustomerSelectionModalProps> = ({
   const handleGlobalKeyDown = useCallback(
     (e: KeyboardEvent) => {
       if (!visible) return;
-
-      console.log('Global handleKeyDown called for key:', e.key);
 
       if (e.ctrlKey && e.key === 'f') {
         e.preventDefault();
@@ -487,7 +477,6 @@ const CustomerSelectionModal: React.FC<CustomerSelectionModalProps> = ({
             onKeyDown={e => {
               // Only handle Enter key in search input, let other keys bubble up
               if (e.key === 'Enter' && selectedCustomer) {
-                console.log('Search input Enter key pressed');
                 handleCustomerSelect(selectedCustomer);
               }
             }}
