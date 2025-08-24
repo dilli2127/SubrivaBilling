@@ -12,6 +12,10 @@ interface Product {
   name: string;
   sku: string;
   selling_price: number;
+  VariantItem?: {
+    variant_name: string;
+    variant_code?: string;
+  };
 }
 
 interface ProductSelectionModalProps {
@@ -37,11 +41,43 @@ const ProductSelectionModal: FC<ProductSelectionModalProps> = ({
   const searchInputRef = useRef<InputRef>(null);
 
   const filteredProducts: Product[] =
-    products?.result?.filter((p: Product) =>
-      Object.values(p).some(val =>
-        String(val).toLowerCase().includes(searchTerm.toLowerCase())
-      )
-    ) || [];
+    products?.result?.filter((p: Product) => {
+      const searchLower = searchTerm.toLowerCase();
+      return (
+        p.name.toLowerCase().includes(searchLower) ||
+        p.sku.toLowerCase().includes(searchLower) ||
+        p.VariantItem?.variant_name?.toLowerCase().includes(searchLower) ||
+        p.VariantItem?.variant_code?.toLowerCase().includes(searchLower) ||
+        p.selling_price.toString().includes(searchLower)
+      );
+    }).sort((a: Product, b: Product) => {
+      // Prioritize exact matches and matches at the beginning
+      const searchLower = searchTerm.toLowerCase();
+      
+      // Check for exact matches first
+      const aExactMatch = a.name.toLowerCase() === searchLower || 
+                          a.VariantItem?.variant_name?.toLowerCase() === searchLower ||
+                          a.sku.toLowerCase() === searchLower;
+      const bExactMatch = b.name.toLowerCase() === searchLower || 
+                          b.VariantItem?.variant_name?.toLowerCase() === searchLower ||
+                          b.sku.toLowerCase() === searchLower;
+      
+      if (aExactMatch && !bExactMatch) return -1;
+      if (!aExactMatch && bExactMatch) return 1;
+      
+      // Then check for matches at the beginning
+      const aStartsWith = a.name.toLowerCase().startsWith(searchLower) || 
+                          a.VariantItem?.variant_name?.toLowerCase().startsWith(searchLower) ||
+                          a.sku.toLowerCase().startsWith(searchLower);
+      const bStartsWith = b.name.toLowerCase().startsWith(searchLower) || 
+                          b.VariantItem?.variant_name?.toLowerCase().startsWith(searchLower) ||
+                          b.sku.toLowerCase().startsWith(searchLower);
+      
+      if (aStartsWith && !bStartsWith) return -1;
+      if (!aStartsWith && bStartsWith) return 1;
+      
+      return 0;
+    }) || [];
 
   useEffect(() => {
     setHighlightedIndex(0);
@@ -61,9 +97,44 @@ const ProductSelectionModal: FC<ProductSelectionModalProps> = ({
   }, [visible]);
 
   const columns: ColumnType<Product>[] = [
-    { title: 'Name', dataIndex: 'name', key: 'name' },
-    { title: 'SKU', dataIndex: 'sku', key: 'sku' },
-    { title: 'Price', dataIndex: 'selling_price', key: 'selling_price' },
+    { 
+      title: 'Product & Variant', 
+      dataIndex: 'name', 
+      key: 'name', 
+      width: 250,
+      render: (name, record) => (
+        <div>
+          <div style={{ fontWeight: 600, color: '#1890ff' }}>{name}</div>
+          {record.VariantItem?.variant_name && (
+            <div style={{ fontSize: '12px', color: '#52c41a', marginTop: '2px' }}>
+              Variant: {record.VariantItem.variant_name}
+              {record.VariantItem?.variant_code && (
+                <span style={{ marginLeft: '8px', color: '#fa8c16', fontSize: '11px' }}>
+                  ({record.VariantItem.variant_code})
+                </span>
+              )}
+            </div>
+          )}
+        </div>
+      )
+    },
+    { title: 'Variant', dataIndex: 'VariantItem', key: 'variant', width: 120, 
+      render: (variant) => variant?.variant_name ? (
+        <span style={{ color: '#52c41a', fontWeight: 500 }}>{variant.variant_name}</span>
+      ) : (
+        <span style={{ color: '#bfbfbf', fontStyle: 'italic' }}>No variant</span>
+      ) },
+    { title: 'SKU', dataIndex: 'sku', key: 'sku', width: 120 },
+    { title: 'Price', dataIndex: 'selling_price', key: 'selling_price', width: 100,
+      render: (price) => (
+        <span style={{ 
+          color: '#52c41a', 
+          fontWeight: 600, 
+          fontSize: '14px' 
+        }}>
+          ₹{price?.toFixed(2) || '0.00'}
+        </span>
+      ) },
   ];
 
   const handleSelectRow = (product: Product) => {
@@ -110,17 +181,17 @@ const ProductSelectionModal: FC<ProductSelectionModalProps> = ({
 
   return (
     <Modal
-      title="Select Product"
+      title="Select Product & Variant"
       open={visible}
       onCancel={onCancel}
-      width={800}
+      width={900}
       footer={null}
       destroyOnClose
     >
       <div onClick={handleModalClick}>
         <Search
           ref={searchInputRef}
-          placeholder="Search products (use ↑↓ arrows to navigate, Enter to select)"
+          placeholder="Search by product name, variant, SKU, or price (use ↑↓ arrows to navigate, Enter to select)"
           onChange={e => setSearchTerm(e.target.value)}
           style={{ marginBottom: 16 }}
           autoFocus
@@ -172,6 +243,8 @@ const ProductSelectionModal: FC<ProductSelectionModalProps> = ({
         />
         <div style={{ marginTop: 16, fontSize: '12px', color: '#666' }}>
           <strong>Keyboard Shortcuts:</strong> ↑↓ Navigate products | Enter Select | Escape Cancel
+          <br />
+          <strong>Search:</strong> Product name, variant name, SKU, or price
         </div>
       </div>
     </Modal>

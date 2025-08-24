@@ -19,6 +19,8 @@ import StockSelectionModal from './StockSelectionModal';
 import CustomerSelectionModal from './CustomerSelectionModal';
 import BillSaveConfirmationModal from './BillSaveConfirmationModal';
 import BillListDrawer from './BillListDrawer';
+import ProductDetailsModal from './ProductDetailsModal';
+import ProductSelectionModal from './ProductSelectionModal';
 import styles from './BillDataGrid.module.css';
 
 const { Title, Text } = Typography;
@@ -84,6 +86,10 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
   const [saveConfirmationVisible, setSaveConfirmationVisible] = useState(false);
   const [billListDrawerVisible, setBillListDrawerVisible] = useState(false);
   const [savedBillData, setSavedBillData] = useState<any>(null);
+  const [productDetailsModalVisible, setProductDetailsModalVisible] = useState(false);
+  const [selectedProductId, setSelectedProductId] = useState<string>('');
+  const [productSelectionModalVisible, setProductSelectionModalVisible] = useState(false);
+  const [productSelectionRowIndex, setProductSelectionRowIndex] = useState<number | null>(null);
 
   // User info
   const user = JSON.parse(sessionStorage.getItem('user') || '{}');
@@ -296,7 +302,83 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
       type: 'product', // triggers modal
       required: true,
       width: 280,
-      // render property removed
+      render: (value, record, index) => {
+        const selectedProduct = productOptions.find((opt: any) => opt.value === value);
+        return (
+          <Tooltip
+            title={
+              value
+                ? `Product: ${selectedProduct?.label || 'Unknown'} - Click to change • Right-click for details`
+                : 'Click to select product from inventory • Right-click for details after selection'
+            }
+            placement="top"
+          >
+            <div
+              style={{
+                cursor: 'pointer',
+                padding: '4px 8px',
+                borderRadius: '4px',
+                border: value ? '1px solid #52c41a' : '1px solid #d9d9d9',
+                backgroundColor: value ? '#f6ffed' : '#fafafa',
+                transition: 'all 0.2s ease',
+                minHeight: '32px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between'
+              }}
+              onClick={() => {
+                // Open product selection modal
+                if (typeof index === 'number') {
+                  setProductSelectionRowIndex(index);
+                  setProductSelectionModalVisible(true);
+                }
+              }}
+              onContextMenu={(e) => {
+                e.preventDefault();
+                if (value && typeof index === 'number') {
+                  setProductDetailsModalVisible(true);
+                  setSelectedProductId(value);
+                } else {
+                  message.warning('Please select a product first to view details');
+                }
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = '#f0f0f0';
+                e.currentTarget.style.borderColor = '#1890ff';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = value ? '#f6ffed' : '#fafafa';
+                e.currentTarget.style.borderColor = value ? '#52c41a' : '#d9d9d9';
+              }}
+            >
+              <span style={{ 
+                color: value ? '#52c41a' : '#1890ff',
+                fontWeight: value ? 600 : 400
+              }}>
+                {value ? (selectedProduct?.label || 'Unknown Product') : 'Select product'}
+              </span>
+              {value && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <span style={{ fontSize: '12px', color: '#1890ff' }}>📋</span>
+                  <span style={{ fontSize: '10px', color: '#52c41a', backgroundColor: '#f6ffed', padding: '2px 4px', borderRadius: '3px' }}>
+                    R-Click
+                  </span>
+                </div>
+              )}
+              {!value && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '2px' }}>
+                  <span style={{ fontSize: '10px', color: '#ff4d4f' }}>
+                    ⚠️ Product required
+                  </span>
+                  <span style={{ fontSize: '10px', color: '#1890ff', backgroundColor: '#f0f8ff', padding: '2px 4px', borderRadius: '3px' }}>
+                    Click
+                  </span>
+                </div>
+              )}
+            </div>
+          </Tooltip>
+        );
+      },
     },
     {
       key: 'stock_id',
@@ -311,8 +393,8 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
           title={
             record.product_id
               ? value
-                ? `Stock: ${value} - Click to change`
-                : 'Click to select stock from available inventory'
+                ? `Stock: ${value} - Click to change • Right-click for details`
+                : 'Click to select stock from available inventory • Right-click for details after selection'
               : 'Please select a product first to choose stock'
           }
           placement="top"
@@ -337,6 +419,17 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
                 message.warning('Please select a product first');
               }
             }}
+            onContextMenu={(e) => {
+              e.preventDefault();
+              if (record.product_id && value && typeof index === 'number') {
+                // Show stock details in a tooltip or message
+                message.info(`Stock: ${value} - Product: ${record.product_name || 'Unknown'}`);
+              } else if (!record.product_id) {
+                message.warning('Please select a product first to view stock details');
+              } else if (!value) {
+                message.warning('Please select stock first to view details');
+              }
+            }}
             onMouseEnter={(e) => {
               e.currentTarget.style.backgroundColor = '#f0f0f0';
               e.currentTarget.style.borderColor = '#1890ff';
@@ -353,7 +446,12 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
               {value }
             </span>
             {record.product_id && (
-              <span style={{ fontSize: '12px', color: '#1890ff' }}>📋</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <span style={{ fontSize: '12px', color: '#1890ff' }}>📋</span>
+                <span style={{ fontSize: '10px', color: '#52c41a', backgroundColor: '#f6ffed', padding: '2px 4px', borderRadius: '3px' }}>
+                  R-Click
+                </span>
+              </div>
             )}
             {record.product_id && !value && (
               <div style={{ fontSize: '10px', color: '#ff4d4f', marginTop: '2px' }}>
@@ -544,6 +642,27 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
     newItems[rowIndex].price = product.selling_price || 0;
     handleItemsChange(newItems);
     setStockModalRowIndex(rowIndex); // Open stock modal for this row
+  };
+
+  const handleProductSelectionModalSelect = (product: any) => {
+    if (productSelectionRowIndex === null) return;
+    
+    const newItems = [...billFormData.items];
+    newItems[productSelectionRowIndex].product_id = product._id || '';
+    newItems[productSelectionRowIndex].product_name = product.name || '';
+    newItems[productSelectionRowIndex].variant_name = product.VariantItem?.variant_name || '';
+    newItems[productSelectionRowIndex].price = product.selling_price || 0;
+    
+    handleItemsChange(newItems);
+    
+    // Close the product selection modal
+    setProductSelectionModalVisible(false);
+    setProductSelectionRowIndex(null);
+    
+    // Open stock selection modal for this row
+    setStockModalRowIndex(productSelectionRowIndex);
+    
+    message.success(`Product "${product.name}" selected successfully!`);
   };
 
   const handleStockSelect = (stock: any) => {
@@ -1363,17 +1482,6 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
         e.preventDefault();
         setBillListDrawerVisible(true);
       }
-      // F5: Add 5 items
-      // else if (e.key === 'F5') {
-      //   e.preventDefault();
-      //   for (let i = 0; i < 5; i++) {
-      //     handleAddItem();
-      //   }
-      //   setTimeout(() => {
-      //     const productCell = document.querySelector('.ant-table-tbody tr:last-child td[data-column-key="product_id"]') as HTMLElement;
-      //     productCell?.focus();
-      //   }, 200);
-      // }
       // Ctrl shortcuts
       else if (e.ctrlKey) {
         switch (e.key) {
@@ -1852,7 +1960,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
             >
               ⚡ <strong>Keyboard Shortcuts:</strong> Ctrl+S (Save) • Ctrl+N
               (Add) • Ctrl+D/Del (Delete) • Tab/Shift+Tab (Navigate) • Enter
-              (Edit) • Esc (Cancel) • End (Customer Modal) • F4 (Clear) • F6 (Bill List)
+              (Edit) • Esc (Cancel) • End (Customer Modal) • F4 (Clear) • F6 (Bill List) • F7 (Stock Selection)
             </Text>
           </div>
         </div>
@@ -1880,6 +1988,23 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
         onContinueBill={handleContinueBill}
         onCancel={() => setSaveConfirmationVisible(false)}
         savedBillData={savedBillData}
+      />
+
+      {/* Product Details Modal */}
+      <ProductDetailsModal
+        visible={productDetailsModalVisible}
+        onCancel={() => setProductDetailsModalVisible(false)}
+        productId={selectedProductId}
+      />
+
+      {/* Product Selection Modal */}
+      <ProductSelectionModal
+        visible={productSelectionModalVisible}
+        onSelect={handleProductSelectionModalSelect}
+        onCancel={() => {
+          setProductSelectionModalVisible(false);
+          setProductSelectionRowIndex(null);
+        }}
       />
 
       {/* Bill List Drawer */}
