@@ -305,14 +305,14 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
       render: (value, record, index) => {
         const selectedProduct = productOptions.find((opt: any) => opt.value === value);
         return (
-          <Tooltip
-            title={
-              value
-                ? `Product: ${selectedProduct?.label || 'Unknown'} - Click to change • Right-click for details`
-                : 'Click to select product from inventory • Right-click for details after selection'
-            }
-            placement="top"
-          >
+                  <Tooltip
+          title={
+            value
+              ? `Product: ${selectedProduct?.label || 'Unknown'} - Click to change • Right-click for details • F5 to reopen`
+              : 'Click to select product from inventory • Right-click for details after selection • F5 to open'
+          }
+          placement="top"
+        >
             <div
               style={{
                 cursor: 'pointer',
@@ -642,6 +642,38 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
     newItems[rowIndex].price = product.selling_price || 0;
     handleItemsChange(newItems);
     setStockModalRowIndex(rowIndex); // Open stock modal for this row
+  };
+
+  const handleF5ProductSelection = () => {
+    // Find the first row that needs a product or the currently focused row
+    let targetRowIndex = -1;
+    
+    // First, check if there's a currently focused row in the table
+    const activeElement = document.activeElement as HTMLElement;
+    const focusedRow = activeElement?.closest('tr');
+    if (focusedRow) {
+      const rowIndex = focusedRow.getAttribute('data-row-key');
+      if (rowIndex !== null) {
+        targetRowIndex = parseInt(rowIndex);
+      }
+    }
+    
+    // If no focused row found, find the first row without a product
+    if (targetRowIndex === -1) {
+      targetRowIndex = billFormData.items.findIndex(item => !item.product_id);
+    }
+    
+    // If still no target row, add a new item and target that
+    if (targetRowIndex === -1) {
+      handleAddItem();
+      targetRowIndex = billFormData.items.length;
+    }
+    
+    // Set the target row for product selection
+    setProductSelectionRowIndex(targetRowIndex);
+    setProductSelectionModalVisible(true);
+    
+    message.info(`Opening product selection for row ${targetRowIndex + 1}`);
   };
 
   const handleProductSelectionModalSelect = (product: any) => {
@@ -1472,6 +1504,11 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
         e.preventDefault();
         handleClearBill();
       }
+      // F5: Open product selection modal for current row or first empty row
+      else if (e.key === 'F5') {
+        e.preventDefault();
+        handleF5ProductSelection();
+      }
       // End: Open customer selection modal
       else if (e.key === 'End') {
         e.preventDefault();
@@ -1960,7 +1997,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
             >
               ⚡ <strong>Keyboard Shortcuts:</strong> Ctrl+S (Save) • Ctrl+N
               (Add) • Ctrl+D/Del (Delete) • Tab/Shift+Tab (Navigate) • Enter
-              (Edit) • Esc (Cancel) • End (Customer Modal) • F4 (Clear) • F6 (Bill List) • F7 (Stock Selection)
+              (Edit) • Esc (Cancel) • End (Customer Modal) • F4 (Clear) • F5 (Product Selection) • F6 (Bill List) • F7 (Stock Selection)
             </Text>
           </div>
         </div>

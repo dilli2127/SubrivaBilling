@@ -181,7 +181,7 @@ const ProductSelectionModal: FC<ProductSelectionModalProps> = ({
 
   return (
     <Modal
-      title="Select Product & Variant"
+      title="Select Product & Variant (F5 to reopen anytime)"
       open={visible}
       onCancel={onCancel}
       width={900}
@@ -241,11 +241,13 @@ const ProductSelectionModal: FC<ProductSelectionModalProps> = ({
           }}
           scroll={{ y: 300 }}
         />
-        <div style={{ marginTop: 16, fontSize: '12px', color: '#666' }}>
-          <strong>Keyboard Shortcuts:</strong> ↑↓ Navigate products | Enter Select | Escape Cancel
-          <br />
-          <strong>Search:</strong> Product name, variant name, SKU, or price
-        </div>
+              <div style={{ marginTop: 16, fontSize: '12px', color: '#666' }}>
+        <strong>Keyboard Shortcuts:</strong> ↑↓ Navigate products | Enter Select | Escape Cancel
+        <br />
+        <strong>Search:</strong> Product name, variant name, SKU, or price
+        <br />
+        <strong>Tip:</strong> Press F5 anytime to reopen this modal for product changes
+      </div>
       </div>
     </Modal>
   );
