@@ -592,9 +592,9 @@ const CustomerSelectionModal: React.FC<CustomerSelectionModalProps> = ({
         const newCustomer = createResult.data || createResult.result;
 
         if (newCustomer) {
-          message.success(
-            `Customer "${newCustomer.full_name}" created and selected successfully!`
-          );
+          // message.success(
+          //   `Customer "${newCustomer.full_name}" created and selected successfully!`
+          // );
 
           // Clear form data on success
           clearFormData();
