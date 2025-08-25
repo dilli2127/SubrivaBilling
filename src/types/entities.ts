@@ -87,6 +87,38 @@ export interface StockOut extends BaseEntity {
   date: string;
 }
 
+// Stock entity
+export interface Stock extends BaseEntity {
+  product_id: string;
+  warehouse_id: string;
+  batch_no: string;
+  available_quantity: number;
+  sell_price: number;
+  buy_price?: number;
+  mrp?: number;
+  mfg_date?: string;
+  expiry_date?: string;
+  vendor_id?: string;
+  rack_id?: string;
+  name?: string;
+  code?: string;
+  ProductItem?: {
+    name: string;
+    VariantItem?: {
+      variant_name: string;
+    };
+  };
+  VendorItem?: {
+    vendor_name: string;
+  };
+  WarehouseItem?: {
+    warehouse_name: string;
+  };
+  RackItem?: {
+    name: string;
+  };
+}
+
 // Organization entity
 export interface Organization extends BaseEntity {
   name: string;
