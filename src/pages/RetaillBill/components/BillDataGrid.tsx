@@ -1,5 +1,13 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
-import { Button, Typography, message, Switch, InputNumber, Badge, Tooltip } from 'antd';
+import {
+  Button,
+  Typography,
+  message,
+  Switch,
+  InputNumber,
+  Badge,
+  Tooltip,
+} from 'antd';
 import dayjs from 'dayjs';
 import AntdEditableTable, {
   AntdEditableColumn,
@@ -80,20 +88,127 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
     paidAmount: 0,
   });
 
-  const [stockModalRowIndex, setStockModalRowIndex] = useState<number | null>(null);
-  const [externalEditingCell, setExternalEditingCell] = useState<{ row: number; col: number } | null>(null);
+  const [stockModalRowIndex, setStockModalRowIndex] = useState<number | null>(
+    null
+  );
+  const [externalEditingCell, setExternalEditingCell] = useState<{
+    row: number;
+    col: number;
+  } | null>(null);
   const [customerModalVisible, setCustomerModalVisible] = useState(false);
   const [saveConfirmationVisible, setSaveConfirmationVisible] = useState(false);
   const [billListDrawerVisible, setBillListDrawerVisible] = useState(false);
   const [savedBillData, setSavedBillData] = useState<any>(null);
-  const [productDetailsModalVisible, setProductDetailsModalVisible] = useState(false);
+  const [productDetailsModalVisible, setProductDetailsModalVisible] =
+    useState(false);
   const [selectedProductId, setSelectedProductId] = useState<string>('');
-  const [productSelectionModalVisible, setProductSelectionModalVisible] = useState(false);
-  const [productSelectionRowIndex, setProductSelectionRowIndex] = useState<number | null>(null);
+  const [productSelectionModalVisible, setProductSelectionModalVisible] =
+    useState(false);
+  const [productSelectionRowIndex, setProductSelectionRowIndex] = useState<
+    number | null
+  >(null);
 
   // User info
   const user = JSON.parse(sessionStorage.getItem('user') || '{}');
   const branchId = user?.branch_id;
+
+  // Helper function to validate stock quantities
+  const validateStockQuantity = (
+    stockId: string,
+    qty: number,
+    looseQty: number
+  ): {
+    isValid: boolean;
+    availableQty: number;
+    maxLooseQty: number;
+    message: string;
+  } => {
+    const stockList = branchId ? branchStockList : stockAuditList;
+    const stock = stockList?.result?.find((s: any) => s._id === stockId);
+
+    if (!stock) {
+      return {
+        isValid: false,
+        availableQty: 0,
+        maxLooseQty: 0,
+        message: 'Stock not found',
+      };
+    }
+
+    const availableQty = stock.available_quantity || 0;
+    const totalEnteredQty = qty + looseQty;
+    const maxLooseQty = Math.max(0, availableQty - qty);
+
+    if (totalEnteredQty > availableQty) {
+      return {
+        isValid: false,
+        availableQty,
+        maxLooseQty,
+        message: `Total quantity (${totalEnteredQty}) exceeds available stock (${availableQty})`,
+      };
+    }
+
+    if (looseQty > maxLooseQty) {
+      return {
+        isValid: false,
+        availableQty,
+        maxLooseQty,
+        message: `Loose quantity (${looseQty}) exceeds remaining stock (${maxLooseQty})`,
+      };
+    }
+
+    return { isValid: true, availableQty, maxLooseQty, message: '' };
+  };
+
+  // Handle quantity change with validation
+  const handleQuantityChange = (
+    rowIndex: number,
+    field: 'qty' | 'loose_qty',
+    value: number
+  ) => {
+    const newItems = [...billFormData.items];
+    const item = newItems[rowIndex];
+
+    if (!item.stock_id) {
+      // If no stock selected, just update the value
+      newItems[rowIndex] = { ...item, [field]: value };
+      setBillFormData(prev => ({ ...prev, items: newItems }));
+      return;
+    }
+
+    // Validate the new quantity
+    const newQty = field === 'qty' ? value : item.qty || 0;
+    const newLooseQty = field === 'loose_qty' ? value : item.loose_qty || 0;
+
+    const validation = validateStockQuantity(
+      item.stock_id,
+      newQty,
+      newLooseQty
+    );
+
+    if (!validation.isValid) {
+      message.error(validation.message);
+
+      // Auto-correct the quantity if it exceeds available stock
+      if (field === 'qty' && newQty > validation.availableQty) {
+        newItems[rowIndex] = {
+          ...item,
+          qty: validation.availableQty,
+          loose_qty: 0,
+        };
+      } else if (
+        field === 'loose_qty' &&
+        newLooseQty > validation.maxLooseQty
+      ) {
+        newItems[rowIndex] = { ...item, loose_qty: validation.maxLooseQty };
+      }
+    } else {
+      // Update the quantity
+      newItems[rowIndex] = { ...item, [field]: value };
+    }
+
+    setBillFormData(prev => ({ ...prev, items: newItems }));
+  };
 
   // Initialize data
   useEffect(() => {
@@ -187,19 +302,15 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
     [productList]
   );
 
-  const customerOptions = useMemo(
-    () => {
-      const options = customerList?.result?.map((customer: any) => ({
+  const customerOptions = useMemo(() => {
+    const options =
+      customerList?.result?.map((customer: any) => ({
         label: `${customer.full_name} - ${customer.mobile}`,
         value: customer._id,
       })) || [];
-      console.log('Customer options:', options); // Debug log
-      return options;
-    },
-    [customerList]
-  );
-
-
+    console.log('Customer options:', options); // Debug log
+    return options;
+  }, [customerList]);
 
   // Column definitions for bill header
   const headerColumns: AntdEditableColumn[] = [
@@ -228,40 +339,46 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
       required: true,
       width: 250,
       render: (value: any, record: any) => {
-        const selectedCustomer = customerOptions.find((opt: any) => opt.value === value);
+        const selectedCustomer = customerOptions.find(
+          (opt: any) => opt.value === value
+        );
         return (
           <Tooltip title="Click to open customer selection modal (or press End key)">
-            <div 
-              style={{ 
-                display: 'flex', 
-                alignItems: 'center', 
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
                 justifyContent: 'space-between',
                 cursor: 'pointer',
                 padding: '4px 8px',
                 borderRadius: '4px',
                 border: '1px solid #d9d9d9',
                 backgroundColor: '#fafafa',
-                transition: 'all 0.2s ease'
+                transition: 'all 0.2s ease',
               }}
               onClick={() => setCustomerModalVisible(true)}
-              onMouseEnter={(e) => {
+              onMouseEnter={e => {
                 e.currentTarget.style.backgroundColor = '#f0f0f0';
                 e.currentTarget.style.borderColor = '#1890ff';
               }}
-              onMouseLeave={(e) => {
+              onMouseLeave={e => {
                 e.currentTarget.style.backgroundColor = '#fafafa';
                 e.currentTarget.style.borderColor = '#d9d9d9';
               }}
             >
-              <span>{selectedCustomer ? selectedCustomer.label : 'Select customer'}</span>
-              <span style={{ 
-                fontSize: '10px', 
-                color: '#1890ff', 
-                backgroundColor: '#f0f8ff', 
-                padding: '2px 6px', 
-                borderRadius: '4px',
-                border: '1px solid #d6e4ff'
-              }}>
+              <span>
+                {selectedCustomer ? selectedCustomer.label : 'Select customer'}
+              </span>
+              <span
+                style={{
+                  fontSize: '10px',
+                  color: '#1890ff',
+                  backgroundColor: '#f0f8ff',
+                  padding: '2px 6px',
+                  borderRadius: '4px',
+                  border: '1px solid #d6e4ff',
+                }}
+              >
                 End
               </span>
             </div>
@@ -284,14 +401,22 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
     },
   ];
 
-  const headerData = useMemo(() => [
-    {
-      invoice_no: billFormData.invoice_no,
-      date: billFormData.date,
-      customer_id: billFormData.customer_id,
-      payment_mode: billFormData.payment_mode,
-    },
-  ], [billFormData.invoice_no, billFormData.date, billFormData.customer_id, billFormData.payment_mode]);
+  const headerData = useMemo(
+    () => [
+      {
+        invoice_no: billFormData.invoice_no,
+        date: billFormData.date,
+        customer_id: billFormData.customer_id,
+        payment_mode: billFormData.payment_mode,
+      },
+    ],
+    [
+      billFormData.invoice_no,
+      billFormData.date,
+      billFormData.customer_id,
+      billFormData.payment_mode,
+    ]
+  );
 
   // Column definitions for bill items
   const itemColumns: AntdEditableColumn[] = [
@@ -303,16 +428,18 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
       required: true,
       width: 280,
       render: (value, record, index) => {
-        const selectedProduct = productOptions.find((opt: any) => opt.value === value);
+        const selectedProduct = productOptions.find(
+          (opt: any) => opt.value === value
+        );
         return (
-                  <Tooltip
-          title={
-            value
-              ? `Product: ${selectedProduct?.label || 'Unknown'} - Click to change • Right-click for details • F5 to reopen`
-              : 'Click to select product from inventory • Right-click for details after selection • F5 to open'
-          }
-          placement="top"
-        >
+          <Tooltip
+            title={
+              value
+                ? `Product: ${selectedProduct?.label || 'Unknown'} - Click to change • F5 to reopen`
+                : 'Click to select product from inventory • F5 to open'
+            }
+            placement="top"
+          >
             <div
               style={{
                 cursor: 'pointer',
@@ -324,7 +451,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
                 minHeight: '32px',
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: 'space-between'
+                justifyContent: 'space-between',
               }}
               onClick={() => {
                 // Open product selection modal
@@ -333,44 +460,68 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
                   setProductSelectionModalVisible(true);
                 }
               }}
-              onContextMenu={(e) => {
-                e.preventDefault();
-                if (value && typeof index === 'number') {
-                  setProductDetailsModalVisible(true);
-                  setSelectedProductId(value);
-                } else {
-                  message.warning('Please select a product first to view details');
-                }
-              }}
-              onMouseEnter={(e) => {
+              onMouseEnter={e => {
                 e.currentTarget.style.backgroundColor = '#f0f0f0';
                 e.currentTarget.style.borderColor = '#1890ff';
               }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = value ? '#f6ffed' : '#fafafa';
-                e.currentTarget.style.borderColor = value ? '#52c41a' : '#d9d9d9';
+              onMouseLeave={e => {
+                e.currentTarget.style.backgroundColor = value
+                  ? '#f6ffed'
+                  : '#fafafa';
+                e.currentTarget.style.borderColor = value
+                  ? '#52c41a'
+                  : '#d9d9d9';
               }}
             >
-              <span style={{ 
-                color: value ? '#52c41a' : '#1890ff',
-                fontWeight: value ? 600 : 400
-              }}>
-                {value ? (selectedProduct?.label || 'Unknown Product') : 'Select product'}
+              <span
+                style={{
+                  color: value ? '#52c41a' : '#1890ff',
+                  fontWeight: value ? 600 : 400,
+                }}
+              >
+                {value
+                  ? selectedProduct?.label || 'Unknown Product'
+                  : 'Select product'}
               </span>
               {value && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  <span style={{ fontSize: '12px', color: '#1890ff' }}>📋</span>
-                  <span style={{ fontSize: '10px', color: '#52c41a', backgroundColor: '#f6ffed', padding: '2px 4px', borderRadius: '3px' }}>
-                    R-Click
+                <div
+                  style={{ display: 'flex', alignItems: 'center', gap: '4px' }}
+                >
+                  <span style={{ fontSize: '12px', color: '#52c41a' }}>✅</span>
+                  <span
+                    style={{
+                      fontSize: '10px',
+                      color: '#52c41a',
+                      backgroundColor: '#f6ffed',
+                      padding: '2px 4px',
+                      borderRadius: '3px',
+                    }}
+                  >
+                    Selected
                   </span>
                 </div>
               )}
               {!value && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '2px' }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    marginTop: '2px',
+                  }}
+                >
                   <span style={{ fontSize: '10px', color: '#ff4d4f' }}>
                     ⚠️ Product required
                   </span>
-                  <span style={{ fontSize: '10px', color: '#1890ff', backgroundColor: '#f0f8ff', padding: '2px 4px', borderRadius: '3px' }}>
+                  <span
+                    style={{
+                      fontSize: '10px',
+                      color: '#1890ff',
+                      backgroundColor: '#f0f8ff',
+                      padding: '2px 4px',
+                      borderRadius: '3px',
+                    }}
+                  >
                     Click
                   </span>
                 </div>
@@ -386,81 +537,172 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
       dataIndex: 'batch_no',
       type: 'stock',
       required: true,
-      width: 200,
+      width: 280,
       editable: true, // allow editing to open modal
-      render: (value, record, index) => (
-        <Tooltip
-          title={
-            record.product_id
-              ? value
-                ? `Stock: ${value} - Click to change • Right-click for details • F7 to reopen`
-                : 'Click to select stock from available inventory • Right-click for details after selection • F7 to open'
-              : 'Please select a product first to choose stock • F7 to open after product selection'
-          }
-          placement="top"
-        >
-          <div
-            style={{
-              cursor: 'pointer',
-              padding: '4px 8px',
-              borderRadius: '4px',
-              border: value ? '1px solid #52c41a' : '1px solid #d9d9d9',
-              backgroundColor: value ? '#f6ffed' : '#fafafa',
-              transition: 'all 0.2s ease',
-              minHeight: '32px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between'
-            }}
-            onClick={() => {
-              if (record.product_id && typeof index === 'number') {
-                setStockModalRowIndex(index);
-              } else if (!record.product_id) {
-                message.warning('Please select a product first');
-              }
-            }}
-            onContextMenu={(e) => {
-              e.preventDefault();
-              if (record.product_id && value && typeof index === 'number') {
-                // Show stock details in a tooltip or message
-                message.info(`Stock: ${value} - Product: ${record.product_name || 'Unknown'}`);
-              } else if (!record.product_id) {
-                message.warning('Please select a product first to view stock details');
-              } else if (!value) {
-                message.warning('Please select stock first to view details');
-              }
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = '#f0f0f0';
-              e.currentTarget.style.borderColor = '#1890ff';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = '#fafafa';
-              e.currentTarget.style.borderColor = '#d9d9d9';
-            }}
+      render: (value, record, index) => {
+        // Get stock info for display
+        const stockList = branchId ? branchStockList : stockAuditList;
+        const stock = stockList?.result?.find(
+          (s: any) => s._id === record.stock_id
+        );
+        const availableQty = stock?.available_quantity || 0;
+        const looseQty = stock?.available_loose_quantity || 0;
+        const isLowStock = availableQty > 0 && availableQty <= 10;
+        const isOutOfStock = availableQty === 0;
+
+        return (
+          <Tooltip
+            title={
+              record.product_id
+                ? value
+                  ? `Stock: ${value} - Available: ${availableQty} • Click to change • F7 to reopen`
+                  : 'Click to select stock from available inventory • F7 to open'
+                : 'Please select a product first to choose stock • F7 to open after product selection'
+            }
+            placement="top"
           >
-            <span style={{ 
-              color: value ? '#52c41a' : record.product_id ? '#1890ff' : '#bfbfbf',
-              fontWeight: value ? 600 : 400
-            }}>
-              {value }
-            </span>
-            {record.product_id && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <span style={{ fontSize: '12px', color: '#1890ff' }}>📋</span>
-                <span style={{ fontSize: '10px', color: '#52c41a', backgroundColor: '#f6ffed', padding: '2px 4px', borderRadius: '3px' }}>
-                  R-Click
+            <div
+              style={{
+                cursor: 'pointer',
+                padding: '6px 10px',
+                borderRadius: '6px',
+                border: value ? '1px solid #52c41a' : '1px solid #d9d9d9',
+                backgroundColor: value ? '#f6ffed' : '#fafafa',
+                transition: 'all 0.2s ease',
+                minHeight: '32px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                width: '100%',
+                gap: '10px',
+              }}
+              onClick={() => {
+                if (record.product_id && typeof index === 'number') {
+                  setStockModalRowIndex(index);
+                } else if (!record.product_id) {
+                  message.warning('Please select a product first');
+                }
+              }}
+              onMouseEnter={e => {
+                e.currentTarget.style.backgroundColor = '#f0f0f0';
+                e.currentTarget.style.borderColor = '#1890ff';
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.backgroundColor = value
+                  ? '#f6ffed'
+                  : '#fafafa';
+                e.currentTarget.style.borderColor = value
+                  ? '#52c41a'
+                  : '#d9d9d9';
+              }}
+            >
+              {/* Left Section */}
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  flex: 1,
+                }}
+              >
+                <span
+                  style={{
+                    color: value
+                      ? '#52c41a'
+                      : record.product_id
+                        ? '#1890ff'
+                        : '#bfbfbf',
+                    fontWeight: value ? 600 : 400,
+                    fontSize: '13px',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {value || 'Select Stock'}
                 </span>
+
+                {/* Stock Badges (inline) */}
+                {stock && (
+                  <>
+                    <span
+                      style={{
+                        color: isOutOfStock
+                          ? '#ff4d4f'
+                          : isLowStock
+                            ? '#faad14'
+                            : '#52c41a',
+                        fontWeight: 'bold',
+                        backgroundColor: isOutOfStock
+                          ? '#fff2f0'
+                          : isLowStock
+                            ? '#fffbe6'
+                            : '#f6ffed',
+                        padding: '2px 6px',
+                        borderRadius: '4px',
+                        border: `1px solid ${
+                          isOutOfStock
+                            ? '#ffccc7'
+                            : isLowStock
+                              ? '#ffe58f'
+                              : '#b7eb8f'
+                        }`,
+                        fontSize: '12px',
+                      }}
+                    >
+                      📦 {availableQty}
+                    </span>
+                    <span
+                      style={{
+                        color: '#722ed1',
+                        fontWeight: 'bold',
+                        backgroundColor: '#f9f0ff',
+                        padding: '2px 6px',
+                        borderRadius: '4px',
+                        border: '1px solid #d3adf7',
+                        fontSize: '12px',
+                      }}
+                    >
+                      📋 {looseQty}
+                    </span>
+                  </>
+                )}
+
+                {/* Warning (inline, not breaking row) */}
+                {record.product_id && !value && (
+                  <span
+                    style={{
+                      fontSize: '11px',
+                      color: '#ff4d4f',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    ⚠️ Stock required
+                  </span>
+                )}
               </div>
-            )}
-            {record.product_id && !value && (
-              <div style={{ fontSize: '10px', color: '#ff4d4f', marginTop: '2px' }}>
-                ⚠️ Stock required
-              </div>
-            )}
-          </div>
-        </Tooltip>
-      ),
+
+              {/* Right Side "Click" Indicator */}
+              {record.product_id && (
+                <div
+                  style={{ display: 'flex', alignItems: 'center', gap: '4px' }}
+                >
+                  <span style={{ fontSize: '12px', color: '#1890ff' }}>📋</span>
+                  <span
+                    style={{
+                      fontSize: '10px',
+                      color: '#52c41a',
+                      backgroundColor: '#f6ffed',
+                      padding: '2px 4px',
+                      borderRadius: '3px',
+                    }}
+                  >
+                    Click
+                  </span>
+                </div>
+              )}
+            </div>
+          </Tooltip>
+        );
+      },
     },
     {
       key: 'qty',
@@ -468,6 +710,52 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
       dataIndex: 'qty',
       type: 'number',
       width: 90,
+      render: (value: number, record: any, index?: number) => {
+        // Get stock info for validation
+        const stockList = branchId ? branchStockList : stockAuditList;
+        const stock = stockList?.result?.find(
+          (s: any) => s._id === record.stock_id
+        );
+        const availableQty = stock?.available_quantity || 0;
+        const isExceedingStock = value > availableQty;
+
+        return (
+          <div style={{ position: 'relative' }}>
+            <InputNumber
+              value={value}
+              min={0}
+              max={availableQty}
+              style={{
+                width: '100%',
+                borderColor: isExceedingStock ? '#ff4d4f' : undefined,
+                backgroundColor: isExceedingStock ? '#fff2f0' : undefined,
+              }}
+              onPressEnter={e => {
+                if (index !== undefined) {
+                  const target = e.target as HTMLInputElement;
+                  const newValue = parseInt(target.value) || 0;
+                  handleQuantityChange(index, 'qty', newValue);
+                }
+              }}
+              onBlur={e => {
+                if (index !== undefined) {
+                  const target = e.target as HTMLInputElement;
+                  const newValue = parseInt(target.value) || 0;
+                  handleQuantityChange(index, 'qty', newValue);
+                }
+              }}
+              onChange={newValue => {
+                if (newValue !== null && newValue > availableQty) {
+                  message.error(
+                    `Quantity cannot exceed available stock (${availableQty})`
+                  );
+                  return;
+                }
+              }}
+            />
+          </div>
+        );
+      },
     },
     {
       key: 'loose_qty',
@@ -475,6 +763,54 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
       dataIndex: 'loose_qty',
       type: 'number',
       width: 90,
+      render: (value: number, record: any, index?: number) => {
+        // Get stock info for validation
+        const stockList = branchId ? branchStockList : stockAuditList;
+        const stock = stockList?.result?.find(
+          (s: any) => s._id === record.stock_id
+        );
+        const availableQty = stock?.available_quantity || 0;
+        const packQty = record.qty || 0;
+        const maxLooseQty = Math.max(0, availableQty - packQty);
+        const isExceedingStock = value > maxLooseQty;
+
+        return (
+          <div style={{ position: 'relative' }}>
+            <InputNumber
+              value={value}
+              min={0}
+              max={maxLooseQty}
+              style={{
+                width: '100%',
+                borderColor: isExceedingStock ? '#ff4d4f' : undefined,
+                backgroundColor: isExceedingStock ? '#fff2f0' : undefined,
+              }}
+              onPressEnter={e => {
+                if (index !== undefined) {
+                  const target = e.target as HTMLInputElement;
+                  const newValue = parseInt(target.value) || 0;
+                  handleQuantityChange(index, 'loose_qty', newValue);
+                }
+              }}
+              onBlur={e => {
+                if (index !== undefined) {
+                  const target = e.target as HTMLInputElement;
+                  const newValue = parseInt(target.value) || 0;
+                  handleQuantityChange(index, 'loose_qty', newValue);
+                }
+              }}
+              onChange={newValue => {
+                if (newValue !== null && newValue > maxLooseQty) {
+                  message.error(
+                    `Loose quantity cannot exceed remaining stock (${maxLooseQty})`
+                  );
+                  return;
+                }
+              }}
+            />
+          </div>
+        );
+      },
     },
     {
       key: 'price',
@@ -484,7 +820,9 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
       required: true,
       width: 120,
       editable: false, // Make rate not editable
-      render: (value) => <InputNumber value={value} disabled style={{ width: '100%' }} />,
+      render: value => (
+        <InputNumber value={value} disabled style={{ width: '100%' }} />
+      ),
     },
     {
       key: 'amount',
@@ -493,12 +831,16 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
       type: 'number',
       editable: false, // Make amount not editable
       width: 130,
-      render: (value) => <InputNumber value={value} disabled style={{ width: '100%' }} />,
+      render: value => (
+        <InputNumber value={value} disabled style={{ width: '100%' }} />
+      ),
     },
   ];
 
   // Find the column index for qty
-  const qtyColIndex = itemColumns.findIndex(col => col.key === 'qty' || col.dataIndex === 'qty');
+  const qtyColIndex = itemColumns.findIndex(
+    col => col.key === 'qty' || col.dataIndex === 'qty'
+  );
 
   // Calculate bill totals
   const billCalculations = useMemo(() => {
@@ -548,7 +890,10 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
       const billItem: BillItem = {
         product_id: item.product_id || '',
         product_name:
-          productOptions.find((opt: { label: string; value: string }) => opt.value === item.product_id)?.label || '',
+          productOptions.find(
+            (opt: { label: string; value: string }) =>
+              opt.value === item.product_id
+          )?.label || '',
         variant_name: item.variant_name || '',
         stock_id: item.stock_id || '',
         batch_no: item.batch_no || '', // ✅ Preserve batch_no from input
@@ -558,16 +903,65 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
         mrp: item.mrp || 0,
         amount: item.amount || 0,
         tax_percentage: item.tax_percentage || 0,
-        _id: item._id,
       };
+
+      // Stock validation for quantity and loss quantity
+      if (item.stock_id && (item.qty || item.loose_qty)) {
+        const stockList = branchId ? branchStockList : stockAuditList;
+        const stock = stockList?.result?.find(
+          (s: any) => s._id === item.stock_id
+        );
+
+        if (stock) {
+          const availableQty = stock.available_quantity || 0;
+          const enteredQty = (item.qty || 0) + (item.loose_qty || 0);
+
+          if (enteredQty > availableQty) {
+            // Show error message
+            message.error(
+              `Quantity exceeds available stock! Available: ${availableQty}, Entered: ${enteredQty}`
+            );
+
+            // Reset quantities to available stock or 0
+            if (availableQty === 0) {
+              billItem.qty = 0;
+              billItem.loose_qty = 0;
+            } else {
+              // Distribute available quantity between pack and loose
+              if (item.qty && item.loose_qty) {
+                // If both are entered, prioritize pack quantity
+                if (item.qty <= availableQty) {
+                  billItem.qty = item.qty;
+                  billItem.loose_qty = Math.min(
+                    item.loose_qty,
+                    availableQty - item.qty
+                  );
+                } else {
+                  billItem.qty = availableQty;
+                  billItem.loose_qty = 0;
+                }
+              } else if (item.qty) {
+                billItem.qty = Math.min(item.qty, availableQty);
+                billItem.loose_qty = 0;
+              } else if (item.loose_qty) {
+                billItem.loose_qty = Math.min(item.loose_qty, availableQty);
+                billItem.qty = 0;
+              }
+            }
+          }
+        }
+      }
 
       // Auto-populate stock if product is selected but stock is not
       if (item.product_id && !item.stock_id) {
         const stockList = branchId ? branchStockList : stockAuditList;
-        const availableStocks = stockList?.result?.filter(
-          (stock: any) => stock.product === item.product_id || stock.ProductItem?._id === item.product_id
-        ) || [];
-        
+        const availableStocks =
+          stockList?.result?.filter(
+            (stock: any) =>
+              stock.product === item.product_id ||
+              stock.ProductItem?._id === item.product_id
+          ) || [];
+
         if (availableStocks.length > 0) {
           const firstStock = availableStocks[0];
           billItem.stock_id = firstStock._id;
@@ -647,7 +1041,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
   const handleF5ProductSelection = () => {
     // Find the first row that needs a product or the currently focused row
     let targetRowIndex = -1;
-    
+
     // First, check if there's a currently focused row in the table
     const activeElement = document.activeElement as HTMLElement;
     const focusedRow = activeElement?.closest('tr');
@@ -657,29 +1051,29 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
         targetRowIndex = parseInt(rowIndex);
       }
     }
-    
+
     // If no focused row found, find the first row without a product
     if (targetRowIndex === -1) {
       targetRowIndex = billFormData.items.findIndex(item => !item.product_id);
     }
-    
+
     // If still no target row, add a new item and target that
     if (targetRowIndex === -1) {
       handleAddItem();
       targetRowIndex = billFormData.items.length;
     }
-    
+
     // Set the target row for product selection
     setProductSelectionRowIndex(targetRowIndex);
     setProductSelectionModalVisible(true);
-    
+
     message.info(`Opening product selection for row ${targetRowIndex + 1}`);
   };
 
   const handleF7StockSelection = () => {
     // Find the first row that has a product but needs stock or the currently focused row
     let targetRowIndex = -1;
-    
+
     // First, check if there's a currently focused row in the table
     const activeElement = document.activeElement as HTMLElement;
     const focusedRow = activeElement?.closest('tr');
@@ -693,54 +1087,58 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
         }
       }
     }
-    
+
     // If no focused row with product found, find the first row with product but without stock
     if (targetRowIndex === -1) {
-      targetRowIndex = billFormData.items.findIndex(item => item.product_id && !item.stock_id);
+      targetRowIndex = billFormData.items.findIndex(
+        item => item.product_id && !item.stock_id
+      );
     }
-    
+
     // If still no target row, find the first row with product (even if it has stock)
     if (targetRowIndex === -1) {
       targetRowIndex = billFormData.items.findIndex(item => item.product_id);
     }
-    
+
     // If no row with product found, show message
     if (targetRowIndex === -1) {
       message.warning('Please select a product first before selecting stock');
       return;
     }
-    
+
     // Set the target row for stock selection
     setStockModalRowIndex(targetRowIndex);
-    
+
     message.info(`Opening stock selection for row ${targetRowIndex + 1}`);
   };
 
   const handleProductSelectionModalSelect = (product: any) => {
     if (productSelectionRowIndex === null) return;
-    
+
     const newItems = [...billFormData.items];
     newItems[productSelectionRowIndex].product_id = product._id || '';
     newItems[productSelectionRowIndex].product_name = product.name || '';
-    newItems[productSelectionRowIndex].variant_name = product.VariantItem?.variant_name || '';
+    newItems[productSelectionRowIndex].variant_name =
+      product.VariantItem?.variant_name || '';
     newItems[productSelectionRowIndex].price = product.selling_price || 0;
-    
+
     handleItemsChange(newItems);
-    
+
     // Close the product selection modal
     setProductSelectionModalVisible(false);
     setProductSelectionRowIndex(null);
-    
+
     // Open stock selection modal for this row
     setStockModalRowIndex(productSelectionRowIndex);
-    
+
     message.success(`Product "${product.name}" selected successfully!`);
   };
 
   const handleStockSelect = (stock: any) => {
     if (stockModalRowIndex === null) return;
     const newItems = [...billFormData.items];
-    newItems[stockModalRowIndex].stock_id = stock.id || stock._id || stock.invoice_id || '';
+    newItems[stockModalRowIndex].stock_id =
+      stock.id || stock._id || stock.invoice_id || '';
     newItems[stockModalRowIndex].batch_no = stock.batch_no || '';
     handleItemsChange(newItems);
     setStockModalRowIndex(null); // Close stock modal
@@ -752,33 +1150,38 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
   };
 
   // Handle customer selection from modal
-  const handleCustomerSelect = useCallback((customer: any) => {
-    console.log('Customer selected:', customer); // Debug log
-    console.log('handleCustomerSelect called at:', new Date().toISOString()); // Debug timestamp
-    
-    // Prevent duplicate calls
-    if (billFormData.customer_id === customer._id) {
-      console.log('Customer already selected, skipping...');
-      return;
-    }
-    
-    setBillFormData(prev => {
-      const updated = {
-        ...prev,
-        customer_id: customer._id,
-        customer_name: customer.full_name,
-      };
-      console.log('Updated billFormData:', updated); // Debug log
-      return updated;
-    });
-    
-    // Ensure modal closes
-    setTimeout(() => {
-      setCustomerModalVisible(false);
-    }, 50);
-    
-    message.success(`Customer "${customer.full_name}" selected successfully!`);
-  }, [billFormData.customer_id]);
+  const handleCustomerSelect = useCallback(
+    (customer: any) => {
+      console.log('Customer selected:', customer); // Debug log
+      console.log('handleCustomerSelect called at:', new Date().toISOString()); // Debug timestamp
+
+      // Prevent duplicate calls
+      if (billFormData.customer_id === customer._id) {
+        console.log('Customer already selected, skipping...');
+        return;
+      }
+
+      setBillFormData(prev => {
+        const updated = {
+          ...prev,
+          customer_id: customer._id,
+          customer_name: customer.full_name,
+        };
+        console.log('Updated billFormData:', updated); // Debug log
+        return updated;
+      });
+
+      // Ensure modal closes
+      setTimeout(() => {
+        setCustomerModalVisible(false);
+      }, 50);
+
+      message.success(
+        `Customer "${customer.full_name}" selected successfully!`
+      );
+    },
+    [billFormData.customer_id]
+  );
 
   // Handle new bill creation
   const handleNewBill = () => {
@@ -791,7 +1194,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
       payment_mode: 'cash',
       items: [],
     });
-    
+
     // Reset bill settings
     setBillSettings({
       isPaid: true,
@@ -802,14 +1205,14 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
       discountType: 'percentage',
       paidAmount: 0,
     });
-    
+
     setSaveConfirmationVisible(false);
     setSavedBillData(null);
-    
+
     // Generate new invoice number
     InvoiceNumberApi('Create');
     setTimeout(() => InvoiceNumberApi('GetAll'), 500);
-    
+
     message.success('New bill form cleared successfully!');
   };
 
@@ -858,20 +1261,20 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
 
     // Reset any other states
     setSavedBillData(null);
-    
+
     // Show success message
     message.success('Bill form cleared successfully!');
   };
 
-    // Handle view bill from drawer
+  // Handle view bill from drawer
   const handleViewBill = (bill: any) => {
     console.log('Loading bill data:', bill); // Debug log
-    
+
     if (!bill) {
       message.error('No bill data received');
       return;
     }
-    
+
     // Ensure we have the latest data loaded
     ProductsApi('GetAll');
     CustomerApi('GetAll');
@@ -880,18 +1283,18 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
     } else {
       StockAuditApi('GetAll');
     }
-    
+
     // Force immediate data loading if not already loaded
     if (!productList?.result) {
       console.log('Product list not loaded, forcing immediate load...');
       ProductsApi('GetAll');
     }
-    
+
     if (!customerList?.result) {
       console.log('Customer list not loaded, forcing immediate load...');
       CustomerApi('GetAll');
     }
-    
+
     const currentStockList = branchId ? branchStockList : stockAuditList;
     if (!currentStockList?.result) {
       console.log('Stock list not loaded, forcing immediate load...');
@@ -901,7 +1304,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
         StockAuditApi('GetAll');
       }
     }
-    
+
     // Handle different possible data structures for items
     let items = [];
     if (bill.Items && Array.isArray(bill.Items)) {
@@ -913,10 +1316,18 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
     } else if (bill.sales_items && Array.isArray(bill.sales_items)) {
       items = bill.sales_items;
       console.log('Found items in bill.sales_items:', items);
-    } else if (bill.result && bill.result.Items && Array.isArray(bill.result.Items)) {
+    } else if (
+      bill.result &&
+      bill.result.Items &&
+      Array.isArray(bill.result.Items)
+    ) {
       items = bill.result.Items;
       console.log('Found items in bill.result.Items:', items);
-    } else if (bill.result && bill.result.items && Array.isArray(bill.result.items)) {
+    } else if (
+      bill.result &&
+      bill.result.items &&
+      Array.isArray(bill.result.items)
+    ) {
       items = bill.result.items;
       console.log('Found items in bill.result.items:', items);
     } else {
@@ -930,27 +1341,27 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
         console.log('bill.result.items:', bill.result.items);
       }
     }
-    
+
     console.log('Extracted items:', items); // Debug log
-    
+
     // Debug stock information
     items.forEach((item: any, index: number) => {
       console.log(`Item ${index} stock info:`, {
         stock_id: item.stock_id,
         branch_stock_id: item.branch_stock_id,
         stock: item.stock,
-        batch_no: item.batch_no
+        batch_no: item.batch_no,
       });
     });
-    
+
     // Map items with proper fallbacks and enhanced product name resolution
     const mappedItems = items.map((item: any, index: number) => {
       console.log(`Processing item ${index}:`, item);
-      
+
       // Try to get the best product name from various sources
       let productName = '';
       let variantName = '';
-      
+
       if (item.productItems?.name) {
         productName = item.productItems.name;
         variantName = item.productItems.VariantItem?.variant_name || '';
@@ -965,7 +1376,9 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
         console.log(`Found product name in product.name: ${productName}`);
       } else if (item.product_id) {
         // Try to find product name from productList if available
-        const product = productList?.result?.find((p: any) => p._id === item.product_id);
+        const product = productList?.result?.find(
+          (p: any) => p._id === item.product_id
+        );
         if (product) {
           productName = product.name;
           variantName = product.VariantItem?.variant_name || '';
@@ -977,20 +1390,29 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
           }
           // Use a more descriptive placeholder that will be updated later
           productName = `Loading... (ID: ${item.product_id})`;
-          console.log(`Product not found in productList, using placeholder: ${productName}`);
-          
+          console.log(
+            `Product not found in productList, using placeholder: ${productName}`
+          );
+
           // Try to force load and resolve immediately
           setTimeout(() => {
             if (productList?.result) {
-              const foundProduct = productList.result.find((p: any) => p._id === item.product_id);
+              const foundProduct = productList.result.find(
+                (p: any) => p._id === item.product_id
+              );
               if (foundProduct) {
-                console.log(`Immediate resolution found product: ${foundProduct.name}`);
+                console.log(
+                  `Immediate resolution found product: ${foundProduct.name}`
+                );
                 // Update the item directly
                 const updatedItems = [...billFormData.items];
-                const itemIndex = updatedItems.findIndex(i => i.product_id === item.product_id);
+                const itemIndex = updatedItems.findIndex(
+                  i => i.product_id === item.product_id
+                );
                 if (itemIndex !== -1) {
                   updatedItems[itemIndex].product_name = foundProduct.name;
-                  updatedItems[itemIndex].variant_name = foundProduct.VariantItem?.variant_name || '';
+                  updatedItems[itemIndex].variant_name =
+                    foundProduct.VariantItem?.variant_name || '';
                   setBillFormData(prev => ({ ...prev, items: updatedItems }));
                 }
               }
@@ -1000,11 +1422,11 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
       } else {
         console.log(`No product name found for item ${index}`);
       }
-      
+
       // Handle stock information with proper fallbacks
       let stockId = '';
       let batchNo = '';
-      
+
       if (item.stock_id) {
         stockId = item.stock_id;
         batchNo = item.batch_no || '';
@@ -1015,7 +1437,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
         stockId = item.stock;
         batchNo = item.batch_no || '';
       }
-      
+
       // If we have stock_id but no batch_no, try to find it from stock list
       if (stockId && !batchNo) {
         const stockList = branchId ? branchStockList : stockAuditList;
@@ -1033,18 +1455,28 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
             }
           }
           batchNo = `Loading... (Stock: ${stockId})`;
-          console.log(`Stock not found in stock list, using placeholder: ${batchNo}`);
-          
+          console.log(
+            `Stock not found in stock list, using placeholder: ${batchNo}`
+          );
+
           // Try to force load and resolve immediately
           setTimeout(() => {
-            const currentStockList = branchId ? branchStockList : stockAuditList;
+            const currentStockList = branchId
+              ? branchStockList
+              : stockAuditList;
             if (currentStockList?.result) {
-              const foundStock = currentStockList.result.find((s: any) => s._id === stockId);
+              const foundStock = currentStockList.result.find(
+                (s: any) => s._id === stockId
+              );
               if (foundStock) {
-                console.log(`Immediate resolution found stock batch: ${foundStock.batch_no}`);
+                console.log(
+                  `Immediate resolution found stock batch: ${foundStock.batch_no}`
+                );
                 // Update the item directly
                 const updatedItems = [...billFormData.items];
-                const itemIndex = updatedItems.findIndex(i => i.stock_id === stockId);
+                const itemIndex = updatedItems.findIndex(
+                  i => i.stock_id === stockId
+                );
                 if (itemIndex !== -1) {
                   updatedItems[itemIndex].batch_no = foundStock.batch_no || '';
                   setBillFormData(prev => ({ ...prev, items: updatedItems }));
@@ -1054,7 +1486,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
           }, 100);
         }
       }
-      
+
       const mappedItem = {
         _id: item._id || '',
         product_id: item.product_id || item.product || '',
@@ -1069,17 +1501,17 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
         amount: item.amount || 0,
         tax_percentage: item.tax_percentage || 0,
       };
-      
+
       console.log(`Mapped item ${index}:`, mappedItem);
       return mappedItem;
     });
-    
+
     console.log('Final mapped items:', mappedItems); // Debug log
-    
+
     // Handle customer information with fallbacks
     const customerId = bill.customer_id || '';
     let customerName = '';
-    
+
     if (bill.customerDetails?.full_name) {
       customerName = bill.customerDetails.full_name;
     } else if (bill.customer_name) {
@@ -1088,12 +1520,14 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
       customerName = bill.customer.full_name;
     } else if (bill.customer_id) {
       // Try to find customer name from customerList if available
-      const customer = customerList?.result?.find((c: any) => c._id === bill.customer_id);
+      const customer = customerList?.result?.find(
+        (c: any) => c._id === bill.customer_id
+      );
       customerName = customer?.full_name || `Customer ID: ${bill.customer_id}`;
     }
-    
+
     console.log('Customer info - ID:', customerId, 'Name:', customerName);
-    
+
     // Handle date with fallback
     let formattedDate = dayjs().format('YYYY-MM-DD'); // Default to today
     if (bill.date) {
@@ -1104,50 +1538,70 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
         formattedDate = dayjs().format('YYYY-MM-DD');
       }
     }
-    
-    console.log('Date info - Original:', bill.date, 'Formatted:', formattedDate);
-    
+
+    console.log(
+      'Date info - Original:',
+      bill.date,
+      'Formatted:',
+      formattedDate
+    );
+
     // Immediately resolve any available product names and stock info if data is already loaded
     let finalMappedItems = [...mappedItems];
-    
+
     // If product list is already loaded, resolve product names immediately
     if (productList?.result) {
       finalMappedItems = finalMappedItems.map(item => {
-        if (item.product_id && (item.product_name.includes('Loading...') || item.product_name.includes('Product ID:'))) {
-          const product = productList.result.find((p: any) => p._id === item.product_id);
+        if (
+          item.product_id &&
+          (item.product_name.includes('Loading...') ||
+            item.product_name.includes('Product ID:'))
+        ) {
+          const product = productList.result.find(
+            (p: any) => p._id === item.product_id
+          );
           if (product) {
-            console.log(`Immediately resolving product name for ${item.product_id}: ${item.product_name} -> ${product.name}`);
+            console.log(
+              `Immediately resolving product name for ${item.product_id}: ${item.product_name} -> ${product.name}`
+            );
             return {
               ...item,
               product_name: product.name,
-              variant_name: product.VariantItem?.variant_name || ''
+              variant_name: product.VariantItem?.variant_name || '',
             };
           }
         }
         return item;
       });
     }
-    
+
     // If stock list is already loaded, resolve batch numbers immediately
     const stockList = branchId ? branchStockList : stockAuditList;
     if (stockList?.result) {
       finalMappedItems = finalMappedItems.map(item => {
-        if (item.stock_id && (item.batch_no.includes('Loading...') || !item.batch_no)) {
-          const stock = stockList.result.find((s: any) => s._id === item.stock_id);
+        if (
+          item.stock_id &&
+          (item.batch_no.includes('Loading...') || !item.batch_no)
+        ) {
+          const stock = stockList.result.find(
+            (s: any) => s._id === item.stock_id
+          );
           if (stock) {
-            console.log(`Immediately resolving batch_no for stock ${item.stock_id}: ${item.batch_no} -> ${stock.batch_no}`);
+            console.log(
+              `Immediately resolving batch_no for stock ${item.stock_id}: ${item.batch_no} -> ${stock.batch_no}`
+            );
             return {
               ...item,
-              batch_no: stock.batch_no || ''
+              batch_no: stock.batch_no || '',
             };
           }
         }
         return item;
       });
     }
-    
+
     console.log('Final resolved items:', finalMappedItems);
-    
+
     // Load bill data into form with resolved items
     setBillFormData({
       invoice_no: bill.invoice_no || '',
@@ -1157,7 +1611,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
       payment_mode: bill.payment_mode || 'cash',
       items: finalMappedItems,
     });
-    
+
     // Load bill settings with proper fallbacks
     setBillSettings({
       isPaid: bill.is_paid ?? true,
@@ -1168,20 +1622,20 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
       discountType: bill.discount_type || 'percentage',
       paidAmount: bill.paid_amount || 0,
     });
-    
+
     // Show success message
     message.success(`Bill "${bill.invoice_no}" loaded successfully!`);
-    
+
     // Force immediate resolution after a short delay to catch any data that loads asynchronously
     setTimeout(() => {
       forceResolveProductNamesAndStock();
     }, 100);
-    
+
     // Add a more aggressive resolution approach
     setTimeout(() => {
       forceResolveProductNamesAndStock();
     }, 500);
-    
+
     setTimeout(() => {
       forceResolveProductNamesAndStock();
     }, 1000);
@@ -1190,43 +1644,59 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
   // Force resolve product names and stock information
   const forceResolveProductNamesAndStock = () => {
     if (billFormData.items.length === 0) return;
-    
+
     let hasChanges = false;
     const updatedItems = billFormData.items.map(item => {
       let updated = false;
-      
+
       // Resolve product names
       if (item.product_id && productList?.result) {
-        const product = productList.result.find((p: any) => p._id === item.product_id);
-        if (product && (item.product_name.includes('Loading...') || item.product_name.includes('Product ID:') || !item.product_name)) {
+        const product = productList.result.find(
+          (p: any) => p._id === item.product_id
+        );
+        if (
+          product &&
+          (item.product_name.includes('Loading...') ||
+            item.product_name.includes('Product ID:') ||
+            !item.product_name)
+        ) {
           item.product_name = product.name;
           item.variant_name = product.VariantItem?.variant_name || '';
           updated = true;
-          console.log(`Force resolved product name for ${item.product_id}: ${product.name}`);
+          console.log(
+            `Force resolved product name for ${item.product_id}: ${product.name}`
+          );
         }
       }
-      
+
       // Resolve stock batch numbers
       if (item.stock_id) {
         const stockList = branchId ? branchStockList : stockAuditList;
         if (stockList?.result) {
-          const stock = stockList.result.find((s: any) => s._id === item.stock_id);
-          if (stock && (item.batch_no?.includes('Loading...') || !item.batch_no)) {
+          const stock = stockList.result.find(
+            (s: any) => s._id === item.stock_id
+          );
+          if (
+            stock &&
+            (item.batch_no?.includes('Loading...') || !item.batch_no)
+          ) {
             item.batch_no = stock.batch_no || '';
             updated = true;
-            console.log(`Force resolved batch_no for stock ${item.stock_id}: ${stock.batch_no}`);
+            console.log(
+              `Force resolved batch_no for stock ${item.stock_id}: ${stock.batch_no}`
+            );
           }
         }
       }
-      
+
       if (updated) hasChanges = true;
       return item;
     });
-    
+
     if (hasChanges) {
       setBillFormData(prev => ({
         ...prev,
-        items: updatedItems
+        items: updatedItems,
       }));
       console.log('Force resolved items:', updatedItems);
     }
@@ -1257,7 +1727,9 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
   // Handle item deletion
   const handleDeleteItems = (indices: number[]) => {
     setBillFormData(prev => {
-      const newItems = prev.items.filter((_, index:any) => !indices.includes(index?.toString()));
+      const newItems = prev.items.filter(
+        (_, index: any) => !indices.includes(index?.toString())
+      );
       return {
         ...prev,
         items: newItems,
@@ -1290,11 +1762,11 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
       message.error('Please complete all item details');
       return;
     }
-    if(!billFormData.customer_id){
+    if (!billFormData.customer_id) {
       message.error('Please select a customer');
       return;
     }
-    if(!billFormData.payment_mode){
+    if (!billFormData.payment_mode) {
       message.error('Please select a payment mode');
       return;
     }
@@ -1337,7 +1809,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
       } else {
         response = await SalesRecord('Create', payload);
       }
-      
+
       // Show confirmation modal after successful save
       if (response?.statusCode === 200) {
         const savedData = {
@@ -1345,7 +1817,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
           customer_name: billFormData.customer_name,
           total_amount: billCalculations.total_amount,
           invoice_no: payload.invoice_no,
-          date: payload.date
+          date: payload.date,
         };
         setSavedBillData(savedData);
         setSaveConfirmationVisible(true);
@@ -1398,38 +1870,55 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
   useEffect(() => {
     if (productList?.result && billFormData.items.length > 0) {
       // Check if any items have product_id but no product_name or have placeholder text
-      const needsUpdate = billFormData.items.some(item => 
-        item.product_id && (!item.product_name || item.product_name.includes('Loading...') || item.product_name.includes('Product ID:'))
+      const needsUpdate = billFormData.items.some(
+        item =>
+          item.product_id &&
+          (!item.product_name ||
+            item.product_name.includes('Loading...') ||
+            item.product_name.includes('Product ID:'))
       );
-      
+
       if (needsUpdate) {
         console.log('Product list loaded, updating product names...');
         const updatedItems = billFormData.items.map(item => {
-          if (item.product_id && (!item.product_name || item.product_name.includes('Loading...') || item.product_name.includes('Product ID:'))) {
-            const product = productList.result.find((p: any) => p._id === item.product_id);
+          if (
+            item.product_id &&
+            (!item.product_name ||
+              item.product_name.includes('Loading...') ||
+              item.product_name.includes('Product ID:'))
+          ) {
+            const product = productList.result.find(
+              (p: any) => p._id === item.product_id
+            );
             if (product) {
-              console.log(`Updating product name for ${item.product_id}: ${item.product_name} -> ${product.name}`);
+              console.log(
+                `Updating product name for ${item.product_id}: ${item.product_name} -> ${product.name}`
+              );
               return {
                 ...item,
                 product_name: product.name,
-                variant_name: product.VariantItem?.variant_name || ''
+                variant_name: product.VariantItem?.variant_name || '',
               };
             }
           }
           return item;
         });
-        
+
         // Only update if we actually made changes
-        const hasChanges = updatedItems.some((item, index) => 
-          item.product_name !== billFormData.items[index].product_name
+        const hasChanges = updatedItems.some(
+          (item, index) =>
+            item.product_name !== billFormData.items[index].product_name
         );
-        
+
         if (hasChanges) {
           setBillFormData(prev => ({
             ...prev,
-            items: updatedItems
+            items: updatedItems,
           }));
-          console.log('Updated bill items with resolved product names:', updatedItems);
+          console.log(
+            'Updated bill items with resolved product names:',
+            updatedItems
+          );
         }
       }
     }
@@ -1450,37 +1939,49 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
     const stockList = branchId ? branchStockList : stockAuditList;
     if (stockList?.result && billFormData.items.length > 0) {
       // Check if any items have stock_id but no batch_no or have placeholder text
-      const needsUpdate = billFormData.items.some(item => 
-        item.stock_id && (!item.batch_no || item.batch_no.includes('Loading...'))
+      const needsUpdate = billFormData.items.some(
+        item =>
+          item.stock_id &&
+          (!item.batch_no || item.batch_no.includes('Loading...'))
       );
-      
+
       if (needsUpdate) {
         console.log('Stock list loaded, updating batch numbers...');
         const updatedItems = billFormData.items.map(item => {
-          if (item.stock_id && (!item.batch_no || item.batch_no.includes('Loading...'))) {
-            const stock = stockList.result.find((s: any) => s._id === item.stock_id);
+          if (
+            item.stock_id &&
+            (!item.batch_no || item.batch_no.includes('Loading...'))
+          ) {
+            const stock = stockList.result.find(
+              (s: any) => s._id === item.stock_id
+            );
             if (stock) {
-              console.log(`Updating batch_no for stock ${item.stock_id}: ${item.batch_no} -> ${stock.batch_no}`);
+              console.log(
+                `Updating batch_no for stock ${item.stock_id}: ${item.batch_no} -> ${stock.batch_no}`
+              );
               return {
                 ...item,
-                batch_no: stock.batch_no || ''
+                batch_no: stock.batch_no || '',
               };
             }
           }
           return item;
         });
-        
+
         // Only update if we actually made changes
-        const hasChanges = updatedItems.some((item, index) => 
-          item.batch_no !== billFormData.items[index].batch_no
+        const hasChanges = updatedItems.some(
+          (item, index) => item.batch_no !== billFormData.items[index].batch_no
         );
-        
+
         if (hasChanges) {
           setBillFormData(prev => ({
             ...prev,
-            items: updatedItems
+            items: updatedItems,
           }));
-          console.log('Updated bill items with resolved stock information:', updatedItems);
+          console.log(
+            'Updated bill items with resolved stock information:',
+            updatedItems
+          );
         }
       }
     }
@@ -1501,20 +2002,35 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
   useEffect(() => {
     if (billFormData.items.length > 0) {
       const interval = setInterval(() => {
-        const hasUnresolvedItems = billFormData.items.some(item => 
-          (item.product_id && (!item.product_name || item.product_name.includes('Loading...') || item.product_name.includes('Product ID:'))) ||
-          (item.stock_id && (!item.batch_no || item.batch_no.includes('Loading...')))
+        const hasUnresolvedItems = billFormData.items.some(
+          item =>
+            (item.product_id &&
+              (!item.product_name ||
+                item.product_name.includes('Loading...') ||
+                item.product_name.includes('Product ID:'))) ||
+            (item.stock_id &&
+              (!item.batch_no || item.batch_no.includes('Loading...')))
         );
-        
-        if (hasUnresolvedItems && (productList?.result || (branchId ? branchStockList?.result : stockAuditList?.result))) {
+
+        if (
+          hasUnresolvedItems &&
+          (productList?.result ||
+            (branchId ? branchStockList?.result : stockAuditList?.result))
+        ) {
           console.log('Periodic check: Resolving unresolved items...');
           forceResolveProductNamesAndStock();
         }
       }, 1000); // Check every second
-      
+
       return () => clearInterval(interval);
     }
-  }, [billFormData.items, productList, branchStockList, stockAuditList, branchId]);
+  }, [
+    billFormData.items,
+    productList,
+    branchStockList,
+    stockAuditList,
+    branchId,
+  ]);
 
   // Ultra-Fast Billing Keyboard Shortcuts
   useEffect(() => {
@@ -1524,7 +2040,9 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
         e.preventDefault();
         handleAddItem();
         setTimeout(() => {
-          const productCell = document.querySelector('.ant-table-tbody tr:last-child td[data-column-key="product_id"]') as HTMLElement;
+          const productCell = document.querySelector(
+            '.ant-table-tbody tr:last-child td[data-column-key="product_id"]'
+          ) as HTMLElement;
           productCell?.focus();
         }, 200);
       }
@@ -1564,6 +2082,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
         e.preventDefault();
         handleF7StockSelection();
       }
+
       // Ctrl shortcuts
       else if (e.ctrlKey) {
         switch (e.key) {
@@ -1575,7 +2094,9 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
             e.preventDefault();
             handleAddItem();
             setTimeout(() => {
-              const productCell = document.querySelector('.ant-table-tbody tr:last-child td[data-column-key="product_id"]') as HTMLElement;
+              const productCell = document.querySelector(
+                '.ant-table-tbody tr:last-child td[data-column-key="product_id"]'
+              ) as HTMLElement;
               productCell?.focus();
             }, 200);
             break;
@@ -1603,7 +2124,9 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
         e.preventDefault();
         const activeElement = document.activeElement as HTMLElement;
         if (activeElement?.closest('td[data-column-key="qty"]')) {
-          const input = activeElement.querySelector('input') as HTMLInputElement;
+          const input = activeElement.querySelector(
+            'input'
+          ) as HTMLInputElement;
           if (input) {
             input.value = e.key;
             input.dispatchEvent(new Event('change', { bubbles: true }));
@@ -1614,7 +2137,12 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [billFormData, billSettings, handleF5ProductSelection, handleF7StockSelection]);
+  }, [
+    billFormData,
+    billSettings,
+    handleF5ProductSelection,
+    handleF7StockSelection,
+  ]);
 
   return (
     <div className={styles.mainContainer}>
@@ -1644,8 +2172,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
                 {billdata ? '⚡ EDIT INVOICE' : '🚀 NEW INVOICE'}
               </Title>
               <Text className={styles.subtitleText}>
-                ⚡Lightning Fast •{' '}
-                {dayjs().format('DD MMM YYYY, dddd')}
+                ⚡Lightning Fast • {dayjs().format('DD MMM YYYY, dddd')}
               </Text>
             </div>
           </div>
@@ -1653,9 +2180,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
           {/* Controls Section */}
           <div className={styles.controlsSection}>
             <div className={`${styles.controlGroup} ${styles.saleTypeControl}`}>
-              <Text className={styles.controlLabel}>
-                🏪 SALE TYPE
-              </Text>
+              <Text className={styles.controlLabel}>🏪 SALE TYPE</Text>
               <Switch
                 checkedChildren="RETAIL"
                 unCheckedChildren="WHOLESALE"
@@ -1669,9 +2194,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
             </div>
 
             <div className={`${styles.controlGroup} ${styles.gstControl}`}>
-              <Text className={styles.controlLabel}>
-                📊 GST
-              </Text>
+              <Text className={styles.controlLabel}>📊 GST</Text>
               <Switch
                 checkedChildren="INCL"
                 unCheckedChildren="EXCL"
@@ -1685,11 +2208,9 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
             </div>
 
             <div className={`${styles.controlGroup} ${styles.paymentControl}`}>
-              <Text className={styles.controlLabel}>
-                💳 PAYMENT
-              </Text>
+              <Text className={styles.controlLabel}>💳 PAYMENT</Text>
               <Switch
-                checkedChildren="PAID"  
+                checkedChildren="PAID"
                 unCheckedChildren="UNPAID"
                 checked={billSettings.isPaid}
                 onChange={checked =>
@@ -1705,10 +2226,10 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
             </div>
 
             {!billSettings.isPaid && (
-              <div className={`${styles.controlGroup} ${styles.partialPaymentControl}`}>
-                <Text className={styles.controlLabel}>
-                  💰 PARTIAL
-                </Text>
+              <div
+                className={`${styles.controlGroup} ${styles.partialPaymentControl}`}
+              >
+                <Text className={styles.controlLabel}>💰 PARTIAL</Text>
                 <Switch
                   checkedChildren="YES"
                   unCheckedChildren="NO"
@@ -1755,7 +2276,6 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
           size="small"
           rowKey="invoice_no"
         />
-      
       </div>
 
       {/* Items Section with Summary */}
@@ -1766,20 +2286,105 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
         {/* Bill Items Grid */}
         <div className={styles.billItemsGrid}>
           <div className={styles.billItemsHeader}>
-            <Text className={styles.billItemsTitle}>
-              🛒 BILL ITEMS
-            </Text>
-            <Badge
-              count={billFormData.items.length}
-              showZero
-              size="small"
-              style={{ backgroundColor: 'rgba(255,255,255,0.2)' }}
-            >
-              <Text className={styles.billItemsBadge}>
-                Items
-              </Text>
-            </Badge>
+            <Text className={styles.billItemsTitle}>🛒 BILL ITEMS</Text>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Badge
+                count={billFormData.items.length}
+                showZero
+                size="small"
+                style={{ backgroundColor: 'rgba(255,255,255,0.2)' }}
+              >
+                <Text className={styles.billItemsBadge}>Items</Text>
+              </Badge>
+              <Text
+                style={{
+                  fontSize: '10px',
+                  color: '#666',
+                  backgroundColor: '#f0f0f0',
+                  padding: '2px 6px',
+                  borderRadius: '4px',
+                  border: '1px solid #d9d9d9',
+                }}
+              ></Text>
+            </div>
           </div>
+
+          {/* Stock Validation Summary */}
+          {/* {(() => {
+            const stockValidationSummary = billFormData.items
+              .filter(item => item.stock_id && (item.qty || item.loose_qty))
+              .map(item => {
+                const stockList = branchId ? branchStockList : stockAuditList;
+                const stock = stockList?.result?.find((s: any) => s._id === item.stock_id);
+                const availableQty = stock?.available_quantity || 0;
+                const totalEnteredQty = (item.qty || 0) + (item.loose_qty || 0);
+                const isValid = totalEnteredQty <= availableQty;
+                const remainingQty = Math.max(0, availableQty - totalEnteredQty);
+                
+                return {
+                  productName: item.product_name || 'Unknown Product',
+                  batchNo: item.batch_no || 'No Batch',
+                  availableQty,
+                  enteredQty: totalEnteredQty,
+                  remainingQty,
+                  isValid,
+                  isLowStock: remainingQty > 0 && remainingQty <= 5
+                };
+              });
+
+            const hasValidationIssues = stockValidationSummary.some(item => !item.isValid);
+            const hasLowStock = stockValidationSummary.some(item => item.isLowStock);
+
+            if (stockValidationSummary.length === 0) return null;
+
+            return (
+              <div style={{
+                marginBottom: '16px',
+                padding: '12px',
+                borderRadius: '8px',
+                backgroundColor: hasValidationIssues ? '#fff2f0' : hasLowStock ? '#fffbe6' : '#f6ffed',
+                border: `1px solid ${hasValidationIssues ? '#ffccc7' : hasLowStock ? '#ffe58f' : '#b7eb8f'}`,
+                fontSize: '12px'
+              }}>
+                <div style={{ 
+                  fontWeight: 'bold', 
+                  marginBottom: '8px',
+                  color: hasValidationIssues ? '#cf1322' : hasLowStock ? '#d48806' : '#389e0d'
+                }}>
+                  📊 Stock Validation Summary
+                </div>
+                {stockValidationSummary.map((item, index) => (
+                  <div key={index} style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    padding: '4px 0',
+                    borderBottom: index < stockValidationSummary.length - 1 ? '1px solid #f0f0f0' : 'none'
+                  }}>
+                    <span style={{ fontWeight: '500' }}>
+                      {item.productName} ({item.batchNo})
+                    </span>
+                    <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+                      <span>Available: {item.availableQty}</span>
+                      <span>Entered: {item.enteredQty}</span>
+                      <span>Remaining: {item.remainingQty}</span>
+                      <span style={{
+                        color: item.isValid ? '#52c41a' : '#ff4d4f',
+                        fontWeight: 'bold'
+                      }}>
+                        {item.isValid ? '✅ Valid' : '❌ Exceeds Stock'}
+                      </span>
+                      {item.isLowStock && (
+                        <span style={{ color: '#faad14', fontWeight: 'bold' }}>
+                          ⚠️ Low Stock
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            );
+          })()} */}
 
           <AntdEditableTable
             columns={itemColumns}
@@ -1806,53 +2411,41 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
           <div className={styles.summaryCircle2} />
           {/* Header */}
           <div className={styles.summaryHeader}>
-            <Text className={styles.summaryTitle}>
-              💰 BILL SUMMARY
-            </Text>
+            <Text className={styles.summaryTitle}>💰 BILL SUMMARY</Text>
           </div>
 
           {/* Summary Table */}
           <div className={styles.summaryTable}>
             <div className={styles.summaryRow}>
-              <Text className={styles.summaryLabel}>
-                Sub Total:
-              </Text>
+              <Text className={styles.summaryLabel}>Sub Total:</Text>
               <Text className={styles.summaryValue}>
                 ₹{billCalculations.sub_total.toFixed(2)}
               </Text>
             </div>
 
             <div className={styles.summaryRow}>
-              <Text className={styles.summaryLabel}>
-                Value of Goods:
-              </Text>
+              <Text className={styles.summaryLabel}>Value of Goods:</Text>
               <Text className={styles.summaryValue}>
                 ₹{billCalculations.value_of_goods.toFixed(2)}
               </Text>
             </div>
 
             <div className={styles.summaryRow}>
-              <Text className={styles.summaryLabel}>
-                Total GST:
-              </Text>
+              <Text className={styles.summaryLabel}>Total GST:</Text>
               <Text className={styles.summaryValue}>
                 ₹{billCalculations.total_gst.toFixed(2)}
               </Text>
             </div>
 
             <div className={styles.summaryRow}>
-              <Text className={styles.summaryLabel}>
-                CGST:
-              </Text>
+              <Text className={styles.summaryLabel}>CGST:</Text>
               <Text className={styles.summaryValue}>
                 ₹{billCalculations.cgst.toFixed(2)}
               </Text>
             </div>
 
             <div className={styles.summaryRow}>
-              <Text className={styles.summaryLabel}>
-                SGST:
-              </Text>
+              <Text className={styles.summaryLabel}>SGST:</Text>
               <Text className={styles.summaryValue}>
                 ₹{billCalculations.sgst.toFixed(2)}
               </Text>
@@ -1860,27 +2453,28 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
 
             {billSettings.discount > 0 && (
               <div className={styles.summaryRow}>
-                <Text className={styles.summaryLabel}>
-                  DISCOUNT:
-                </Text>
+                <Text className={styles.summaryLabel}>DISCOUNT:</Text>
                 <Text className={styles.discountValue}>
                   -₹
                   {billSettings.discountType === 'percentage'
                     ? (
                         ((billCalculations.sub_total +
                           billCalculations.total_gst) *
-                          (typeof billSettings.discount === 'number' ? billSettings.discount : 0)) /
+                          (typeof billSettings.discount === 'number'
+                            ? billSettings.discount
+                            : 0)) /
                         100
                       ).toFixed(2)
-                    : (typeof billSettings.discount === 'number' ? billSettings.discount : 0).toFixed(2)}
+                    : (typeof billSettings.discount === 'number'
+                        ? billSettings.discount
+                        : 0
+                      ).toFixed(2)}
                 </Text>
               </div>
             )}
 
             <div className={styles.totalAmountRow}>
-              <Text className={styles.totalAmountLabel}>
-                NET/EXC/REPL:
-              </Text>
+              <Text className={styles.totalAmountLabel}>NET/EXC/REPL:</Text>
               <Text className={styles.totalAmountValue}>
                 ₹{billCalculations.total_amount.toFixed(2)}
               </Text>
@@ -1889,21 +2483,26 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
             {billSettings.isPartiallyPaid && (
               <div className={styles.partialPaymentInfo}>
                 <div className={styles.partialPaymentRow}>
-                  <Text className={styles.partialPaymentLabel}> 
+                  <Text className={styles.partialPaymentLabel}>
                     Paid Amount:
                   </Text>
                   <Text className={styles.partialPaymentValue}>
-                    ₹{(typeof billSettings.paidAmount === 'number' ? billSettings.paidAmount : 0).toFixed(2)}
+                    ₹
+                    {(typeof billSettings.paidAmount === 'number'
+                      ? billSettings.paidAmount
+                      : 0
+                    ).toFixed(2)}
                   </Text>
                 </div>
                 <div className={styles.partialPaymentRow}>
-                  <Text className={styles.partialPaymentLabel}>
-                    Balance:
-                  </Text>
+                  <Text className={styles.partialPaymentLabel}>Balance:</Text>
                   <Text className={styles.partialPaymentValue}>
                     ₹
                     {(
-                      billCalculations.total_amount - (typeof billSettings.paidAmount === 'number' ? billSettings.paidAmount : 0)
+                      billCalculations.total_amount -
+                      (typeof billSettings.paidAmount === 'number'
+                        ? billSettings.paidAmount
+                        : 0)
                     ).toFixed(2)}
                   </Text>
                 </div>
@@ -1915,9 +2514,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
           <div className={styles.controlsContainer}>
             {/* Discount Controls */}
             <div className={styles.discountControl}>
-              <Text className={styles.discountControlLabel}>
-                💸 DISCOUNT
-              </Text>
+              <Text className={styles.discountControlLabel}>💸 DISCOUNT</Text>
               <div className={styles.discountControlInputs}>
                 <InputNumber
                   min={0}
@@ -1992,23 +2589,23 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
             🚀 {billdata ? 'UPDATE' : 'SAVE BILL'} (F2)
           </Button>
 
-                     <Button
-             size="large"
-             icon={<FileTextOutlined />}
-             onClick={() => setBillListDrawerVisible(true)}
-             className={styles.billListButton}
-           >
-             📋 BILL LIST (F6)
-           </Button>
+          <Button
+            size="large"
+            icon={<FileTextOutlined />}
+            onClick={() => setBillListDrawerVisible(true)}
+            className={styles.billListButton}
+          >
+            📋 BILL LIST (F6)
+          </Button>
 
-           <Button
-             size="large"
-             icon={<ClearOutlined />}
-             onClick={handleClearBill}
-             className={styles.clearButton}
-           >
-             🧹 CLEAR (F4)
-           </Button>
+          <Button
+            size="large"
+            icon={<ClearOutlined />}
+            onClick={handleClearBill}
+            className={styles.clearButton}
+          >
+            🧹 CLEAR (F4)
+          </Button>
 
           <Button
             size="large"
@@ -2041,8 +2638,9 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
               }}
             >
               ⚡ <strong>Keyboard Shortcuts:</strong> Ctrl+S (Save) • Ctrl+N
-              (Add) • Ctrl+D/Del (Delete) • Tab/Shift+Tab (Navigate) • Enter
-              (Edit) • Esc (Cancel) • End (Customer Modal) • F4 (Clear) • F5 (Product Selection) • F6 (Bill List) • F7 (Stock Selection)
+              (Add) • Tab/Shift+Tab (Navigate) • Enter (Edit) • Esc (Cancel) •
+              End (Customer) • F4 (Clear) • F5 (Product) • F6 (Bill List) • F7
+              (Stock)
             </Text>
           </div>
         </div>
@@ -2055,7 +2653,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
           productId={billFormData.items[stockModalRowIndex]?.product_id || ''}
         />
       )}
-      
+
       {/* Customer Selection Modal */}
       <CustomerSelectionModal
         visible={customerModalVisible}
