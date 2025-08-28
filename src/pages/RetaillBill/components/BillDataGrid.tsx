@@ -248,7 +248,10 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
   useEffect(() => {
     ProductsApi('GetAll');
     CustomerApi('GetAll');
-    InvoiceNumberApi('GetAll');
+    // Only get invoice number for new bills, not when editing existing bills
+    if (!billdata) {
+      InvoiceNumberApi('GetAll');
+    }
 
     if (billdata) {
       setBillFormData({
@@ -1238,7 +1241,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
 
   // Handle new bill creation
   const handleNewBill = () => {
-    resetBill();
+    resetBill(false); // Don't show resetBill message
     setSaveConfirmationVisible(false);
     setSavedBillData(null);
     message.success('New bill form cleared successfully!');
@@ -1292,16 +1295,12 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
     setSelectedProductId('');
     setProductSelectionModalVisible(false);
     setProductSelectionRowIndex(null);
-
-    // Generate new invoice number
-    InvoiceNumberApi('Create');
-    setTimeout(() => InvoiceNumberApi('GetAll'), 500);
-    
+    InvoiceNumberApi('GetAll');
     // Only show message if explicitly requested (not during auto-reset after bill creation)
     if (showMessage) {
       message.success('Ready for next bill!', 2);
     }
-  }, [InvoiceNumberApi]);
+  }, []);
 
   // Handle continue with current bill
   const handleContinueBill = () => {
@@ -1311,7 +1310,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
 
   // Handle clear bill form
   const handleClearBill = () => {
-    resetBill();
+    resetBill(false); // Don't show resetBill message
     message.success('Bill form cleared successfully!');
   };
 
@@ -2094,7 +2093,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
           case 'r':
             e.preventDefault();
             // Reset form completely
-            resetBill();
+            resetBill(); // Show message for manual reset via keyboard
             break;
         }
       }
