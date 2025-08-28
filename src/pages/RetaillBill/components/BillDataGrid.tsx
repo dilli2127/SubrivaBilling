@@ -1146,6 +1146,14 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
     message.info(`Opening product selection for row ${targetRowIndex + 1}`);
   };
 
+  // Helper function to auto-open product modal (used after bill creation)
+  const autoOpenProductModal = useCallback(() => {
+    console.log('Auto-opening product selection modal for new bill...');
+    setProductSelectionRowIndex(0); // Target the first row
+    setProductSelectionModalVisible(true);
+    message.success('🎉 Bill saved! Ready for next bill - Select product to continue.', 4);
+  }, []);
+
   const handleF7StockSelection = () => {
     // Find the first row that has a product but needs stock or the currently focused row
     let targetRowIndex = -1;
@@ -1268,7 +1276,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
   };
 
   // Reset bill function - comprehensive reset for after successful save
-  const resetBill = useCallback(() => {
+  const resetBill = useCallback((showMessage = true) => {
     console.log('🔄 Starting bill reset...');
     
     // Clear all form data for new bill
@@ -1328,8 +1336,10 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
     
     console.log('🎉 Bill reset completed!');
     
-    // Show a subtle success message for reset completion
-    message.success('Ready for next bill!', 2);
+    // Only show message if explicitly requested (not during auto-reset after bill creation)
+    if (showMessage) {
+      message.success('Ready for next bill!', 2);
+    }
   }, [InvoiceNumberApi]);
 
   // Handle continue with current bill
@@ -1940,13 +1950,9 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
     SalesRecord.getIdentifier('Update')
   );
 
-  useHandleApiResponse({
-    action: 'create',
-    title: 'Bill',
-    identifier: SalesRecord.getIdentifier('Create'),
-    entityApi: SalesRecord,
-  });
-
+  // Note: Removed useHandleApiResponse for 'create' to avoid duplicate success messages
+  // Bill creation success is handled manually in useEffect below
+  
   useHandleApiResponse({
     action: 'update',
     title: 'Bill',
@@ -1965,11 +1971,16 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
         // Close confirmation modal first, then reset immediately
         setSaveConfirmationVisible(false);
         setTimeout(() => {
-          resetBill();
+          resetBill(false); // Don't show "Ready for next bill!" message
+          
+          // Auto-open product selection modal for the first row after reset
+          setTimeout(() => {
+            autoOpenProductModal();
+          }, 200); // Wait for reset to complete
         }, 100); // Minimal delay just to close modal smoothly
       }
     }
-  }, [createItems, billdata, resetBill, onSuccess]);
+  }, [createItems, billdata, resetBill, onSuccess, autoOpenProductModal]);
 
   // Handle update success
   useEffect(() => {
