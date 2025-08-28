@@ -7,7 +7,7 @@ export function useLocalStorage<T>(key: string, initialValue: T) {
       const item = window.localStorage.getItem(key);
       return item ? JSON.parse(item) : initialValue;
     } catch (error) {
-      console.error(`Error reading localStorage key "${key}":`, error);
+
       return initialValue;
     }
   });
@@ -20,7 +20,7 @@ export function useLocalStorage<T>(key: string, initialValue: T) {
       setStoredValue(valueToStore);
       window.localStorage.setItem(key, JSON.stringify(valueToStore));
     } catch (error) {
-      console.error(`Error setting localStorage key "${key}":`, error);
+
     }
   }, [key, storedValue]);
 
@@ -30,7 +30,7 @@ export function useLocalStorage<T>(key: string, initialValue: T) {
       setStoredValue(initialValue);
       window.localStorage.removeItem(key);
     } catch (error) {
-      console.error(`Error removing localStorage key "${key}":`, error);
+
     }
   }, [key, initialValue]);
 
@@ -44,7 +44,7 @@ export function useSessionStorage<T>(key: string, initialValue: T) {
       const item = window.sessionStorage.getItem(key);
       return item ? JSON.parse(item) : initialValue;
     } catch (error) {
-      console.error(`Error reading sessionStorage key "${key}":`, error);
+
       return initialValue;
     }
   });
@@ -57,7 +57,7 @@ export function useSessionStorage<T>(key: string, initialValue: T) {
       setStoredValue(valueToStore);
       window.sessionStorage.setItem(key, JSON.stringify(valueToStore));
     } catch (error) {
-      console.error(`Error setting sessionStorage key "${key}":`, error);
+
     }
   }, [key, storedValue]);
 
@@ -67,7 +67,7 @@ export function useSessionStorage<T>(key: string, initialValue: T) {
       setStoredValue(initialValue);
       window.sessionStorage.removeItem(key);
     } catch (error) {
-      console.error(`Error removing sessionStorage key "${key}":`, error);
+
     }
   }, [key, initialValue]);
 

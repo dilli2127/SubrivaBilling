@@ -241,7 +241,7 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
       ),
     [selectedKey, handleMenuClick]
   );
-  console.log('userItem', userItem);
+
   // Dynamic greeting based on time
   const getGreeting = () => {
     const hour = new Date().getHours();

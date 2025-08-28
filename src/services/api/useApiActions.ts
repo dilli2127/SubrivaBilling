@@ -31,7 +31,7 @@ const getApiRoute = (entityName: string, action: string): ApiRoute => {
     const route = (API_ROUTES as any)[entityName]?.[action];
 
     if (!route) {
-      console.error(`API route for ${entityName}.${action} is not defined.`);
+
       throw new Error(`API route for ${entityName}.${action} is not defined.`);
     }
 
@@ -54,14 +54,14 @@ const getApiRoute = (entityName: string, action: string): ApiRoute => {
 
   const functionName = actionMap[action];
   if (!functionName || !(operations as any)[functionName]) {
-    console.error(`API route for ${entityName}.${action} is not defined.`);
+
     throw new Error(`API route for ${entityName}.${action} is not defined.`);
   }
 
   const route = (operations as any)[functionName]();
 
   if (!route) {
-    console.error(`API route for ${entityName}.${action} returned undefined.`);
+
     throw new Error(
       `API route for ${entityName}.${action} returned undefined.`
     );

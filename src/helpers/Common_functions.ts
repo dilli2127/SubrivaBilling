@@ -14,7 +14,7 @@ export const createApiRouteGetter = <T extends keyof typeof API_ROUTES>(entityNa
   return (action: keyof typeof API_ROUTES[T]) => {
     const route = API_ROUTES?.[entityName]?.[action];
     if (!route) {
-      console.error(`API_ROUTES.${String(entityName)}.${String(action)} is undefined.`);
+
       throw new Error(`API route for ${String(entityName)}.${String(action)} is not defined.`);
     }
     return route;

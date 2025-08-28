@@ -99,7 +99,7 @@ const BillListDrawer: React.FC<BillListDrawerProps> = ({
   };
 
   const handleViewBill = (bill: any) => {
-    console.log('BillListDrawer - Bill to view:', bill); // Debug log
+
     onViewBill(bill);
     onClose();
   };

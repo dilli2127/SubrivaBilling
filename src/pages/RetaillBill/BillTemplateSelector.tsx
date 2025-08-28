@@ -19,6 +19,30 @@ const sampleBillData = {
   total: 350,
 };
 
+// Optimized style objects to prevent recreation on every render
+const containerStyle = {
+  display: 'flex',
+  gap: 32,
+  flexWrap: 'wrap' as const,
+  justifyContent: 'center' as const,
+  margin: '32px 0',
+};
+
+const previewButtonStyle = {
+  position: 'absolute' as const,
+  right: 16,
+  bottom: 16,
+  padding: '0 12px',
+  borderRadius: 6,
+};
+
+const modalContentStyle = {
+  background: '#fafafa',
+  borderRadius: 12,
+  padding: 16,
+  minHeight: 300,
+};
+
 const BillTemplateSelector: React.FC<BillTemplateSelectorProps> = ({
   selected,
   onSelect,
@@ -47,15 +71,7 @@ const BillTemplateSelector: React.FC<BillTemplateSelectorProps> = ({
 
   return (
     <>
-      <div
-        style={{
-          display: 'flex',
-          gap: 32,
-          flexWrap: 'wrap',
-          justifyContent: 'center',
-          margin: '32px 0',
-        }}
-      >
+      <div style={containerStyle}>
         {Object.entries(billingTemplates).map(([key, tpl]) => {
           const isSelected = selected === key;
 
@@ -141,13 +157,7 @@ const BillTemplateSelector: React.FC<BillTemplateSelectorProps> = ({
                 type="primary"
                 ghost
                 size="small"
-                style={{
-                  position: 'absolute',
-                  right: 16,
-                  bottom: 16,
-                  padding: '0 12px',
-                  borderRadius: 6,
-                }}
+                style={previewButtonStyle}
                 onClick={e => {
                   e.stopPropagation(); // Prevent parent div click
                   handlePreview(key as BillingTemplateKey);
@@ -180,12 +190,7 @@ const BillTemplateSelector: React.FC<BillTemplateSelectorProps> = ({
       >
         {previewKey && (
           <div
-            style={{
-              background: '#fafafa',
-              borderRadius: 12,
-              padding: 16,
-              minHeight: 300,
-            }}
+            style={modalContentStyle}
           >
             {React.createElement(billingTemplates[previewKey].component, {
               billData: sampleBillData,

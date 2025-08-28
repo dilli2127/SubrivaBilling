@@ -25,7 +25,7 @@ export const useFileUpload = () => {
         throw new Error("File upload failed");
       }
     } catch (error) {
-      console.error("Upload error:", error);
+
       message.error("File upload failed!");
     }
   };

@@ -66,7 +66,7 @@ const PerformanceMonitor: React.FC<PerformanceMonitorProps> = ({
   useEffect(() => {
     if (enableErrorTracking) {
       const handleError = (event: ErrorEvent) => {
-        console.error('Application Error:', event.error);
+
         setMetrics(prev => ({ ...prev, errorCount: prev.errorCount + 1 }));
         
         // You can send error to external service here
@@ -74,7 +74,7 @@ const PerformanceMonitor: React.FC<PerformanceMonitorProps> = ({
       };
 
       const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
-        console.error('Unhandled Promise Rejection:', event.reason);
+
         setMetrics(prev => ({ ...prev, errorCount: prev.errorCount + 1 }));
       };
 
@@ -116,15 +116,15 @@ const PerformanceMonitor: React.FC<PerformanceMonitorProps> = ({
   // Log performance warnings
   useEffect(() => {
     if (metrics.pageLoadTime > 3000) {
-      console.warn('Slow page load detected:', metrics.pageLoadTime, 'ms');
+
     }
     
     if (metrics.memoryUsage > 100) {
-      console.warn('High memory usage detected:', metrics.memoryUsage, 'MB');
+
     }
     
     if (metrics.errorCount > 5) {
-      console.warn('High error count detected:', metrics.errorCount);
+
     }
   }, [metrics]);
 

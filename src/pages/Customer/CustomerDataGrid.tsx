@@ -142,7 +142,7 @@ const CustomerDataGrid: React.FC = () => {
       }, 500);
       
     } catch (error) {
-      console.error('Error saving customers:', error);
+
       message.error('Failed to save customers');
     }
   };
@@ -178,7 +178,7 @@ const CustomerDataGrid: React.FC = () => {
       
       message.success(`${indices.length} customer(s) deleted successfully!`);
     } catch (error) {
-      console.error('Error deleting customers:', error);
+
       message.error('Failed to delete customers');
     }
   };

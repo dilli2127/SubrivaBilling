@@ -123,9 +123,10 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
   const [productSelectionRowIndex, setProductSelectionRowIndex] = useState<
     number | null
   >(null);
+  const [lastInteractedRowIndex, setLastInteractedRowIndex] = useState<number>(0);
 
-  // User info
-  const user = JSON.parse(sessionStorage.getItem('user') || '{}');
+  // User info - memoized to prevent re-parsing on every render
+  const user = useMemo(() => JSON.parse(sessionStorage.getItem('user') || '{}'), []);
   const branchId = user?.branch_id;
 
   // Helper function to validate stock quantities
@@ -195,8 +196,8 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
     };
   };
 
-  // Handle quantity change with validation
-  const handleQuantityChange = (
+  // Handle quantity change with validation - memoized to prevent column recreation
+  const handleQuantityChange = useCallback((
     rowIndex: number,
     field: 'qty' | 'loose_qty',
     value: number
@@ -242,7 +243,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
     }
 
     setBillFormData(prev => ({ ...prev, items: newItems }));
-  };
+  }, [billFormData.items, validateStockQuantity]);
 
   // Initialize data
   useEffect(() => {
@@ -343,8 +344,8 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
     return options;
   }, [customerList]);
 
-  // Column definitions for bill header
-  const headerColumns: AntdEditableColumn[] = [
+  // Column definitions for bill header - memoized to prevent recreation
+  const headerColumns: AntdEditableColumn[] = useMemo(() => [
     {
       key: 'invoice_no',
       title: '📄 INVOICE #',
@@ -430,7 +431,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
       required: true,
       width: 150,
     },
-  ];
+  ], [customerOptions]);
 
   const headerData = useMemo(
     () => [
@@ -449,8 +450,8 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
     ]
   );
 
-  // Column definitions for bill items
-  const itemColumns: AntdEditableColumn[] = [
+  // Column definitions for bill items - memoized to prevent recreation
+  const itemColumns: AntdEditableColumn[] = useMemo(() => [
     {
       key: 'product_id',
       title: '🛒 PRODUCT',
@@ -488,6 +489,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
                 // Open product selection modal
                 if (typeof index === 'number') {
                   setProductSelectionRowIndex(index);
+                  setLastInteractedRowIndex(index); // Track this row for F5
                   setProductSelectionModalVisible(true);
                 }
               }}
@@ -896,7 +898,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
         <InputNumber value={value} disabled style={{ width: '100%' }} />
       ),
     },
-  ];
+  ], [productOptions, branchId, branchStockList, stockAuditList, handleQuantityChange]);
 
   // Find the column index for qty
   const qtyColIndex = itemColumns.findIndex(
@@ -925,8 +927,8 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
     });
   }, [billFormData.items, productList, billSettings]);
 
-  // Handle header changes
-  const handleHeaderChange = (headerRows: any[]) => {
+  // Handle header changes - memoized to prevent unnecessary re-renders
+  const handleHeaderChange = useCallback((headerRows: any[]) => {
     const updatedHeader = headerRows[0];
     if (updatedHeader) {
       // Find customer name for display
@@ -942,10 +944,10 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
         payment_mode: updatedHeader.payment_mode || 'cash',
       }));
     }
-  };
+  }, [customerList]);
 
-  // Handle item changes
-  const handleItemsChange = (items: any[]) => {
+  // Handle item changes - memoized to prevent unnecessary re-renders
+  const handleItemsChange = useCallback((items: any[]) => {
     // Convert back to BillItem format and auto-populate stock
     const billItems: BillItem[] = items.map(item => {
       const billItem: BillItem = {
@@ -1083,9 +1085,9 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
     });
 
     setBillFormData(prev => ({ ...prev, items: updatedItems }));
-  };
+  }, [productOptions, branchId, branchStockList, stockAuditList, productList, billSettings]);
 
-  const handleProductSelect = (product: any, rowIndex: number) => {
+  const handleProductSelect = useCallback((product: any, rowIndex: number) => {
     const newItems = [...billFormData.items];
     // Robustly set product_id from product.id or product._id
     newItems[rowIndex].product_id = product.id || product._id || '';
@@ -1093,23 +1095,50 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
     newItems[rowIndex].price = product.selling_price || 0;
     handleItemsChange(newItems);
     setStockModalRowIndex(rowIndex); // Open stock modal for this row
-  };
+  }, [handleItemsChange]);
 
   const handleF5ProductSelection = () => {
-    // Find the first row that needs a product or the currently focused row
     let targetRowIndex = -1;
 
-    // First, check if there's a currently focused row in the table
+    // Check what element is currently focused
     const activeElement = document.activeElement as HTMLElement;
+    
+    // First, check if there's a currently focused row in the table
     const focusedRow = activeElement?.closest('tr');
+    
     if (focusedRow) {
       const rowIndex = focusedRow.getAttribute('data-row-key');
+      
       if (rowIndex !== null) {
         targetRowIndex = parseInt(rowIndex);
       }
+    } else {
+      // Try alternative method: look for any focused cell in the table
+      const focusedCell = activeElement?.closest('td');
+      if (focusedCell) {
+        const row = focusedCell.closest('tr');
+        if (row) {
+          const rowIndex = row.getAttribute('data-row-key');
+          if (rowIndex !== null) {
+            targetRowIndex = parseInt(rowIndex);
+          }
+        }
+      }
     }
 
-    // If no focused row found, find the first row without a product
+    // If no focused row found, try using the externally editing cell row
+    if (targetRowIndex === -1 && externalEditingCell) {
+      targetRowIndex = externalEditingCell.row;
+    }
+
+    // If still no target, try using the last interacted row
+    if (targetRowIndex === -1) {
+      if (lastInteractedRowIndex < billFormData.items.length) {
+        targetRowIndex = lastInteractedRowIndex;
+      }
+    }
+
+    // If still no target, find the first row without a product
     if (targetRowIndex === -1) {
       targetRowIndex = billFormData.items.findIndex(item => !item.product_id);
     }
