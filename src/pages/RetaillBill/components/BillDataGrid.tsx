@@ -41,23 +41,7 @@ interface BillDataGridProps {
 const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
   const { getEntityApi } = useApiActions();
 
-  /*
-   * STOCK QUANTITY VALIDATION LOGIC:
-   * 
-   * This component implements pack-based stock validation where:
-   * - available_quantity = number of complete packs/boxes
-   * - available_loose_quantity = individual loose items
-   * - pack_size = items per pack (e.g., 15 tablets per strip)
-   * 
-   * Validation Rule: available_loose_quantity should equal (available_quantity × pack_size)
-   * Example: If you have 1 pack with pack_size=15, then loose_quantity should be 15
-   * 
-   * Total Available Items = (available_quantity × pack_size) + available_loose_quantity
-   */
-
   // Utility function to validate stock quantities based on pack size
-  // This function validates that the entered quantities don't exceed available stock
-  // No longer validates that loose_qty must equal available_quantity × pack_size
   const validateStockQuantities = useCallback((stock: any, productItem: any) => {
     if (!stock || !productItem?.VariantItem?.pack_size) return { isValid: true, expectedLoose: 0, totalAvailable: 0 };
     
@@ -336,11 +320,6 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
     }
   }, [billdata, billFormData.items.length]);
 
-  // Debug: Monitor billFormData changes
-  useEffect(() => {
-    console.log('billFormData changed:', billFormData);
-  }, [billFormData]);
-
   // Product and stock options
   const productOptions = useMemo(
     () =>
@@ -358,7 +337,6 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
         label: `${customer.full_name} - ${customer.mobile}`,
         value: customer._id,
       })) || [];
-    console.log('Customer options:', options); // Debug log
     return options;
   }, [customerList]);
 
@@ -1148,7 +1126,6 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
 
   // Helper function to auto-open product modal (used after bill creation)
   const autoOpenProductModal = useCallback(() => {
-    console.log('Auto-opening product selection modal for new bill...');
     setProductSelectionRowIndex(0); // Target the first row
     setProductSelectionModalVisible(true);
     message.success('🎉 Bill saved! Ready for next bill - Select product to continue.', 4);
@@ -1236,24 +1213,16 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
   // Handle customer selection from modal
   const handleCustomerSelect = useCallback(
     (customer: any) => {
-      console.log('Customer selected:', customer); // Debug log
-      console.log('handleCustomerSelect called at:', new Date().toISOString()); // Debug timestamp
-
       // Prevent duplicate calls
       if (billFormData.customer_id === customer._id) {
-        console.log('Customer already selected, skipping...');
         return;
       }
 
-      setBillFormData(prev => {
-        const updated = {
-          ...prev,
-          customer_id: customer._id,
-          customer_name: customer.full_name,
-        };
-        console.log('Updated billFormData:', updated); // Debug log
-        return updated;
-      });
+      setBillFormData(prev => ({
+        ...prev,
+        customer_id: customer._id,
+        customer_name: customer.full_name,
+      }));
 
       // Ensure modal closes
       setTimeout(() => {
@@ -1277,8 +1246,6 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
 
   // Reset bill function - comprehensive reset for after successful save
   const resetBill = useCallback((showMessage = true) => {
-    console.log('🔄 Starting bill reset...');
-    
     // Clear all form data for new bill
     setBillFormData({
       invoice_no: '',
@@ -1302,7 +1269,6 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
         },
       ],
     });
-    console.log('✅ Form data reset');
 
     // Reset bill settings to defaults
     setBillSettings({
@@ -1314,7 +1280,6 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
       discountType: 'percentage',
       paidAmount: 0,
     });
-    console.log('✅ Bill settings reset');
 
     // Reset all modal states
     setStockModalRowIndex(null);
@@ -1327,14 +1292,10 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
     setSelectedProductId('');
     setProductSelectionModalVisible(false);
     setProductSelectionRowIndex(null);
-    console.log('✅ Modal states reset');
 
     // Generate new invoice number
     InvoiceNumberApi('Create');
     setTimeout(() => InvoiceNumberApi('GetAll'), 500);
-    console.log('✅ New invoice number requested');
-    
-    console.log('🎉 Bill reset completed!');
     
     // Only show message if explicitly requested (not during auto-reset after bill creation)
     if (showMessage) {
@@ -1356,8 +1317,6 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
 
   // Handle view bill from drawer
   const handleViewBill = (bill: any) => {
-    console.log('Loading bill data:', bill); // Debug log
-
     if (!bill) {
       message.error('No bill data received');
       return;
@@ -1374,18 +1333,15 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
 
     // Force immediate data loading if not already loaded
     if (!productList?.result) {
-      console.log('Product list not loaded, forcing immediate load...');
       ProductsApi('GetAll');
     }
 
     if (!customerList?.result) {
-      console.log('Customer list not loaded, forcing immediate load...');
       CustomerApi('GetAll');
     }
 
     const currentStockList = branchId ? branchStockList : stockAuditList;
     if (!currentStockList?.result) {
-      console.log('Stock list not loaded, forcing immediate load...');
       if (branchId) {
         BranchStock('GetAll');
       } else {
@@ -1397,55 +1353,26 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
     let items = [];
     if (bill.Items && Array.isArray(bill.Items)) {
       items = bill.Items;
-      console.log('Found items in bill.Items:', items);
     } else if (bill.items && Array.isArray(bill.items)) {
       items = bill.items;
-      console.log('Found items in bill.items:', items);
     } else if (bill.sales_items && Array.isArray(bill.sales_items)) {
       items = bill.sales_items;
-      console.log('Found items in bill.sales_items:', items);
     } else if (
       bill.result &&
       bill.result.Items &&
       Array.isArray(bill.result.Items)
     ) {
       items = bill.result.Items;
-      console.log('Found items in bill.result.Items:', items);
     } else if (
       bill.result &&
       bill.result.items &&
       Array.isArray(bill.result.items)
     ) {
       items = bill.result.items;
-      console.log('Found items in bill.result.items:', items);
-    } else {
-      console.log('No items found in bill. Available keys:', Object.keys(bill));
-      console.log('bill.Items:', bill.Items);
-      console.log('bill.items:', bill.items);
-      console.log('bill.sales_items:', bill.sales_items);
-      if (bill.result) {
-        console.log('bill.result keys:', Object.keys(bill.result));
-        console.log('bill.result.Items:', bill.result.Items);
-        console.log('bill.result.items:', bill.result.items);
-      }
     }
-
-    console.log('Extracted items:', items); // Debug log
-
-    // Debug stock information
-    items.forEach((item: any, index: number) => {
-      console.log(`Item ${index} stock info:`, {
-        stock_id: item.stock_id,
-        branch_stock_id: item.branch_stock_id,
-        stock: item.stock,
-        batch_no: item.batch_no,
-      });
-    });
 
     // Map items with proper fallbacks and enhanced product name resolution
     const mappedItems = items.map((item: any, index: number) => {
-      console.log(`Processing item ${index}:`, item);
-
       // Try to get the best product name from various sources
       let productName = '';
       let variantName = '';
@@ -1453,15 +1380,12 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
       if (item.productItems?.name) {
         productName = item.productItems.name;
         variantName = item.productItems.VariantItem?.variant_name || '';
-        console.log(`Found product name in productItems.name: ${productName}`);
       } else if (item.product_name) {
         productName = item.product_name;
         variantName = item.variant_name || '';
-        console.log(`Found product name in product_name: ${productName}`);
       } else if (item.product?.name) {
         productName = item.product.name;
         variantName = item.product.VariantItem?.variant_name || '';
-        console.log(`Found product name in product.name: ${productName}`);
       } else if (item.product_id) {
         // Try to find product name from productList if available
         const product = productList?.result?.find(
@@ -1470,7 +1394,6 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
         if (product) {
           productName = product.name;
           variantName = product.VariantItem?.variant_name || '';
-          console.log(`Found product name from productList: ${productName}`);
         } else {
           // If product list is not loaded yet, try to load it and mark for later update
           if (!productList?.result) {
@@ -1478,9 +1401,6 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
           }
           // Use a more descriptive placeholder that will be updated later
           productName = `Loading... (ID: ${item.product_id})`;
-          console.log(
-            `Product not found in productList, using placeholder: ${productName}`
-          );
 
           // Try to force load and resolve immediately
           setTimeout(() => {
@@ -1489,9 +1409,6 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
                 (p: any) => p._id === item.product_id
               );
               if (foundProduct) {
-                console.log(
-                  `Immediate resolution found product: ${foundProduct.name}`
-                );
                 // Update the item directly
                 const updatedItems = [...billFormData.items];
                 const itemIndex = updatedItems.findIndex(
@@ -1507,8 +1424,6 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
             }
           }, 100);
         }
-      } else {
-        console.log(`No product name found for item ${index}`);
       }
 
       // Handle stock information with proper fallbacks
@@ -1532,7 +1447,6 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
         const stock = stockList?.result?.find((s: any) => s._id === stockId);
         if (stock) {
           batchNo = stock.batch_no || '';
-          console.log(`Found batch_no from stock list: ${batchNo}`);
         } else {
           // If stock list is not loaded yet, mark for later update
           if (!stockList?.result) {
@@ -1543,9 +1457,6 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
             }
           }
           batchNo = `Loading... (Stock: ${stockId})`;
-          console.log(
-            `Stock not found in stock list, using placeholder: ${batchNo}`
-          );
 
           // Try to force load and resolve immediately
           setTimeout(() => {
@@ -1557,9 +1468,6 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
                 (s: any) => s._id === stockId
               );
               if (foundStock) {
-                console.log(
-                  `Immediate resolution found stock batch: ${foundStock.batch_no}`
-                );
                 // Update the item directly
                 const updatedItems = [...billFormData.items];
                 const itemIndex = updatedItems.findIndex(
@@ -1590,11 +1498,8 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
         tax_percentage: item.tax_percentage || 0,
       };
 
-      console.log(`Mapped item ${index}:`, mappedItem);
       return mappedItem;
     });
-
-    console.log('Final mapped items:', mappedItems); // Debug log
 
     // Handle customer information with fallbacks
     const customerId = bill.customer_id || '';
@@ -1614,25 +1519,15 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
       customerName = customer?.full_name || `Customer ID: ${bill.customer_id}`;
     }
 
-    console.log('Customer info - ID:', customerId, 'Name:', customerName);
-
     // Handle date with fallback
     let formattedDate = dayjs().format('YYYY-MM-DD'); // Default to today
     if (bill.date) {
       try {
         formattedDate = dayjs(bill.date).format('YYYY-MM-DD');
       } catch (error) {
-        console.log('Error formatting date:', bill.date, error);
         formattedDate = dayjs().format('YYYY-MM-DD');
       }
     }
-
-    console.log(
-      'Date info - Original:',
-      bill.date,
-      'Formatted:',
-      formattedDate
-    );
 
     // Immediately resolve any available product names and stock info if data is already loaded
     let finalMappedItems = [...mappedItems];
@@ -1649,9 +1544,6 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
             (p: any) => p._id === item.product_id
           );
           if (product) {
-            console.log(
-              `Immediately resolving product name for ${item.product_id}: ${item.product_name} -> ${product.name}`
-            );
             return {
               ...item,
               product_name: product.name,
@@ -1675,9 +1567,6 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
             (s: any) => s._id === item.stock_id
           );
           if (stock) {
-            console.log(
-              `Immediately resolving batch_no for stock ${item.stock_id}: ${item.batch_no} -> ${stock.batch_no}`
-            );
             return {
               ...item,
               batch_no: stock.batch_no || '',
@@ -1687,8 +1576,6 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
         return item;
       });
     }
-
-    console.log('Final resolved items:', finalMappedItems);
 
     // Load bill data into form with resolved items
     setBillFormData({
@@ -1751,9 +1638,6 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
           item.product_name = product.name;
           item.variant_name = product.VariantItem?.variant_name || '';
           updated = true;
-          console.log(
-            `Force resolved product name for ${item.product_id}: ${product.name}`
-          );
         }
       }
 
@@ -1770,9 +1654,6 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
           ) {
             item.batch_no = stock.batch_no || '';
             updated = true;
-            console.log(
-              `Force resolved batch_no for stock ${item.stock_id}: ${stock.batch_no}`
-            );
           }
         }
       }
@@ -1786,7 +1667,6 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
         ...prev,
         items: updatedItems,
       }));
-      console.log('Force resolved items:', updatedItems);
     }
   };
 
@@ -1938,7 +1818,8 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
         }
       }
     } catch (error) {
-      console.error('Bill save failed:', error);
+      // Handle error silently or show user-friendly message
+      message.error('Failed to save bill. Please try again.');
     }
   };
 
@@ -1967,7 +1848,6 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
       
       // Auto-reset the bill after successful creation (only for new bills, not updates)
       if (!billdata) {
-        console.log('Auto-resetting bill after successful creation...');
         // Close confirmation modal first, then reset immediately
         setSaveConfirmationVisible(false);
         setTimeout(() => {
@@ -2002,7 +1882,6 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
       );
 
       if (needsUpdate) {
-        console.log('Product list loaded, updating product names...');
         const updatedItems = billFormData.items.map(item => {
           if (
             item.product_id &&
@@ -2014,9 +1893,6 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
               (p: any) => p._id === item.product_id
             );
             if (product) {
-              console.log(
-                `Updating product name for ${item.product_id}: ${item.product_name} -> ${product.name}`
-              );
               return {
                 ...item,
                 product_name: product.name,
@@ -2038,10 +1914,6 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
             ...prev,
             items: updatedItems,
           }));
-          console.log(
-            'Updated bill items with resolved product names:',
-            updatedItems
-          );
         }
       }
     }
@@ -2069,7 +1941,6 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
       );
 
       if (needsUpdate) {
-        console.log('Stock list loaded, updating batch numbers...');
         const updatedItems = billFormData.items.map(item => {
           if (
             item.stock_id &&
@@ -2079,9 +1950,6 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
               (s: any) => s._id === item.stock_id
             );
             if (stock) {
-              console.log(
-                `Updating batch_no for stock ${item.stock_id}: ${item.batch_no} -> ${stock.batch_no}`
-              );
               return {
                 ...item,
                 batch_no: stock.batch_no || '',
@@ -2101,10 +1969,6 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
             ...prev,
             items: updatedItems,
           }));
-          console.log(
-            'Updated bill items with resolved stock information:',
-            updatedItems
-          );
         }
       }
     }
@@ -2140,7 +2004,6 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
           (productList?.result ||
             (branchId ? branchStockList?.result : stockAuditList?.result))
         ) {
-          console.log('Periodic check: Resolving unresolved items...');
           forceResolveProductNamesAndStock();
         }
       }, 1000); // Check every second
