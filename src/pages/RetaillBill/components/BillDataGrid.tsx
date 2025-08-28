@@ -1261,46 +1261,17 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
 
   // Handle new bill creation
   const handleNewBill = () => {
-    // Clear all form data for new bill
-    setBillFormData({
-      invoice_no: '',
-      date: dayjs().format('YYYY-MM-DD'),
-      customer_id: '',
-      customer_name: '',
-      payment_mode: 'cash',
-      items: [],
-    });
-
-    // Reset bill settings
-    setBillSettings({
-      isPaid: true,
-      isPartiallyPaid: false,
-      isRetail: true,
-      isGstIncluded: true,
-      discount: 0,
-      discountType: 'percentage',
-      paidAmount: 0,
-    });
-
+    resetBill();
     setSaveConfirmationVisible(false);
     setSavedBillData(null);
-
-    // Generate new invoice number
-    InvoiceNumberApi('Create');
-    setTimeout(() => InvoiceNumberApi('GetAll'), 500);
-
     message.success('New bill form cleared successfully!');
   };
 
-  // Handle continue with current bill
-  const handleContinueBill = () => {
-    setSaveConfirmationVisible(false);
-    setSavedBillData(null);
-  };
-
-  // Handle clear bill form
-  const handleClearBill = () => {
-    // Reset all form data to initial state
+  // Reset bill function - comprehensive reset for after successful save
+  const resetBill = useCallback(() => {
+    console.log('🔄 Starting bill reset...');
+    
+    // Clear all form data for new bill
     setBillFormData({
       invoice_no: '',
       date: dayjs().format('YYYY-MM-DD'),
@@ -1323,8 +1294,9 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
         },
       ],
     });
+    console.log('✅ Form data reset');
 
-    // Reset bill settings
+    // Reset bill settings to defaults
     setBillSettings({
       isPaid: true,
       isPartiallyPaid: false,
@@ -1334,11 +1306,41 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
       discountType: 'percentage',
       paidAmount: 0,
     });
+    console.log('✅ Bill settings reset');
 
-    // Reset any other states
+    // Reset all modal states
+    setStockModalRowIndex(null);
+    setExternalEditingCell(null);
+    setCustomerModalVisible(false);
+    setSaveConfirmationVisible(false);
+    setBillListDrawerVisible(false);
     setSavedBillData(null);
+    setProductDetailsModalVisible(false);
+    setSelectedProductId('');
+    setProductSelectionModalVisible(false);
+    setProductSelectionRowIndex(null);
+    console.log('✅ Modal states reset');
 
-    // Show success message
+    // Generate new invoice number
+    InvoiceNumberApi('Create');
+    setTimeout(() => InvoiceNumberApi('GetAll'), 500);
+    console.log('✅ New invoice number requested');
+    
+    console.log('🎉 Bill reset completed!');
+    
+    // Show a subtle success message for reset completion
+    message.success('Ready for next bill!', 2);
+  }, [InvoiceNumberApi]);
+
+  // Handle continue with current bill
+  const handleContinueBill = () => {
+    setSaveConfirmationVisible(false);
+    setSavedBillData(null);
+  };
+
+  // Handle clear bill form
+  const handleClearBill = () => {
+    resetBill();
     message.success('Bill form cleared successfully!');
   };
 
@@ -1909,7 +1911,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
         response = await SalesRecord('Create', payload);
       }
 
-      // Show confirmation modal after successful save
+      // Show confirmation modal after successful save (only for updates, not new bills)
       if (response?.statusCode === 200) {
         const savedData = {
           ...payload,
@@ -1919,7 +1921,11 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
           date: payload.date,
         };
         setSavedBillData(savedData);
-        setSaveConfirmationVisible(true);
+        
+        // Only show confirmation modal for bill updates, not new bills (they auto-reset)
+        if (billdata) {
+          setSaveConfirmationVisible(true);
+        }
       }
     } catch (error) {
       console.error('Bill save failed:', error);
@@ -1952,11 +1958,18 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
   useEffect(() => {
     if (createItems?.statusCode === 200) {
       onSuccess?.();
-      InvoiceNumberApi('Create');
-      setTimeout(() => InvoiceNumberApi('GetAll'), 500);
-      // Note: Form reset is now handled by the confirmation modal
+      
+      // Auto-reset the bill after successful creation (only for new bills, not updates)
+      if (!billdata) {
+        console.log('Auto-resetting bill after successful creation...');
+        // Close confirmation modal first, then reset immediately
+        setSaveConfirmationVisible(false);
+        setTimeout(() => {
+          resetBill();
+        }, 100); // Minimal delay just to close modal smoothly
+      }
     }
-  }, [createItems]);
+  }, [createItems, billdata, resetBill, onSuccess]);
 
   // Handle update success
   useEffect(() => {
@@ -2206,15 +2219,8 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
             break;
           case 'r':
             e.preventDefault();
-            // Reset form
-            setBillFormData({
-              invoice_no: '',
-              date: dayjs().format('YYYY-MM-DD'),
-              customer_id: '',
-              customer_name: '',
-              payment_mode: 'cash',
-              items: [],
-            });
+            // Reset form completely
+            resetBill();
             break;
         }
       }
@@ -2703,7 +2709,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
             onClick={handleClearBill}
             className={styles.clearButton}
           >
-            🧹 CLEAR (F4)
+            🧹 CLEAR (F4 / Ctrl+R)
           </Button>
 
           <Button
@@ -2737,8 +2743,8 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
               }}
             >
               ⚡ <strong>Keyboard Shortcuts:</strong> Ctrl+S (Save) • Ctrl+N
-              (Add) • Tab/Shift+Tab (Navigate) • Enter (Edit) • Esc (Cancel) •
-              End (Customer) • F4 (Clear) • F5 (Product) • F6 (Bill List) • F7
+              (Add) • F4/Ctrl+R (Clear) • Tab/Shift+Tab (Navigate) • Enter (Edit) • Esc (Cancel) •
+              End (Customer) • F5 (Product) • F6 (Bill List) • F7
               (Stock)
             </Text>
           </div>
