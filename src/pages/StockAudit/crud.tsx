@@ -188,7 +188,8 @@ const StockAuditCrud: React.FC = () => {
       wareHouseLoading
     ),
     apiRoutes: getEntityApiRoutes('StockAudit'),
-    formColumns: 2,
+    formColumns: 3,
+    drawerWidth: 1200,
   };
 
   return (
