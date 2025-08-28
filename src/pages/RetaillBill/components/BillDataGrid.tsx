@@ -1098,6 +1098,23 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
   }, [handleItemsChange]);
 
   const handleF5ProductSelection = () => {
+    // First, check if stock modal is open and close it
+    if (stockModalRowIndex !== null) {
+      setStockModalRowIndex(null);
+      message.info('Stock modal closed. Opening product selection...');
+      
+      // Wait a bit for the stock modal to close before opening product modal
+      setTimeout(() => {
+        openProductModalForRow();
+      }, 100);
+      return;
+    }
+
+    // If stock modal is not open, proceed with normal F5 behavior
+    openProductModalForRow();
+  };
+
+  const openProductModalForRow = () => {
     let targetRowIndex = -1;
 
     // Check what element is currently focused
@@ -2149,6 +2166,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
     billSettings,
     handleF5ProductSelection,
     handleF7StockSelection,
+    stockModalRowIndex,
   ]);
 
   return (
