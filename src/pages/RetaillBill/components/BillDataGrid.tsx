@@ -56,22 +56,21 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
    */
 
   // Utility function to validate stock quantities based on pack size
-  // Logic: If available_quantity is 1 (1 pack), then available_loose_quantity should be pack_size (e.g., 15)
-  // Total available = (available_quantity × pack_size) + available_loose_quantity
+  // This function validates that the entered quantities don't exceed available stock
+  // No longer validates that loose_qty must equal available_quantity × pack_size
   const validateStockQuantities = useCallback((stock: any, productItem: any) => {
     if (!stock || !productItem?.VariantItem?.pack_size) return { isValid: true, expectedLoose: 0, totalAvailable: 0 };
     
     const packSize = parseInt(productItem.VariantItem.pack_size);
-    const availableQty = stock.available_quantity || 0;
-    const looseQty = stock.available_loose_quantity || 0;
+    const availablePackQty = stock.available_quantity || 0;
+    const availableLooseQty = stock.available_loose_quantity || 0;
     
-    // Expected loose quantity should be available_quantity × pack_size
-    // Example: If pack_size=15 and available_quantity=1, then expected_loose_quantity=15
-    const expectedLooseQty = availableQty * packSize;
-    const isValid = looseQty === expectedLooseQty;
-    const totalAvailable = (availableQty * packSize) + looseQty;
+    // Stock quantities are valid as they are - no need to enforce a specific relationship
+    // The validation happens during quantity entry, not during stock data validation
+    const isValid = true; // Always valid - let the quantity validation handle limits
+    const totalAvailable = (availablePackQty * packSize) + availableLooseQty;
     
-    return { isValid, expectedLoose: expectedLooseQty, totalAvailable };
+    return { isValid, expectedLoose: availableLooseQty, totalAvailable };
   }, []);
 
   // API hooks
@@ -152,7 +151,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
     looseQty: number
   ): {
     isValid: boolean;
-    availableQty: number;
+    availablePackQty: number;
     maxLooseQty: number;
     message: string;
   } => {
@@ -162,7 +161,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
     if (!stock) {
       return {
         isValid: false,
-        availableQty: 0,
+        availablePackQty: 0,
         maxLooseQty: 0,
         message: 'Stock not found',
       };
@@ -172,35 +171,44 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
     const packSize = stock?.ProductItem?.VariantItem?.pack_size;
     const packSizeNum = packSize ? parseInt(packSize) : 1;
     
-    // Calculate total available items: (available_quantity × pack_size) + available_loose_quantity
-    const availableQty = stock.available_quantity || 0;
+    // Available pack quantity (number of complete packs/boxes)
+    const availablePackQty = stock.available_quantity || 0;
+    
+    // Available loose quantity (actual loose items in stock, not calculated)
     const availableLooseQty = stock.available_loose_quantity || 0;
-    const totalAvailableItems = (availableQty * packSizeNum) + availableLooseQty;
-    
-    const totalEnteredQty = qty + looseQty;
-    
-    // For loose quantity, allow up to total available items
-    const maxLooseQty = totalAvailableItems;
 
-    if (totalEnteredQty > totalAvailableItems) {
+    // Validate pack quantity (QTY field)
+    if (qty > availablePackQty) {
       return {
         isValid: false,
-        availableQty: totalAvailableItems,
-        maxLooseQty,
-        message: `Total quantity (${totalEnteredQty}) exceeds total available items (${totalAvailableItems})`,
+        availablePackQty,
+        maxLooseQty: 0,
+        message: `Pack quantity (${qty}) exceeds available packs (${availablePackQty})`,
       };
     }
 
+    // Calculate max loose quantity based on remaining packs after QTY selection
+    // Formula: (available_packs - selected_qty) × pack_size + available_loose_qty
+    const remainingPacks = availablePackQty - qty;
+    const maxLooseFromRemainingPacks = remainingPacks * packSizeNum;
+    const maxLooseQty = maxLooseFromRemainingPacks + availableLooseQty;
+
+    // Validate loose quantity (LOOSE QTY field)
     if (looseQty > maxLooseQty) {
       return {
         isValid: false,
-        availableQty: totalAvailableItems,
+        availablePackQty,
         maxLooseQty,
-        message: `Loose quantity (${looseQty}) exceeds total available items (${maxLooseQty})`,
+        message: `Loose quantity (${looseQty}) exceeds available loose items (${maxLooseQty} = ${remainingPacks} remaining packs × ${packSizeNum} + ${availableLooseQty} loose)`,
       };
     }
 
-    return { isValid: true, availableQty: totalAvailableItems, maxLooseQty, message: '' };
+    return { 
+      isValid: true, 
+      availablePackQty, 
+      maxLooseQty, 
+      message: '' 
+    };
   };
 
   // Handle quantity change with validation
@@ -233,11 +241,10 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
       message.error(validation.message);
 
       // Auto-correct the quantity if it exceeds available stock
-      if (field === 'qty' && newQty > validation.availableQty) {
+      if (field === 'qty' && newQty > validation.availablePackQty) {
         newItems[rowIndex] = {
           ...item,
-          qty: validation.availableQty,
-          loose_qty: 0,
+          qty: validation.availablePackQty,
         };
       } else if (
         field === 'loose_qty' &&
@@ -593,20 +600,19 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
         const packSize = stock?.ProductItem?.VariantItem?.pack_size;
         const packSizeNum = packSize ? parseInt(packSize) : 1;
         
-        // Calculate total available items: (available_quantity × pack_size) + available_loose_quantity
-        const availableQty = stock?.available_quantity || 0;
-        const looseQty = stock?.available_loose_quantity || 0;
-        const totalAvailableItems = (availableQty * packSizeNum) + looseQty;
+        // Calculate available quantities
+        const availablePackQty = stock?.available_quantity || 0;
+        const availableLooseQty = stock?.available_loose_quantity || 0;
         
-        const isLowStock = availableQty > 0 && availableQty <= 10;
-        const isOutOfStock = availableQty === 0;
+        const isLowStock = availablePackQty > 0 && availablePackQty <= 10;
+        const isOutOfStock = availablePackQty === 0;
 
         return (
           <Tooltip
             title={
               record.product_id
                 ? value
-                  ? `Stock: ${value} - Packs: ${availableQty} × ${packSizeNum} = ${availableQty * packSizeNum} • Loose: ${looseQty} • Total Available: ${totalAvailableItems} • Click to change • F7 to reopen`
+                  ? `Stock: ${value} - Packs Available: ${availablePackQty} • Loose Available: ${availableLooseQty} • Pack Size: ${packSizeNum} • Click to change • F7 to reopen`
                   : 'Click to select stock from available inventory • F7 to open'
                 : 'Please select a product first to choose stock • F7 to open after product selection'
             }
@@ -699,7 +705,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
                         fontSize: '12px',
                       }}
                     >
-                      📦 {availableQty}
+                      📦 {availablePackQty}
                     </span>
                     <span
                       style={{
@@ -712,7 +718,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
                         fontSize: '12px',
                       }}
                     >
-                      📋 {looseQty}
+                      📋 {availableLooseQty}
                     </span>
                   </>
                 )}
@@ -767,15 +773,15 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
         const stock = stockList?.result?.find(
           (s: any) => s._id === record.stock_id
         );
-        const availableQty = stock?.available_quantity || 0;
-        const isExceedingStock = value > availableQty;
+        const availablePackQty = stock?.available_quantity || 0;
+        const isExceedingStock = value > availablePackQty;
 
         return (
           <div style={{ position: 'relative' }}>
             <InputNumber
               value={value}
               min={0}
-              max={availableQty}
+              max={availablePackQty}
               style={{
                 width: '100%',
                 borderColor: isExceedingStock ? '#ff4d4f' : undefined,
@@ -796,9 +802,9 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
                 }
               }}
               onChange={newValue => {
-                if (newValue !== null && newValue > availableQty) {
+                if (newValue !== null && newValue > availablePackQty) {
                   message.error(
-                    `Quantity cannot exceed available stock (${availableQty})`
+                    `Pack quantity cannot exceed available packs (${availablePackQty})`
                   );
                   return;
                 }
@@ -814,24 +820,39 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
       dataIndex: 'loose_qty',
       type: 'number',
       width: 90,
-             render: (value: number, record: any, index?: number) => {
-         // Get stock info for validation
-         const stockList = branchId ? branchStockList : stockAuditList;
-         const stock = stockList?.result?.find(
-           (s: any) => s._id === record.stock_id
-         );
-         
-         // Calculate total available items: (available_quantity × pack_size) + available_loose_quantity
-         const packSize = stock?.ProductItem?.VariantItem?.pack_size;
-         const packSizeNum = packSize ? parseInt(packSize) : 1;
-         const availableQty = stock?.available_quantity || 0;
-         const availableLooseQty = stock?.available_loose_quantity || 0;
-         const totalAvailableItems = (availableQty * packSizeNum) + availableLooseQty;
-         
-         const packQty = record.qty || 0;
-         // Allow loose quantity up to total available items
-         const maxLooseQty = totalAvailableItems;
-         const isExceedingStock = value > maxLooseQty;
+      render: (value: number, record: any, index?: number) => {
+        // Get stock info for validation
+        const stockList = branchId ? branchStockList : stockAuditList;
+        const stock = stockList?.result?.find(
+          (s: any) => s._id === record.stock_id
+        );
+        
+        if (!stock) {
+          return (
+            <div style={{ position: 'relative' }}>
+              <InputNumber
+                value={value}
+                min={0}
+                style={{ width: '100%' }}
+                disabled
+              />
+            </div>
+          );
+        }
+
+        // Calculate dynamic max loose quantity based on current QTY selection
+        const packSize = stock?.ProductItem?.VariantItem?.pack_size;
+        const packSizeNum = packSize ? parseInt(packSize) : 1;
+        const availablePackQty = stock?.available_quantity || 0;
+        const availableLooseQty = stock?.available_loose_quantity || 0;
+        
+        // Current QTY selection affects max loose quantity
+        const currentQty = record.qty || 0;
+        const remainingPacks = availablePackQty - currentQty;
+        const maxLooseFromRemainingPacks = remainingPacks * packSizeNum;
+        const maxLooseQty = maxLooseFromRemainingPacks + availableLooseQty;
+        
+        const isExceedingStock = value > maxLooseQty;
 
         return (
           <div style={{ position: 'relative' }}>
@@ -858,14 +879,14 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
                   handleQuantityChange(index, 'loose_qty', newValue);
                 }
               }}
-                             onChange={newValue => {
-                 if (newValue !== null && newValue > maxLooseQty) {
-                   message.error(
-                     `Loose quantity cannot exceed total available items (${maxLooseQty})`
-                   );
-                   return;
-                 }
-               }}
+              onChange={newValue => {
+                if (newValue !== null && newValue > maxLooseQty) {
+                  message.error(
+                    `Loose quantity cannot exceed available loose items (${maxLooseQty} = ${remainingPacks} remaining packs × ${packSizeNum} + ${availableLooseQty} loose)`
+                  );
+                  return;
+                }
+              }}
             />
           </div>
         );
@@ -964,66 +985,44 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
         tax_percentage: item.tax_percentage || 0,
       };
 
-             // Stock validation for quantity and loss quantity
-       if (item.stock_id && (item.qty || item.loose_qty)) {
-         const stockList = branchId ? branchStockList : stockAuditList;
-         const stock = stockList?.result?.find(
-           (s: any) => s._id === item.stock_id
-         );
+      // Stock validation for pack and loose quantities
+      if (item.stock_id && (item.qty || item.loose_qty)) {
+        const stockList = branchId ? branchStockList : stockAuditList;
+        const stock = stockList?.result?.find(
+          (s: any) => s._id === item.stock_id
+        );
 
-         if (stock) {
-           // Get pack size from stock data
-           const packSize = stock?.ProductItem?.VariantItem?.pack_size;
-           const packSizeNum = packSize ? parseInt(packSize) : 1;
-           
-           // Calculate total available items: (available_quantity × pack_size) + available_loose_quantity
-           const availableQty = stock.available_quantity || 0;
-           const availableLooseQty = stock.available_loose_quantity || 0;
-           const totalAvailableItems = (availableQty * packSizeNum) + availableLooseQty;
-           
-           const enteredQty = (item.qty || 0) + (item.loose_qty || 0);
-
-           if (enteredQty > totalAvailableItems) {
-             // Show error message with correct total available
-             message.error(
-               `Quantity exceeds available stock! Available: ${totalAvailableItems} (${availableQty} packs × ${packSizeNum} + ${availableLooseQty} loose), Entered: ${enteredQty}`
-             );
-
-             // Reset quantities to available stock or 0
-             if (totalAvailableItems === 0) {
-               billItem.qty = 0;
-               billItem.loose_qty = 0;
-             } else {
-               // Distribute available quantity between pack and loose
-               if (item.qty && item.loose_qty) {
-                 // If both are entered, prioritize pack quantity
-                 if (item.qty <= availableQty) {
-                   billItem.qty = item.qty;
-                   billItem.loose_qty = Math.min(
-                     item.loose_qty,
-                     totalAvailableItems - (item.qty * packSizeNum)
-                   );
-                 } else {
-                   billItem.qty = availableQty;
-                   billItem.loose_qty = Math.min(
-                     item.loose_qty,
-                     totalAvailableItems - (availableQty * packSizeNum)
-                   );
-                 }
-               } else if (item.qty) {
-                 billItem.qty = Math.min(item.qty, availableQty);
-                 billItem.loose_qty = Math.min(
-                   item.loose_qty || 0,
-                   totalAvailableItems - (billItem.qty * packSizeNum)
-                 );
-               } else if (item.loose_qty) {
-                 billItem.loose_qty = Math.min(item.loose_qty, totalAvailableItems);
-                 billItem.qty = 0;
-               }
-             }
-           }
-         }
-       }
+        if (stock) {
+          // Get pack size from stock data
+          const packSize = stock?.ProductItem?.VariantItem?.pack_size;
+          const packSizeNum = packSize ? parseInt(packSize) : 1;
+          
+          // Available pack quantity and actual loose quantity
+          const availablePackQty = stock.available_quantity || 0;
+          const availableLooseQty = stock.available_loose_quantity || 0;
+          
+          // Validate pack quantity (QTY field)
+          if (item.qty && item.qty > availablePackQty) {
+            message.error(
+              `Pack quantity (${item.qty}) exceeds available packs (${availablePackQty})`
+            );
+            billItem.qty = availablePackQty;
+          }
+          
+          // Calculate max loose quantity based on remaining packs after QTY selection
+          const remainingPacks = availablePackQty - (item.qty || 0);
+          const maxLooseFromRemainingPacks = remainingPacks * packSizeNum;
+          const maxLooseQty = maxLooseFromRemainingPacks + availableLooseQty;
+          
+          // Validate loose quantity (LOOSE QTY field)
+          if (item.loose_qty && item.loose_qty > maxLooseQty) {
+            message.error(
+              `Loose quantity (${item.loose_qty}) exceeds available loose items (${maxLooseQty} = ${remainingPacks} remaining packs × ${packSizeNum} + ${availableLooseQty} loose)`
+            );
+            billItem.loose_qty = maxLooseQty;
+          }
+        }
+      }
 
       // Auto-populate stock if product is selected but stock is not
       if (item.product_id && !item.stock_id) {
@@ -1840,27 +1839,20 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
       return;
     }
 
-    // Validate stock quantities for all items
+    // Validate that entered quantities don't exceed available stock
     const stockValidationErrors: string[] = [];
     billFormData.items.forEach((item, index) => {
-      if (item.stock_id) {
-        const stockList = branchId ? branchStockList : stockAuditList;
-        const stock = stockList?.result?.find((s: any) => s._id === item.stock_id);
+      if (item.stock_id && (item.qty || item.loose_qty)) {
+        const validation = validateStockQuantity(
+          item.stock_id,
+          item.qty || 0,
+          item.loose_qty || 0
+        );
         
-        if (stock) {
-          // Get product info from stock data since billFormData.items doesn't have ProductItem
-          const productInfo = {
-            VariantItem: {
-              pack_size: stock.ProductItem?.VariantItem?.pack_size || '1'
-            }
-          };
-          
-          const validation = validateStockQuantities(stock, productInfo);
-          if (!validation.isValid) {
-            stockValidationErrors.push(
-              `Row ${index + 1}: Stock quantities mismatch. Expected loose qty: ${validation.expectedLoose}, but found: ${stock.available_loose_quantity}`
-            );
-          }
+        if (!validation.isValid) {
+          stockValidationErrors.push(
+            `Row ${index + 1}: ${validation.message}`
+          );
         }
       }
     });
