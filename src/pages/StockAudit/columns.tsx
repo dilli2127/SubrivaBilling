@@ -110,14 +110,6 @@ export const stockAuditColumns = ({
     ),
   },
   {
-    title: 'Total Cost',
-    dataIndex: 'total_cost',
-    key: 'total_cost',
-    render: (cost: number) => (
-      <span style={{ fontWeight: 'bold' }}>₹{cost}</span>
-    ),
-  },
-  {
     title: 'Buy Date',
     dataIndex: 'buyed_date',
     key: 'buyed_date',
@@ -175,6 +167,14 @@ export const stockAuditColumns = ({
       >
         {status}
       </Tag>
+    ),
+  },
+  {
+    title: 'Total Cost',
+    dataIndex: 'total_cost',
+    key: 'total_cost',
+    render: (cost: number) => (
+      <span style={{ fontWeight: 'bold' }}>₹{cost}</span>
     ),
   },
   {

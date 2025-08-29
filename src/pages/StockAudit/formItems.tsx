@@ -87,18 +87,6 @@ export const getStockAuditFormItems = (
     ),
   },
   {
-    label: "Total Cost",
-    name: "total_cost",
-    rules: [],
-    component: (
-      <InputNumber
-        placeholder="Auto-calculated"
-        disabled
-        style={{ width: "100%" }}
-      />
-    ),
-  },
-  {
     label: "Selling Price",
     name: "sell_price",
     rules: [],
@@ -219,5 +207,17 @@ export const getStockAuditFormItems = (
     name: "note",
     rules: [],
     component: <Input.TextArea rows={2} placeholder="Optional remarks" />,
+  },
+  {
+    label: "Total Cost",
+    name: "total_cost",
+    rules: [],
+    component: (
+      <InputNumber
+        placeholder="Auto-calculated"
+        disabled
+        style={{ width: "100%" }}
+      />
+    ),
   },
 ]; 

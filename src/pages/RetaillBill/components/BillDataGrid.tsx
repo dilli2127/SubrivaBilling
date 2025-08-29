@@ -25,6 +25,7 @@ import {
 } from '@ant-design/icons';
 import StockSelectionModal from './StockSelectionModal';
 import CustomerSelectionModal from './CustomerSelectionModal';
+import UserSelectionModal from './UserSelectionModal';
 import BillSaveConfirmationModal from './BillSaveConfirmationModal';
 import BillListDrawer from './BillListDrawer';
 import ProductDetailsModal from './ProductDetailsModal';
@@ -60,6 +61,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
   // API hooks
   const ProductsApi = getEntityApi('Product');
   const CustomerApi = getEntityApi('Customer');
+  const BillingUsersApi = getEntityApi('BillingUsers');
   const StockAuditApi = getEntityApi('StockAudit');
   const BranchStock = getEntityApi('BranchStock');
   const SalesRecord = getEntityApi('SalesRecord');
@@ -71,6 +73,9 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
   );
   const { items: customerList, loading: customerLoading } = useDynamicSelector(
     CustomerApi.getIdentifier('GetAll')
+  );
+  const { items: userList, loading: userLoading } = useDynamicSelector(
+    BillingUsersApi.getIdentifier('GetAll')
   );
   const { items: stockAuditList, loading: stockLoading } = useDynamicSelector(
     StockAuditApi.getIdentifier('GetAll')
@@ -90,6 +95,8 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
     date: dayjs().format('YYYY-MM-DD'),
     customer_id: '',
     customer_name: '',
+    billed_by_id: '',
+    billed_by_name: '',
     payment_mode: 'cash',
     items: [],
   });
@@ -112,6 +119,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
     col: number;
   } | null>(null);
   const [customerModalVisible, setCustomerModalVisible] = useState(false);
+  const [userModalVisible, setUserModalVisible] = useState(false);
   const [saveConfirmationVisible, setSaveConfirmationVisible] = useState(false);
   const [billListDrawerVisible, setBillListDrawerVisible] = useState(false);
   const [savedBillData, setSavedBillData] = useState<any>(null);
@@ -249,6 +257,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
   useEffect(() => {
     ProductsApi('GetAll');
     CustomerApi('GetAll');
+    BillingUsersApi('GetAll');
     // Only get invoice number for new bills, not when editing existing bills
     if (!billdata) {
       InvoiceNumberApi('GetAll');
@@ -260,6 +269,8 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
         date: dayjs(billdata.date).format('YYYY-MM-DD'),
         customer_id: billdata.customer_id,
         customer_name: billdata.customerDetails?.full_name || '',
+        billed_by_id: billdata.billed_by_id || '',
+        billed_by_name: billdata.billedByDetails?.name || '',
         payment_mode: billdata.payment_mode,
         items:
           billdata.Items?.map((item: any) => ({
@@ -344,6 +355,15 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
     return options;
   }, [customerList]);
 
+  const userOptions = useMemo(() => {
+    const options =
+      userList?.result?.map((user: any) => ({
+        label: `${user.name} (${user.roleItems?.name || 'No Role'})`,
+        value: user._id,
+      })) || [];
+    return options;
+  }, [userList]);
+
   // Column definitions for bill header - memoized to prevent recreation
   const headerColumns: AntdEditableColumn[] = useMemo(() => [
     {
@@ -419,6 +439,62 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
       },
     },
     {
+      key: 'billed_by_id',
+      title: '👨‍💼 BILLED BY',
+      dataIndex: 'billed_by_id',
+      type: 'select',
+      options: userOptions,
+      required: false,
+      width: 250,
+      render: (value: any, record: any) => {
+        const selectedUser = userOptions.find(
+          (opt: any) => opt.value === value
+        );
+        return (
+          <Tooltip title="Click to open user selection modal (or press Ctrl+U key)">
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                cursor: 'pointer',
+                padding: '4px 8px',
+                borderRadius: '4px',
+                border: '1px solid #d9d9d9',
+                backgroundColor: '#f0f8ff',
+                transition: 'all 0.2s ease',
+              }}
+              onClick={() => setUserModalVisible(true)}
+              onMouseEnter={e => {
+                e.currentTarget.style.backgroundColor = '#e6f7ff';
+                e.currentTarget.style.borderColor = '#1890ff';
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.backgroundColor = '#f0f8ff';
+                e.currentTarget.style.borderColor = '#d9d9d9';
+              }}
+            >
+              <span>
+                {selectedUser ? selectedUser.label : 'Select user'}
+              </span>
+              <span
+                style={{
+                  fontSize: '10px',
+                  color: '#1890ff',
+                  backgroundColor: '#ffffff',
+                  padding: '2px 6px',
+                  borderRadius: '4px',
+                  border: '1px solid #d6e4ff',
+                }}
+              >
+                Ctrl+U
+              </span>
+            </div>
+          </Tooltip>
+        );
+      },
+    },
+    {
       key: 'payment_mode',
       title: '💳 PAYMENT',
       dataIndex: 'payment_mode',
@@ -431,7 +507,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
       required: true,
       width: 150,
     },
-  ], [customerOptions]);
+  ], [customerOptions, userOptions]);
 
   const headerData = useMemo(
     () => [
@@ -439,6 +515,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
         invoice_no: billFormData.invoice_no,
         date: billFormData.date,
         customer_id: billFormData.customer_id,
+        billed_by_id: billFormData.billed_by_id,
         payment_mode: billFormData.payment_mode,
       },
     ],
@@ -446,6 +523,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
       billFormData.invoice_no,
       billFormData.date,
       billFormData.customer_id,
+      billFormData.billed_by_id,
       billFormData.payment_mode,
     ]
   );
@@ -935,16 +1013,22 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
       const customer = customerList?.result?.find(
         (c: any) => c._id === updatedHeader.customer_id
       );
+      // Find user name for display
+      const user = userList?.result?.find(
+        (u: any) => u._id === updatedHeader.billed_by_id
+      );
       setBillFormData(prev => ({
         ...prev,
         invoice_no: updatedHeader.invoice_no || '',
         date: updatedHeader.date || dayjs().format('YYYY-MM-DD'),
         customer_id: updatedHeader.customer_id || '',
         customer_name: customer?.full_name || '',
+        billed_by_id: updatedHeader.billed_by_id || '',
+        billed_by_name: user?.name || '',
         payment_mode: updatedHeader.payment_mode || 'cash',
       }));
     }
-  }, [customerList]);
+  }, [customerList, userList]);
 
   // Handle item changes - memoized to prevent unnecessary re-renders
   const handleItemsChange = useCallback((items: any[]) => {
@@ -1283,6 +1367,32 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
       );
     },
     [billFormData.customer_id]
+  );
+
+  // Handle user selection from modal
+  const handleUserSelect = useCallback(
+    (user: any) => {
+      // Prevent duplicate calls
+      if (billFormData.billed_by_id === user._id) {
+        return;
+      }
+
+      setBillFormData(prev => ({
+        ...prev,
+        billed_by_id: user._id,
+        billed_by_name: user.name,
+      }));
+
+      // Ensure modal closes
+      setTimeout(() => {
+        setUserModalVisible(false);
+      }, 50);
+
+      message.success(
+        `User "${user.name}" selected as billed by successfully!`
+      );
+    },
+    [billFormData.billed_by_id]
   );
 
   // Handle new bill creation
@@ -1811,6 +1921,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
       invoice_no: billFormData.invoice_no,
       date: billFormData.date,
       customer_id: billFormData.customer_id,
+      billed_by_id: billFormData.billed_by_id,
       payment_mode: billFormData.payment_mode,
       items: billFormData.items.map(item => ({
         product_id: item.product_id,
@@ -2140,6 +2251,10 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
             e.preventDefault();
             // Reset form completely
             resetBill(); // Show message for manual reset via keyboard
+            break;
+          case 'u':
+            e.preventDefault();
+            setUserModalVisible(true);
             break;
         }
       }
@@ -2664,7 +2779,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
             >
               ⚡ <strong>Keyboard Shortcuts:</strong> Ctrl+S (Save) • Ctrl+N
               (Add) • F4/Ctrl+R (Clear) • Tab/Shift+Tab (Navigate) • Enter (Edit) • Esc (Cancel) •
-              End (Customer) • F5 (Product) • F6 (Bill List) • F7
+              End (Customer) • Ctrl+U (User) • F5 (Product) • F6 (Bill List) • F7
               (Stock)
             </Text>
           </div>
@@ -2684,6 +2799,13 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
         visible={customerModalVisible}
         onSelect={handleCustomerSelect}
         onCancel={() => setCustomerModalVisible(false)}
+      />
+
+      {/* User Selection Modal */}
+      <UserSelectionModal
+        visible={userModalVisible}
+        onSelect={handleUserSelect}
+        onCancel={() => setUserModalVisible(false)}
       />
 
       {/* Bill Save Confirmation Modal */}
