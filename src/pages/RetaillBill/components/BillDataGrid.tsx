@@ -2055,7 +2055,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
   };
 
   // Handle API responses
-  const { items: createItems } = useDynamicSelector(
+  const { items: createItems, error: createError } = useDynamicSelector(
     SalesRecord.getIdentifier('Create')
   );
   const { items: updateItems } = useDynamicSelector(
@@ -2076,7 +2076,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
   useEffect(() => {
     if (createItems?.statusCode === 200) {
       onSuccess?.();
-
+      InvoiceNumberApi('Create');
       // Auto-reset the bill after successful creation (only for new bills, not updates)
       if (!billdata) {
         // Close confirmation modal first, then reset immediately
@@ -2092,6 +2092,13 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
       }
     }
   }, [createItems, billdata, resetBill, onSuccess, autoOpenProductModal]);
+
+  // Handle create errors
+  useEffect(() => {
+    if (createError) {
+      message.error(createError?.message);
+    }
+  }, [createError]);
 
   // Handle update success
   useEffect(() => {
