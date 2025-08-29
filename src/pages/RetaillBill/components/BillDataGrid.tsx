@@ -43,20 +43,24 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
   const { getEntityApi } = useApiActions();
 
   // Utility function to validate stock quantities based on pack size
-  const validateStockQuantities = useCallback((stock: any, productItem: any) => {
-    if (!stock || !productItem?.VariantItem?.pack_size) return { isValid: true, expectedLoose: 0, totalAvailable: 0 };
-    
-    const packSize = parseInt(productItem.VariantItem.pack_size);
-    const availablePackQty = stock.available_quantity || 0;
-    const availableLooseQty = stock.available_loose_quantity || 0;
-    
-    // Stock quantities are valid as they are - no need to enforce a specific relationship
-    // The validation happens during quantity entry, not during stock data validation
-    const isValid = true; // Always valid - let the quantity validation handle limits
-    const totalAvailable = (availablePackQty * packSize) + availableLooseQty;
-    
-    return { isValid, expectedLoose: availableLooseQty, totalAvailable };
-  }, []);
+  const validateStockQuantities = useCallback(
+    (stock: any, productItem: any) => {
+      if (!stock || !productItem?.VariantItem?.pack_size)
+        return { isValid: true, expectedLoose: 0, totalAvailable: 0 };
+
+      const packSize = parseInt(productItem.VariantItem.pack_size);
+      const availablePackQty = stock.available_quantity || 0;
+      const availableLooseQty = stock.available_loose_quantity || 0;
+
+      // Stock quantities are valid as they are - no need to enforce a specific relationship
+      // The validation happens during quantity entry, not during stock data validation
+      const isValid = true; // Always valid - let the quantity validation handle limits
+      const totalAvailable = availablePackQty * packSize + availableLooseQty;
+
+      return { isValid, expectedLoose: availableLooseQty, totalAvailable };
+    },
+    []
+  );
 
   // API hooks
   const ProductsApi = getEntityApi('Product');
@@ -131,10 +135,14 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
   const [productSelectionRowIndex, setProductSelectionRowIndex] = useState<
     number | null
   >(null);
-  const [lastInteractedRowIndex, setLastInteractedRowIndex] = useState<number>(0);
+  const [lastInteractedRowIndex, setLastInteractedRowIndex] =
+    useState<number>(0);
 
   // User info - memoized to prevent re-parsing on every render
-  const user = useMemo(() => JSON.parse(sessionStorage.getItem('user') || '{}'), []);
+  const user = useMemo(
+    () => JSON.parse(sessionStorage.getItem('user') || '{}'),
+    []
+  );
   const branchId = user?.branch_id;
 
   // Helper function to validate stock quantities
@@ -163,10 +171,10 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
     // Get pack size from stock data
     const packSize = stock?.ProductItem?.VariantItem?.pack_size;
     const packSizeNum = packSize ? parseInt(packSize) : 1;
-    
+
     // Available pack quantity (number of complete packs/boxes)
     const availablePackQty = stock.available_quantity || 0;
-    
+
     // Available loose quantity (actual loose items in stock, not calculated)
     const availableLooseQty = stock.available_loose_quantity || 0;
 
@@ -196,62 +204,61 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
       };
     }
 
-    return { 
-      isValid: true, 
-      availablePackQty, 
-      maxLooseQty, 
-      message: '' 
+    return {
+      isValid: true,
+      availablePackQty,
+      maxLooseQty,
+      message: '',
     };
   };
 
   // Handle quantity change with validation - memoized to prevent column recreation
-  const handleQuantityChange = useCallback((
-    rowIndex: number,
-    field: 'qty' | 'loose_qty',
-    value: number
-  ) => {
-    const newItems = [...billFormData.items];
-    const item = newItems[rowIndex];
+  const handleQuantityChange = useCallback(
+    (rowIndex: number, field: 'qty' | 'loose_qty', value: number) => {
+      const newItems = [...billFormData.items];
+      const item = newItems[rowIndex];
 
-    if (!item.stock_id) {
-      // If no stock selected, just update the value
-      newItems[rowIndex] = { ...item, [field]: value };
-      setBillFormData(prev => ({ ...prev, items: newItems }));
-      return;
-    }
-
-    // Validate the new quantity
-    const newQty = field === 'qty' ? value : item.qty || 0;
-    const newLooseQty = field === 'loose_qty' ? value : item.loose_qty || 0;
-
-    const validation = validateStockQuantity(
-      item.stock_id,
-      newQty,
-      newLooseQty
-    );
-
-    if (!validation.isValid) {
-      message.error(validation.message);
-
-      // Auto-correct the quantity if it exceeds available stock
-      if (field === 'qty' && newQty > validation.availablePackQty) {
-        newItems[rowIndex] = {
-          ...item,
-          qty: validation.availablePackQty,
-        };
-      } else if (
-        field === 'loose_qty' &&
-        newLooseQty > validation.maxLooseQty
-      ) {
-        newItems[rowIndex] = { ...item, loose_qty: validation.maxLooseQty };
+      if (!item.stock_id) {
+        // If no stock selected, just update the value
+        newItems[rowIndex] = { ...item, [field]: value };
+        setBillFormData(prev => ({ ...prev, items: newItems }));
+        return;
       }
-    } else {
-      // Update the quantity
-      newItems[rowIndex] = { ...item, [field]: value };
-    }
 
-    setBillFormData(prev => ({ ...prev, items: newItems }));
-  }, [billFormData.items, validateStockQuantity]);
+      // Validate the new quantity
+      const newQty = field === 'qty' ? value : item.qty || 0;
+      const newLooseQty = field === 'loose_qty' ? value : item.loose_qty || 0;
+
+      const validation = validateStockQuantity(
+        item.stock_id,
+        newQty,
+        newLooseQty
+      );
+
+      if (!validation.isValid) {
+        message.error(validation.message);
+
+        // Auto-correct the quantity if it exceeds available stock
+        if (field === 'qty' && newQty > validation.availablePackQty) {
+          newItems[rowIndex] = {
+            ...item,
+            qty: validation.availablePackQty,
+          };
+        } else if (
+          field === 'loose_qty' &&
+          newLooseQty > validation.maxLooseQty
+        ) {
+          newItems[rowIndex] = { ...item, loose_qty: validation.maxLooseQty };
+        }
+      } else {
+        // Update the quantity
+        newItems[rowIndex] = { ...item, [field]: value };
+      }
+
+      setBillFormData(prev => ({ ...prev, items: newItems }));
+    },
+    [billFormData.items, validateStockQuantity]
+  );
 
   // Initialize data
   useEffect(() => {
@@ -337,8 +344,15 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
 
   // Auto-set current user as billed_by for new bills
   useEffect(() => {
-    if (!billdata && userList?.result && user?._id && !billFormData.billed_by_id) {
-      const currentUserInList = userList.result.find((u: any) => u._id === user._id);
+    if (
+      !billdata &&
+      userList?.result &&
+      user?._id &&
+      !billFormData.billed_by_id
+    ) {
+      const currentUserInList = userList.result.find(
+        (u: any) => u._id === user._id
+      );
       if (currentUserInList) {
         setBillFormData(prev => ({
           ...prev,
@@ -379,149 +393,152 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
   }, [userList]);
 
   // Column definitions for bill header - memoized to prevent recreation
-  const headerColumns: AntdEditableColumn[] = useMemo(() => [
-    {
-      key: 'invoice_no',
-      title: '📄 INVOICE #',
-      dataIndex: 'invoice_no',
-      type: 'text',
-      required: true,
-      width: 180,
-    },
-    {
-      key: 'date',
-      title: '📅 DATE',
-      dataIndex: 'date',
-      type: 'date',
-      required: true,
-      width: 150,
-    },
-    {
-      key: 'customer_id',
-      title: '👤 CUSTOMER',
-      dataIndex: 'customer_id',
-      type: 'select',
-      options: customerOptions,
-      required: true,
-      width: 250,
-      render: (value: any, record: any) => {
-        const selectedCustomer = customerOptions.find(
-          (opt: any) => opt.value === value
-        );
-        return (
-          <Tooltip title="Click to open customer selection modal (or press End key)">
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                cursor: 'pointer',
-                padding: '4px 8px',
-                borderRadius: '4px',
-                border: '1px solid #d9d9d9',
-                backgroundColor: '#fafafa',
-                transition: 'all 0.2s ease',
-              }}
-              onClick={() => setCustomerModalVisible(true)}
-              onMouseEnter={e => {
-                e.currentTarget.style.backgroundColor = '#f0f0f0';
-                e.currentTarget.style.borderColor = '#1890ff';
-              }}
-              onMouseLeave={e => {
-                e.currentTarget.style.backgroundColor = '#fafafa';
-                e.currentTarget.style.borderColor = '#d9d9d9';
-              }}
-            >
-              <span>
-                {selectedCustomer ? selectedCustomer.label : 'Select customer'}
-              </span>
-              <span
+  const headerColumns: AntdEditableColumn[] = useMemo(
+    () => [
+      {
+        key: 'invoice_no',
+        title: '📄 INVOICE #',
+        dataIndex: 'invoice_no',
+        type: 'text',
+        required: true,
+        width: 180,
+      },
+      {
+        key: 'date',
+        title: '📅 DATE',
+        dataIndex: 'date',
+        type: 'date',
+        required: true,
+        width: 150,
+      },
+      {
+        key: 'customer_id',
+        title: '👤 CUSTOMER',
+        dataIndex: 'customer_id',
+        type: 'select',
+        options: customerOptions,
+        required: true,
+        width: 250,
+        render: (value: any, record: any) => {
+          const selectedCustomer = customerOptions.find(
+            (opt: any) => opt.value === value
+          );
+          return (
+            <Tooltip title="Click to open customer selection modal (or press End key)">
+              <div
                 style={{
-                  fontSize: '10px',
-                  color: '#1890ff',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  cursor: 'pointer',
+                  padding: '4px 8px',
+                  borderRadius: '4px',
+                  border: '1px solid #d9d9d9',
+                  backgroundColor: '#fafafa',
+                  transition: 'all 0.2s ease',
+                }}
+                onClick={() => setCustomerModalVisible(true)}
+                onMouseEnter={e => {
+                  e.currentTarget.style.backgroundColor = '#f0f0f0';
+                  e.currentTarget.style.borderColor = '#1890ff';
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.backgroundColor = '#fafafa';
+                  e.currentTarget.style.borderColor = '#d9d9d9';
+                }}
+              >
+                <span>
+                  {selectedCustomer
+                    ? selectedCustomer.label
+                    : 'Select customer'}
+                </span>
+                <span
+                  style={{
+                    fontSize: '10px',
+                    color: '#1890ff',
+                    backgroundColor: '#f0f8ff',
+                    padding: '2px 6px',
+                    borderRadius: '4px',
+                    border: '1px solid #d6e4ff',
+                  }}
+                >
+                  End
+                </span>
+              </div>
+            </Tooltip>
+          );
+        },
+      },
+      {
+        key: 'billed_by_id',
+        title: '👨‍💼 BILLED BY',
+        dataIndex: 'billed_by_id',
+        type: 'select',
+        options: userOptions,
+        required: false,
+        width: 250,
+        render: (value: any, record: any) => {
+          const selectedUser = userOptions.find(
+            (opt: any) => opt.value === value
+          );
+          return (
+            <Tooltip title="Click to open user selection modal (or press Ctrl+U key)">
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  cursor: 'pointer',
+                  padding: '4px 8px',
+                  borderRadius: '4px',
+                  border: '1px solid #d9d9d9',
                   backgroundColor: '#f0f8ff',
-                  padding: '2px 6px',
-                  borderRadius: '4px',
-                  border: '1px solid #d6e4ff',
+                  transition: 'all 0.2s ease',
+                }}
+                onClick={() => setUserModalVisible(true)}
+                onMouseEnter={e => {
+                  e.currentTarget.style.backgroundColor = '#e6f7ff';
+                  e.currentTarget.style.borderColor = '#1890ff';
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.backgroundColor = '#f0f8ff';
+                  e.currentTarget.style.borderColor = '#d9d9d9';
                 }}
               >
-                End
-              </span>
-            </div>
-          </Tooltip>
-        );
+                <span>{selectedUser ? selectedUser.label : 'Select user'}</span>
+                <span
+                  style={{
+                    fontSize: '10px',
+                    color: '#1890ff',
+                    backgroundColor: '#ffffff',
+                    padding: '2px 6px',
+                    borderRadius: '4px',
+                    border: '1px solid #d6e4ff',
+                  }}
+                >
+                  Ctrl+U
+                </span>
+              </div>
+            </Tooltip>
+          );
+        },
       },
-    },
-    {
-      key: 'billed_by_id',
-      title: '👨‍💼 BILLED BY',
-      dataIndex: 'billed_by_id',
-      type: 'select',
-      options: userOptions,
-      required: false,
-      width: 250,
-      render: (value: any, record: any) => {
-        const selectedUser = userOptions.find(
-          (opt: any) => opt.value === value
-        );
-        return (
-          <Tooltip title="Click to open user selection modal (or press Ctrl+U key)">
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                cursor: 'pointer',
-                padding: '4px 8px',
-                borderRadius: '4px',
-                border: '1px solid #d9d9d9',
-                backgroundColor: '#f0f8ff',
-                transition: 'all 0.2s ease',
-              }}
-              onClick={() => setUserModalVisible(true)}
-              onMouseEnter={e => {
-                e.currentTarget.style.backgroundColor = '#e6f7ff';
-                e.currentTarget.style.borderColor = '#1890ff';
-              }}
-              onMouseLeave={e => {
-                e.currentTarget.style.backgroundColor = '#f0f8ff';
-                e.currentTarget.style.borderColor = '#d9d9d9';
-              }}
-            >
-              <span>
-                {selectedUser ? selectedUser.label : 'Select user'}
-              </span>
-              <span
-                style={{
-                  fontSize: '10px',
-                  color: '#1890ff',
-                  backgroundColor: '#ffffff',
-                  padding: '2px 6px',
-                  borderRadius: '4px',
-                  border: '1px solid #d6e4ff',
-                }}
-              >
-                Ctrl+U
-              </span>
-            </div>
-          </Tooltip>
-        );
+      {
+        key: 'payment_mode',
+        title: '💳 PAYMENT',
+        dataIndex: 'payment_mode',
+        type: 'select',
+        options: [
+          { label: '💵 Cash', value: 'cash' },
+          { label: '📱 UPI', value: 'upi' },
+          { label: '💳 Card', value: 'card' },
+        ],
+        required: true,
+        width: 150,
       },
-    },
-    {
-      key: 'payment_mode',
-      title: '💳 PAYMENT',
-      dataIndex: 'payment_mode',
-      type: 'select',
-      options: [
-        { label: '💵 Cash', value: 'cash' },
-        { label: '📱 UPI', value: 'upi' },
-        { label: '💳 Card', value: 'card' },
-      ],
-      required: true,
-      width: 150,
-    },
-  ], [customerOptions, userOptions]);
+    ],
+    [customerOptions, userOptions]
+  );
 
   const headerData = useMemo(
     () => [
@@ -543,454 +560,475 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
   );
 
   // Column definitions for bill items - memoized to prevent recreation
-  const itemColumns: AntdEditableColumn[] = useMemo(() => [
-    {
-      key: 'product_id',
-      title: '🛒 PRODUCT',
-      dataIndex: 'product_id',
-      type: 'product', // triggers modal
-      required: true,
-      width: 280,
-      render: (value, record, index) => {
-        const selectedProduct = productOptions.find(
-          (opt: any) => opt.value === value
-        );
-        return (
-          <Tooltip
-            title={
-              value
-                ? `Product: ${selectedProduct?.label || 'Unknown'} - Click to change • F5 to reopen`
-                : 'Click to select product from inventory • F5 to open'
-            }
-            placement="top"
-          >
-            <div
-              style={{
-                cursor: 'pointer',
-                padding: '4px 8px',
-                borderRadius: '4px',
-                border: value ? '1px solid #52c41a' : '1px solid #d9d9d9',
-                backgroundColor: value ? '#f6ffed' : '#fafafa',
-                transition: 'all 0.2s ease',
-                minHeight: '32px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-              }}
-              onClick={() => {
-                // Open product selection modal
-                if (typeof index === 'number') {
-                  setProductSelectionRowIndex(index);
-                  setLastInteractedRowIndex(index); // Track this row for F5
-                  setProductSelectionModalVisible(true);
-                }
-              }}
-              onMouseEnter={e => {
-                e.currentTarget.style.backgroundColor = '#f0f0f0';
-                e.currentTarget.style.borderColor = '#1890ff';
-              }}
-              onMouseLeave={e => {
-                e.currentTarget.style.backgroundColor = value
-                  ? '#f6ffed'
-                  : '#fafafa';
-                e.currentTarget.style.borderColor = value
-                  ? '#52c41a'
-                  : '#d9d9d9';
-              }}
+  const itemColumns: AntdEditableColumn[] = useMemo(
+    () => [
+      {
+        key: 'product_id',
+        title: '🛒 PRODUCT',
+        dataIndex: 'product_id',
+        type: 'product', // triggers modal
+        required: true,
+        width: 280,
+        render: (value, record, index) => {
+          const selectedProduct = productOptions.find(
+            (opt: any) => opt.value === value
+          );
+          return (
+            <Tooltip
+              title={
+                value
+                  ? `Product: ${selectedProduct?.label || 'Unknown'} - Click to change • F5 to reopen`
+                  : 'Click to select product from inventory • F5 to open'
+              }
+              placement="top"
             >
-              <span
-                style={{
-                  color: value ? '#52c41a' : '#1890ff',
-                  fontWeight: value ? 600 : 400,
-                }}
-              >
-                {value
-                  ? selectedProduct?.label || 'Unknown Product'
-                  : 'Select product'}
-              </span>
-              {value && (
-                <div
-                  style={{ display: 'flex', alignItems: 'center', gap: '4px' }}
-                >
-                  <span style={{ fontSize: '12px', color: '#52c41a' }}>✅</span>
-                  <span
-                    style={{
-                      fontSize: '10px',
-                      color: '#52c41a',
-                      backgroundColor: '#f6ffed',
-                      padding: '2px 4px',
-                      borderRadius: '3px',
-                    }}
-                  >
-                    Selected
-                  </span>
-                </div>
-              )}
-              {!value && (
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '4px',
-                    marginTop: '2px',
-                  }}
-                >
-                  <span style={{ fontSize: '10px', color: '#ff4d4f' }}>
-                    ⚠️ Product required
-                  </span>
-                  <span
-                    style={{
-                      fontSize: '10px',
-                      color: '#1890ff',
-                      backgroundColor: '#f0f8ff',
-                      padding: '2px 4px',
-                      borderRadius: '3px',
-                    }}
-                  >
-                    Click
-                  </span>
-                </div>
-              )}
-            </div>
-          </Tooltip>
-        );
-      },
-    },
-    {
-      key: 'stock_id',
-      title: '📦 STOCK',
-      dataIndex: 'batch_no',
-      type: 'stock',
-      required: true,
-      width: 280,
-      editable: true, // allow editing to open modal
-      render: (value, record, index) => {
-        // Get stock info for display
-        const stockList = branchId ? branchStockList : stockAuditList;
-        const stock = stockList?.result?.find(
-          (s: any) => s._id === record.stock_id
-        );
-        
-        // Get pack size from stock data
-        const packSize = stock?.ProductItem?.VariantItem?.pack_size;
-        const packSizeNum = packSize ? parseInt(packSize) : 1;
-        
-        // Calculate available quantities
-        const availablePackQty = stock?.available_quantity || 0;
-        const availableLooseQty = stock?.available_loose_quantity || 0;
-        
-        const isLowStock = availablePackQty > 0 && availablePackQty <= 10;
-        const isOutOfStock = availablePackQty === 0;
-
-        return (
-          <Tooltip
-            title={
-              record.product_id
-                ? value
-                  ? `Stock: ${value} - Packs Available: ${availablePackQty} • Loose Available: ${availableLooseQty} • Pack Size: ${packSizeNum} • Click to change • F7 to reopen`
-                  : 'Click to select stock from available inventory • F7 to open'
-                : 'Please select a product first to choose stock • F7 to open after product selection'
-            }
-            placement="top"
-          >
-            <div
-              style={{
-                cursor: 'pointer',
-                padding: '6px 10px',
-                borderRadius: '6px',
-                border: value ? '1px solid #52c41a' : '1px solid #d9d9d9',
-                backgroundColor: value ? '#f6ffed' : '#fafafa',
-                transition: 'all 0.2s ease',
-                minHeight: '32px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                width: '100%',
-                gap: '10px',
-              }}
-              onClick={() => {
-                if (record.product_id && typeof index === 'number') {
-                  setStockModalRowIndex(index);
-                } else if (!record.product_id) {
-                  message.warning('Please select a product first');
-                }
-              }}
-              onMouseEnter={e => {
-                e.currentTarget.style.backgroundColor = '#f0f0f0';
-                e.currentTarget.style.borderColor = '#1890ff';
-              }}
-              onMouseLeave={e => {
-                e.currentTarget.style.backgroundColor = value
-                  ? '#f6ffed'
-                  : '#fafafa';
-                e.currentTarget.style.borderColor = value
-                  ? '#52c41a'
-                  : '#d9d9d9';
-              }}
-            >
-              {/* Left Section */}
               <div
                 style={{
+                  cursor: 'pointer',
+                  padding: '4px 8px',
+                  borderRadius: '4px',
+                  border: value ? '1px solid #52c41a' : '1px solid #d9d9d9',
+                  backgroundColor: value ? '#f6ffed' : '#fafafa',
+                  transition: 'all 0.2s ease',
+                  minHeight: '32px',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '8px',
-                  flex: 1,
+                  justifyContent: 'space-between',
+                }}
+                onClick={() => {
+                  // Open product selection modal
+                  if (typeof index === 'number') {
+                    setProductSelectionRowIndex(index);
+                    setLastInteractedRowIndex(index); // Track this row for F5
+                    setProductSelectionModalVisible(true);
+                  }
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.backgroundColor = '#f0f0f0';
+                  e.currentTarget.style.borderColor = '#1890ff';
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.backgroundColor = value
+                    ? '#f6ffed'
+                    : '#fafafa';
+                  e.currentTarget.style.borderColor = value
+                    ? '#52c41a'
+                    : '#d9d9d9';
                 }}
               >
                 <span
                   style={{
-                    color: value
-                      ? '#52c41a'
-                      : record.product_id
-                        ? '#1890ff'
-                        : '#bfbfbf',
+                    color: value ? '#52c41a' : '#1890ff',
                     fontWeight: value ? 600 : 400,
-                    fontSize: '13px',
-                    whiteSpace: 'nowrap',
                   }}
                 >
-                  {value || 'Select Stock'}
+                  {value
+                    ? selectedProduct?.label || 'Unknown Product'
+                    : 'Select product'}
                 </span>
-
-                {/* Stock Badges (inline) */}
-                {stock && (
-                  <>
-                    <span
-                      style={{
-                        color: isOutOfStock
-                          ? '#ff4d4f'
-                          : isLowStock
-                            ? '#faad14'
-                            : '#52c41a',
-                        fontWeight: 'bold',
-                        backgroundColor: isOutOfStock
-                          ? '#fff2f0'
-                          : isLowStock
-                            ? '#fffbe6'
-                          : '#f6ffed',
-                        padding: '2px 6px',
-                        borderRadius: '4px',
-                        border: `1px solid ${
-                          isOutOfStock
-                            ? '#ffccc7'
-                            : isLowStock
-                              ? '#ffe58f'
-                              : '#b7eb8f'
-                        }`,
-                        fontSize: '12px',
-                      }}
-                    >
-                      📦 {availablePackQty}
+                {value && (
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                    }}
+                  >
+                    <span style={{ fontSize: '12px', color: '#52c41a' }}>
+                      ✅
                     </span>
                     <span
                       style={{
-                        color: '#722ed1',
-                        fontWeight: 'bold',
-                        backgroundColor: '#f9f0ff',
-                        padding: '2px 6px',
-                        borderRadius: '4px',
-                        border: '1px solid #d3adf7',
-                        fontSize: '12px',
+                        fontSize: '10px',
+                        color: '#52c41a',
+                        backgroundColor: '#f6ffed',
+                        padding: '2px 4px',
+                        borderRadius: '3px',
                       }}
                     >
-                      📋 {availableLooseQty}
+                      Selected
                     </span>
-                  </>
+                  </div>
                 )}
+                {!value && (
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      marginTop: '2px',
+                    }}
+                  >
+                    <span style={{ fontSize: '10px', color: '#ff4d4f' }}>
+                      ⚠️ Product required
+                    </span>
+                    <span
+                      style={{
+                        fontSize: '10px',
+                        color: '#1890ff',
+                        backgroundColor: '#f0f8ff',
+                        padding: '2px 4px',
+                        borderRadius: '3px',
+                      }}
+                    >
+                      Click
+                    </span>
+                  </div>
+                )}
+              </div>
+            </Tooltip>
+          );
+        },
+      },
+      {
+        key: 'stock_id',
+        title: '📦 STOCK',
+        dataIndex: 'batch_no',
+        type: 'stock',
+        required: true,
+        width: 280,
+        editable: true, // allow editing to open modal
+        render: (value, record, index) => {
+          // Get stock info for display
+          const stockList = branchId ? branchStockList : stockAuditList;
+          const stock = stockList?.result?.find(
+            (s: any) => s._id === record.stock_id
+          );
 
-                {/* Warning (inline, not breaking row) */}
-                {record.product_id && !value && (
+          // Get pack size from stock data
+          const packSize = stock?.ProductItem?.VariantItem?.pack_size;
+          const packSizeNum = packSize ? parseInt(packSize) : 1;
+
+          // Calculate available quantities
+          const availablePackQty = stock?.available_quantity || 0;
+          const availableLooseQty = stock?.available_loose_quantity || 0;
+
+          const isLowStock = availablePackQty > 0 && availablePackQty <= 10;
+          const isOutOfStock = availablePackQty === 0;
+
+          return (
+            <Tooltip
+              title={
+                record.product_id
+                  ? value
+                    ? `Stock: ${value} - Packs Available: ${availablePackQty} • Loose Available: ${availableLooseQty} • Pack Size: ${packSizeNum} • Click to change • F7 to reopen`
+                    : 'Click to select stock from available inventory • F7 to open'
+                  : 'Please select a product first to choose stock • F7 to open after product selection'
+              }
+              placement="top"
+            >
+              <div
+                style={{
+                  cursor: 'pointer',
+                  padding: '6px 10px',
+                  borderRadius: '6px',
+                  border: value ? '1px solid #52c41a' : '1px solid #d9d9d9',
+                  backgroundColor: value ? '#f6ffed' : '#fafafa',
+                  transition: 'all 0.2s ease',
+                  minHeight: '32px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  width: '100%',
+                  gap: '10px',
+                }}
+                onClick={() => {
+                  if (record.product_id && typeof index === 'number') {
+                    setStockModalRowIndex(index);
+                  } else if (!record.product_id) {
+                    message.warning('Please select a product first');
+                  }
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.backgroundColor = '#f0f0f0';
+                  e.currentTarget.style.borderColor = '#1890ff';
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.backgroundColor = value
+                    ? '#f6ffed'
+                    : '#fafafa';
+                  e.currentTarget.style.borderColor = value
+                    ? '#52c41a'
+                    : '#d9d9d9';
+                }}
+              >
+                {/* Left Section */}
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    flex: 1,
+                  }}
+                >
                   <span
                     style={{
-                      fontSize: '11px',
-                      color: '#ff4d4f',
+                      color: value
+                        ? '#52c41a'
+                        : record.product_id
+                          ? '#1890ff'
+                          : '#bfbfbf',
+                      fontWeight: value ? 600 : 400,
+                      fontSize: '13px',
                       whiteSpace: 'nowrap',
                     }}
                   >
-                    ⚠️ Stock required
+                    {value || 'Select Stock'}
                   </span>
-                )}
-              </div>
 
-              {/* Right Side "Click" Indicator */}
-              {record.product_id && (
-                <div
-                  style={{ display: 'flex', alignItems: 'center', gap: '4px' }}
-                >
-                  <span style={{ fontSize: '12px', color: '#1890ff' }}>📋</span>
-                  <span
+                  {/* Stock Badges (inline) */}
+                  {stock && (
+                    <>
+                      <span
+                        style={{
+                          color: isOutOfStock
+                            ? '#ff4d4f'
+                            : isLowStock
+                              ? '#faad14'
+                              : '#52c41a',
+                          fontWeight: 'bold',
+                          backgroundColor: isOutOfStock
+                            ? '#fff2f0'
+                            : isLowStock
+                              ? '#fffbe6'
+                              : '#f6ffed',
+                          padding: '2px 6px',
+                          borderRadius: '4px',
+                          border: `1px solid ${
+                            isOutOfStock
+                              ? '#ffccc7'
+                              : isLowStock
+                                ? '#ffe58f'
+                                : '#b7eb8f'
+                          }`,
+                          fontSize: '12px',
+                        }}
+                      >
+                        📦 {availablePackQty}
+                      </span>
+                      <span
+                        style={{
+                          color: '#722ed1',
+                          fontWeight: 'bold',
+                          backgroundColor: '#f9f0ff',
+                          padding: '2px 6px',
+                          borderRadius: '4px',
+                          border: '1px solid #d3adf7',
+                          fontSize: '12px',
+                        }}
+                      >
+                        📋 {availableLooseQty}
+                      </span>
+                    </>
+                  )}
+
+                  {/* Warning (inline, not breaking row) */}
+                  {record.product_id && !value && (
+                    <span
+                      style={{
+                        fontSize: '11px',
+                        color: '#ff4d4f',
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      ⚠️ Stock required
+                    </span>
+                  )}
+                </div>
+
+                {/* Right Side "Click" Indicator */}
+                {record.product_id && (
+                  <div
                     style={{
-                      fontSize: '10px',
-                      color: '#52c41a',
-                      backgroundColor: '#f6ffed',
-                      padding: '2px 4px',
-                      borderRadius: '3px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px',
                     }}
                   >
-                    Click
-                  </span>
-                </div>
-              )}
-            </div>
-          </Tooltip>
-        );
+                    <span style={{ fontSize: '12px', color: '#1890ff' }}>
+                      📋
+                    </span>
+                    <span
+                      style={{
+                        fontSize: '10px',
+                        color: '#52c41a',
+                        backgroundColor: '#f6ffed',
+                        padding: '2px 4px',
+                        borderRadius: '3px',
+                      }}
+                    >
+                      Click
+                    </span>
+                  </div>
+                )}
+              </div>
+            </Tooltip>
+          );
+        },
       },
-    },
-    {
-      key: 'qty',
-      title: '📊 QTY',
-      dataIndex: 'qty',
-      type: 'number',
-      width: 90,
-      render: (value: number, record: any, index?: number) => {
-        // Get stock info for validation
-        const stockList = branchId ? branchStockList : stockAuditList;
-        const stock = stockList?.result?.find(
-          (s: any) => s._id === record.stock_id
-        );
-        const availablePackQty = stock?.available_quantity || 0;
-        const isExceedingStock = value > availablePackQty;
+      {
+        key: 'qty',
+        title: '📊 QTY',
+        dataIndex: 'qty',
+        type: 'number',
+        width: 90,
+        render: (value: number, record: any, index?: number) => {
+          // Get stock info for validation
+          const stockList = branchId ? branchStockList : stockAuditList;
+          const stock = stockList?.result?.find(
+            (s: any) => s._id === record.stock_id
+          );
+          const availablePackQty = stock?.available_quantity || 0;
+          const isExceedingStock = value > availablePackQty;
 
-        return (
-          <div style={{ position: 'relative' }}>
-            <InputNumber
-              value={value}
-              min={0}
-              max={availablePackQty}
-              style={{
-                width: '100%',
-                borderColor: isExceedingStock ? '#ff4d4f' : undefined,
-                backgroundColor: isExceedingStock ? '#fff2f0' : undefined,
-              }}
-              onPressEnter={e => {
-                if (index !== undefined) {
-                  const target = e.target as HTMLInputElement;
-                  const newValue = parseInt(target.value) || 0;
-                  handleQuantityChange(index, 'qty', newValue);
-                }
-              }}
-              onBlur={e => {
-                if (index !== undefined) {
-                  const target = e.target as HTMLInputElement;
-                  const newValue = parseInt(target.value) || 0;
-                  handleQuantityChange(index, 'qty', newValue);
-                }
-              }}
-              onChange={newValue => {
-                if (newValue !== null && newValue > availablePackQty) {
-                  message.error(
-                    `Pack quantity cannot exceed available packs (${availablePackQty})`
-                  );
-                  return;
-                }
-              }}
-            />
-          </div>
-        );
-      },
-    },
-    {
-      key: 'loose_qty',
-      title: '📋 LOOSE',
-      dataIndex: 'loose_qty',
-      type: 'number',
-      width: 90,
-      render: (value: number, record: any, index?: number) => {
-        // Get stock info for validation
-        const stockList = branchId ? branchStockList : stockAuditList;
-        const stock = stockList?.result?.find(
-          (s: any) => s._id === record.stock_id
-        );
-        
-        if (!stock) {
           return (
             <div style={{ position: 'relative' }}>
               <InputNumber
                 value={value}
                 min={0}
-                style={{ width: '100%' }}
-                disabled
+                max={availablePackQty}
+                style={{
+                  width: '100%',
+                  borderColor: isExceedingStock ? '#ff4d4f' : undefined,
+                  backgroundColor: isExceedingStock ? '#fff2f0' : undefined,
+                }}
+                onPressEnter={e => {
+                  if (index !== undefined) {
+                    const target = e.target as HTMLInputElement;
+                    const newValue = parseInt(target.value) || 0;
+                    handleQuantityChange(index, 'qty', newValue);
+                  }
+                }}
+                onBlur={e => {
+                  if (index !== undefined) {
+                    const target = e.target as HTMLInputElement;
+                    const newValue = parseInt(target.value) || 0;
+                    handleQuantityChange(index, 'qty', newValue);
+                  }
+                }}
+                onChange={newValue => {
+                  if (newValue !== null && newValue > availablePackQty) {
+                    message.error(
+                      `Pack quantity cannot exceed available packs (${availablePackQty})`
+                    );
+                    return;
+                  }
+                }}
               />
             </div>
           );
-        }
-
-        // Calculate dynamic max loose quantity based on current QTY selection
-        const packSize = stock?.ProductItem?.VariantItem?.pack_size;
-        const packSizeNum = packSize ? parseInt(packSize) : 1;
-        const availablePackQty = stock?.available_quantity || 0;
-        const availableLooseQty = stock?.available_loose_quantity || 0;
-        
-        // Current QTY selection affects max loose quantity
-        const currentQty = record.qty || 0;
-        const remainingPacks = availablePackQty - currentQty;
-        const maxLooseFromRemainingPacks = remainingPacks * packSizeNum;
-        const maxLooseQty = maxLooseFromRemainingPacks + availableLooseQty;
-        
-        const isExceedingStock = value > maxLooseQty;
-
-        return (
-          <div style={{ position: 'relative' }}>
-            <InputNumber
-              value={value}
-              min={0}
-              max={maxLooseQty}
-              style={{
-                width: '100%',
-                borderColor: isExceedingStock ? '#ff4d4f' : undefined,
-                backgroundColor: isExceedingStock ? '#fff2f0' : undefined,
-              }}
-              onPressEnter={e => {
-                if (index !== undefined) {
-                  const target = e.target as HTMLInputElement;
-                  const newValue = parseInt(target.value) || 0;
-                  handleQuantityChange(index, 'loose_qty', newValue);
-                }
-              }}
-              onBlur={e => {
-                if (index !== undefined) {
-                  const target = e.target as HTMLInputElement;
-                  const newValue = parseInt(target.value) || 0;
-                  handleQuantityChange(index, 'loose_qty', newValue);
-                }
-              }}
-              onChange={newValue => {
-                if (newValue !== null && newValue > maxLooseQty) {
-                  message.error(
-                    `Loose quantity cannot exceed available loose items (${maxLooseQty} = ${remainingPacks} remaining packs × ${packSizeNum} + ${availableLooseQty} loose)`
-                  );
-                  return;
-                }
-              }}
-            />
-          </div>
-        );
+        },
       },
-    },
-    {
-      key: 'price',
-      title: '💰 RATE',
-      dataIndex: 'price',
-      type: 'number',
-      required: true,
-      width: 120,
-      editable: false, // Make rate not editable
-      render: value => (
-        <InputNumber value={value} disabled style={{ width: '100%' }} />
-      ),
-    },
-    {
-      key: 'amount',
-      title: '💵 AMOUNT',
-      dataIndex: 'amount',
-      type: 'number',
-      editable: false, // Make amount not editable
-      width: 130,
-      render: value => (
-        <InputNumber value={value} disabled style={{ width: '100%' }} />
-      ),
-    },
-  ], [productOptions, branchId, branchStockList, stockAuditList, handleQuantityChange]);
+      {
+        key: 'loose_qty',
+        title: '📋 LOOSE',
+        dataIndex: 'loose_qty',
+        type: 'number',
+        width: 90,
+        render: (value: number, record: any, index?: number) => {
+          // Get stock info for validation
+          const stockList = branchId ? branchStockList : stockAuditList;
+          const stock = stockList?.result?.find(
+            (s: any) => s._id === record.stock_id
+          );
+
+          if (!stock) {
+            return (
+              <div style={{ position: 'relative' }}>
+                <InputNumber
+                  value={value}
+                  min={0}
+                  style={{ width: '100%' }}
+                  disabled
+                />
+              </div>
+            );
+          }
+
+          // Calculate dynamic max loose quantity based on current QTY selection
+          const packSize = stock?.ProductItem?.VariantItem?.pack_size;
+          const packSizeNum = packSize ? parseInt(packSize) : 1;
+          const availablePackQty = stock?.available_quantity || 0;
+          const availableLooseQty = stock?.available_loose_quantity || 0;
+
+          // Current QTY selection affects max loose quantity
+          const currentQty = record.qty || 0;
+          const remainingPacks = availablePackQty - currentQty;
+          const maxLooseFromRemainingPacks = remainingPacks * packSizeNum;
+          const maxLooseQty = maxLooseFromRemainingPacks + availableLooseQty;
+
+          const isExceedingStock = value > maxLooseQty;
+
+          return (
+            <div style={{ position: 'relative' }}>
+              <InputNumber
+                value={value}
+                min={0}
+                max={maxLooseQty}
+                style={{
+                  width: '100%',
+                  borderColor: isExceedingStock ? '#ff4d4f' : undefined,
+                  backgroundColor: isExceedingStock ? '#fff2f0' : undefined,
+                }}
+                onPressEnter={e => {
+                  if (index !== undefined) {
+                    const target = e.target as HTMLInputElement;
+                    const newValue = parseInt(target.value) || 0;
+                    handleQuantityChange(index, 'loose_qty', newValue);
+                  }
+                }}
+                onBlur={e => {
+                  if (index !== undefined) {
+                    const target = e.target as HTMLInputElement;
+                    const newValue = parseInt(target.value) || 0;
+                    handleQuantityChange(index, 'loose_qty', newValue);
+                  }
+                }}
+                onChange={newValue => {
+                  if (newValue !== null && newValue > maxLooseQty) {
+                    message.error(
+                      `Loose quantity cannot exceed available loose items (${maxLooseQty} = ${remainingPacks} remaining packs × ${packSizeNum} + ${availableLooseQty} loose)`
+                    );
+                    return;
+                  }
+                }}
+              />
+            </div>
+          );
+        },
+      },
+      {
+        key: 'price',
+        title: '💰 RATE',
+        dataIndex: 'price',
+        type: 'number',
+        required: true,
+        width: 120,
+        editable: false, // Make rate not editable
+        render: value => (
+          <InputNumber value={value} disabled style={{ width: '100%' }} />
+        ),
+      },
+      {
+        key: 'amount',
+        title: '💵 AMOUNT',
+        dataIndex: 'amount',
+        type: 'number',
+        editable: false, // Make amount not editable
+        width: 130,
+        render: value => (
+          <InputNumber value={value} disabled style={{ width: '100%' }} />
+        ),
+      },
+    ],
+    [
+      productOptions,
+      branchId,
+      branchStockList,
+      stockAuditList,
+      handleQuantityChange,
+    ]
+  );
 
   // Find the column index for qty
   const qtyColIndex = itemColumns.findIndex(
@@ -1020,187 +1058,203 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
   }, [billFormData.items, productList, billSettings]);
 
   // Handle header changes - memoized to prevent unnecessary re-renders
-  const handleHeaderChange = useCallback((headerRows: any[]) => {
-    const updatedHeader = headerRows[0];
-    if (updatedHeader) {
-      // Find customer name for display
-      const customer = customerList?.result?.find(
-        (c: any) => c._id === updatedHeader.customer_id
-      );
-      // Find user name for display
-      const user = userList?.result?.find(
-        (u: any) => u._id === updatedHeader.billed_by_id
-      );
-      setBillFormData(prev => ({
-        ...prev,
-        invoice_no: updatedHeader.invoice_no || '',
-        date: updatedHeader.date || dayjs().format('YYYY-MM-DD'),
-        customer_id: updatedHeader.customer_id || '',
-        customer_name: customer?.full_name || '',
-        billed_by_id: updatedHeader.billed_by_id || '',
-        billed_by_name: user?.name || '',
-        payment_mode: updatedHeader.payment_mode || 'cash',
-      }));
-    }
-  }, [customerList, userList]);
+  const handleHeaderChange = useCallback(
+    (headerRows: any[]) => {
+      const updatedHeader = headerRows[0];
+      if (updatedHeader) {
+        // Find customer name for display
+        const customer = customerList?.result?.find(
+          (c: any) => c._id === updatedHeader.customer_id
+        );
+        // Find user name for display
+        const user = userList?.result?.find(
+          (u: any) => u._id === updatedHeader.billed_by_id
+        );
+        setBillFormData(prev => ({
+          ...prev,
+          invoice_no: updatedHeader.invoice_no || '',
+          date: updatedHeader.date || dayjs().format('YYYY-MM-DD'),
+          customer_id: updatedHeader.customer_id || '',
+          customer_name: customer?.full_name || '',
+          billed_by_id: updatedHeader.billed_by_id || '',
+          billed_by_name: user?.name || '',
+          payment_mode: updatedHeader.payment_mode || 'cash',
+        }));
+      }
+    },
+    [customerList, userList]
+  );
 
   // Handle item changes - memoized to prevent unnecessary re-renders
-  const handleItemsChange = useCallback((items: any[]) => {
-    // Convert back to BillItem format and auto-populate stock
-    const billItems: BillItem[] = items.map(item => {
-      const billItem: BillItem = {
-        product_id: item.product_id || '',
-        product_name:
-          productOptions.find(
-            (opt: { label: string; value: string }) =>
-              opt.value === item.product_id
-          )?.label || '',
-        variant_name: item.variant_name || '',
-        stock_id: item.stock_id || '',
-        batch_no: item.batch_no || '', // ✅ Preserve batch_no from input
-        qty: item.qty || 0,
-        loose_qty: item.loose_qty || 0,
-        price: item.price || 0,
-        mrp: item.mrp || 0,
-        amount: item.amount || 0,
-        tax_percentage: item.tax_percentage || 0,
-      };
+  const handleItemsChange = useCallback(
+    (items: any[]) => {
+      // Convert back to BillItem format and auto-populate stock
+      const billItems: BillItem[] = items.map(item => {
+        const billItem: BillItem = {
+          product_id: item.product_id || '',
+          product_name:
+            productOptions.find(
+              (opt: { label: string; value: string }) =>
+                opt.value === item.product_id
+            )?.label || '',
+          variant_name: item.variant_name || '',
+          stock_id: item.stock_id || '',
+          batch_no: item.batch_no || '', // ✅ Preserve batch_no from input
+          qty: item.qty || 0,
+          loose_qty: item.loose_qty || 0,
+          price: item.price || 0,
+          mrp: item.mrp || 0,
+          amount: item.amount || 0,
+          tax_percentage: item.tax_percentage || 0,
+        };
 
-      // Stock validation for pack and loose quantities
-      if (item.stock_id && (item.qty || item.loose_qty)) {
+        // Stock validation for pack and loose quantities
+        if (item.stock_id && (item.qty || item.loose_qty)) {
+          const stockList = branchId ? branchStockList : stockAuditList;
+          const stock = stockList?.result?.find(
+            (s: any) => s._id === item.stock_id
+          );
+
+          if (stock) {
+            // Get pack size from stock data
+            const packSize = stock?.ProductItem?.VariantItem?.pack_size;
+            const packSizeNum = packSize ? parseInt(packSize) : 1;
+
+            // Available pack quantity and actual loose quantity
+            const availablePackQty = stock.available_quantity || 0;
+            const availableLooseQty = stock.available_loose_quantity || 0;
+
+            // Validate pack quantity (QTY field)
+            if (item.qty && item.qty > availablePackQty) {
+              message.error(
+                `Pack quantity (${item.qty}) exceeds available packs (${availablePackQty})`
+              );
+              billItem.qty = availablePackQty;
+            }
+
+            // Calculate max loose quantity based on remaining packs after QTY selection
+            const remainingPacks = availablePackQty - (item.qty || 0);
+            const maxLooseFromRemainingPacks = remainingPacks * packSizeNum;
+            const maxLooseQty = maxLooseFromRemainingPacks + availableLooseQty;
+
+            // Validate loose quantity (LOOSE QTY field)
+            if (item.loose_qty && item.loose_qty > maxLooseQty) {
+              message.error(
+                `Loose quantity (${item.loose_qty}) exceeds available loose items (${maxLooseQty} = ${remainingPacks} remaining packs × ${packSizeNum} + ${availableLooseQty} loose)`
+              );
+              billItem.loose_qty = maxLooseQty;
+            }
+          }
+        }
+
+        // Auto-populate stock if product is selected but stock is not
+        if (item.product_id && !item.stock_id) {
+          const stockList = branchId ? branchStockList : stockAuditList;
+          const availableStocks =
+            stockList?.result?.filter(
+              (stock: any) =>
+                stock.product === item.product_id ||
+                stock.ProductItem?._id === item.product_id
+            ) || [];
+
+          if (availableStocks.length > 0) {
+            const firstStock = availableStocks[0];
+            billItem.stock_id = firstStock._id;
+            billItem.batch_no = firstStock.batch_no || '';
+
+            // Auto-focus quantity field after auto-selecting stock
+            setTimeout(() => {
+              const qtyCell = document.querySelector(
+                `td[data-row-key="${item.key}"][data-column-key="qty"]`
+              ) as HTMLElement;
+              if (qtyCell) {
+                qtyCell.focus();
+              }
+            }, 300);
+          }
+        }
+
+        return billItem;
+      });
+      // Update items with calculated amounts
+      const updatedItems = billItems.map(item => {
+        if (!item.product_id || !item.stock_id) return item;
+
+        // Get stock info
         const stockList = branchId ? branchStockList : stockAuditList;
         const stock = stockList?.result?.find(
           (s: any) => s._id === item.stock_id
         );
 
         if (stock) {
+          const sellPrice = stock.sell_price || 0;
           // Get pack size from stock data
           const packSize = stock?.ProductItem?.VariantItem?.pack_size;
           const packSizeNum = packSize ? parseInt(packSize) : 1;
-          
-          // Available pack quantity and actual loose quantity
-          const availablePackQty = stock.available_quantity || 0;
-          const availableLooseQty = stock.available_loose_quantity || 0;
-          
-          // Validate pack quantity (QTY field)
-          if (item.qty && item.qty > availablePackQty) {
-            message.error(
-              `Pack quantity (${item.qty}) exceeds available packs (${availablePackQty})`
-            );
-            billItem.qty = availablePackQty;
+
+          // Calculate loose item rate: sell_price / pack_size (since sell_price is per pack)
+          const looseRate = sellPrice / packSizeNum;
+
+          const baseAmount =
+            (item.qty || 0) * sellPrice + (item.loose_qty || 0) * looseRate;
+
+          // Get product for tax calculation
+          const product = productList?.result?.find(
+            (p: any) => p._id === item.product_id
+          );
+          const taxPercentage = product?.CategoryItem?.tax_percentage || 0;
+
+          let amount = baseAmount;
+          if (!billSettings.isGstIncluded) {
+            amount = baseAmount + (baseAmount * taxPercentage) / 100;
           }
-          
-          // Calculate max loose quantity based on remaining packs after QTY selection
-          const remainingPacks = availablePackQty - (item.qty || 0);
-          const maxLooseFromRemainingPacks = remainingPacks * packSizeNum;
-          const maxLooseQty = maxLooseFromRemainingPacks + availableLooseQty;
-          
-          // Validate loose quantity (LOOSE QTY field)
-          if (item.loose_qty && item.loose_qty > maxLooseQty) {
-            message.error(
-              `Loose quantity (${item.loose_qty}) exceeds available loose items (${maxLooseQty} = ${remainingPacks} remaining packs × ${packSizeNum} + ${availableLooseQty} loose)`
-            );
-            billItem.loose_qty = maxLooseQty;
-          }
-        }
-      }
 
-      // Auto-populate stock if product is selected but stock is not
-      if (item.product_id && !item.stock_id) {
-        const stockList = branchId ? branchStockList : stockAuditList;
-        const availableStocks =
-          stockList?.result?.filter(
-            (stock: any) =>
-              stock.product === item.product_id ||
-              stock.ProductItem?._id === item.product_id
-          ) || [];
-
-        if (availableStocks.length > 0) {
-          const firstStock = availableStocks[0];
-          billItem.stock_id = firstStock._id;
-          billItem.batch_no = firstStock.batch_no || '';
-
-          // Auto-focus quantity field after auto-selecting stock
-          setTimeout(() => {
-            const qtyCell = document.querySelector(
-              `td[data-row-key="${item.key}"][data-column-key="qty"]`
-            ) as HTMLElement;
-            if (qtyCell) {
-              qtyCell.focus();
-            }
-          }, 300);
-        }
-      }
-
-      return billItem;
-    });
-    // Update items with calculated amounts
-    const updatedItems = billItems.map(item => {
-      if (!item.product_id || !item.stock_id) return item;
-
-      // Get stock info
-      const stockList = branchId ? branchStockList : stockAuditList;
-      const stock = stockList?.result?.find(
-        (s: any) => s._id === item.stock_id
-      );
-
-             if (stock) {
-         const sellPrice = stock.sell_price || 0;
-         // Get pack size from stock data
-         const packSize = stock?.ProductItem?.VariantItem?.pack_size;
-         const packSizeNum = packSize ? parseInt(packSize) : 1;
-         
-         // Calculate loose item rate: sell_price / pack_size (since sell_price is per pack)
-         const looseRate = sellPrice / packSizeNum;
-
-         const baseAmount =
-           (item.qty || 0) * sellPrice + (item.loose_qty || 0) * looseRate;
-
-        // Get product for tax calculation
-        const product = productList?.result?.find(
-          (p: any) => p._id === item.product_id
-        );
-        const taxPercentage = product?.CategoryItem?.tax_percentage || 0;
-
-        let amount = baseAmount;
-        if (!billSettings.isGstIncluded) {
-          amount = baseAmount + (baseAmount * taxPercentage) / 100;
+          return {
+            ...item,
+            price: item.price || sellPrice,
+            mrp: stock.mrp || sellPrice,
+            amount: amount,
+            tax_percentage: taxPercentage,
+            product_name: product?.name || '',
+            variant_name: product?.VariantItem?.variant_name || '',
+            batch_no: stock.batch_no || '',
+          };
         }
 
-        return {
-          ...item,
-          price: item.price || sellPrice,
-          mrp: stock.mrp || sellPrice,
-          amount: amount,
-          tax_percentage: taxPercentage,
-          product_name: product?.name || '',
-          variant_name: product?.VariantItem?.variant_name || '',
-          batch_no: stock.batch_no || '',
-        };
-      }
+        return item;
+      });
 
-      return item;
-    });
+      setBillFormData(prev => ({ ...prev, items: updatedItems }));
+    },
+    [
+      productOptions,
+      branchId,
+      branchStockList,
+      stockAuditList,
+      productList,
+      billSettings,
+    ]
+  );
 
-    setBillFormData(prev => ({ ...prev, items: updatedItems }));
-  }, [productOptions, branchId, branchStockList, stockAuditList, productList, billSettings]);
-
-  const handleProductSelect = useCallback((product: any, rowIndex: number) => {
-    const newItems = [...billFormData.items];
-    // Robustly set product_id from product.id or product._id
-    newItems[rowIndex].product_id = product.id || product._id || '';
-    newItems[rowIndex].product_name = product.name || '';
-    newItems[rowIndex].price = product.selling_price || 0;
-    handleItemsChange(newItems);
-    setStockModalRowIndex(rowIndex); // Open stock modal for this row
-  }, [handleItemsChange]);
+  const handleProductSelect = useCallback(
+    (product: any, rowIndex: number) => {
+      const newItems = [...billFormData.items];
+      // Robustly set product_id from product.id or product._id
+      newItems[rowIndex].product_id = product.id || product._id || '';
+      newItems[rowIndex].product_name = product.name || '';
+      newItems[rowIndex].price = product.selling_price || 0;
+      handleItemsChange(newItems);
+      setStockModalRowIndex(rowIndex); // Open stock modal for this row
+    },
+    [handleItemsChange]
+  );
 
   const handleF5ProductSelection = () => {
     // First, check if stock modal is open and close it
     if (stockModalRowIndex !== null) {
       setStockModalRowIndex(null);
       message.info('Stock modal closed. Opening product selection...');
-      
+
       // Wait a bit for the stock modal to close before opening product modal
       setTimeout(() => {
         openProductModalForRow();
@@ -1217,13 +1271,13 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
 
     // Check what element is currently focused
     const activeElement = document.activeElement as HTMLElement;
-    
+
     // First, check if there's a currently focused row in the table
     const focusedRow = activeElement?.closest('tr');
-    
+
     if (focusedRow) {
       const rowIndex = focusedRow.getAttribute('data-row-key');
-      
+
       if (rowIndex !== null) {
         targetRowIndex = parseInt(rowIndex);
       }
@@ -1275,7 +1329,10 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
   const autoOpenProductModal = useCallback(() => {
     setProductSelectionRowIndex(0); // Target the first row
     setProductSelectionModalVisible(true);
-    message.success('🎉 Bill saved! Ready for next bill - Select product to continue.', 4);
+    message.success(
+      '🎉 Bill saved! Ready for next bill - Select product to continue.',
+      4
+    );
   }, []);
 
   const handleF7StockSelection = () => {
@@ -1913,17 +1970,17 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
           item.qty || 0,
           item.loose_qty || 0
         );
-        
+
         if (!validation.isValid) {
-          stockValidationErrors.push(
-            `Row ${index + 1}: ${validation.message}`
-          );
+          stockValidationErrors.push(`Row ${index + 1}: ${validation.message}`);
         }
       }
     });
 
     if (stockValidationErrors.length > 0) {
-      message.error(`Stock validation errors:\n${stockValidationErrors.join('\n')}`);
+      message.error(
+        `Stock validation errors:\n${stockValidationErrors.join('\n')}`
+      );
       return;
     }
     if (!billFormData.customer_id) {
@@ -1985,7 +2042,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
           date: payload.date,
         };
         setSavedBillData(savedData);
-        
+
         // Only show confirmation modal for bill updates, not new bills (they auto-reset)
         if (billdata) {
           setSaveConfirmationVisible(true);
@@ -2007,7 +2064,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
 
   // Note: Removed useHandleApiResponse for 'create' to avoid duplicate success messages
   // Bill creation success is handled manually in useEffect below
-  
+
   useHandleApiResponse({
     action: 'update',
     title: 'Bill',
@@ -2019,14 +2076,14 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
   useEffect(() => {
     if (createItems?.statusCode === 200) {
       onSuccess?.();
-      
+
       // Auto-reset the bill after successful creation (only for new bills, not updates)
       if (!billdata) {
         // Close confirmation modal first, then reset immediately
         setSaveConfirmationVisible(false);
         setTimeout(() => {
           resetBill(false); // Don't show "Ready for next bill!" message
-          
+
           // Auto-open product selection modal for the first row after reset
           setTimeout(() => {
             autoOpenProductModal();
@@ -2796,9 +2853,9 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
               }}
             >
               ⚡ <strong>Keyboard Shortcuts:</strong> Ctrl+S (Save) • Ctrl+N
-              (Add) • F4/Ctrl+R (Clear) • Tab/Shift+Tab (Navigate) • Enter (Edit) • Esc (Cancel) •
-              End (Customer) • Ctrl+U (User) • F5 (Product) • F6 (Bill List) • F7
-              (Stock)
+              (Add) • F4/Ctrl+R (Clear) • Tab/Shift+Tab (Navigate) • Enter
+              (Edit) • Esc (Cancel) • End (Customer) • Ctrl+U (User) • F5
+              (Product) • F6 (Bill List) • F7 (Stock)
             </Text>
           </div>
         </div>
