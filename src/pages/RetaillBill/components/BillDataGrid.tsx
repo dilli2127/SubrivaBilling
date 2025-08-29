@@ -89,6 +89,8 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
   const { items: invoice_no_item } = useDynamicSelector(
     InvoiceNumberApi.getIdentifier('GetAll')
   );
+  const { items: invoice_no_create_item, loading: invoice_no_create_loading } =
+    useDynamicSelector(InvoiceNumberApi.getIdentifier('Create'));
   const { loading: saleCreateLoading } = useDynamicSelector(
     SalesRecord.getIdentifier('Create')
   );
@@ -266,7 +268,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
     CustomerApi('GetAll');
     BillingUsersApi('GetAll');
     // Only get invoice number for new bills, not when editing existing bills
-    if (!billdata) {
+    if (!billdata && !invoice_no_create_loading) {
       InvoiceNumberApi('GetAll');
     }
 
