@@ -1,6 +1,8 @@
 {
   "name": "FOCUZ-BILLING",
   "version": "0.1.0",
+  "description": "Professional billing and inventory management desktop application",
+  "author": "Fresh Focuz Tech",
   "private": true,
   "dependencies": {
     "@ant-design/icons": "^6.0.0",
@@ -23,7 +25,6 @@
     "leaflet": "^1.9.4",
     "react": "^19.1.0",
     "react-color": "^2.19.3",
-
     "react-dom": "^19.1.0",
     "react-redux": "^9.2.0",
     "react-router-dom": "^7.6.1",
@@ -36,6 +37,8 @@
     "xlsx": "^0.18.5",
     "xlsx-js-style": "^1.2.0"
   },
+  "main": "main.js",
+  "homepage": "./",
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
@@ -46,7 +49,13 @@
     "format": "prettier --write src/**/*.{ts,tsx,js,jsx,json,css,md}",
     "format:check": "prettier --check src/**/*.{ts,tsx,js,jsx,json,css,md}",
     "type-check": "tsc --noEmit",
-    "dev": "concurrently \"npm run start\" \"npm run lint:fix\""
+    "dev": "concurrently \"npm run start\" \"npm run lint:fix\"",
+    "electron": "electron .",
+    "electron-dev": "concurrently \"npm start\" \"wait-on http://localhost:3000 && electron .\"",
+    "electron-pack": "npm run build && npx electron-builder",
+    "preelectron-pack": "npm run build",
+    "build-electron": "npm run build && npx electron-builder --publish=never",
+    "dist": "npm run build && npx electron-builder --publish=never"
   },
   "eslintConfig": {
     "extends": [
@@ -75,10 +84,52 @@
     "@typescript-eslint/parser": "^7.0.0",
     "concurrently": "^9.1.2",
     "cross-env": "^7.0.3",
+    "electron": "32.0.0",
+    "electron-builder": "^25.0.0",
+    "electron-is-dev": "^3.0.1",
     "eslint": "^8.57.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-react-hooks": "^4.6.0",
     "prettier": "^3.2.5",
     "wait-on": "^8.0.3"
+  },
+  "build": {
+    "appId": "com.freshfocuztech.probilldesk",
+    "productName": "ProBillDesk",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "build/**/*",
+      "main.js",
+      "preload.js",
+      "node_modules/**/*"
+    ],
+    "extraMetadata": {
+      "main": "main.js"
+    },
+    "mac": {
+      "category": "public.app-category.business",
+      "icon": "src/assets/img/icon.jpg"
+    },
+    "win": {
+      "target": "nsis",
+      "icon": "src/assets/img/icon.jpg"
+    },
+    "linux": {
+      "target": "AppImage",
+      "icon": "src/assets/img/icon.jpg"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    },
+    "publish": {
+      "provider": "github",
+      "owner": "your-username",
+      "repo": "ProBillDesk"
+    }
   }
 }

@@ -4948,6 +4948,11 @@ ejs@^3.1.6:
   dependencies:
     jake "^10.8.5"
 
+electron-is-dev@^3.0.1:
+  version "3.0.1"
+  resolved "https://registry.npmjs.org/electron-is-dev/-/electron-is-dev-3.0.1.tgz"
+  integrity sha512-8TjjAh8Ec51hUi3o4TaU0mD3GMTOESi866oRNavj9A3IQJ7pmv+MJVmdZBFGw4GFT36X7bkqnuDNYvkQgvyI8Q==
+
 electron-to-chromium@^1.5.160:
   version "1.5.168"
   resolved "https://registry.npmjs.org/electron-to-chromium/-/electron-to-chromium-1.5.168.tgz"
@@ -9474,13 +9479,6 @@ react-color@^2.19.3:
     prop-types "^15.5.10"
     reactcss "^1.2.0"
     tinycolor2 "^1.4.1"
-
-react-data-grid@^7.0.0-beta.56:
-  version "7.0.0-beta.56"
-  resolved "https://registry.npmjs.org/react-data-grid/-/react-data-grid-7.0.0-beta.56.tgz"
-  integrity sha512-sET7KFAP2oMz3LlXXg4J6fb3EzHKIckVaXuV+uyx5JRHjPoEDaAc4yrDc6usVeCi//QSZvUX85S0AS/E3uiaMw==
-  dependencies:
-    clsx "^2.0.0"
 
 react-dev-utils@^12.0.1:
   version "12.0.1"
