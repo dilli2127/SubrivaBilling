@@ -1374,6 +1374,10 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
       // Ensure modal closes
       setTimeout(() => {
         setCustomerModalVisible(false);
+        // Auto-open user selection modal after customer is selected
+        setTimeout(() => {
+          setUserModalVisible(true);
+        }, 100);
       }, 50);
 
       message.success(
