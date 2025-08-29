@@ -64,6 +64,15 @@ const UserSelectionModal: React.FC<UserSelectionModalProps> = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [selectedRowIndex, setSelectedRowIndex] = useState<number>(-1);
+  
+  // Get current user from session storage
+  const currentUser = useMemo(() => {
+    try {
+      return JSON.parse(sessionStorage.getItem('user') || '{}');
+    } catch {
+      return {};
+    }
+  }, []);
 
   const searchInputRef = useRef<any>(null);
   const modalRef = useRef<HTMLDivElement>(null);
@@ -405,6 +414,31 @@ const UserSelectionModal: React.FC<UserSelectionModalProps> = ({
     };
   }, [visible, BillingUsersApi]);
 
+  // Auto-select current user when users are loaded
+  useEffect(() => {
+    if (visible && users.length > 0 && currentUser._id && !selectedUser) {
+      const currentUserInList = users.find((user: User) => user._id === currentUser._id);
+      if (currentUserInList) {
+        setSelectedUser(currentUserInList);
+        const index = users.findIndex((user: User) => user._id === currentUser._id);
+        setSelectedRowIndex(index);
+        
+        // Scroll to the selected user after a short delay
+        setTimeout(() => {
+          const rowElement = document.querySelector(
+            `[data-row-key="${currentUserInList._id}"]`
+          ) as HTMLElement;
+          if (rowElement) {
+            rowElement.scrollIntoView({
+              behavior: 'smooth',
+              block: 'center',
+            });
+          }
+        }, 200);
+      }
+    }
+  }, [visible, users, currentUser._id, selectedUser]);
+
   // Focus search input when modal becomes visible
   useEffect(() => {
     if (visible && searchInputRef.current) {
@@ -475,6 +509,16 @@ const UserSelectionModal: React.FC<UserSelectionModalProps> = ({
           }}
           onFocus={handleSearchFocus}
           autoFocus
+          onBlur={() => {
+            // Auto-focus back to search if modal is still visible
+            if (visible && searchInputRef.current) {
+              setTimeout(() => {
+                if (visible && searchInputRef.current) {
+                  searchInputRef.current.focus();
+                }
+              }, 10);
+            }
+          }}
           suffix={
             searchTerm && userLoading ? (
               <div style={{ fontSize: '12px', color: '#999' }}>

@@ -335,6 +335,20 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
     }
   }, [billdata, billFormData.items.length]);
 
+  // Auto-set current user as billed_by for new bills
+  useEffect(() => {
+    if (!billdata && userList?.result && user?._id && !billFormData.billed_by_id) {
+      const currentUserInList = userList.result.find((u: any) => u._id === user._id);
+      if (currentUserInList) {
+        setBillFormData(prev => ({
+          ...prev,
+          billed_by_id: user._id,
+          billed_by_name: currentUserInList.name || user.name || '',
+        }));
+      }
+    }
+  }, [userList, user._id, billdata, billFormData.billed_by_id]);
+
   // Product and stock options
   const productOptions = useMemo(
     () =>

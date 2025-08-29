@@ -624,7 +624,6 @@ const CustomerSelectionModal: React.FC<CustomerSelectionModalProps> = ({
     setSelectedCustomer(null);
     setSelectedRowIndex(-1);
   }, []);
-
   return (
     <Modal
       title="Select Customer"
@@ -799,6 +798,7 @@ const CustomerSelectionModal: React.FC<CustomerSelectionModalProps> = ({
                   onClick={() => {
                     setShowCreateGrid(false);
                     setShowAddForm(false);
+                    CustomerApi('GetAll');
                     clearFormData();
                   }}
                   style={{
