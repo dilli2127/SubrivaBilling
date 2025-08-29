@@ -63,16 +63,7 @@ const routerData: RouteConfig[] = [
     ),
     children: [],
   },
-  {
-    key: "admin",
-    path: "/admin",
-    element: (
-      <Suspense fallback={<Loader />}>
-        <Login />
-      </Suspense>
-    ),
-    children: [],
-  },
+
   {
     key: "signup",
     path: "/signup",
@@ -86,8 +77,8 @@ const routerData: RouteConfig[] = [
 
   // Admin Routes
   {
-    key: "admin",
-    path: "/",
+    key: "admin_dashboard",
+    path: "/admin",
     element: (
       <Suspense fallback={<Loader />}>
         <Sidebar>

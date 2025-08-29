@@ -1,7 +1,7 @@
 // src/router/AppRouter.tsx
 
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route } from 'react-router-dom';
 import routerData from './routerData';
 import { RouteConfig } from './types/routeConfig';
 import NotFound from '../pages/notFound';
