@@ -5,6 +5,7 @@ declare global {
   interface Window {
     electronAPI?: {
       getAppVersion: () => Promise<string>;
+      getBackendUrl: () => Promise<string>;
       showSaveDialog: () => Promise<{ canceled: boolean; filePath?: string }>;
       showOpenDialog: () => Promise<{ canceled: boolean; filePaths: string[] }>;
       onMenuEvent: (callback: (event: any, data: any) => void) => void;
@@ -25,6 +26,7 @@ interface ElectronAPI {
   isElectron: boolean;
   platform: string;
   getAppVersion: () => Promise<string | null>;
+  getBackendUrl: () => Promise<string | null>;
   showSaveDialog: () => Promise<{ canceled: boolean; filePath?: string } | null>;
   showOpenDialog: () => Promise<{ canceled: boolean; filePaths: string[] } | null>;
   print: () => void;
@@ -50,6 +52,16 @@ export const useElectron = (): ElectronAPI => {
       return await window.electronAPI.getAppVersion();
     } catch (error) {
       console.error('Failed to get app version:', error);
+      return null;
+    }
+  };
+
+  const getBackendUrl = async (): Promise<string | null> => {
+    if (!isElectron || !window.electronAPI) return null;
+    try {
+      return await window.electronAPI.getBackendUrl();
+    } catch (error) {
+      console.error('Failed to get backend URL:', error);
       return null;
     }
   };
@@ -109,6 +121,7 @@ export const useElectron = (): ElectronAPI => {
     isElectron,
     platform,
     getAppVersion,
+    getBackendUrl,
     showSaveDialog,
     showOpenDialog,
     print,

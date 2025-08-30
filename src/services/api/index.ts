@@ -1,11 +1,42 @@
 import APIService, { ApiRequest } from "./apiService";
+import electronBackendService from "../electronBackend";
 
-const apiService = new APIService("http://localhost:8247/");
-// const apiService = new APIService('https://api.freshfocuzstudio.com/');
+// Initialize API service with dynamic backend URL
+let apiService: APIService | null = null;
+
+const initializeApiService = async (): Promise<APIService> => {
+  if (!apiService) {
+    let baseURL: string;
+    
+    if (electronBackendService.isElectronApp()) {
+      // Running in Electron - use the embedded backend
+      baseURL = await electronBackendService.getBackendUrl();
+      console.log('🔗 Using Electron embedded backend:', baseURL);
+      
+      // Wait for backend to be ready
+      const isReady = await electronBackendService.waitForBackend();
+      if (!isReady) {
+        console.warn('⚠️ Backend may not be ready, but continuing...');
+      }
+    } else {
+      // Running in browser - use environment variable or fallback
+      baseURL = process.env.REACT_APP_API_URL || "http://localhost:8247/";
+      console.log('🌐 Using external API:', baseURL);
+    }
+    
+    apiService = new APIService(baseURL);
+  }
+  
+  return apiService;
+};
 
 const requestBackServer = async (request: ApiRequest) => {
-  return await apiService.send<any>(request);
+  const service = await initializeApiService();
+  return await service.send<any>(request);
 };
 
 export default requestBackServer;
+
+// Export for direct access if needed
+export { initializeApiService };
 

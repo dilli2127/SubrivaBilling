@@ -6,6 +6,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // App info
   getAppVersion: () => ipcRenderer.invoke('get-app-version'),
   
+  // Backend info
+  getBackendUrl: () => ipcRenderer.invoke('get-backend-url'),
+  
   // File operations
   showSaveDialog: () => ipcRenderer.invoke('show-save-dialog'),
   showOpenDialog: () => ipcRenderer.invoke('show-open-dialog'),
