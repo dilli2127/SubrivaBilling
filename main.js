@@ -66,7 +66,11 @@ function createWindow() {
   mainWindow.webContents.on('will-navigate', (event, navigationUrl) => {
     const parsedUrl = new URL(navigationUrl);
     
-    if (parsedUrl.origin !== 'http://localhost:3000' && parsedUrl.origin !== 'file://') {
+    // Allow localhost origins for development and API calls
+    const isLocalhost = parsedUrl.hostname === 'localhost' || parsedUrl.hostname === '127.0.0.1';
+    const isFileProtocol = parsedUrl.protocol === 'file:';
+    
+    if (!isLocalhost && !isFileProtocol) {
       event.preventDefault();
     }
   });

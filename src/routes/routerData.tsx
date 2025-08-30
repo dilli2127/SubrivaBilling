@@ -78,7 +78,7 @@ const routerData: RouteConfig[] = [
   // Admin Routes
   {
     key: "admin_dashboard",
-    path: "/admin",
+    path: "/",
     element: (
       <Suspense fallback={<Loader />}>
         <Sidebar>
