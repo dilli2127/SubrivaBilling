@@ -1,20 +1,10 @@
 
-html, body {
-  margin: 0;
-  padding: 0;
-  height: 100%;
-  overflow: hidden; /* Prevent page scrolling as per user preference */
-}
 
 body {
+  margin: 0;
   font-family: Helvetica Neue, Roboto, sans-serif !important;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-}
-
-#root {
-  height: 100%;
-  overflow: hidden;
 }
 
 code {

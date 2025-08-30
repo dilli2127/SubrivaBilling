@@ -22,11 +22,16 @@ function createWindow() {
       preload: path.join(__dirname, 'preload.js'), // Use a preload script
       webSecurity: true,
       allowRunningInsecureContent: false,
-      experimentalFeatures: false
+      experimentalFeatures: false,
+      disableScrollBounce: true, // Prevent scroll bouncing
+      scrollBounce: false, // Disable scroll bounce on macOS
     },
     titleBarStyle: 'default',
     show: false, // Don't show until ready-to-show
     autoHideMenuBar: false, // Keep menu bar visible
+    resizable: true,
+    maximizable: true,
+    fullscreenable: true,
   });
 
   // Load the app
@@ -44,6 +49,62 @@ function createWindow() {
   // Show window when ready to prevent visual flash
   mainWindow.once('ready-to-show', () => {
     mainWindow.show();
+    
+    // Inject CSS to prevent page-level scrolling while allowing content scrolling
+    mainWindow.webContents.insertCSS(`
+      /* Prevent page-level scrolling */
+      html, body {
+        overflow: hidden !important;
+        height: 100vh !important;
+        max-height: 100vh !important;
+        width: 100% !important;
+      }
+      
+      #root {
+        overflow: hidden !important;
+        height: 100vh !important;
+        max-height: 100vh !important;
+      }
+      
+      /* Allow main content area to scroll */
+      .ant-layout-content {
+        overflow: auto !important;
+      }
+      
+      /* Allow scrolling within specific content areas */
+      .ant-table-body,
+      .ant-table-container,
+      .ant-modal-body,
+      .ant-drawer-body,
+      .ant-form,
+      .ant-select-dropdown,
+      .ant-dropdown-menu,
+      .billing-page,
+      .billing-page-content {
+        overflow: auto !important;
+      }
+      
+      /* Keep sidebar fixed while content scrolls */
+      .custom-sider {
+        overflow: hidden !important;
+      }
+      
+      .sidebar-content {
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+      }
+      
+      /* Ensure tables and forms can scroll */
+      .ant-table-wrapper {
+        overflow: auto !important;
+        max-height: none !important;
+      }
+      
+      /* Allow scrolling in editable tables */
+      .ant-table-tbody {
+        overflow: visible !important;
+      }
+    `);
     
     // Focus on window for better UX
     if (isDev) {
