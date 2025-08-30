@@ -405,9 +405,11 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
             marginRight:
               sidebarPosition === 'right' ? (collapsed ? 80 : 240) : 0,
             marginTop: sidebarPosition === 'top' ? 120 : 64, // 64 header + 56 menu
+            height: sidebarPosition === 'top' ? 'calc(100vh - 120px)' : 'calc(100vh - 64px)',
             transition:
               'margin-left 0.3s ease, margin-right 0.3s ease, margin-top 0.3s ease',
             background: '#f4f6f8',
+            overflow: 'hidden',
           }}
         >
           <Content
@@ -415,12 +417,16 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
               padding: 24,
               marginTop: 0,
               background: '#fff',
-              minHeight: 'calc(100vh - 64px)',
+              height: '100%',
               boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
-              overflowY: 'auto',
+              overflow: 'hidden', // Remove scrolling as per user preference
+              display: 'flex',
+              flexDirection: 'column',
             }}
           >
-            {children}
+            <div style={{ flex: 1, overflow: 'auto' }}>
+              {children}
+            </div>
           </Content>
         </Layout>
       </Layout>
