@@ -88,8 +88,9 @@
     "electron-full-dev": "concurrently \"npm start\" \"wait-on http://localhost:3000 && cross-env ELECTRON_IS_DEV=1 electron .\"",
     "electron-pack": "npm run build && npx electron-builder",
     "preelectron-pack": "npm run build",
-    "build-electron": "npm run build && npx electron-builder --publish=never",
-    "dist": "npm run build && npx electron-builder --publish=never",
+    "build-electron": "npm run build && npm run install-backend-deps && npx electron-builder --publish=never",
+    "dist": "npm run build && npm run install-backend-deps && npx electron-builder --publish=never",
+    "install-backend-deps": "cd backend && npm install --production",
     "postinstall": "cd backend && npm install --production"
   },
   "eslintConfig": {
@@ -140,7 +141,9 @@
       "build/**/*",
       "main.js",
       "preload.js",
+      "backend-server.js",
       "backend/**/*",
+      "!backend/node_modules/**/*",
       "node_modules/**/*"
     ],
     "extraMetadata": {

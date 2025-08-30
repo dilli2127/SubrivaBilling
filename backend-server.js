@@ -17,7 +17,16 @@ function startBackendServer() {
     }
 
     const isDev = process.env.NODE_ENV === 'development' || process.env.ELECTRON_IS_DEV === '1';
-    const backendPath = path.join(__dirname, 'backend');
+    
+    // Handle different paths for development vs production
+    let backendPath;
+    if (require('electron').app.isPackaged) {
+      // In production, backend folder is in the same directory as the main process
+      backendPath = path.join(__dirname, 'backend');
+    } else {
+      // In development, backend folder is in the project root
+      backendPath = path.join(__dirname, 'backend');
+    }
     
     // Check if backend directory exists
     if (!fs.existsSync(backendPath)) {

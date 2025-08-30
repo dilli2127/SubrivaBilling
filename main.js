@@ -1,6 +1,17 @@
 const { app, BrowserWindow, Menu, shell, ipcMain, dialog } = require('electron');
 const path = require('path');
-const { startBackendServer, stopBackendServer, getBackendUrl } = require('./backend-server');
+
+// Handle different paths for development vs production
+let backendServerPath;
+if (app.isPackaged) {
+  // In production, files are in the resources/app folder
+  backendServerPath = path.join(__dirname, 'backend-server.js');
+} else {
+  // In development, files are in the project root
+  backendServerPath = './backend-server';
+}
+
+const { startBackendServer, stopBackendServer, getBackendUrl } = require(backendServerPath);
 
 // Check if in development mode
 const isDev = process.env.NODE_ENV === 'development' || process.env.ELECTRON_IS_DEV === '1' || !app.isPackaged;
