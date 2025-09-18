@@ -1,288 +1,160 @@
-# Subriva Billing System
+# ProBillDesk - Desktop Billing Application
 
-A comprehensive billing and inventory management system built with React 19, TypeScript, and Ant Design.
+A professional billing and inventory management desktop application built with React 19, Electron, and Node.js.
 
-## 🚀 Features
+## Features
 
-### Core Functionality
-- **Sales Management**: Create and manage sales records
-- **Inventory Control**: Stock in/out management with expiry tracking
-- **Customer Management**: Complete customer and vendor database
-- **Product Management**: Products, categories, variants, and units
-- **Multi-tenant Architecture**: Support for multiple organizations
-- **Role-based Access Control**: Granular permissions system
+- **Desktop Application**: Cross-platform desktop app using Electron
+- **Integrated Backend**: Built-in FocuzBilling API server
+- **Modern UI**: React 19 with Ant Design components
+- **Keyboard-Driven**: Fully keyboard-driven interface (no mouse required)
+- **No Scrolling**: Optimized for desktop with no page-level scrolling
+- **Billing Management**: Complete billing and inventory management system
 
-### UI/UX Features
-- **Customizable Themes**: 20+ preset themes with live preview
-- **Draggable Interface**: Move theme button anywhere on screen
-- **Responsive Design**: Works on desktop, tablet, and mobile
-- **Dark Mode Support**: Full dark theme implementation
-- **Accessibility**: ARIA labels, keyboard navigation, screen reader support
+## Quick Start
 
-### Technical Features
-- **Error Boundaries**: Graceful error handling
-- **Performance Monitoring**: Real-time performance tracking
-- **Type Safety**: Full TypeScript implementation
-- **State Management**: Redux Toolkit with dynamic selectors
-- **Lazy Loading**: Code splitting for better performance
-
-## 📋 Prerequisites
+### Prerequisites
 
 - Node.js 18+ 
 - npm or yarn
-- Modern browser (Chrome, Firefox, Safari, Edge)
+- MySQL database (for backend)
 
-## 🛠️ Installation
+### Installation
 
-1. **Clone the repository**
-```bash
-git clone <repository-url>
-cd probilldesk
-```
-
-2. **Install dependencies**
-```bash
-npm install
-```
-
-3. **Start development server**
-```bash
-npm start
-```
-
-4. **Open in browser**
-```
-http://localhost:3000
-```
-
-## 🏗️ Project Structure
-
-```
-src/
-├── components/          # Reusable components
-│   ├── antd/          # Ant Design components
-│   ├── common/        # Shared components
-│   └── Header/        # Header components
-├── pages/             # Page components
-│   ├── Dashboard/     # Dashboard pages
-│   ├── login/         # Authentication pages
-│   └── ...           # Feature pages
-├── services/          # API and business logic
-│   ├── api/          # API services
-│   └── redux/        # State management
-├── helpers/           # Utility functions
-├── hooks/             # Custom React hooks
-└── types/             # TypeScript type definitions
-```
-
-## 🔧 Available Scripts
-
-```bash
-# Development
-npm start              # Start development server
-npm run dev            # Start with linting
-
-# Building
-npm run build          # Build for production
-npm run eject          # Eject from Create React App
-
-# Testing
-npm test               # Run tests
-npm run test:coverage  # Run tests with coverage
-
-# Code Quality
-npm run lint           # Run ESLint
-npm run lint:fix       # Fix ESLint issues
-npm run format         # Format code with Prettier
-npm run type-check     # TypeScript type checking
-```
-
-## 🎨 Theme Customization
-
-The app includes a comprehensive theme system:
-
-### Available Themes
-- **Classic**: Traditional blue gradient
-- **Violet**: Purple theme
-- **Dark**: Dark mode
-- **Sunset**: Orange/red gradient
-- **Modern**: Ocean, Sunrise, Mint, Plum, Blush, Emerald, Midnight
-
-### Customization
-1. Click the floating palette button (right edge)
-2. Choose from preset themes
-3. Select sidebar position (left, right, top)
-4. Add custom background images
-5. Drag the theme button to any position
-
-## 🔐 Authentication & Authorization
-
-### User Roles
-- **Super Admin**: Full system access
-- **Tenant**: Multi-tenant management
-- **Organization Admin**: Organization-level access
-- **Branch Admin**: Branch-level access
-- **Sales Person**: Limited sales access
-
-### Security Features
-- JWT token authentication
-- Role-based menu filtering
-- Session management
-- Automatic token refresh
-
-## 📊 API Integration
-
-### Base Configuration
-```typescript
-// Development
-const apiService = new APIService("http://localhost:8247/");
-
-// Production
-const apiService = new APIService('https://api.freshfocuzstudio.com/');
-```
-
-### CRUD Operations
-The app uses an automated CRUD system:
-
-```typescript
-// Simple entity creation
-const apiRoutes = getEntityApiRoutes("Customer");
-
-return (
-  <GenericCrudPage
-    config={{
-      title: 'Customers',
-      columns: customerColumns,
-      formItems: customerFormItems,
-      apiRoutes: apiRoutes,
-      formColumns: 2,
-    }}
-  />
-);
-```
-
-## 🧪 Testing
-
-### Running Tests
-```bash
-npm test                    # Run all tests
-npm test -- --coverage     # Run with coverage
-npm test -- --watch        # Watch mode
-```
-
-### Test Structure
-```
-src/
-├── __tests__/            # Test files
-├── components/           # Component tests
-└── pages/               # Page tests
-```
-
-## 🚀 Deployment
-
-### Production Build
-```bash
-npm run build
-```
-
-### Environment Variables
-Create `.env` files for different environments:
-
-```bash
-# .env.development
-REACT_APP_API_URL=http://localhost:8247/
-
-# .env.production
-REACT_APP_API_URL=https://api.freshfocuzstudio.com/
-```
-
-## 🔧 Configuration
-
-### API Routes
-Configure API endpoints in `src/services/api/utils.ts`:
-
-```typescript
-export const API_ROUTES = {
-  Customer: createCrudRoutes("/customer", "Customer"),
-  Product: createCrudRoutes("/products", "Product"),
-  // Add new entities here
-};
-```
-
-### Theme Configuration
-Add new themes in `src/components/antd/sidebar/themePresets.ts`:
-
-```typescript
-export const themePresets = [
-  {
-    key: 'custom-theme',
-    label: 'Custom Theme',
-    variables: {
-      '--sidebar-bg': 'linear-gradient(45deg, #667eea 0%, #764ba2 100%)',
-      '--menu-item-selected': '#667eea',
-    },
-  },
-];
-```
-
-## 🐛 Troubleshooting
-
-### Common Issues
-
-1. **Build Errors**
+1. **Clone and setup**:
    ```bash
-   npm run lint:fix
-   npm run type-check
+   git clone <repository-url>
+   cd ProBillDesk
+   npm run setup
    ```
 
-2. **API Connection Issues**
-   - Check API server status
-   - Verify API URL in configuration
-   - Check network connectivity
+2. **Configure Database**:
+   - Update `backend/electron.env` with your database credentials
+   - Ensure MySQL is running on your system
 
-3. **Theme Not Applying**
-   - Clear browser cache
-   - Check localStorage for theme settings
-   - Restart development server
+3. **Run the application**:
+   ```bash
+   # Development mode (both frontend and backend)
+   npm run dev-full
+   
+   # Or run Electron app directly
+   npm run electron-dev-full
+   ```
 
-### Performance Issues
+## Available Scripts
 
-1. **Slow Loading**
-   - Check network tab for slow requests
-   - Verify API response times
-   - Monitor memory usage
+- `npm start` - Start React development server
+- `npm run backend` - Start backend API server only
+- `npm run backend-dev` - Start backend with nodemon (auto-restart)
+- `npm run dev-full` - Start both frontend and backend
+- `npm run electron` - Run Electron app (production)
+- `npm run electron-dev` - Run Electron app (development)
+- `npm run electron-dev-full` - Run Electron app with both frontend and backend
+- `npm run build` - Build React app for production
+- `npm run build-electron` - Build and package Electron app
+- `npm run setup` - Install all dependencies
+- `npm run clean` - Clean all build artifacts
+- `npm run reset` - Clean and reinstall everything
 
-2. **Memory Leaks**
-   - Check for unmounted component subscriptions
-   - Verify cleanup in useEffect hooks
-   - Monitor performance metrics
+## Project Structure
 
-## 🤝 Contributing
+```
+ProBillDesk/
+├── src/                    # React frontend source
+│   ├── components/         # React components
+│   ├── pages/             # Page components
+│   ├── services/          # API services
+│   └── ...
+├── backend/               # FocuzBilling API backend
+│   ├── src/              # Backend source code
+│   ├── electron.env      # Desktop app configuration
+│   └── ...
+├── main.js               # Electron main process
+├── preload.js            # Electron preload script
+├── backend-server.js     # Backend server management
+└── package.json          # Dependencies and scripts
+```
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests for new features
-5. Submit a pull request
+## Configuration
 
-## 📄 License
+### Backend Configuration
 
-This project is licensed under the MIT License.
+Edit `backend/electron.env` to configure:
+- Database connection
+- Server port (default: 8247)
+- JWT secret key
+- Other environment variables
 
-## 🆘 Support
+### Database Setup
 
-For support and questions:
-- Create an issue in the repository
-- Contact the development team
-- Check the documentation
+1. Create a MySQL database
+2. Update database credentials in `backend/electron.env`
+3. The backend will automatically run migrations on startup
 
-## 🔄 Changelog
+## Development
 
-### Version 0.1.0
-- Initial release
-- Core billing functionality
-- Theme customization system
-- Multi-tenant support
-- Role-based access control
-- Performance monitoring
-- Accessibility features
+### Running in Development Mode
+
+1. **Full Development** (Recommended):
+   ```bash
+   npm run electron-dev-full
+   ```
+   This starts both the React dev server and the backend API server, then launches the Electron app.
+
+2. **Separate Development**:
+   ```bash
+   # Terminal 1: Start backend
+   npm run backend-dev
+   
+   # Terminal 2: Start frontend
+   npm start
+   
+   # Terminal 3: Start Electron
+   npm run electron-dev
+   ```
+
+### Building for Production
+
+```bash
+# Build the application
+npm run build-electron
+
+# The built app will be in the `dist/` directory
+```
+
+## API Integration
+
+The application automatically detects if it's running in Electron and uses the embedded backend server. The API service (`src/services/api/`) handles:
+
+- Dynamic backend URL detection
+- Authentication token management
+- Error handling and retries
+- Request/response interceptors
+
+## Troubleshooting
+
+### Backend Won't Start
+
+1. Check if port 8247 is available
+2. Verify database connection in `backend/electron.env`
+3. Ensure all backend dependencies are installed: `npm run install-backend-deps`
+
+### Frontend Can't Connect to Backend
+
+1. Ensure backend is running on port 8247
+2. Check browser console for connection errors
+3. Verify `electron.env` configuration
+
+### Database Issues
+
+1. Ensure MySQL is running
+2. Check database credentials in `backend/electron.env`
+3. Verify database exists and is accessible
+
+## License
+
+Private - Fresh Focuz Tech
+
+## Support
+
+For issues and questions, please contact the development team.

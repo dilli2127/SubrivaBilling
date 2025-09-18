@@ -65,9 +65,11 @@ function startBackendServer() {
       SERVER_LOG: 'false', // Disable server logging for performance
     };
 
-    console.log('Starting backend server...');
+    console.log('Starting FocuzBilling API server...');
+    console.log('Backend path:', backendPath);
+    console.log('Environment:', env);
     
-    // Start the backend server
+    // Start the backend server using the FocuzBilling API
     backendProcess = spawn('node', ['src/server.js'], {
       cwd: backendPath,
       env: env,
@@ -76,17 +78,27 @@ function startBackendServer() {
 
     // Handle stdout
     backendProcess.stdout.on('data', (data) => {
-      console.log(`Backend: ${data.toString()}`);
-      if (data.toString().includes('HTTP server started at')) {
+      const output = data.toString();
+      console.log(`Backend: ${output}`);
+      
+      // Check for successful server start
+      if (output.includes('HTTP server started at') || output.includes('server started at')) {
         isServerRunning = true;
-        console.log('✅ Backend server started successfully');
+        console.log('✅ FocuzBilling API server started successfully');
         resolve();
       }
     });
 
     // Handle stderr
     backendProcess.stderr.on('data', (data) => {
-      console.error(`Backend Error: ${data.toString()}`);
+      const error = data.toString();
+      console.error(`Backend Error: ${error}`);
+      
+      // Check if it's a fatal error
+      if (error.includes('Error:') && error.includes('EADDRINUSE')) {
+        console.error('❌ Port 8247 is already in use. Please stop other services using this port.');
+        reject(new Error('Port 8247 is already in use'));
+      }
     });
 
     // Handle process exit
@@ -107,6 +119,7 @@ function startBackendServer() {
     // Timeout after 30 seconds if server doesn't start
     setTimeout(() => {
       if (!isServerRunning) {
+        console.error('❌ Backend server failed to start within 30 seconds');
         reject(new Error('Backend server failed to start within 30 seconds'));
       }
     }, 30000);

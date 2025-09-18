@@ -83,15 +83,22 @@
     "format:check": "prettier --check src/**/*.{ts,tsx,js,jsx,json,css,md}",
     "type-check": "tsc --noEmit",
     "dev": "concurrently \"npm run start\" \"npm run lint:fix\"",
-    "electron": "electron .",
-    "electron-dev": "concurrently \"npm start\" \"wait-on http://localhost:3000 && electron .\"",
-    "electron-full-dev": "concurrently \"npm start\" \"wait-on http://localhost:3000 && cross-env ELECTRON_IS_DEV=1 electron .\"",
+    "electron": "npx electron .",
+    "electron-dev": "concurrently \"npm start\" \"wait-on http://localhost:3000 && npx electron .\"",
+    "electron-full-dev": "concurrently \"npm start\" \"npm run backend-dev\" \"wait-on http://localhost:3000 && npx electron .\"",
     "electron-pack": "npm run build && npx electron-builder",
     "preelectron-pack": "npm run build",
     "build-electron": "npm run build && npm run install-backend-deps && npx electron-builder --publish=never",
     "dist": "npm run build && npm run install-backend-deps && npx electron-builder --publish=never",
     "install-backend-deps": "cd backend && npm install --production",
-    "postinstall": "cd backend && npm install --production"
+    "postinstall": "cd backend && npm install --production",
+    "backend": "cd backend && node src/server.js",
+    "backend-dev": "cd backend && nodemon src/server.js",
+    "dev-full": "concurrently \"npm start\" \"npm run backend-dev\"",
+    "electron-dev-full": "concurrently \"npm start\" \"npm run backend-dev\" \"wait-on http://localhost:3000 && electron .\"",
+    "setup": "npm install && npm run install-backend-deps",
+    "clean": "rimraf build dist node_modules backend/node_modules",
+    "reset": "npm run clean && npm run setup"
   },
   "eslintConfig": {
     "extends": [
@@ -129,7 +136,8 @@
     "prettier": "^3.2.5",
     "wait-on": "^8.0.3",
     "nodemon": "^3.1.4",
-    "sequelize-cli": "^6.6.2"
+    "sequelize-cli": "^6.6.2",
+    "rimraf": "^5.0.5"
   },
   "build": {
     "appId": "com.freshfocuztech.probilldesk",

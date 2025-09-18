@@ -1,0 +1,185 @@
+import lodash from "lodash";
+import {genericResponse} from "../controllers/base_controllers.js";
+import {
+    genericCreate,
+    genericGetAll,
+    genericGetAllWithoutPagination,
+    genericGetOne,
+    genericUpdate,
+    genericDelete,
+} from "./generic_controller.js";
+import bcrypt from "bcrypt";
+
+import {statusCodes} from "../config/constants.js";
+import BillingUsers, {BillingUsersFields} from "../models/billing_users.js";
+
+import sortConditionBuilder from "../utils/sort_condition_builder.js";
+const populateQuery = ["roleItems"];
+export async function create(req, res, next) {
+    try {
+        const json = req.body;
+        const hashedPassword = await bcrypt.hash(json.password, 10);
+        json.password = hashedPassword;
+        const TENANT_ONLY_ROLE_ID = "7563cbb3-4e76-4794-8da0-f23f0e1ee385";
+        if (
+            json?.role_id === TENANT_ONLY_ROLE_ID &&
+            res.locals?.userType !== "tenant"
+        ) {
+            return genericResponse({
+                res,
+                result: null,
+                message: "Only tenant users can assign this role",
+                statusCode: statusCodes.FORBIDDEN,
+                pagination: null,
+            });
+        }
+
+        const item = await genericCreate({
+            Table: BillingUsers,
+            json,
+            fieldsToInclude: BillingUsersFields,
+            next,
+            res
+        });
+        return genericResponse({
+            res,
+            result: item || null,
+            exception: null,
+            pagination: null,
+            statusCode: item ? statusCodes.SUCCESS : statusCodes.SERVER_ERROR,
+        });
+    } catch (error) {
+        return next(error);
+    }
+}
+
+export async function update(req, res, next) {
+    try {
+        const json = req.body;
+        const item = await genericUpdate({
+            Table: BillingUsers,
+            condition: {_id: req.params._id},
+            json,
+            canUpsert: false,
+            next,
+            res
+        });
+        return genericResponse({
+            res,
+            result: item,
+            exception: null,
+            pagination: null,
+            statusCode: statusCodes.SUCCESS,
+        });
+    } catch (error) {
+        return next(error);
+    }
+}
+
+export async function remove(req, res, next) {
+    try {
+        await genericDelete({
+            Table: BillingUsers,
+            condition: {_id: req.params._id},
+            next,
+            softDelete: false,
+        });
+        return genericResponse({
+            res,
+            result: null,
+            exception: null,
+            pagination: null,
+            statusCode: statusCodes.SUCCESS,
+        });
+    } catch (error) {
+        return next(error);
+    }
+}
+
+export async function getOne(req, res, next) {
+    try {
+        let item = await genericGetOne({
+            Table: BillingUsers,
+            condition: {_id: req.params._id},
+            populateQuery,
+            next,
+        });
+        if (item) item = item.toJSON();
+
+        return genericResponse({
+            res,
+            result: item || null,
+            exception: null,
+            pagination: null,
+            statusCode: statusCodes.SUCCESS,
+        });
+    } catch (error) {
+        return next(error);
+    }
+}
+
+export async function getAll(req, res, next) {
+    try {
+        const json = req.body;
+        const defaultSortConditions = [["_id", "DESC"]];
+        const sortConditions = lodash.defaults(
+            sortConditionBuilder(json.sortCondition),
+            defaultSortConditions,
+        );
+        let condition = {};
+        const getResult = await genericGetAll({
+            Table: BillingUsers,
+            condition,
+            sortConditions,
+            populateQuery,
+            next,
+            pageNumber: json.pageNumber,
+            pageLimit: json.pageLimit,
+            res,
+        });
+        let {items} = getResult;
+        const {pagination} = getResult;
+
+        if (items) items = items.map(x => x.toJSON());
+        return genericResponse({
+            res,
+            result: items,
+            exception: null,
+            pagination,
+            statusCode: statusCodes.SUCCESS,
+        });
+    } catch (error) {
+        return next(error);
+    }
+}
+
+export async function getAllWithoutPagination(req, res, next) {
+    try {
+        const json = req.body;
+        const sortConditions = [["_id", "DESC"]];
+        const condition = {};
+
+        let getResult = await genericGetAllWithoutPagination({
+            Table: BillingUsers,
+            condition,
+            sortConditions,
+            populateQuery,
+            next,
+            pageNumber: json.pageNumber,
+            pageLimit: json.pageLimit,
+            res
+        });
+
+        if (getResult) getResult = getResult.map(x => x.toJSON());
+
+        return genericResponse({
+            res,
+            result: getResult,
+            exception: null,
+            pagination: null,
+            statusCode: statusCodes.SUCCESS,
+        });
+    } catch (error) {
+        return next(error);
+    }
+}
