@@ -7,16 +7,16 @@ const safeParseJson = (value) => {
     }
 };
 
-export const debug = process.env.DEBUG === "WARN" ? true : safeParseJson(process.env.DEBUG);
+export const debug = process.env.DEBUG === "WARN" ? true : (process.env.DEBUG === "true" ? true : safeParseJson(process.env.DEBUG));
 export const cronEnabled = safeParseJson(process.env.CRON);
 export const secure = safeParseJson(process.env.SECURE);
 export const prod = safeParseJson(process.env.PROD);
-export const environment = String(process.env.ENVIRONMENT || 'default');
+export const environment = String(process.env.ENVIRONMENT || 'focuz-billing');
 export const serverLog = safeParseJson(process.env.SERVER_LOG);
 export const httpPort = Number(process.env.HTTP_PORT || 80);
 export const httpsPort = Number(process.env.HTTPS_PORT || 443);
-export const databaseUrl = String(process.env.DATABASE_URL || 'default_database_url');
-export const databaseRawUrl = String(process.env.DATABASE_RAW_URL || 'default_database_raw_url');
+export const databaseUrl = String(process.env.DATABASE_URL || 'postgres://postgres:12345@localhost/dev-subriva-billing');
+export const databaseRawUrl = String(process.env.DATABASE_RAW_URL || process.env.DATABASE_URL || 'postgres://postgres:12345@localhost/dev-subriva-billing');
 export const secretKey = String(process.env.SECRET_KEY || 'default_secret_key');
 export const certbotServer = String(process.env.CERTBOT_SERVER || 'default_certbot_server');
 export const imageBucketName = process.env.IMAGE_BUCKET_NAME || 'default_image_bucket';

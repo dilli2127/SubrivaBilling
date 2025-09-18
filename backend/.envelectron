@@ -1,87 +1,31 @@
-# Electron Desktop App Environment Configuration
-# This file is specifically for the desktop app version
-
-# Server Configuration
-HTTP_PORT=8247
-HTTPS_PORT=
+BABEL_ENV="debug"
+NODE_ENV="debug"
+ENVIRONMENT="focuz-billing"
 SECURE=false
-PROD=false
-DEBUG=false
 CRON=false
+PROD=false
+DEBUG=true
 SERVER_LOG=false
+HTTP_PORT=8247
+HTTPS_PORT=8246
+DATABASE_URL=postgres://postgres:12345@localhost/dev-subriva-billing
+# DATABASE_URL=postgres://postgres:Idealpsql@2024@35.200.243.54/postgres
+# DATABASE_URL=postgres://freshfocuztech:9677894094@13.203.125.153/focuz_billing
+SECRET_KEY="4S@h!;l2QddJ2K;"
+CERTBOT_SERVER=https://acme-v02.api.letsencrypt.org/directory
+FCM_KEY=AAAAtTLjJDA:APA91bFulj8cJqHfKgjTsvG4aV_AAtnt5f3xu7oiQNsn0dQkSqzMWHHG90lcrrNOX63bcUwndU6E4OAKcCpKmg9nvQX7OksDhWRJZ8c2GZhfiIHjyACQv7M4vrxJM7gdxmK-JDhKTuDr
 
-# Database Configuration (PostgreSQL)
-DB_HOST=localhost
-DB_PORT=5432
-DB_USERNAME=postgres
-DB_PASSWORD=your_password
-DATABASE_NAME=focuz_billing
-DATABASE_URL=postgresql://postgres:your_password@localhost:5432/focuz_billing
-DATABASE_RAW_URL=postgresql://postgres:your_password@localhost:5432/focuz_billing
+# MINIO_PREFIX="minio.freshfocuz.tech"
+# MINIO_ENDPOINT=13.203.125.153
+# MINIO_PORT=9000
+# MINIO_USE_SSL_PREFIX=false
+# MINIO_ACCESS_KEY_ID=TZOtl0k55koQ1IpQeC9b
+# MINIO_SECRET_ACCESS_KEY=mgcEmrxGnUSAAdengSEPujn7ZYRS9qOrBUEFBaTJ
+# MINIO_REGION=ap-southeast-1
+# IMAGE_BUCKET_NAME=freshfocuzstudio
 
-# JWT Configuration
-SECRET_KEY=your-secret-key-for-desktop-app
-TOKEN=desktop-app-token
-
-# Environment
-ENVIRONMENT=desktop
-
-# Disable features not needed for desktop app
-MAILGUN_KEY=
-MAILGUN_DOMAIN=
-SMS_URL=
-SMS_SENDER_ID=
-SMS_USERNAME=
-SMS_PASSWORD=
-SMS_UNIQUE_ID=
-SMS_KEYWORD=
-SMS_CIRCLE_NAME=
-SMS_CAMPAIGN_NAME=
-FCM_KEY=
-
-# File Upload Configuration (Optional for desktop)
-AWS_ACCESS_KEY_ID=
-AWS_SECRET_ACCESS_KEY=
-AWS_REGION=
-AWS_BUCKET_NAME=
-AWS_S3_ENDPOINT=
-
-# MinIO Configuration (Optional for desktop)
-MINIO_ACCESS_KEY_ID=
-MINIO_SECRET_ACCESS_KEY=
-MINIO_ENDPOINT=
-MINIO_PORT=9000
-MINIO_USE_SSL_PREFIX=false
-MINIO_REGION=us-east-1
-MINIO_PREFIX=
-
-# Vultr Configuration (Optional for desktop)
-VULTR_ACCESS_KEY=
-VULTR_SECRET_KEY=
-VULTR_REGION=
-VULTR_BUCKET_NAME=
-VULTR_S3_ENDPOINT=
-
-# Email Configuration (Optional for desktop)
-EMAIL_USERNAME=
-EMAIL_PASSWORD=
-MAIL_DOMAIN=
-MAIL_PORT=587
-MAIL_USERNAME=
-MAIL_PASSWORD=
-FROM_EMAIL=
-
-# PDF Generation (Optional for desktop)
-PDF_GEN_URL=
-
-# URL Shortener (Optional for desktop)
-URL_SHORTENER_KEY=
-URL_SHORTENER_URL=
-
-# Database Backup (Optional for desktop)
-DB_DUMP_LOCATION=./backups
-DB_BACKUP_DAYS=7
-DB_DUMP_CRON=0 2 * * *
-
-# Certbot (Not needed for desktop)
-CERTBOT_SERVER=
+# VULTR_ACCESS_KEY=A5UQ9AURST1FM53JCE8L
+# VULTR_SECRET_KEY=mtarsVopERT0KGDpv7r20PmcK9AaITBRRTUULXaz
+# VULTR_REGION=blr1
+# VULTR_BUCKET_NAME=freshfocuzstudio-webfiles
+# VULTR_S3_ENDPOINT=https://blr1.vultrobjects.com

@@ -48,6 +48,16 @@ export default function exportedRouter() {
     router.get("/", (req, res) => {
         res.send("Hello World!");
     });
+
+    // Health check endpoint for Electron app
+    router.get("/health", (req, res) => {
+        res.status(200).json({
+            status: "OK",
+            message: "ProBillDesk Backend is running",
+            timestamp: new Date().toISOString(),
+            environment: process.env.ENVIRONMENT || "development"
+        });
+    });
     router.get("/favicon.ico", (req, res) => {
         res.send(null);
     });

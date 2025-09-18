@@ -18,8 +18,8 @@ const __dirname = path.dirname(__filename);
 const sequelize = new Sequelize(databaseUrl, {
   dialect: "postgres",
   pool: {
-    max: process.env.DB_POOL_MAX ? parseInt(process.env.DB_POOL_MAX) : 20, // reduce pool size
-    min: 2,
+    max: process.env.DB_POOL_MAX ? parseInt(process.env.DB_POOL_MAX) : 10, // reduce pool size for desktop app
+    min: 1,
     idle: 10000, // time a connection can be idle before being released
     acquire: 30000, // max time Sequelize tries to get connection before failing
     evict: 1000, // time before connection eviction
@@ -28,9 +28,9 @@ const sequelize = new Sequelize(databaseUrl, {
     timestamps: true,
     freezeTableName: true,
   },
-  logging: process.env.SQL_LOG === "true" ? console.log : false, // toggle SQL logs
+  logging: process.env.DEBUG === "true" ? console.log : false, // use DEBUG from env
   dialectOptions: {
-    application_name: "FocuzBillingApp", // helps identify app in pg_stat_activity
+    application_name: "ProBillDeskApp", // helps identify app in pg_stat_activity
   },
 });
 

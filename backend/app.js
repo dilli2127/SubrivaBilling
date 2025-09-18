@@ -1,3 +1,7 @@
+// DEPRECATED: This file is not used by the main application
+// The main backend server is located at src/server.js
+// This file is kept for reference only
+
 const express = require('express');
 const bodyParser = require('body-parser');
 const userRoutes = require('./routes/UserRoutes');

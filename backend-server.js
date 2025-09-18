@@ -34,21 +34,28 @@ function startBackendServer() {
       return;
     }
 
-    // Load environment from electron.env file
-    const envPath = path.join(backendPath, 'electron.env');
+    // Load environment from .envelectron file
+    const envPath = path.join(backendPath, '.envelectron');
     const envConfig = {};
     
     if (fs.existsSync(envPath)) {
       const envContent = fs.readFileSync(envPath, 'utf8');
       envContent.split('\n').forEach(line => {
-        const [key, value] = line.split('=');
-        if (key && value && !line.startsWith('#')) {
-          envConfig[key.trim()] = value.trim();
+        const trimmedLine = line.trim();
+        if (trimmedLine && !trimmedLine.startsWith('#')) {
+          const equalIndex = trimmedLine.indexOf('=');
+          if (equalIndex > 0) {
+            const key = trimmedLine.substring(0, equalIndex).trim();
+            const value = trimmedLine.substring(equalIndex + 1).trim();
+            if (key && value !== undefined) {
+              envConfig[key] = value;
+            }
+          }
         }
       });
-      console.log('✅ Loaded environment configuration from electron.env');
+      console.log('✅ Loaded environment configuration from .envelectron');
     } else {
-      console.warn('⚠️ electron.env file not found, using default values');
+      console.warn('⚠️ .envelectron file not found, using default values');
     }
 
     // Environment variables for the backend

@@ -43,10 +43,10 @@ StockStorage.init(
             onUpdate: "CASCADE",
             onDelete: "CASCADE",
         },
-        quantity: {
-            type: DataTypes.INTEGER,
-            allowNull: false,
-        },
+        // quantity: {
+        //     type: DataTypes.INTEGER,
+        //     allowNull: false,
+        // },
         loose_quantity: {
             type: DataTypes.INTEGER,
             allowNull: false,

@@ -18,7 +18,7 @@ import {Mutex} from "async-mutex";
 // Controllers and utilities
 import {genericResponse} from "./controllers/base_controllers.js";
 import router from "./routes/router.js";
-// import ServerLog from "./models/server_log";
+// import ServerLog from "./models/server_log.js"; // Model not available
 import ErrorLog from "./models/error_log.js";
 import * as CONSTANTS from "./config/constants.js";
 import {connectDB, runMigrations, syncModels} from "./config/db.js";
@@ -145,18 +145,19 @@ if (cluster.isPrimary && isProd) {
         morgan((tokens, req, res) => {
             if (!ENV.serverLog) return;
 
-            const serverLog = new ServerLog({
-                Headers: JSON.stringify(req.headers),
-                Method: req.method,
-                Url: req.originalUrl,
-                Address: getIp(req),
-                RequestBody: res.locals?.serverLogToCreate?.RequestBody || "",
-                ResponseBody: res.locals?.serverLogToCreate?.ResponseBody || "",
-                ResponseTime: Number(tokens["response-time"](req, res)),
-            });
+            // ServerLog model not available - skipping server logging
+            // const serverLog = new ServerLog({
+            //     Headers: JSON.stringify(req.headers),
+            //     Method: req.method,
+            //     Url: req.originalUrl,
+            //     Address: getIp(req),
+            //     RequestBody: res.locals?.serverLogToCreate?.RequestBody || "",
+            //     ResponseBody: res.locals?.serverLogToCreate?.ResponseBody || "",
+            //     ResponseTime: Number(tokens["response-time"](req, res)),
+            // });
 
-            if (res.locals.isError) ErrorLog.create(serverLog);
-            else ServerLog.create(serverLog);
+            // if (res.locals.isError) ErrorLog.create(serverLog);
+            // else ServerLog.create(serverLog);
         }),
     );
 
