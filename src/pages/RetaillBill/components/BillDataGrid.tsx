@@ -1240,7 +1240,22 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
 
   const handleProductSelect = useCallback(
     (product: any, rowIndex: number) => {
+      // Validate rowIndex bounds
+      if (rowIndex < 0 || rowIndex >= billFormData.items.length) {
+        console.error(`Invalid rowIndex: ${rowIndex}. Items length: ${billFormData.items.length}`);
+        message.error(`Invalid row index: ${rowIndex}. Please try again.`);
+        return;
+      }
+
       const newItems = [...billFormData.items];
+      
+      // Double-check the item exists before modifying
+      if (!newItems[rowIndex]) {
+        console.error(`Item at index ${rowIndex} is undefined. Items length: ${newItems.length}`);
+        message.error('Selected row is no longer valid. Please try again.');
+        return;
+      }
+
       // Robustly set product_id from product.id or product._id
       newItems[rowIndex].product_id = product.id || product._id || '';
       newItems[rowIndex].product_name = product.name || '';
@@ -1248,7 +1263,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
       handleItemsChange(newItems);
       setStockModalRowIndex(rowIndex); // Open stock modal for this row
     },
-    [handleItemsChange]
+    [handleItemsChange, billFormData.items.length]
   );
 
   const handleF5ProductSelection = () => {
@@ -1382,7 +1397,24 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
   const handleProductSelectionModalSelect = (product: any) => {
     if (productSelectionRowIndex === null) return;
 
+    // Validate productSelectionRowIndex bounds
+    if (productSelectionRowIndex < 0 || productSelectionRowIndex >= billFormData.items.length) {
+      console.error(`Invalid productSelectionRowIndex: ${productSelectionRowIndex}. Items length: ${billFormData.items.length}`);
+      message.error(`Invalid row index: ${productSelectionRowIndex}. Please try again.`);
+      setProductSelectionRowIndex(null);
+      return;
+    }
+
     const newItems = [...billFormData.items];
+    
+    // Double-check the item exists before modifying
+    if (!newItems[productSelectionRowIndex]) {
+      console.error(`Item at index ${productSelectionRowIndex} is undefined. Items length: ${newItems.length}`);
+      message.error('Selected row is no longer valid. Please try again.');
+      setProductSelectionRowIndex(null);
+      return;
+    }
+
     newItems[productSelectionRowIndex].product_id = product._id || '';
     newItems[productSelectionRowIndex].product_name = product.name || '';
     newItems[productSelectionRowIndex].variant_name =
@@ -1403,7 +1435,25 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
 
   const handleStockSelect = (stock: any) => {
     if (stockModalRowIndex === null) return;
+    
+    // Validate stockModalRowIndex bounds
+    if (stockModalRowIndex < 0 || stockModalRowIndex >= billFormData.items.length) {
+      console.error(`Invalid stockModalRowIndex: ${stockModalRowIndex}. Items length: ${billFormData.items.length}`);
+      message.error(`Invalid row index: ${stockModalRowIndex}. Please try again.`);
+      setStockModalRowIndex(null);
+      return;
+    }
+
     const newItems = [...billFormData.items];
+    
+    // Double-check the item exists before modifying
+    if (!newItems[stockModalRowIndex]) {
+      console.error(`Item at index ${stockModalRowIndex} is undefined. Items length: ${newItems.length}`);
+      message.error('Selected row is no longer valid. Please try again.');
+      setStockModalRowIndex(null);
+      return;
+    }
+
     newItems[stockModalRowIndex].stock_id =
       stock.id || stock._id || stock.invoice_id || '';
     newItems[stockModalRowIndex].batch_no = stock.batch_no || '';
