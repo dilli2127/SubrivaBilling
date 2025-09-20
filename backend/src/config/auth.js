@@ -201,7 +201,7 @@ export async function adminResolver(req, res, next) {
             ];
 
             // ✅ Check if the user has permission
-            if (!adminRoles.includes(item.roleItems?.name)) {
+            if (!adminRoles.includes(item?.roleItems?.name)) {
                 return genericResponse({
                     res,
                     result: null,

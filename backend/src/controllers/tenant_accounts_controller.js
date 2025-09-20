@@ -13,12 +13,19 @@ import {statusCodes} from "../config/constants.js";
 import TenantAccounts, {
     tenantAccountFields,
 } from "../models/tenant_accounts.js";
-
 import sortConditionBuilder from "../utils/sort_condition_builder.js";
+import bcrypt from "bcrypt";
 
 export async function create(req, res, next) {
     try {
         const json = req.body;
+
+        // ✅ Hash the password before saving
+        if (json.password) {
+            const saltRounds = 10;
+            json.password = await bcrypt.hash(json.password, saltRounds);
+        }
+
         const item = await genericCreate({
             Table: TenantAccounts,
             json,
@@ -26,7 +33,7 @@ export async function create(req, res, next) {
             next,
             res
         });
-        
+
         return genericResponse({
             res,
             result: item || null,
@@ -42,14 +49,22 @@ export async function create(req, res, next) {
 export async function update(req, res, next) {
     try {
         const json = req.body;
+
+        // ✅ Only hash password if provided
+        if (json.password) {
+            const saltRounds = 10;
+            json.password = await bcrypt.hash(json.password, saltRounds);
+        }
+
         const item = await genericUpdate({
             Table: TenantAccounts,
-            condition: {_id: req.params._id},
+            condition: { _id: req.params._id },
             json,
             canUpsert: false,
             next,
             res
         });
+
         return genericResponse({
             res,
             result: item,
