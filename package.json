@@ -150,10 +150,20 @@
       "main.js",
       "preload.js",
       "backend-server.js",
-      "backend/**/*",
-      "!backend/node_modules/**/*",
       "node_modules/**/*"
     ],
+    "extraResources": [
+      {
+        "from": "backend",
+        "to": "backend",
+        "filter": [
+          "**/*",
+          "!node_modules/**/*"
+        ]
+      }
+    ],
+    "nodeGypRebuild": false,
+    "buildDependenciesFromSource": false,
     "extraMetadata": {
       "main": "main.js"
     },

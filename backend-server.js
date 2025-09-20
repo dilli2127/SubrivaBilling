@@ -21,8 +21,8 @@ function startBackendServer() {
     // Handle different paths for development vs production
     let backendPath;
     if (require('electron').app.isPackaged) {
-      // In production, backend folder is in the same directory as the main process
-      backendPath = path.join(__dirname, 'backend');
+      // In production, backend folder is in resources/backend
+      backendPath = path.join(process.resourcesPath, 'backend');
     } else {
       // In development, backend folder is in the project root
       backendPath = path.join(__dirname, 'backend');
@@ -76,8 +76,22 @@ function startBackendServer() {
     console.log('Backend path:', backendPath);
     console.log('Environment:', env);
     
-    // Start the backend server using the FocuzBilling API
-    backendProcess = spawn('node', ['src/server.js'], {
+    // Determine the correct node executable path
+    let nodeExecutable = 'node';
+    let nodeArgs = ['src/server.js'];
+    
+    if (require('electron').app.isPackaged) {
+      // In production, try to find Node.js in the system PATH first
+      // If not found, we'll provide a helpful error message
+      nodeExecutable = 'node';
+    }
+
+    console.log('Node executable:', nodeExecutable);
+    console.log('Node args:', nodeArgs);
+    console.log('Working directory:', backendPath);
+
+    // Start the backend server using Node.js
+    backendProcess = spawn(nodeExecutable, nodeArgs, {
       cwd: backendPath,
       env: env,
       stdio: ['pipe', 'pipe', 'pipe']
@@ -120,7 +134,17 @@ function startBackendServer() {
       console.error('Failed to start backend server:', error);
       isServerRunning = false;
       backendProcess = null;
-      reject(error);
+      
+      // Provide more helpful error messages
+      if (error.code === 'ENOENT') {
+        if (require('electron').app.isPackaged) {
+          reject(new Error('Node.js is not installed or not in PATH. Please install Node.js to run this application.'));
+        } else {
+          reject(new Error('Node.js is not installed or not in PATH. Please install Node.js to run the development server.'));
+        }
+      } else {
+        reject(error);
+      }
     });
 
     // Timeout after 30 seconds if server doesn't start
