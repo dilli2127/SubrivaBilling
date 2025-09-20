@@ -141,7 +141,7 @@
   },
   "build": {
     "appId": "com.freshfocuztech.probilldesk",
-    "productName": "ProBillDesk",
+    "productName": "SubrivaBilling",
     "directories": {
       "output": "dist"
     },
@@ -184,7 +184,7 @@
     "publish": {
       "provider": "github",
       "owner": "your-username",
-      "repo": "ProBillDesk"
+      "repo": "SubrivaBilling"
     }
   }
 }

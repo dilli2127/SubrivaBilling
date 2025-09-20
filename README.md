@@ -1,4 +1,4 @@
-# ProBillDesk - Desktop Billing Application
+# SubrivaBilling - Desktop Billing Application
 
 A professional billing and inventory management desktop application built with React 19, Electron, and Node.js.
 
@@ -24,7 +24,7 @@ A professional billing and inventory management desktop application built with R
 1. **Clone and setup**:
    ```bash
    git clone <repository-url>
-   cd ProBillDesk
+   cd SubrivaBilling
    npm run setup
    ```
 
@@ -59,7 +59,7 @@ A professional billing and inventory management desktop application built with R
 ## Project Structure
 
 ```
-ProBillDesk/
+SubrivaBilling/
 ├── src/                    # React frontend source
 │   ├── components/         # React components
 │   ├── pages/             # Page components

@@ -312,12 +312,12 @@ function createMenu() {
       label: 'Help',
       submenu: [
         {
-          label: 'About ProBillDesk',
+          label: 'About SubrivaBilling',
           click: () => {
             dialog.showMessageBox(mainWindow, {
               type: 'info',
-              title: 'About ProBillDesk',
-              message: 'ProBillDesk',
+              title: 'About SubrivaBilling',
+              message: 'SubrivaBilling',
               detail: 'Professional billing and inventory management system.\n\nVersion: 1.0.0\nBuilt with React 19 and Electron'
             });
           }

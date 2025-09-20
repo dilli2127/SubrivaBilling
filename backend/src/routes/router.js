@@ -53,7 +53,7 @@ export default function exportedRouter() {
     router.get("/health", (req, res) => {
         res.status(200).json({
             status: "OK",
-            message: "ProBillDesk Backend is running",
+            message: "SubrivaBilling Backend is running",
             timestamp: new Date().toISOString(),
             environment: process.env.ENVIRONMENT || "development"
         });
