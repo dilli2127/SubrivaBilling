@@ -155,11 +155,7 @@
     "extraResources": [
       {
         "from": "backend",
-        "to": "backend",
-        "filter": [
-          "**/*",
-          "!node_modules/**/*"
-        ]
+        "to": "backend"
       }
     ],
     "nodeGypRebuild": false,

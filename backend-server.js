@@ -27,15 +27,36 @@ function startBackendServer() {
       // In development, backend folder is in the project root
       backendPath = path.join(__dirname, 'backend');
     }
-    
     // Check if backend directory exists
     if (!fs.existsSync(backendPath)) {
-      reject(new Error('Backend directory not found'));
+      console.error('❌ Backend directory not found at:', backendPath);
+      try {
+        const resourcesDir = process.resourcesPath;
+        if (fs.existsSync(resourcesDir)) {
+          const contents = fs.readdirSync(resourcesDir);
+          console.log('  - Resources contents:', contents);
+        } else {
+          console.log('  - Resources directory does not exist');
+        }
+      } catch (err) {
+        console.log('  - Error reading resources directory:', err.message);
+      }
+      reject(new Error(`Backend directory not found at: ${backendPath}`));
       return;
     }
+    
+    // Check if server.js exists in backend directory
+    const serverJsPath = path.join(backendPath, 'src', 'server.js');
+    if (!fs.existsSync(serverJsPath)) {
+      console.error('❌ Backend server.js not found at:', serverJsPath);
+      reject(new Error(`Backend server.js not found at: ${serverJsPath}`));
+      return;
+    }
+    
+    console.log('✅ Backend directory and server.js found');
 
-    // Load environment from .envelectron file
-    const envPath = path.join(backendPath, '.envelectron');
+    // Load environment from .env file
+    const envPath = path.join(backendPath, '.env');
     const envConfig = {};
     
     if (fs.existsSync(envPath)) {
@@ -53,9 +74,9 @@ function startBackendServer() {
           }
         }
       });
-      console.log('✅ Loaded environment configuration from .envelectron');
+      console.log('✅ Loaded environment configuration from .env');
     } else {
-      console.warn('⚠️ .envelectron file not found, using default values');
+      console.warn('⚠️ .env file not found, using default values');
     }
 
     // Environment variables for the backend
