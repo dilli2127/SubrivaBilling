@@ -1,4 +1,5 @@
 const { app, BrowserWindow, Menu, shell, ipcMain, dialog } = require('electron');
+const { autoUpdater } = require('electron-updater');
 const path = require('path');
 
 // Handle different paths for development vs production
@@ -148,6 +149,55 @@ function createWindow() {
     }
   });
 }
+
+// Configure auto-updater
+autoUpdater.checkForUpdatesAndNotify();
+
+// Auto-updater events
+autoUpdater.on('checking-for-update', () => {
+  console.log('Checking for update...');
+});
+
+autoUpdater.on('update-available', (info) => {
+  console.log('Update available:', info);
+  dialog.showMessageBox(mainWindow, {
+    type: 'info',
+    title: 'Update Available',
+    message: 'A new version is available!',
+    detail: `Version ${info.version} is ready to download. The update will be downloaded in the background.`,
+    buttons: ['OK']
+  });
+});
+
+autoUpdater.on('update-not-available', (info) => {
+  console.log('Update not available:', info);
+});
+
+autoUpdater.on('error', (err) => {
+  console.log('Error in auto-updater:', err);
+});
+
+autoUpdater.on('download-progress', (progressObj) => {
+  let log_message = "Download speed: " + progressObj.bytesPerSecond;
+  log_message = log_message + ' - Downloaded ' + progressObj.percent + '%';
+  log_message = log_message + ' (' + progressObj.transferred + "/" + progressObj.total + ')';
+  console.log(log_message);
+});
+
+autoUpdater.on('update-downloaded', (info) => {
+  console.log('Update downloaded:', info);
+  dialog.showMessageBox(mainWindow, {
+    type: 'info',
+    title: 'Update Ready',
+    message: 'Update Downloaded!',
+    detail: 'The application will restart to apply the update.',
+    buttons: ['Restart Now', 'Later']
+  }).then((result) => {
+    if (result.response === 0) {
+      autoUpdater.quitAndInstall();
+    }
+  });
+});
 
 // This method will be called when Electron has finished initialization
 app.whenReady().then(async () => {
@@ -312,13 +362,20 @@ function createMenu() {
       label: 'Help',
       submenu: [
         {
+          label: 'Check for Updates',
+          click: () => {
+            autoUpdater.checkForUpdatesAndNotify();
+          }
+        },
+        { type: 'separator' },
+        {
           label: 'About SubrivaBilling',
           click: () => {
             dialog.showMessageBox(mainWindow, {
               type: 'info',
               title: 'About SubrivaBilling',
               message: 'SubrivaBilling',
-              detail: 'Professional billing and inventory management system.\n\nVersion: 1.0.0\nBuilt with React 19 and Electron'
+              detail: 'Professional billing and inventory management system.\n\nVersion: 2.0.2\nBuilt with React 19 and Electron'
             });
           }
         }
