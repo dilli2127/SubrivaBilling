@@ -1,6 +1,6 @@
 {
   "name": "FOCUZ-BILLING",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "Professional billing and inventory management desktop application",
   "author": "Fresh Focuz Tech",
   "private": true,
@@ -192,8 +192,8 @@
     },
     "publish": {
       "provider": "github",
-      "owner": "your-github-username",
-      "repo": "SubrivaBilling",
+      "owner": "dilli2127",
+      "repo": "ProBillDesk",
       "releaseType": "release"
     }
   }
