@@ -8,6 +8,10 @@ import Dashboard from "../pages/Dashboard";
 import Loader from "../components/common/Loader";
 import BillingLogin from "../pages/login/billing_login";
 import BranchStock from "../pages/BranchStock/crud";
+import LandingPage from "../pages/LandingPage/LandingPage";
+import FeaturesPage from "../pages/LandingPage/FeaturesPage";
+import PricingPage from "../pages/LandingPage/PricingPage";
+import CustomersPage from "../pages/LandingPage/CustomersPage";
 const ProductCrud = lazy(() => import("../pages/Products/crud"));
 const UnitCrud = lazy(() => import("../pages/Unit/crud"));
 const CategoryCrud = lazy(() => import("../pages/Category/crud"));
@@ -34,11 +38,51 @@ const StorageStockList = lazy(() => import("../pages/StockAudit/StorageStockList
 
 const routerData: RouteConfig[] = [
   {
+    key: "landing",
+    path: "/",
+    element: (
+      <Suspense fallback={<Loader />}>
+        <LandingPage />
+      </Suspense>
+    ),
+    children: [],
+  },
+  {
     key: "login",
     path: "/login",
     element: (
       <Suspense fallback={<Loader />}>
         <Login />
+      </Suspense>
+    ),
+    children: [],
+  },
+  {
+    key: "features",
+    path: "/features",
+    element: (
+      <Suspense fallback={<Loader />}>
+        <FeaturesPage />
+      </Suspense>
+    ),
+    children: [],
+  },
+  {
+    key: "pricing",
+    path: "/pricing",
+    element: (
+      <Suspense fallback={<Loader />}>
+        <PricingPage />
+      </Suspense>
+    ),
+    children: [],
+  },
+  {
+    key: "customers",
+    path: "/customers",
+    element: (
+      <Suspense fallback={<Loader />}>
+        <CustomersPage />
       </Suspense>
     ),
     children: [],
@@ -53,17 +97,6 @@ const routerData: RouteConfig[] = [
     ),
     children: [],
   },
-  {
-    key: "billing_login",
-    path: "/",
-    element: (
-      <Suspense fallback={<Loader />}>
-        <BillingLogin />
-      </Suspense>
-    ),
-    children: [],
-  },
-
   {
     key: "signup",
     path: "/signup",

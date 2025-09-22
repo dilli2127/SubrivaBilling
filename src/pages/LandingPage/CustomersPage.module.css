@@ -1,0 +1,497 @@
+/* Customers Page Styles - No Scrolling */
+.customersPage {
+  height: 100vh;
+  overflow: hidden;
+  background: linear-gradient(135deg, #f8fafc 0%, #fff5f5 100%);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Navigation */
+.customersNav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.navContainer {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 70px;
+}
+
+.navBrand h3 {
+  background: linear-gradient(135deg, #1890ff, #722ed1);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 700;
+}
+
+.navMenu {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.navItem {
+  color: #666 !important;
+  font-weight: 500;
+  border: none !important;
+  padding: 8px 16px !important;
+  transition: all 0.3s ease;
+  display: flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+}
+
+.navItem:hover {
+  color: #1890ff !important;
+  background: rgba(24, 144, 255, 0.1) !important;
+}
+
+.navItem.active {
+  color: #1890ff !important;
+  background: rgba(24, 144, 255, 0.1) !important;
+}
+
+.loginBtn {
+  background: linear-gradient(135deg, #1890ff, #722ed1) !important;
+  border: none !important;
+  font-weight: 600;
+  box-shadow: 0 4px 15px rgba(24, 144, 255, 0.3);
+}
+
+.loginBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(24, 144, 255, 0.4);
+}
+
+/* Main Content */
+.customersContent {
+  flex: 1;
+  padding: 100px 0 20px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* Header */
+.customersHeader {
+  text-align: center;
+  margin-bottom: 40px;
+  padding: 0 24px;
+}
+
+.pageTitle {
+  font-size: 3rem !important;
+  font-weight: 800 !important;
+  margin-bottom: 16px !important;
+  background: linear-gradient(135deg, #1890ff, #722ed1);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.pageSubtitle {
+  font-size: 1.2rem !important;
+  color: #666 !important;
+  max-width: 600px;
+  margin: 0 auto !important;
+}
+
+/* Stats Section */
+.statsSection {
+  padding: 0 24px;
+  margin-bottom: 40px;
+}
+
+.statsGrid {
+  margin-top: 20px;
+}
+
+.statCard {
+  height: 100%;
+  border: none !important;
+  border-radius: 16px !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08) !important;
+  transition: all 0.3s ease !important;
+  background: white !important;
+}
+
+.statCard:hover {
+  transform: translateY(-4px) !important;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12) !important;
+}
+
+.statContent {
+  text-align: center;
+  padding: 20px;
+}
+
+.statIcon {
+  width: 50px;
+  height: 50px;
+  margin: 0 auto 16px;
+  background: linear-gradient(135deg, #1890ff, #722ed1);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6px 20px rgba(24, 144, 255, 0.3);
+  font-size: 1.2rem;
+  color: white;
+}
+
+/* Featured Testimonials */
+.featuredTestimonials {
+  padding: 0 24px;
+  margin-bottom: 40px;
+}
+
+.sectionTitle {
+  font-size: 2rem !important;
+  font-weight: 700 !important;
+  margin-bottom: 30px !important;
+  text-align: center;
+  background: linear-gradient(135deg, #1890ff, #722ed1);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.testimonialsGrid {
+  margin-top: 20px;
+}
+
+.testimonialCard {
+  height: 100%;
+  border: none !important;
+  border-radius: 16px !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08) !important;
+  transition: all 0.3s ease !important;
+  background: white !important;
+}
+
+.testimonialCard:hover {
+  transform: translateY(-8px) !important;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15) !important;
+}
+
+.testimonialCard.featured {
+  border: 2px solid #52c41a !important;
+  box-shadow: 0 8px 30px rgba(82, 196, 26, 0.2) !important;
+}
+
+.testimonialContent {
+  padding: 30px 20px;
+}
+
+.testimonialHeader {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 20px;
+  gap: 16px;
+}
+
+.testimonialAvatar {
+  border: 3px solid #1890ff;
+  flex-shrink: 0;
+}
+
+.testimonialInfo {
+  flex: 1;
+}
+
+.testimonialName {
+  margin: 0 !important;
+  color: #333 !important;
+  font-weight: 600 !important;
+  font-size: 1.1rem !important;
+}
+
+.testimonialRole {
+  color: #1890ff !important;
+  font-weight: 500 !important;
+  display: block;
+  font-size: 0.9rem !important;
+}
+
+.testimonialCompany {
+  color: #666 !important;
+  font-size: 0.9rem !important;
+  display: block;
+  margin-bottom: 8px !important;
+}
+
+.testimonialMeta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.companySize {
+  color: #999 !important;
+  font-size: 0.8rem !important;
+}
+
+.testimonialRating {
+  margin-bottom: 16px;
+}
+
+.testimonialText {
+  color: #666 !important;
+  font-style: italic !important;
+  line-height: 1.6 !important;
+  margin: 0 !important;
+}
+
+/* All Testimonials */
+.allTestimonials {
+  padding: 0 24px;
+  margin-bottom: 40px;
+}
+
+/* Industries Section */
+.industriesSection {
+  padding: 0 24px;
+  margin-bottom: 40px;
+}
+
+.industriesGrid {
+  margin-top: 20px;
+}
+
+.industryCard {
+  height: 100%;
+  border: none !important;
+  border-radius: 12px !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05) !important;
+  transition: all 0.3s ease !important;
+  background: white !important;
+}
+
+.industryCard:hover {
+  transform: translateY(-4px) !important;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1) !important;
+}
+
+.industryContent {
+  text-align: center;
+  padding: 20px 16px;
+  position: relative;
+}
+
+.industryColor {
+  width: 100%;
+  height: 4px;
+  border-radius: 2px;
+  margin-bottom: 12px;
+}
+
+.industryName {
+  font-size: 1rem !important;
+  font-weight: 600 !important;
+  color: #333 !important;
+  display: block;
+  margin-bottom: 4px !important;
+}
+
+.industryCount {
+  font-size: 0.9rem !important;
+  color: #666 !important;
+  font-weight: 500 !important;
+}
+
+/* Benefits Section */
+.benefitsSection {
+  padding: 0 24px;
+  margin-bottom: 40px;
+}
+
+.benefitsGrid {
+  margin-top: 20px;
+}
+
+.benefitCard {
+  height: 100%;
+  border: none !important;
+  border-radius: 16px !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08) !important;
+  transition: all 0.3s ease !important;
+  background: white !important;
+}
+
+.benefitCard:hover {
+  transform: translateY(-4px) !important;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12) !important;
+}
+
+.benefitContent {
+  text-align: center;
+  padding: 30px 20px;
+}
+
+.benefitIcon {
+  width: 50px;
+  height: 50px;
+  margin: 0 auto 16px;
+  background: linear-gradient(135deg, #52c41a, #1890ff);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6px 20px rgba(82, 196, 26, 0.3);
+  font-size: 1.2rem;
+  color: white;
+}
+
+.benefitTitle {
+  font-size: 1.1rem !important;
+  font-weight: 600 !important;
+  margin-bottom: 12px !important;
+  color: #333 !important;
+}
+
+.benefitDescription {
+  color: #666 !important;
+  margin: 0 !important;
+  font-size: 0.9rem !important;
+  line-height: 1.5 !important;
+}
+
+/* CTA Section */
+.customersCta {
+  background: linear-gradient(135deg, #1890ff, #722ed1);
+  padding: 40px 24px;
+  text-align: center;
+  color: white;
+  margin: 0 -24px;
+}
+
+.ctaTitle {
+  font-size: 2rem !important;
+  font-weight: 700 !important;
+  margin-bottom: 16px !important;
+  color: white !important;
+}
+
+.ctaSubtitle {
+  font-size: 1.1rem !important;
+  color: rgba(255, 255, 255, 0.9) !important;
+  margin-bottom: 30px !important;
+}
+
+.ctaActions {
+  margin-top: 20px;
+}
+
+.ctaButton {
+  background: linear-gradient(135deg, #52c41a, #1890ff) !important;
+  border: none !important;
+  height: 50px !important;
+  padding: 0 32px !important;
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  box-shadow: 0 8px 25px rgba(82, 196, 26, 0.3) !important;
+}
+
+.ctaButton:hover {
+  transform: translateY(-3px) !important;
+  box-shadow: 0 12px 35px rgba(82, 196, 26, 0.4) !important;
+}
+
+.contactButton {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border: 2px solid rgba(255, 255, 255, 0.3) !important;
+  color: white !important;
+  height: 50px !important;
+  padding: 0 32px !important;
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  backdrop-filter: blur(10px);
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+.contactButton:hover {
+  background: rgba(255, 255, 255, 0.2) !important;
+  border-color: rgba(255, 255, 255, 0.5) !important;
+  transform: translateY(-2px) !important;
+}
+
+/* Focus styles for keyboard navigation */
+.navItem:focus,
+.ctaButton:focus,
+.contactButton:focus {
+  outline: 3px solid #1890ff;
+  outline-offset: 2px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .pageTitle {
+    font-size: 2rem !important;
+  }
+  
+  .navMenu {
+    display: none;
+  }
+  
+  .customersContent {
+    padding: 80px 0 20px;
+  }
+  
+  .featuredTestimonials,
+  .allTestimonials,
+  .industriesSection,
+  .benefitsSection {
+    padding: 0 16px;
+  }
+  
+  .customersCta {
+    margin: 0 -16px;
+    padding: 30px 16px;
+  }
+  
+  .testimonialHeader {
+    flex-direction: column;
+    text-align: center;
+    gap: 12px;
+  }
+  
+  .testimonialAvatar {
+    align-self: center;
+  }
+}
+
+/* Custom scrollbar for content area */
+.customersContent::-webkit-scrollbar {
+  width: 6px;
+}
+
+.customersContent::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.customersContent::-webkit-scrollbar-thumb {
+  background: #1890ff;
+  border-radius: 3px;
+}
+
+.customersContent::-webkit-scrollbar-thumb:hover {
+  background: #722ed1;
+}
