@@ -12,6 +12,7 @@ import LandingPage from "../pages/LandingPage/LandingPage";
 import FeaturesPage from "../pages/LandingPage/FeaturesPage";
 import PricingPage from "../pages/LandingPage/PricingPage";
 import CustomersPage from "../pages/LandingPage/CustomersPage";
+import LandingPageLayout from "../components/common/LandingPageLayout";
 const ProductCrud = lazy(() => import("../pages/Products/crud"));
 const UnitCrud = lazy(() => import("../pages/Unit/crud"));
 const CategoryCrud = lazy(() => import("../pages/Category/crud"));
@@ -42,7 +43,9 @@ const routerData: RouteConfig[] = [
     path: "/",
     element: (
       <Suspense fallback={<Loader />}>
-        <LandingPage />
+        <LandingPageLayout>
+          <LandingPage />
+        </LandingPageLayout>
       </Suspense>
     ),
     children: [],
@@ -62,7 +65,9 @@ const routerData: RouteConfig[] = [
     path: "/features",
     element: (
       <Suspense fallback={<Loader />}>
-        <FeaturesPage />
+        <LandingPageLayout>
+          <FeaturesPage />
+        </LandingPageLayout>
       </Suspense>
     ),
     children: [],
@@ -72,7 +77,9 @@ const routerData: RouteConfig[] = [
     path: "/pricing",
     element: (
       <Suspense fallback={<Loader />}>
-        <PricingPage />
+        <LandingPageLayout>
+          <PricingPage />
+        </LandingPageLayout>
       </Suspense>
     ),
     children: [],
@@ -82,7 +89,9 @@ const routerData: RouteConfig[] = [
     path: "/customers",
     element: (
       <Suspense fallback={<Loader />}>
-        <CustomersPage />
+        <LandingPageLayout>
+          <CustomersPage />
+        </LandingPageLayout>
       </Suspense>
     ),
     children: [],

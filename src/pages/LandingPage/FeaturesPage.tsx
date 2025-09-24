@@ -7,7 +7,6 @@ import {
   SecurityScanOutlined,
   MobileOutlined,
   CloudOutlined,
-  ArrowLeftOutlined,
   CheckCircleOutlined,
   ThunderboltOutlined,
   DatabaseOutlined,
@@ -122,63 +121,6 @@ const FeaturesPage: React.FC = () => {
 
   return (
     <div className={styles.featuresPage}>
-      {/* Navigation */}
-      <nav className={styles.featuresNav}>
-        <div className={styles.navContainer}>
-          <div className={styles.navBrand}>
-            <Title level={3} style={{ color: '#1890ff', margin: 0 }}>
-              Subriva Billing
-            </Title>
-          </div>
-          <div className={styles.navMenu}>
-            <Button 
-              type="text" 
-              className={styles.navItem}
-              onClick={() => navigate('/')}
-              data-nav="back"
-              tabIndex={0}
-            >
-              <ArrowLeftOutlined /> Back to Home
-            </Button>
-            <Button 
-              type="text" 
-              className={`${styles.navItem} ${styles.active}`}
-              data-nav="features"
-              tabIndex={0}
-            >
-              Features
-            </Button>
-            <Button 
-              type="text" 
-              className={styles.navItem}
-              onClick={() => navigate('/pricing')}
-              data-nav="pricing"
-              tabIndex={0}
-            >
-              Pricing
-            </Button>
-            <Button 
-              type="text" 
-              className={styles.navItem}
-              onClick={() => navigate('/customers')}
-              data-nav="customers"
-              tabIndex={0}
-            >
-              Customers
-            </Button>
-            <Button 
-              type="primary" 
-              size="large"
-              onClick={() => navigate('/login')}
-              className={styles.loginBtn}
-              data-nav="login"
-              tabIndex={0}
-            >
-              Login
-            </Button>
-          </div>
-        </div>
-      </nav>
 
       {/* Main Content */}
       <div className={styles.featuresContent}>

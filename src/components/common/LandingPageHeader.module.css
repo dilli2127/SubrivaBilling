@@ -1,0 +1,132 @@
+/* Common Landing Page Header Styles */
+.landingHeader {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.05);
+}
+
+.navContainer {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 80px;
+}
+
+.navBrand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.brandIcon {
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, #1890ff, #722ed1);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 18px;
+  box-shadow: 0 4px 15px rgba(24, 144, 255, 0.3);
+}
+
+.navBrand h3 {
+  background: linear-gradient(135deg, #1890ff, #722ed1);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 700;
+  font-size: 24px;
+}
+
+.navMenu {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.navItem {
+  color: #666 !important;
+  font-weight: 500;
+  border: none !important;
+  padding: 12px 20px !important;
+  transition: all 0.3s ease;
+  border-radius: 8px !important;
+  font-size: 16px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+.navItem:hover {
+  color: #1890ff !important;
+  background: rgba(24, 144, 255, 0.1) !important;
+  transform: translateY(-1px);
+}
+
+.navItem.active {
+  color: #1890ff !important;
+  background: rgba(24, 144, 255, 0.1) !important;
+  font-weight: 600;
+}
+
+.loginBtn {
+  background: linear-gradient(135deg, #ff6b35, #f7931e) !important;
+  border: none !important;
+  font-weight: 600;
+  box-shadow: 0 6px 20px rgba(255, 107, 53, 0.3);
+  border-radius: 8px !important;
+  height: 44px !important;
+  padding: 0 24px !important;
+  font-size: 16px !important;
+}
+
+.loginBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(255, 107, 53, 0.4);
+}
+
+/* Focus styles for keyboard navigation */
+.navItem:focus,
+.loginBtn:focus {
+  outline: 3px solid #1890ff;
+  outline-offset: 2px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .navMenu {
+    display: none;
+  }
+  
+  .navContainer {
+    padding: 0 16px;
+  }
+}
+
+/* Animation for smooth transitions */
+.landingHeader {
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

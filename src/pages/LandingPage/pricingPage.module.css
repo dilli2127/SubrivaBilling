@@ -1,11 +1,11 @@
-/* Pricing Page Styles - No Scrolling */
+/* Pricing Page Styles */
 .pricingPage {
-  height: 100vh;
-  overflow: hidden;
+  min-height: 100vh;
   background: linear-gradient(135deg, #f8fafc 0%, #e6f7ff 100%);
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   display: flex;
   flex-direction: column;
+  width: 100%;
 }
 
 /* Navigation */
@@ -82,7 +82,7 @@
 .pricingContent {
   flex: 1;
   padding: 100px 0 20px;
-  overflow-y: auto;
+  overflow-y: visible;
   overflow-x: hidden;
 }
 

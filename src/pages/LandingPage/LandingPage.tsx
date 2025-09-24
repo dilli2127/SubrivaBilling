@@ -110,58 +110,6 @@ const LandingPage: React.FC = () => {
 
   return (
     <div className={styles.landingPage}>
-      {/* Navigation */}
-      <nav className={styles.landingNav}>
-        <div className={styles.navContainer}>
-          <div className={styles.navBrand}>
-            <div className={styles.brandIcon}>
-              <FileTextOutlined />
-            </div>
-            <Title level={3} style={{ color: '#1890ff', margin: 0 }}>
-              Subriva Billing
-            </Title>
-          </div>
-          <div className={styles.navMenu}>
-            <Button 
-              type="text" 
-              className={styles.navItem}
-              onClick={() => navigate('/features')}
-              data-nav="features"
-              tabIndex={0}
-            >
-              Features
-            </Button>
-            <Button 
-              type="text" 
-              className={styles.navItem}
-              onClick={() => navigate('/pricing')}
-              data-nav="pricing"
-              tabIndex={0}
-            >
-              Pricing
-            </Button>
-            <Button 
-              type="text" 
-              className={styles.navItem}
-              onClick={() => navigate('/customers')}
-              data-nav="customers"
-              tabIndex={0}
-            >
-              Customers
-            </Button>
-            <Button 
-              type="primary" 
-              size="large"
-              onClick={() => navigate('/billing_login')}
-              className={styles.loginBtn}
-              data-nav="login"
-              tabIndex={0}
-            >
-              Login
-            </Button>
-          </div>
-        </div>
-      </nav>
 
       {/* Hero Section */}
       <section className={styles.heroSection}>

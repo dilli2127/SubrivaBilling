@@ -1,0 +1,56 @@
+/* Landing Page Layout Styles */
+.landingLayout {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f8fafc 0%, #fff5f5 100%);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  overflow-x: hidden;
+  overflow-y: auto;
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  -webkit-overflow-scrolling: touch;
+  /* Ensure this is the only scrollable container */
+  scrollbar-width: thin;
+  scrollbar-color: #1890ff #f1f1f1;
+}
+
+.landingContent {
+  padding-top: 80px; /* Account for fixed header */
+  min-height: calc(100vh - 80px);
+  position: relative;
+  z-index: 1;
+}
+
+/* Ensure smooth transitions */
+.landingLayout {
+  scroll-behavior: smooth;
+}
+
+/* Custom scrollbar styling */
+.landingLayout::-webkit-scrollbar {
+  width: 8px;
+}
+
+.landingLayout::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.landingLayout::-webkit-scrollbar-thumb {
+  background: #1890ff;
+  border-radius: 4px;
+  transition: background 0.3s ease;
+}
+
+.landingLayout::-webkit-scrollbar-thumb:hover {
+  background: #722ed1;
+}
+
+/* Electron-specific scrolling fixes */
+@media screen and (-webkit-appearance: none) {
+  .landingLayout {
+    height: 100vh;
+    overflow-y: scroll;
+    -webkit-overflow-scrolling: touch;
+  }
+}

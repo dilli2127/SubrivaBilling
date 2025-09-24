@@ -7,12 +7,12 @@ html, body {
   font-family: Helvetica Neue, Roboto, sans-serif !important;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  overflow-x: hidden;
+  overflow: hidden; /* Prevent body from scrolling */
 }
 
 #root {
   height: 100%;
-  overflow: hidden;
+  overflow: hidden; /* Root should not scroll */
 }
 
 code {
