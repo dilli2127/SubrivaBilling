@@ -31,8 +31,8 @@ class ElectronBackendService {
         console.log('✅ Backend URL initialized:', this.backendUrl);
       } catch (error) {
         console.error('❌ Failed to get backend URL:', error);
-        // Fallback to default local URL
-        this.backendUrl = 'http://localhost:8247';
+        // Fallback to external backend URL
+        this.backendUrl = 'http://localhost:8080';
       }
     } else {
       // If not in Electron, use the development server URL or production API
@@ -47,7 +47,7 @@ class ElectronBackendService {
     if (!this.backendUrl) {
       await this.initializeBackendUrl();
     }
-    return this.backendUrl || 'http://localhost:8247';
+    return this.backendUrl || 'http://localhost:8080';
   }
 
   /**
@@ -75,7 +75,7 @@ class ElectronBackendService {
 
     while (Date.now() - startTime < timeout) {
       try {
-        const response = await fetch(`${backendUrl}/health`, {
+        const response = await fetch(`${backendUrl}/api/health`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',

@@ -2,18 +2,6 @@ const { app, BrowserWindow, Menu, shell, ipcMain, dialog } = require('electron')
 const { autoUpdater } = require('electron-updater');
 const path = require('path');
 
-// Handle different paths for development vs production
-let backendServerPath;
-if (app.isPackaged) {
-  // In production, files are in the resources/app folder
-  backendServerPath = path.join(__dirname, 'backend-server.js');
-} else {
-  // In development, files are in the project root
-  backendServerPath = './backend-server';
-}
-
-const { startBackendServer, stopBackendServer, getBackendUrl } = require(backendServerPath);
-
 // Check if in development mode
 const isDev = process.env.NODE_ENV === 'development' || process.env.ELECTRON_IS_DEV === '1' || !app.isPackaged;
 
@@ -200,46 +188,23 @@ autoUpdater.on('update-downloaded', (info) => {
 });
 
 // This method will be called when Electron has finished initialization
-app.whenReady().then(async () => {
-  try {
-    // Start the backend server first
-    console.log('Starting backend server...');
-    await startBackendServer();
-    console.log('✅ Backend server started successfully');
-    
-    // Then create the window
-    createWindow();
+app.whenReady().then(() => {
+  // Create the window
+  createWindow();
 
-    // On macOS, re-create window when dock icon is clicked
-    app.on('activate', () => {
-      if (BrowserWindow.getAllWindows().length === 0) {
-        createWindow();
-      }
-    });
+  // On macOS, re-create window when dock icon is clicked
+  app.on('activate', () => {
+    if (BrowserWindow.getAllWindows().length === 0) {
+      createWindow();
+    }
+  });
 
-    // Create application menu
-    createMenu();
-  } catch (error) {
-    console.error('❌ Failed to start backend server:', error);
-    dialog.showErrorBox(
-      'Backend Server Error', 
-      `Failed to start the backend server: ${error.message}\n\nThe application may not function properly. Please check your database connection and try again.`
-    );
-    createWindow(); // Create window anyway, but user will see API errors
-  }
+  // Create application menu
+  createMenu();
 });
 
 // Quit when all windows are closed
-app.on('window-all-closed', async () => {
-  // Stop the backend server before quitting
-  try {
-    console.log('Stopping backend server...');
-    await stopBackendServer();
-    console.log('✅ Backend server stopped');
-  } catch (error) {
-    console.error('❌ Error stopping backend server:', error);
-  }
-
+app.on('window-all-closed', () => {
   // On macOS, keep app running even when all windows are closed
   if (process.platform !== 'darwin') {
     app.quit();
@@ -411,7 +376,8 @@ ipcMain.handle('get-app-version', () => {
 });
 
 ipcMain.handle('get-backend-url', () => {
-  return getBackendUrl();
+  // Return a default API URL for external backend
+  return 'http://localhost:8080'; // Change this to your external backend URL
 });
 
 ipcMain.handle('show-save-dialog', async () => {

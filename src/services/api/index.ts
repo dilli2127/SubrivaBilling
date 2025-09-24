@@ -9,9 +9,9 @@ const initializeApiService = async (): Promise<APIService> => {
     let baseURL: string;
     
     if (electronBackendService.isElectronApp()) {
-      // Running in Electron - use the embedded backend
+      // Running in Electron - use external backend
       baseURL = await electronBackendService.getBackendUrl();
-      console.log('🔗 Using Electron embedded backend:', baseURL);
+      console.log('🔗 Using external backend from Electron:', baseURL);
       
       // Wait for backend to be ready
       const isReady = await electronBackendService.waitForBackend();
@@ -20,7 +20,7 @@ const initializeApiService = async (): Promise<APIService> => {
       }
     } else {
       // Running in browser - use environment variable or fallback
-      baseURL = process.env.REACT_APP_API_URL || "http://localhost:8247/";
+      baseURL = process.env.REACT_APP_API_URL || "http://localhost:8080/";
       console.log('🌐 Using external API:', baseURL);
     }
     

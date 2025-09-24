@@ -1,2 +1,0 @@
-"use strict";(self.webpackChunkFOCUZ_BILLING=self.webpackChunkFOCUZ_BILLING||[]).push([[7],{19007:(e,l,s)=>{s.r(l),s.d(l,{default:()=>r});s(65043);var i=s(83833),c=s(19468),n=s(1045),a=s(70579);const{Title:t}=i.A,r=()=>{const e=(0,n.Zp)();return(0,a.jsx)("div",{className:"billing-page",children:(0,a.jsx)("div",{className:"billing-page-content",children:(0,a.jsx)(c.A,{onSuccess:l=>{l&&e("/retaill_bill_list")}})})})}}}]);
-//# sourceMappingURL=7.0087e7fe.chunk.js.map
