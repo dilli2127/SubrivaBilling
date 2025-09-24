@@ -377,7 +377,7 @@ ipcMain.handle('get-app-version', () => {
 
 ipcMain.handle('get-backend-url', () => {
   // Return a default API URL for external backend
-  return 'http://localhost:8080'; // Change this to your external backend URL
+  return 'http://localhost:8247'; // Change this to your external backend URL
 });
 
 ipcMain.handle('show-save-dialog', async () => {

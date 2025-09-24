@@ -3,6 +3,8 @@
  * Handles communication between the React frontend and the embedded backend server
  */
 
+// Using environment variables directly
+
 // Type declarations are in src/hooks/useElectron.ts
 
 class ElectronBackendService {
@@ -25,18 +27,26 @@ class ElectronBackendService {
    * Initialize the backend URL
    */
   private async initializeBackendUrl(): Promise<void> {
+    console.log('🔍 Environment check:', {
+      REACT_APP_API_URL: process.env.REACT_APP_API_URL,
+      NODE_ENV: process.env.NODE_ENV,
+      isElectron: this.isElectron
+    });
+    
     if (this.isElectron && window.electronAPI) {
       try {
         this.backendUrl = await window.electronAPI.getBackendUrl();
-        console.log('✅ Backend URL initialized:', this.backendUrl);
+        console.log('✅ Backend URL from Electron:', this.backendUrl);
       } catch (error) {
-        console.error('❌ Failed to get backend URL:', error);
-        // Fallback to external backend URL
-        this.backendUrl = 'http://localhost:8080';
+        console.error('❌ Failed to get backend URL from Electron:', error);
+        // Fallback to environment variable or default
+        this.backendUrl = 'http://localhost:8247'; // Force your port
+        console.log('🔄 Using fallback URL:', this.backendUrl);
       }
     } else {
-      // If not in Electron, use the development server URL or production API
-      this.backendUrl = process.env.REACT_APP_API_URL || 'http://localhost:8080';
+      // If not in Electron, use environment variable or fallback
+      this.backendUrl = 'http://localhost:8247'; // Force your port
+      console.log('🌐 Using web environment URL:', this.backendUrl);
     }
   }
 
@@ -47,7 +57,7 @@ class ElectronBackendService {
     if (!this.backendUrl) {
       await this.initializeBackendUrl();
     }
-    return this.backendUrl || 'http://localhost:8080';
+    return this.backendUrl || process.env.REACT_APP_API_URL || 'http://localhost:8247';
   }
 
   /**
