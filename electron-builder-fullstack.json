@@ -1,0 +1,51 @@
+{
+  "appId": "com.freshfocuztech.probilldesk.fullstack",
+  "productName": "SubrivaBilling Full Stack",
+  "directories": {
+    "output": "dist-fullstack"
+  },
+  "files": [
+    "build/**/*",
+    "main-fullstack.js",
+    "preload.js",
+    "backend-server.js",
+    "node_modules/**/*"
+  ],
+  "extraResources": [
+    {
+      "from": "backend",
+      "to": "backend"
+    }
+  ],
+  "nodeGypRebuild": false,
+  "buildDependenciesFromSource": false,
+  "extraMetadata": {
+    "main": "main-fullstack.js"
+  },
+  "mac": {
+    "category": "public.app-category.business",
+    "icon": "src/assets/img/icon.jpg",
+    "target": "dmg"
+  },
+  "win": {
+    "target": "nsis",
+    "icon": "src/assets/img/icon.jpg"
+  },
+  "linux": {
+    "target": "AppImage",
+    "icon": "src/assets/img/icon.jpg"
+  },
+  "nsis": {
+    "oneClick": false,
+    "allowToChangeInstallationDirectory": true,
+    "createDesktopShortcut": true,
+    "createStartMenuShortcut": true,
+    "shortcutName": "SubrivaBilling Full Stack"
+  },
+  "publish": {
+    "provider": "github",
+    "owner": "dilli2127",
+    "repo": "SubrivaBilling",
+    "releaseType": "release"
+  }
+}

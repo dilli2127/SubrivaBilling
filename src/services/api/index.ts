@@ -9,14 +9,21 @@ const initializeApiService = async (): Promise<APIService> => {
     let baseURL: string;
     
     if (electronBackendService.isElectronApp()) {
-      // Running in Electron - use the embedded backend
+      // Running in Electron - check if it's frontend-only or full-stack
       baseURL = await electronBackendService.getBackendUrl();
-      console.log('🔗 Using Electron embedded backend:', baseURL);
       
-      // Wait for backend to be ready
-      const isReady = await electronBackendService.waitForBackend();
-      if (!isReady) {
-        console.warn('⚠️ Backend may not be ready, but continuing...');
+      if (baseURL && baseURL !== 'http://localhost:8247') {
+        // Frontend-only mode - using external backend
+        console.log('🔗 Using external backend (frontend-only mode):', baseURL);
+      } else {
+        // Full-stack mode - using embedded backend
+        console.log('🔗 Using Electron embedded backend:', baseURL);
+        
+        // Wait for backend to be ready
+        const isReady = await electronBackendService.waitForBackend();
+        if (!isReady) {
+          console.warn('⚠️ Backend may not be ready, but continuing...');
+        }
       }
     } else {
       // Running in browser - use environment variable or fallback

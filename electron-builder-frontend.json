@@ -1,0 +1,45 @@
+{
+  "appId": "com.freshfocuztech.probilldesk.frontend",
+  "productName": "SubrivaBilling Frontend",
+  "directories": {
+    "output": "dist-frontend"
+  },
+  "files": [
+    "build/**/*",
+    "main-frontend-only.js",
+    "preload.js",
+    "node_modules/**/*"
+  ],
+  "extraResources": [],
+  "nodeGypRebuild": false,
+  "buildDependenciesFromSource": false,
+  "extraMetadata": {
+    "main": "main-frontend-only.js"
+  },
+  "mac": {
+    "category": "public.app-category.business",
+    "icon": "src/assets/img/icon.jpg",
+    "target": "dmg"
+  },
+  "win": {
+    "target": "nsis",
+    "icon": "src/assets/img/icon.jpg"
+  },
+  "linux": {
+    "target": "AppImage",
+    "icon": "src/assets/img/icon.jpg"
+  },
+  "nsis": {
+    "oneClick": false,
+    "allowToChangeInstallationDirectory": true,
+    "createDesktopShortcut": true,
+    "createStartMenuShortcut": true,
+    "shortcutName": "SubrivaBilling Frontend"
+  },
+  "publish": {
+    "provider": "github",
+    "owner": "dilli2127",
+    "repo": "SubrivaBilling",
+    "releaseType": "release"
+  }
+}
