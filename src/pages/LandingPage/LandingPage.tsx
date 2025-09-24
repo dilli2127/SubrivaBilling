@@ -60,6 +60,33 @@ const LandingPage: React.FC = () => {
     return () => window.removeEventListener('keydown', handleKeyPress);
   }, [navigate]);
 
+  // Electron-specific scrolling fixes
+  useEffect(() => {
+    // Check if running in Electron
+    const isElectron = window.navigator.userAgent.toLowerCase().indexOf('electron') > -1;
+    
+    if (isElectron) {
+      // Ensure body and html have proper height for Electron
+      document.documentElement.style.height = '100%';
+      document.body.style.height = '100%';
+      document.body.style.overflow = 'hidden';
+      
+      // Set the root element to handle scrolling
+      const rootElement = document.getElementById('root');
+      if (rootElement) {
+        rootElement.style.height = '100%';
+        rootElement.style.overflow = 'hidden';
+      }
+      
+      // Ensure the landing page container handles scrolling
+      const landingPageElement = document.querySelector('.landingPage');
+      if (landingPageElement) {
+        (landingPageElement as HTMLElement).style.height = '100vh';
+        (landingPageElement as HTMLElement).style.overflowY = 'auto';
+      }
+    }
+  }, []);
+
   const stats = [
     { number: "10,000+", label: "Happy Customers", icon: <UserOutlined />, color: "#1890ff" },
     { number: "1M+", label: "Invoices Generated", icon: <FileTextOutlined />, color: "#52c41a" },
@@ -125,7 +152,7 @@ const LandingPage: React.FC = () => {
             <Button 
               type="primary" 
               size="large"
-              onClick={() => navigate('/login')}
+              onClick={() => navigate('/billing_login')}
               className={styles.loginBtn}
               data-nav="login"
               tabIndex={0}
@@ -152,7 +179,7 @@ const LandingPage: React.FC = () => {
               <Button 
                 type="primary" 
                 size="large" 
-                onClick={() => navigate('/login')}
+                onClick={() => navigate('/billing_login')}
                 className={styles.ctaButton}
                 tabIndex={0}
               >
