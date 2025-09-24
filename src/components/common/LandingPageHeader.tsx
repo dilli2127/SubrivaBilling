@@ -81,7 +81,7 @@ const LandingPageHeader: React.FC<LandingPageHeaderProps> = ({
           <Button 
             type="primary" 
             size="large"
-            onClick={() => navigate('/login')}
+            onClick={() => navigate('/billing_login')}
             className={styles.loginBtn}
             data-nav="login"
             tabIndex={0}

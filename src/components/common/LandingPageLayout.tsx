@@ -1,6 +1,7 @@
 import React from 'react';
 import { useLocation } from 'react-router-dom';
 import LandingPageHeader from './LandingPageHeader';
+import LandingPageFooter from './LandingPageFooter';
 import styles from './LandingPageLayout.module.css';
 
 interface LandingPageLayoutProps {
@@ -38,6 +39,7 @@ const LandingPageLayout: React.FC<LandingPageLayoutProps> = ({ children }) => {
       <main className={styles.landingContent}>
         {children}
       </main>
+      <LandingPageFooter />
     </div>
   );
 };

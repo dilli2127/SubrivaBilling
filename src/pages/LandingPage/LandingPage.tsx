@@ -373,64 +373,6 @@ const LandingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* Footer Section */}
-      <footer className={styles.landingFooter}>
-        <div className={styles.footerContainer}>
-          <Row gutter={[32, 32]}>
-            <Col xs={24} md={8}>
-              <div className={styles.footerBrand}>
-                <div className={styles.brandIcon}>
-                  <FileTextOutlined />
-                </div>
-                <Title level={4} style={{ color: '#1890ff', margin: 0 }}>
-                  Subriva Billing
-                </Title>
-                <Paragraph style={{ color: 'white' }}>
-                  Smart billing solutions for modern businesses. 
-                  Streamline your invoicing process and grow your business.
-                </Paragraph>
-              </div>
-            </Col>
-            <Col xs={24} md={8}>
-              <div className={styles.footerLinks}>
-                <Title level={5}>Product</Title>
-                <ul>
-                  <li><a href="/features">Features</a></li>
-                  <li><a href="/pricing">Pricing</a></li>
-                  <li><a href="#">Integrations</a></li>
-                  <li><a href="#">API</a></li>
-                </ul>
-              </div>
-            </Col>
-            <Col xs={24} md={8}>
-              <div className={styles.footerLinks}>
-                <Title level={5}>Support</Title>
-                <ul>
-                  <li><a href="#">Help Center</a></li>
-                  <li><a href="#">Contact Us</a></li>
-                  <li><a href="#">Documentation</a></li>
-                  <li><a href="#">Status</a></li>
-                </ul>
-              </div>
-            </Col>
-          </Row>
-          <Divider />
-          <div className={styles.footerBottom}>
-            <Text>© 2024 Subriva Billing. All rights reserved.</Text>
-            <div className={styles.footerSocial}>
-              <Button type="text" icon={<GlobalOutlined />} />
-              <Button type="text" icon={<MailOutlined />} />
-              <Button type="text" icon={<PhoneOutlined />} />
-              <Button type="text" icon={<UserOutlined />} />
-            </div>
-          </div>
-        </div>
-      </footer>
-
-      {/* Floating Help Button */}
-      <div className={styles.floatingHelp}>
-        <Button type="primary" shape="circle" icon={<PhoneOutlined />} size="large" />
-      </div>
     </div>
   );
 };
