@@ -139,15 +139,27 @@ function createWindow() {
 }
 
 // Configure auto-updater
-autoUpdater.checkForUpdatesAndNotify();
+autoUpdater.autoDownload = true;
+autoUpdater.autoInstallOnAppQuit = true;
 
 // Auto-updater events
 autoUpdater.on('checking-for-update', () => {
   console.log('Checking for update...');
+  if (mainWindow) {
+    mainWindow.webContents.send('update-status', { status: 'checking', message: 'Checking for updates...' });
+  }
 });
 
 autoUpdater.on('update-available', (info) => {
   console.log('Update available:', info);
+  if (mainWindow) {
+    mainWindow.webContents.send('update-status', { 
+      status: 'available', 
+      message: `Update available: ${info.version}`,
+      version: info.version
+    });
+  }
+  
   dialog.showMessageBox(mainWindow, {
     type: 'info',
     title: 'Update Available',
@@ -159,10 +171,22 @@ autoUpdater.on('update-available', (info) => {
 
 autoUpdater.on('update-not-available', (info) => {
   console.log('Update not available:', info);
+  if (mainWindow) {
+    mainWindow.webContents.send('update-status', { 
+      status: 'not-available', 
+      message: 'You are using the latest version' 
+    });
+  }
 });
 
 autoUpdater.on('error', (err) => {
   console.log('Error in auto-updater:', err);
+  if (mainWindow) {
+    mainWindow.webContents.send('update-status', { 
+      status: 'error', 
+      message: `Update error: ${err.message}` 
+    });
+  }
 });
 
 autoUpdater.on('download-progress', (progressObj) => {
@@ -170,10 +194,26 @@ autoUpdater.on('download-progress', (progressObj) => {
   log_message = log_message + ' - Downloaded ' + progressObj.percent + '%';
   log_message = log_message + ' (' + progressObj.transferred + "/" + progressObj.total + ')';
   console.log(log_message);
+  
+  if (mainWindow) {
+    mainWindow.webContents.send('update-progress', {
+      percent: progressObj.percent,
+      transferred: progressObj.transferred,
+      total: progressObj.total,
+      bytesPerSecond: progressObj.bytesPerSecond
+    });
+  }
 });
 
 autoUpdater.on('update-downloaded', (info) => {
   console.log('Update downloaded:', info);
+  if (mainWindow) {
+    mainWindow.webContents.send('update-status', { 
+      status: 'downloaded', 
+      message: 'Update downloaded and ready to install' 
+    });
+  }
+  
   dialog.showMessageBox(mainWindow, {
     type: 'info',
     title: 'Update Ready',
@@ -191,6 +231,14 @@ autoUpdater.on('update-downloaded', (info) => {
 app.whenReady().then(() => {
   // Create the window
   createWindow();
+
+  // Check for updates after a short delay to ensure window is ready
+  setTimeout(() => {
+    if (!isDev) {
+      console.log('Checking for updates...');
+      autoUpdater.checkForUpdatesAndNotify();
+    }
+  }, 3000);
 
   // On macOS, re-create window when dock icon is clicked
   app.on('activate', () => {
@@ -328,8 +376,33 @@ function createMenu() {
       submenu: [
         {
           label: 'Check for Updates',
+          accelerator: 'CmdOrCtrl+U',
           click: () => {
-            autoUpdater.checkForUpdatesAndNotify();
+            if (!isDev) {
+              autoUpdater.checkForUpdatesAndNotify();
+            } else {
+              dialog.showMessageBox(mainWindow, {
+                type: 'info',
+                title: 'Development Mode',
+                message: 'Updates are not available in development mode.',
+                detail: 'Updates will be available when running the production build.'
+              });
+            }
+          }
+        },
+        {
+          label: 'Download Update',
+          click: () => {
+            if (!isDev) {
+              autoUpdater.downloadUpdate();
+            } else {
+              dialog.showMessageBox(mainWindow, {
+                type: 'info',
+                title: 'Development Mode',
+                message: 'Updates are not available in development mode.',
+                detail: 'Updates will be available when running the production build.'
+              });
+            }
           }
         },
         { type: 'separator' },
@@ -340,7 +413,7 @@ function createMenu() {
               type: 'info',
               title: 'About SubrivaBilling',
               message: 'SubrivaBilling',
-              detail: 'Professional billing and inventory management system.\n\nVersion: 2.0.2\nBuilt with React 19 and Electron'
+              detail: `Professional billing and inventory management system.\n\nVersion: ${app.getVersion()}\nBuilt with React 19 and Electron\n\nAuto-updates are enabled for automatic updates.`
             });
           }
         }
@@ -378,6 +451,38 @@ ipcMain.handle('get-app-version', () => {
 ipcMain.handle('get-backend-url', () => {
   // Return a default API URL for external backend
   return 'http://localhost:8247'; // Change this to your external backend URL
+});
+
+ipcMain.handle('check-for-updates', async () => {
+  try {
+    if (!isDev) {
+      const result = await autoUpdater.checkForUpdates();
+      return { success: true, result };
+    } else {
+      return { success: false, message: 'Updates not available in development mode' };
+    }
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+});
+
+ipcMain.handle('download-update', async () => {
+  try {
+    if (!isDev) {
+      autoUpdater.downloadUpdate();
+      return { success: true };
+    } else {
+      return { success: false, message: 'Updates not available in development mode' };
+    }
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+});
+
+ipcMain.handle('install-update', () => {
+  if (!isDev) {
+    autoUpdater.quitAndInstall();
+  }
 });
 
 ipcMain.handle('show-save-dialog', async () => {

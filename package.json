@@ -59,7 +59,13 @@
     "build-electron": "npm run build && npx electron-builder --publish=never",
     "dist": "npm run build && npx electron-builder --publish=never",
     "clean": "rimraf build dist node_modules",
-    "reset": "npm run clean && npm install"
+    "reset": "npm run clean && npm install",
+    "version:patch": "node scripts/update-version.js patch",
+    "version:minor": "node scripts/update-version.js minor",
+    "version:major": "node scripts/update-version.js major",
+    "version:patch:publish": "node scripts/update-version.js patch --publish",
+    "version:minor:publish": "node scripts/update-version.js minor --publish",
+    "version:major:publish": "node scripts/update-version.js major --publish"
   },
   "eslintConfig": {
     "extends": [

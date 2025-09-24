@@ -20,6 +20,7 @@ import './Sidebar.css';
 import ThemeDrawer from './ThemeDrawer';
 import { themePresets } from './themePresets';
 import { useSessionStorage } from '../../../hooks/useLocalStorage';
+import UpdateStatus from '../../common/UpdateStatus';
 
 const { Header, Content, Sider } = Layout;
 
@@ -287,6 +288,8 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
         </div>
         <h2 className="header-title">Subriva Billing</h2>
         <div className="header-right">
+          <UpdateStatus className="update-status-header" />
+          
           {userItem && (
             <>
               <div>

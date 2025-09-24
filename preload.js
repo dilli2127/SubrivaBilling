@@ -9,6 +9,19 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // Backend info
   getBackendUrl: () => ipcRenderer.invoke('get-backend-url'),
   
+  // Update functionality
+  checkForUpdates: () => ipcRenderer.invoke('check-for-updates'),
+  downloadUpdate: () => ipcRenderer.invoke('download-update'),
+  installUpdate: () => ipcRenderer.invoke('install-update'),
+  
+  // Update events
+  onUpdateStatus: (callback) => {
+    ipcRenderer.on('update-status', callback);
+  },
+  onUpdateProgress: (callback) => {
+    ipcRenderer.on('update-progress', callback);
+  },
+  
   // File operations
   showSaveDialog: () => ipcRenderer.invoke('show-save-dialog'),
   showOpenDialog: () => ipcRenderer.invoke('show-open-dialog'),
