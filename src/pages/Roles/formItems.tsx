@@ -1,5 +1,5 @@
 import React from 'react';
-import { Input, Checkbox } from 'antd';
+import { Input, Checkbox, Select } from 'antd';
 import { menuItems } from '../../components/antd/sidebar/menu';
 
 function flattenMenuItems(items: any[], parentLabel = ''): any[] {
@@ -34,6 +34,17 @@ export const rolesFormItems = () => [
     name: 'name',
     rules: [{ required: true, message: 'Please enter role name!' }],
     component: <Input placeholder="Enter role name" />,
+  },
+  {
+    label: 'Role Type',
+    name: 'roles_type',
+    rules: [{ required: true, message: 'Please select role type!' }],
+    component: (
+      <Select placeholder="Select role type" allowClear>
+        <Select.Option value="Admin">Admin</Select.Option>
+        <Select.Option value="Employee">Employee</Select.Option>
+      </Select>
+    ),
   },
   {
     label: 'Description',

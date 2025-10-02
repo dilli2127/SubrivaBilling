@@ -29,6 +29,16 @@ const RolesCrud: React.FC = () => {
         })) || [],
       placeholder: 'Select Organisation',
     },
+    {
+      key: 'roleType',
+      label: 'Role Type',
+      type: 'select' as const,
+      options: [
+        { label: 'Admin', value: 'Admin' },
+        { label: 'Employee', value: 'Employee' },
+      ],
+      placeholder: 'Select Role Type',
+    },
   ];
 
   return (
