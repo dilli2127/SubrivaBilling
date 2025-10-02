@@ -19,6 +19,7 @@ import {
   FileSearchOutlined,
   BankOutlined,
   MinusCircleOutlined,
+  LineHeightOutlined,
 } from '@ant-design/icons';
 
 export const menuItems = [
@@ -176,6 +177,12 @@ export const menuItems = [
     label: 'Reports',
     icon: <BarChartOutlined />,
     children: [
+      {
+        key: 'report',
+        label: 'Report',
+        icon: <FileSearchOutlined />,
+        path: '/reports',
+      },
       {
         key: 'sales-report',
         label: 'Sale Report',
