@@ -51,18 +51,17 @@ const PricingPage: React.FC = () => {
     {
       name: "Starter",
       icon: <RocketOutlined />,
-      monthlyPrice: 29,
-      annualPrice: 290,
+      monthlyPrice: 0,
+      annualPrice: 0,
       description: "Perfect for small businesses getting started",
       features: [
-        "Up to 100 invoices/month",
+        "Up to 100 bills",
         "Basic reporting & analytics",
         "Email support",
         "Mobile app access",
         "1 user account",
         "Basic templates",
-        "Payment tracking",
-        "Tax calculations"
+        "Payment tracking & tax calculations"
       ],
       popular: false,
       color: "#1890ff",
@@ -71,22 +70,18 @@ const PricingPage: React.FC = () => {
     {
       name: "Professional",
       icon: <CrownOutlined />,
-      monthlyPrice: 79,
-      annualPrice: 790,
+      monthlyPrice: 599,
+      annualPrice: 5999,
       description: "Ideal for growing businesses",
       features: [
-        "Unlimited invoices",
-        "Advanced analytics & reports",
-        "Priority support",
-        "API access",
+        "Unlimited invoices & billing",
+        "Advanced analytics & reporting",
+        "Priority email & chat support",
         "Up to 5 user accounts",
-        "Custom branding",
-        "Advanced templates",
+        "Custom branding & templates",
         "Automated reminders",
-        "Multi-currency support",
         "Inventory management",
-        "Customer portal",
-        "Advanced tax handling"
+        "Customer portal"
       ],
       popular: true,
       color: "#52c41a",
@@ -95,21 +90,17 @@ const PricingPage: React.FC = () => {
     {
       name: "Enterprise",
       icon: <GoldOutlined />,
-      monthlyPrice: 199,
-      annualPrice: 1990,
-      description: "For large organizations",
+      monthlyPrice: 999,
+      annualPrice: 9999,
+      description: "For large organizations requiring advanced features",
       features: [
-        "Everything in Professional",
+        "All Professional features",
         "Dedicated support manager",
-        "Custom integrations",
-        "Advanced security features",
-        "Unlimited users",
+        "Custom integrations & development",
+        "Advanced security & compliance",
+        "Unlimited users & locations",
         "White-label solution",
-        "Custom development",
-        "SLA guarantee",
-        "Advanced reporting",
-        "Multi-location support",
-        "Custom workflows",
+        "Custom workflows & SLA guarantee",
         "24/7 phone support"
       ],
       popular: false,
@@ -117,16 +108,17 @@ const PricingPage: React.FC = () => {
       buttonText: "Contact Sales"
     }
   ];
+  
 
   const addOns = [
     {
       name: "Additional Users",
-      price: "$10/month per user",
+      price: "₹99/month per user",
       description: "Add more team members to your account"
     },
     {
       name: "Advanced Analytics",
-      price: "$25/month",
+      price: "₹299/month",
       description: "Get deeper insights with advanced reporting tools"
     },
     {
@@ -202,7 +194,7 @@ const PricingPage: React.FC = () => {
                     
                     <div className={styles.planPricing}>
                       <div className={styles.priceContainer}>
-                        <span className={styles.currency}>$</span>
+                        <span className={styles.currency}>₹</span>
                         <span className={styles.price}>
                           {isAnnual ? Math.floor(plan.annualPrice / 12) : plan.monthlyPrice}
                         </span>
@@ -210,7 +202,7 @@ const PricingPage: React.FC = () => {
                       </div>
                       {isAnnual && (
                         <Text className={styles.annualSavings}>
-                          ${plan.annualPrice} billed annually (Save ${(plan.monthlyPrice * 12) - plan.annualPrice})
+                          ₹{plan.annualPrice} billed annually (Save ₹{(plan.monthlyPrice * 12) - plan.annualPrice})
                         </Text>
                       )}
                     </div>
@@ -232,6 +224,16 @@ const PricingPage: React.FC = () => {
                       style={{ 
                         background: plan.popular ? `linear-gradient(135deg, ${plan.color}, #1890ff)` : undefined,
                         borderColor: plan.color
+                      }}
+                      onClick={() => {
+                        if (plan.buttonText === "Start Free Trial") {
+                          navigate('/tenant-registration');
+                        } else if (plan.buttonText === "Most Popular") {
+                          navigate('/tenant-registration');
+                        } else if (plan.buttonText === "Contact Sales") {
+                          // Handle contact sales
+                          window.open('mailto:sales@probilldesk.com?subject=Enterprise Plan Inquiry');
+                        }
                       }}
                     >
                       {plan.buttonText}
@@ -288,7 +290,7 @@ const PricingPage: React.FC = () => {
             <Button 
               type="primary" 
               size="large" 
-              onClick={() => navigate('/login')}
+              onClick={() => navigate('/tenant-registration')}
               className={styles.ctaButton}
               tabIndex={0}
             >
