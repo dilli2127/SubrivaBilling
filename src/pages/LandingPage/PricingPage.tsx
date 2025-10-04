@@ -227,9 +227,9 @@ const PricingPage: React.FC = () => {
                       }}
                       onClick={() => {
                         if (plan.buttonText === "Start Free Trial") {
-                          navigate('/tenant-registration');
+                          navigate('/tenant-signup');
                         } else if (plan.buttonText === "Most Popular") {
-                          navigate('/tenant-registration');
+                          navigate('/tenant-signup');
                         } else if (plan.buttonText === "Contact Sales") {
                           // Handle contact sales
                           window.open('mailto:sales@probilldesk.com?subject=Enterprise Plan Inquiry');
@@ -290,7 +290,7 @@ const PricingPage: React.FC = () => {
             <Button 
               type="primary" 
               size="large" 
-              onClick={() => navigate('/tenant-registration')}
+              onClick={() => navigate('/tenant-signup')}
               className={styles.ctaButton}
               tabIndex={0}
             >

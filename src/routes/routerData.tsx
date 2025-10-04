@@ -4,6 +4,7 @@ import Sidebar from "../components/antd/sidebar/sidebar";
 import { Outlet } from "react-router-dom";
 import Login from "../pages/login/login";
 import Signup from "../pages/login/Signup";
+import TenantSignup from "../pages/TenantSignup/TenantSignup";
 import Dashboard from "../pages/Dashboard";
 import Loader from "../components/common/Loader";
 import BillingLogin from "../pages/login/billing_login";
@@ -115,6 +116,16 @@ const routerData: RouteConfig[] = [
     element: (
       <Suspense fallback={<Loader />}>
         <Signup />
+      </Suspense>
+    ),
+    children: [],
+  },
+  {
+    key: "tenant-signup",
+    path: "/tenant-signup",
+    element: (
+      <Suspense fallback={<Loader />}>
+        <TenantSignup />
       </Suspense>
     ),
     children: [],
