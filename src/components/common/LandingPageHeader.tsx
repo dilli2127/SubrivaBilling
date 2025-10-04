@@ -10,7 +10,7 @@ import styles from './LandingPageHeader.module.css';
 const { Title } = Typography;
 
 interface LandingPageHeaderProps {
-  currentPage?: 'home' | 'features' | 'pricing' | 'customers';
+  currentPage?: 'home' | 'features' | 'pricing' | 'customers' | 'contact';
   showBackButton?: boolean;
 }
 
@@ -29,6 +29,7 @@ const LandingPageHeader: React.FC<LandingPageHeaderProps> = ({
     if (path === '/features') return 'features';
     if (path === '/pricing') return 'pricing';
     if (path === '/customers') return 'customers';
+    if (path === '/contact') return 'contact';
     return 'home';
   };
 
@@ -37,7 +38,8 @@ const LandingPageHeader: React.FC<LandingPageHeaderProps> = ({
   const navItems = [
     { key: 'features', label: 'Features', path: '/features' },
     { key: 'pricing', label: 'Pricing', path: '/pricing' },
-    { key: 'customers', label: 'Customers', path: '/customers' }
+    { key: 'customers', label: 'Customers', path: '/customers' },
+    { key: 'contact', label: 'Contact', path: '/contact' }
   ];
 
   return (

@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import { Form, Input, Button, Select, InputNumber, DatePicker, Switch, Card, Row, Col, message, Steps, Space } from "antd";
 import { UserOutlined, LockOutlined, MailOutlined, PhoneOutlined, HomeOutlined, CalendarOutlined, CheckCircleOutlined, EditOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
+import LandingPageHeader from "../../components/common/LandingPageHeader";
 import styles from "./TenantSignup.module.css";
 import { ApiRequest } from "../../services/api/apiService";
 import { dynamic_clear, dynamic_request, useDynamicSelector } from "../../services/redux";
@@ -81,6 +82,15 @@ const TenantSignup: React.FC = () => {
       setCurrentStep(currentStep - 1);
     } else if (e.key === "ArrowRight" && currentStep < steps.length - 1) {
       nextStep();
+    } else if (e.key === "Tab") {
+      e.preventDefault();
+      // Handle tab navigation within the form
+      const focusableElements = document.querySelectorAll(
+        'input, button, select, textarea, [tabindex]:not([tabindex="-1"])'
+      );
+      const currentIndex = Array.from(focusableElements).indexOf(document.activeElement as Element);
+      const nextIndex = (currentIndex + 1) % focusableElements.length;
+      (focusableElements[nextIndex] as HTMLElement).focus();
     }
   };
 
@@ -333,10 +343,13 @@ const TenantSignup: React.FC = () => {
   };
 
   return (
-    <div className={styles.container} onKeyDown={handleKeyDown} tabIndex={-1}>
-      <div className={styles.background} />
+    <div className={styles.pageWrapper}>
+      <LandingPageHeader showBackButton={true} />
       
-      <div className={styles.content}>
+      <div className={styles.container} onKeyDown={handleKeyDown} tabIndex={-1}>
+        <div className={styles.background} />
+        
+        <div className={styles.content}>
         <Card className={styles.signupCard}>
           <div className={styles.header}>
             <h1 className={styles.title}>Create Tenant Account</h1>
@@ -427,6 +440,7 @@ const TenantSignup: React.FC = () => {
             </Form>
           </div>
         </Card>
+        </div>
       </div>
     </div>
   );

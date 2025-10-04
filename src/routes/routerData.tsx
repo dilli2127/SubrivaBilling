@@ -13,6 +13,7 @@ import LandingPage from "../pages/LandingPage/LandingPage";
 import FeaturesPage from "../pages/LandingPage/FeaturesPage";
 import PricingPage from "../pages/LandingPage/PricingPage";
 import CustomersPage from "../pages/LandingPage/CustomersPage";
+import ContactUsPage from "../pages/LandingPage/ContactUsPage";
 import LandingPageLayout from "../components/common/LandingPageLayout";
 const ProductCrud = lazy(() => import("../pages/Products/crud"));
 const UnitCrud = lazy(() => import("../pages/Unit/crud"));
@@ -95,6 +96,18 @@ const routerData: RouteConfig[] = [
       <Suspense fallback={<Loader />}>
         <LandingPageLayout>
           <CustomersPage />
+        </LandingPageLayout>
+      </Suspense>
+    ),
+    children: [],
+  },
+  {
+    key: "contact",
+    path: "/contact",
+    element: (
+      <Suspense fallback={<Loader />}>
+        <LandingPageLayout>
+          <ContactUsPage />
         </LandingPageLayout>
       </Suspense>
     ),
