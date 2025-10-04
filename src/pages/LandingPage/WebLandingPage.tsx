@@ -29,6 +29,7 @@ import {
   ShareAltOutlined
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
+import FeaturesSection from '../../components/common/FeaturesSection';
 import styles from './LandingPage.module.css';
 
 const { Title, Paragraph, Text } = Typography;
@@ -204,7 +205,10 @@ const WebLandingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* Features Section */}
+      {/* Essential Features Section */}
+      <FeaturesSection />
+
+      {/* Additional Features Section */}
       <section className={styles.additionalContent}>
         <div className={styles.contentContainer}>
           <Row gutter={[32, 32]}>

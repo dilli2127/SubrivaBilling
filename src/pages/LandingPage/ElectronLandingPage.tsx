@@ -28,6 +28,7 @@ import {
   LockOutlined
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
+import FeaturesSection from '../../components/common/FeaturesSection';
 import styles from './LandingPage.module.css';
 
 const { Title, Paragraph, Text } = Typography;
@@ -179,7 +180,10 @@ const ElectronLandingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* Features Section */}
+      {/* Essential Features Section */}
+      <FeaturesSection />
+
+      {/* Desktop-Specific Features Section */}
       <section className={styles.additionalContent}>
         <div className={styles.contentContainer}>
           <Row gutter={[32, 32]}>
