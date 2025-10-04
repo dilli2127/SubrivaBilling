@@ -17,6 +17,15 @@ const { Title, Paragraph, Text } = Typography;
 const PricingPage: React.FC = () => {
   const navigate = useNavigate();
   const [isAnnual, setIsAnnual] = React.useState(false);
+  
+  // Discount configuration - Change this value to adjust discount percentage
+  const DISCOUNT_PERCENTAGE = 20; // Change to 0, 10, 20, 30, etc.
+  
+  // Function to calculate discounted price
+  const calculateDiscountedPrice = (originalPrice: number): number => {
+    if (DISCOUNT_PERCENTAGE <= 0) return originalPrice;
+    return Math.floor(originalPrice * (1 - DISCOUNT_PERCENTAGE / 100));
+  };
 
   // Keyboard navigation
   useEffect(() => {
@@ -47,86 +56,158 @@ const PricingPage: React.FC = () => {
     return () => window.removeEventListener('keydown', handleKeyPress);
   }, [navigate]);
 
+  // Original pricing data
+  const originalPricingData = {
+    starter: { monthly: 249, annual: 2499 },
+    professional: { monthly: 699, annual: 6999 },
+    business: { monthly: 999, annual: 9999 }
+  };
+
   const pricingPlans = [
     {
-      name: "Starter",
+      name: "Free",
       icon: <RocketOutlined />,
       monthlyPrice: 0,
       annualPrice: 0,
-      description: "Perfect for small businesses getting started",
+      description: "Perfect for trying out Subriva Billing",
       features: [
-        "Up to 100 bills",
-        "Basic reporting & analytics",
-        "Email support",
-        "Mobile app access",
+        "Up to 100 invoices/month",
         "1 user account",
-        "Basic templates",
-        "Payment tracking & tax calculations"
+        "Basic reporting",
+        "Email support",
+        "Mobile app access"
       ],
       popular: false,
       color: "#1890ff",
-      buttonText: "Start Free Trial"
+      buttonText: "Start Free"
+    },
+    {
+      name: "Starter",
+      icon: <StarOutlined />,
+      monthlyPrice: calculateDiscountedPrice(originalPricingData.starter.monthly),
+      annualPrice: calculateDiscountedPrice(originalPricingData.starter.annual),
+      originalMonthlyPrice: originalPricingData.starter.monthly,
+      originalAnnualPrice: originalPricingData.starter.annual,
+      description: "For freelancers and small shops",
+      features: [
+        "Up to 500 invoices/month",
+        "1 user account",
+        "Custom templates",
+        "Mobile app access",
+        "Payment tracking & tax calculations"
+      ],
+      popular: false,
+      color: "#faad14",
+      buttonText: "Get Started"
     },
     {
       name: "Professional",
       icon: <CrownOutlined />,
-      monthlyPrice: 599,
-      annualPrice: 5999,
+      monthlyPrice: calculateDiscountedPrice(originalPricingData.professional.monthly),
+      annualPrice: calculateDiscountedPrice(originalPricingData.professional.annual),
+      originalMonthlyPrice: originalPricingData.professional.monthly,
+      originalAnnualPrice: originalPricingData.professional.annual,
       description: "Ideal for growing businesses",
       features: [
-        "Unlimited invoices & billing",
-        "Advanced analytics & reporting",
-        "Priority email & chat support",
-        "Up to 5 user accounts",
-        "Custom branding & templates",
-        "Automated reminders",
+        "Unlimited invoices",
+        "Up to 3 user accounts",
         "Inventory management",
-        "Customer portal"
+        "Advanced analytics & reports",
+        "Automated reminders",
+        "Customer portal",
+        "Priority email & chat support"
       ],
       popular: true,
       color: "#52c41a",
       buttonText: "Most Popular"
     },
     {
-      name: "Enterprise",
+      name: "Business",
       icon: <GoldOutlined />,
-      monthlyPrice: 999,
-      annualPrice: 9999,
-      description: "For large organizations requiring advanced features",
+      monthlyPrice: calculateDiscountedPrice(originalPricingData.business.monthly),
+      annualPrice: calculateDiscountedPrice(originalPricingData.business.annual),
+      originalMonthlyPrice: originalPricingData.business.monthly,
+      originalAnnualPrice: originalPricingData.business.annual,
+      description: "For established businesses with teams",
       features: [
         "All Professional features",
-        "Dedicated support manager",
-        "Custom integrations & development",
-        "Advanced security & compliance",
-        "Unlimited users & locations",
-        "White-label solution",
-        "Custom workflows & SLA guarantee",
-        "24/7 phone support"
+        "Up to 5 user accounts",
+        "Multi-location support",
+        "Advanced team collaboration",
+        "Custom workflows",
+        "API access & integrations",
+        "Enhanced security features",
+        "Priority support"
       ],
       popular: false,
       color: "#722ed1",
+      buttonText: "Choose Business"
+    },
+    {
+      name: "Enterprise",
+      icon: <CheckCircleOutlined />,
+      monthlyPrice: null,
+      annualPrice: null,
+      description: "For large organizations requiring advanced solutions",
+      features: [
+        "Unlimited users & accounts",
+        "Custom integrations & development",
+        "White-label solution",
+        "Advanced security & compliance",
+        "Dedicated support manager",
+        "SLA guarantee",
+        "On-premise deployment options",
+        "24/7 phone support"
+      ],
+      popular: false,
+      color: "#eb2f96",
       buttonText: "Contact Sales"
     }
   ];
   
+  
+
+  // Original add-on pricing data
+  const originalAddonData = {
+    additionalUsers: 199,
+    advancedAnalytics: 299,
+    prioritySupport: 499,
+    whiteLabel: 999
+  };
 
   const addOns = [
     {
       name: "Additional Users",
-      price: "₹99/month per user",
-      description: "Add more team members to your account"
+      price: `₹${calculateDiscountedPrice(originalAddonData.additionalUsers)}/month per user`,
+      originalPrice: `₹${originalAddonData.additionalUsers}/month per user`,
+      description: "Add more team members beyond your plan limit"
     },
     {
       name: "Advanced Analytics",
-      price: "₹299/month",
-      description: "Get deeper insights with advanced reporting tools"
+      price: `₹${calculateDiscountedPrice(originalAddonData.advancedAnalytics)}/month`,
+      originalPrice: `₹${originalAddonData.advancedAnalytics}/month`,
+      description: "Unlock deeper insights with advanced reporting & dashboards"
     },
     {
       name: "Custom Integrations",
       price: "Contact us",
-      description: "Integrate with your existing business tools"
+      originalPrice: "Contact us",
+      description: "Connect Subriva Billing with your existing business tools"
+    },
+    {
+      name: "Priority Phone Support",
+      price: `₹${calculateDiscountedPrice(originalAddonData.prioritySupport)}/month`,
+      originalPrice: `₹${originalAddonData.prioritySupport}/month`,
+      description: "Get faster resolutions with priority 24/7 phone support"
+    },
+    {
+      name: "White-label Branding",
+      price: `₹${calculateDiscountedPrice(originalAddonData.whiteLabel)}/month`,
+      originalPrice: `₹${originalAddonData.whiteLabel}/month`,
+      description: "Use your own brand, logo, and custom domain"
     }
   ];
+  
 
   const faqs = [
     {
@@ -193,17 +274,35 @@ const PricingPage: React.FC = () => {
                     </div>
                     
                     <div className={styles.planPricing}>
-                      <div className={styles.priceContainer}>
-                        <span className={styles.currency}>₹</span>
-                        <span className={styles.price}>
-                          {isAnnual ? Math.floor(plan.annualPrice / 12) : plan.monthlyPrice}
-                        </span>
-                        <span className={styles.period}>/month</span>
-                      </div>
-                      {isAnnual && (
-                        <Text className={styles.annualSavings}>
-                          ₹{plan.annualPrice} billed annually (Save ₹{(plan.monthlyPrice * 12) - plan.annualPrice})
-                        </Text>
+                      {plan.monthlyPrice !== null ? (
+                        <>
+                          {plan.originalMonthlyPrice && (
+                            <div className={styles.originalPriceContainer}>
+                              <Text className={styles.originalPrice}>
+                                ₹{isAnnual ? plan.originalAnnualPrice : plan.originalMonthlyPrice}
+                                {isAnnual ? '/year' : '/month'}
+                              </Text>
+                              <Badge count={`${DISCOUNT_PERCENTAGE}% OFF`} style={{ backgroundColor: '#ff4d4f', marginLeft: '8px' }} />
+                            </div>
+                          )}
+                          <div className={styles.priceContainer}>
+                            <span className={styles.currency}>₹</span>
+                            <span className={styles.price}>
+                              {isAnnual ? Math.floor(plan.annualPrice / 12) : plan.monthlyPrice}
+                            </span>
+                            <span className={styles.period}>/month</span>
+                          </div>
+                          {isAnnual && (
+                            <Text className={styles.annualSavings}>
+                              ₹{plan.annualPrice} billed annually (Save ₹{(plan.monthlyPrice * 12) - plan.annualPrice})
+                            </Text>
+                          )}
+                        </>
+                      ) : (
+                        <div className={styles.customPrice}>
+                          <Text className={styles.customPriceText}>Custom Pricing</Text>
+                          <Text className={styles.customPriceSubtext}>Contact us for details</Text>
+                        </div>
                       )}
                     </div>
 
@@ -226,9 +325,7 @@ const PricingPage: React.FC = () => {
                         borderColor: plan.color
                       }}
                       onClick={() => {
-                        if (plan.buttonText === "Start Free Trial") {
-                          navigate('/tenant-signup');
-                        } else if (plan.buttonText === "Most Popular") {
+                        if (plan.buttonText === "Start Free" || plan.buttonText === "Get Started" || plan.buttonText === "Most Popular" || plan.buttonText === "Choose Business" || plan.buttonText === "Choose Growth") {
                           navigate('/tenant-signup');
                         } else if (plan.buttonText === "Contact Sales") {
                           // Handle contact sales
@@ -254,7 +351,15 @@ const PricingPage: React.FC = () => {
                 <Card className={styles.addonCard} hoverable>
                   <div className={styles.addonContent}>
                     <Title level={4} className={styles.addonName}>{addon.name}</Title>
-                    <Text className={styles.addonPrice}>{addon.price}</Text>
+                    {addon.originalPrice !== addon.price ? (
+                      <div className={styles.addonPricing}>
+                        <Text className={styles.originalAddonPrice}>{addon.originalPrice}</Text>
+                        <Text className={styles.addonPrice}>{addon.price}</Text>
+                        <Badge count={`${DISCOUNT_PERCENTAGE}% OFF`} style={{ backgroundColor: '#ff4d4f', marginLeft: '8px' }} />
+                      </div>
+                    ) : (
+                      <Text className={styles.addonPrice}>{addon.price}</Text>
+                    )}
                     <Paragraph className={styles.addonDescription}>{addon.description}</Paragraph>
                   </div>
                 </Card>
