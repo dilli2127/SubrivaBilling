@@ -432,7 +432,7 @@ const TenantSignup: React.FC = () => {
               <div className={styles.footer}>
                 <p>
                   Already have an account?{" "}
-                  <a href="/login" className={styles.loginLink}>
+                  <a onClick={() => navigate("/billing_login")} className={styles.loginLink}>
                     Sign in here
                   </a>
                 </p>

@@ -149,7 +149,7 @@ const BillingLogin: React.FC = () => {
           <Form.Item className="signup-link-rich">
             <Text className="auth-switch-rich">
               Don't have an account?{' '}
-              <a onClick={() => navigate("/signup")}>Sign up</a>
+              <a onClick={() => navigate("/tenant-signup")}>Sign up</a>
             </Text>
           </Form.Item>
         </Form>
