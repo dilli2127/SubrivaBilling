@@ -130,7 +130,7 @@ const BillingLogin: React.FC = () => {
               prefix={<LockOutlined />} placeholder="Password" size="large" />
           </Form.Item>
           <Form.Item className="login-options-rich">
-            <a href="#" className="forgot-password-rich">
+            <a onClick={() => navigate("/forgot-password")} className="forgot-password-rich">
               Forgot password?
             </a>
           </Form.Item>

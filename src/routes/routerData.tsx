@@ -4,6 +4,7 @@ import Sidebar from "../components/antd/sidebar/sidebar";
 import { Outlet } from "react-router-dom";
 import Login from "../pages/login/login";
 import Signup from "../pages/login/Signup";
+import ForgotPassword from "../pages/login/ForgotPassword";
 import TenantSignup from "../pages/TenantSignup/TenantSignup";
 import Dashboard from "../pages/Dashboard";
 import Loader from "../components/common/Loader";
@@ -129,6 +130,16 @@ const routerData: RouteConfig[] = [
     element: (
       <Suspense fallback={<Loader />}>
         <Signup />
+      </Suspense>
+    ),
+    children: [],
+  },
+  {
+    key: "forgot-password",
+    path: "/forgot-password",
+    element: (
+      <Suspense fallback={<Loader />}>
+        <ForgotPassword />
       </Suspense>
     ),
     children: [],

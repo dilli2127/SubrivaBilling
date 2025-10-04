@@ -92,7 +92,7 @@ const Login: React.FC = () => {
           </Form.Item>
 
           <Form.Item className="login-options">
-            <a href="#" className="forgot-password">
+            <a onClick={() => navigate("/forgot-password")} className="forgot-password">
               Forgot password?
             </a>
           </Form.Item>
