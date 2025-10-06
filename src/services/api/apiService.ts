@@ -40,18 +40,18 @@ class APIService {
         // Add response interceptor for token expiration
         this.api.interceptors.response.use(
             response => response,
-            error => {
-                if (
-                    error.response &&
-                    (error.response.status === 401 ||
-                        error.response.data?.statusCode === 401 ||
-                        error.response.data?.message?.toLowerCase().includes('token expired'))
-                ) {
-                    sessionStorage.clear();
-                    window.location.href = '/billing_login';
-                }
-                return Promise.reject(error);
-            }
+            // error => {
+            //     if (
+            //         error.response &&
+            //         (error.response.status === 401 ||
+            //             error.response.data?.statusCode === 401 ||
+            //             error.response.data?.message?.toLowerCase().includes('token expired'))
+            //     ) {
+            //         sessionStorage.clear();
+            //         window.location.href = '/billing_login';
+            //     }
+            //     return Promise.reject(error);
+            // }
         );
     }
 
@@ -72,11 +72,11 @@ class APIService {
     // Handle successful responses
     private handleResponse<T>(response: ApiResponse<T>): ApiResponse<T> {
         // Check for 401 status code in response body
-        if (response.statusCode === 401) {
-            sessionStorage.clear();
-            window.location.href = '/billing_login';
-            return response; // Return response but user will be redirected
-        }
+        // if (response.statusCode === 401) {
+        //     sessionStorage.clear();
+        //     window.location.href = '/billing_login';
+        //     return response; // Return response but user will be redirected
+        // }
         
         return {
             statusCode: response.statusCode,
