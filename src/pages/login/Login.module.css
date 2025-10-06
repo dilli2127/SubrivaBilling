@@ -1,0 +1,328 @@
+.loginContainer {
+  height: 100vh;
+  display: flex;
+  flex-direction: row; /* Default to row for larger screens */
+}
+
+.loginBackground {
+  min-height: 100vh;
+  width: 100vw;
+  background: url('../../assets/img/icon.jpg') no-repeat center center fixed;
+  background-size: cover;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.loginOptions {
+  display: flex;
+  justify-content: center;
+}
+
+.forgotPassword {
+  color: #000536;
+}
+
+.loginButton {
+  width: 100%;
+  height: 50px;
+  font-size: 16px;
+  background-color: #1890ff;
+  border: none;
+  transition: 0.3s;
+}
+
+.loginButton:hover {
+  background-color: #40a9ff;
+}
+
+.signupLink a {
+  color: #fff;
+  font-weight: bold;
+}
+
+/* Media queries for responsiveness */
+@media (max-width: 768px) {
+  .loginContainer {
+    flex-direction: column;
+  }
+
+  .loginBackground,
+  .loginContent {
+    flex: none; /* Don't use flex, let content take its natural height */
+    height: 50vh; /* Make each section take 50% of the viewport height */
+  }
+  .ant-col-12 {
+    max-width: 100% !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .loginFormCardRich {
+    padding: 16px 8px 12px 8px;
+  }
+}
+
+/* Centered yellow box for the form */
+.loginFormContainer {
+  padding: 40px 32px;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.459);
+  background-color: #ff18183b;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  right: 30px;
+  top: 60px;
+}
+
+/* Removed unused login- classes for clarity and maintainability */
+.loginBackgroundRich {
+  min-height: 100vh;
+  width: 100vw;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%),
+    repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 20px,
+      rgba(0, 0, 0, 0.02) 20px,
+      rgba(0, 0, 0, 0.02) 40px
+    ),
+    repeating-linear-gradient(
+      -45deg,
+      transparent,
+      transparent 20px,
+      rgba(0, 0, 0, 0.01) 20px,
+      rgba(0, 0, 0, 0.01) 40px
+    );
+  background-size:
+    100% 100%,
+    40px 40px,
+    40px 40px;
+  overflow: auto;
+  position: relative;
+}
+
+.loginBackgroundRich::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image:
+    linear-gradient(
+      30deg,
+      transparent 24%,
+      rgba(0, 0, 0, 0.02) 25%,
+      rgba(0, 0, 0, 0.02) 26%,
+      transparent 27%,
+      transparent 74%,
+      rgba(0, 0, 0, 0.02) 75%,
+      rgba(0, 0, 0, 0.02) 76%,
+      transparent 77%
+    ),
+    linear-gradient(
+      -30deg,
+      transparent 24%,
+      rgba(0, 0, 0, 0.01) 25%,
+      rgba(0, 0, 0, 0.01) 26%,
+      transparent 27%,
+      transparent 74%,
+      rgba(0, 0, 0, 0.01) 75%,
+      rgba(0, 0, 0, 0.01) 76%,
+      transparent 77%
+    );
+  background-size: 60px 60px;
+  background-position:
+    0 0,
+    30px 30px;
+  pointer-events: none;
+}
+
+/* Glassmorphism card with soft shadow */
+.loginFormCardRich {
+  background: rgba(255, 255, 255, 0.7); /* More opaque for white background */
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 24px;
+  padding: 24px 20px 18px 20px;
+  max-width: 380px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 16px 8px;
+  position: relative;
+  z-index: 1;
+}
+
+.loginHeaderRich {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.loginLogoRich {
+  width: 64px;
+  height: 64px;
+  margin-bottom: 12px;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(106, 130, 251, 0.1);
+}
+
+.loginTitleRich {
+  color: #222;
+  font-weight: 700;
+  text-align: center;
+}
+
+.loginSubtitleRich {
+  color: #6a82fb;
+  font-size: 1.1rem;
+  margin-bottom: 8px;
+  text-align: center;
+  display: block;
+}
+
+.loginTabsRich .ant-tabs-nav {
+  justify-content: center;
+}
+
+.loginTabsRich .ant-tabs-tab {
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: #495057;
+  transition: color 0.2s;
+  background: transparent;
+}
+
+.loginTabsRich .ant-tabs-tab-active {
+  color: #212529 !important;
+}
+
+.loginTabsRich .ant-tabs-ink-bar {
+  background: linear-gradient(90deg, #495057 0%, #6c757d 100%);
+  height: 3px;
+  border-radius: 2px;
+}
+
+.loginFormRich {
+  width: 100%;
+  margin-top: 8px;
+}
+
+.loginFormRich .ant-input-affix-wrapper,
+.loginFormRich .ant-input,
+.loginFormRich .ant-input-password {
+  border-radius: 12px;
+  font-size: 1rem;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid #6c757d;
+  box-shadow: 0 1px 2px rgba(108, 117, 125, 0.1);
+  transition: border 0.2s;
+}
+
+.loginFormRich .ant-input-affix-wrapper:focus,
+.loginFormRich .ant-input-affix-wrapper-focused {
+  border-color: #495057;
+  box-shadow: 0 0 0 2px rgba(73, 80, 87, 0.15);
+}
+
+.loginOptionsRich {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 0;
+}
+
+.forgotPasswordRich {
+  color: #495057;
+  font-size: 0.98rem;
+  transition: color 0.2s;
+}
+.forgotPasswordRich:hover {
+  color: #212529;
+}
+
+.loginButtonRich {
+  background: linear-gradient(90deg, #722ed1 0%, #1890ff 100%);
+  border: none;
+  border-radius: 12px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(73, 80, 87, 0.3);
+  transition:
+    background 0.2s,
+    box-shadow 0.2s,
+    color 0.2s;
+}
+.loginButtonRich:hover,
+.loginButtonRich:focus {
+  background: linear-gradient(90deg, #6c757d 0%, #495057 100%);
+  color: #fff;
+  box-shadow: 0 4px 16px rgba(73, 80, 87, 0.4);
+}
+
+.signupLinkRich {
+  text-align: center;
+  margin-top: 8px;
+}
+.authSwitchRich {
+  color: #222;
+  font-size: 1rem;
+}
+.authSwitchRich a {
+  color: #495057;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+.authSwitchRich a:hover {
+  color: #212529;
+}
+
+/* Responsive styles */
+@media (max-width: 600px) {
+  .loginFormCardRich {
+    padding: 24px 8px 16px 8px;
+    max-width: 98vw;
+    border-radius: 16px;
+  }
+  .loginLogoRich {
+    width: 48px;
+    height: 48px;
+  }
+  .loginTitleRich {
+    font-size: 1.3rem !important;
+  }
+  .loginSubtitleRich {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 400px) {
+  .loginFormCardRich {
+    padding: 12px 2px 8px 2px;
+    border-radius: 10px;
+  }
+}
+
+.loginAppnameRich {
+  color: #ff4d2c;
+  font-weight: 900;
+  font-size: 2.1rem;
+  letter-spacing: 1.5px;
+  margin-bottom: 8px;
+  text-align: center;
+  text-shadow: 0 4px 16px rgba(73, 80, 87, 0.2);
+  font-family: 'Segoe UI', 'Roboto', 'Arial', sans-serif;
+  text-transform: uppercase;
+}

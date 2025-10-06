@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { Form, Input, Button, message, Typography, Tabs } from 'antd';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
-import './Login.css';
+import styles from './Login.module.css';
 import { ApiRequest } from '../../services/api/apiService';
 import {
   dynamic_clear,
@@ -12,6 +12,7 @@ import {
 import { useDispatch } from 'react-redux';
 import { Dispatch } from 'redux';
 import { API_ROUTES } from '../../services/api/utils';
+import LandingPageHeader from '../../components/common/LandingPageHeader';
 
 const { Text } = Typography;
 const { TabPane } = Tabs;
@@ -72,22 +73,24 @@ const BillingLogin: React.FC = () => {
     }
   }, [items, TenantItems, BillingLoginError, TenantError, loginType, dispatch, navigate]);
   return (
-    <div className="login-background-rich">
-      <div className="login-form-card-rich">
-        <div className="login-header-rich">
+    <>
+      <LandingPageHeader showBackButton={true} />
+      <div className={styles.loginBackgroundRich}>
+        <div className={styles.loginFormCardRich}>
+        <div className={styles.loginHeaderRich}>
           <img
             src={require('../../assets/img/ffslogo.png')}
             alt="Logo"
-            className="login-logo-rich"
+            className={styles.loginLogoRich}
           />
-          <span className="login-appname-rich">Subriva Billing</span>
-          <span className="login-title-rich">Welcome Back</span>
+          <span className={styles.loginAppnameRich}>Subriva Billing</span>
+          <span className={styles.loginTitleRich}>Welcome Back</span>
         </div>
         
         <Tabs
           defaultActiveKey="user"
           onChange={key => setLoginType(key as 'tenant' | 'user')}
-          className="login-tabs-rich"
+          className={styles.loginTabsRich}
         >
           <TabPane tab="User" key="user" />
           <TabPane tab="Tenant" key="tenant" />
@@ -95,7 +98,7 @@ const BillingLogin: React.FC = () => {
         
         <Form
           name="login_form"
-          className="login-form-rich"
+          className={styles.loginFormRich}
           onFinish={onFinish}
           layout="vertical"
         >
@@ -121,10 +124,10 @@ const BillingLogin: React.FC = () => {
             />
           </Form.Item>
           
-          <Form.Item className="login-options-rich">
+          <Form.Item className={styles.loginOptionsRich}>
             <a
               onClick={() => navigate('/forgot-password')}
-              className="forgot-password-rich"
+              className={styles.forgotPasswordRich}
             >
               Forgot password?
             </a>
@@ -134,7 +137,7 @@ const BillingLogin: React.FC = () => {
             <Button
               type="primary"
               htmlType="submit"
-              className="login-button-rich"
+              className={styles.loginButtonRich}
               loading={loginType === 'tenant' ? TenantLoading : loading}
               size="large"
               block
@@ -143,15 +146,16 @@ const BillingLogin: React.FC = () => {
             </Button>
           </Form.Item>
           
-          <Form.Item className="signup-link-rich">
-            <Text className="auth-switch-rich">
+          <Form.Item className={styles.signupLinkRich}>
+            <Text className={styles.authSwitchRich}>
               Don't have an account?{' '}
               <a onClick={() => navigate('/tenant-signup')}>Sign up</a>
             </Text>
           </Form.Item>
         </Form>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 
