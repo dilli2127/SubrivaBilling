@@ -85,21 +85,22 @@
   align-items: center;
   justify-content: center;
   background:
-    linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%),
+    linear-gradient(135deg, #a8edea 0%, #fed6e3 100%),
     repeating-linear-gradient(
       45deg,
       transparent,
       transparent 20px,
-      rgba(0, 0, 0, 0.02) 20px,
-      rgba(0, 0, 0, 0.02) 40px
+      rgba(255, 255, 255, 0.04) 20px,
+      rgba(255, 255, 255, 0.04) 40px
     ),
     repeating-linear-gradient(
       -45deg,
       transparent,
       transparent 20px,
-      rgba(0, 0, 0, 0.01) 20px,
-      rgba(0, 0, 0, 0.01) 40px
+      rgba(0, 0, 0, 0.02) 20px,
+      rgba(0, 0, 0, 0.02) 40px
     );
+
   background-size:
     100% 100%,
     40px 40px,
