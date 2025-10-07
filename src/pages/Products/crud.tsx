@@ -147,6 +147,16 @@ const ProductCrud: React.FC = () => {
             </Tag>
           ),
       },
+      {
+        title: 'Brand Name',
+        dataIndex: 'brand_name',
+        key: 'brand_name',
+        render: (brandName: string) => (
+          <Tag color="cyan">
+            {brandName || '-'}
+          </Tag>
+        ),
+      },
       ...(isSuperAdmin ? [{
         title: 'Business Type',
         dataIndex: 'business_type',
@@ -155,6 +165,25 @@ const ProductCrud: React.FC = () => {
           <Tag color="blue">
             {businessType || '-'}
           </Tag>
+        ),
+      },
+      {
+        title: 'Global Product',
+        dataIndex: 'global_product',
+        key: 'global_product',
+        render: (globalProduct: boolean) => (
+          globalProduct ? (
+            <Tag
+              icon={<CheckCircleTwoTone twoToneColor="#52c41a" />}
+              color="success"
+            >
+              Yes
+            </Tag>
+          ) : (
+            <Tag color="default">
+              No
+            </Tag>
+          )
         ),
       }] : []),
     ],
@@ -222,6 +251,12 @@ const ProductCrud: React.FC = () => {
           />
         ),
       },
+      {
+        label: 'Brand Name',
+        name: 'brand_name',
+        rules: [],
+        component: <Input placeholder="Enter brand name" />,
+      },
       ...(isSuperAdmin ? [{
         label: 'Business Type',
         name: 'business_type',
@@ -254,6 +289,18 @@ const ProductCrud: React.FC = () => {
             <Option value="Electrical Store">Electrical Store</Option>
             <Option value="Restaurant / Café">Restaurant / Café</Option>
           </Select>
+        ),
+      },
+      {
+        label: 'Global Product',
+        name: 'global_product',
+        valuePropName: 'checked',
+        component: (
+          <Switch
+            checkedChildren="Yes"
+            unCheckedChildren="No"
+            defaultChecked={false}
+          />
         ),
       }] : []),
     ],
