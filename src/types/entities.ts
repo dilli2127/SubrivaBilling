@@ -24,13 +24,16 @@ export interface Product extends BaseEntity {
   variant_id?: string;
   sku?: string;
   barcode?: string;
+  hsn_code?: string;
 }
 
 // Category entity
 export interface Category extends BaseEntity {
   name: string;
+  short_name?: string;
   description?: string;
   parent_id?: string;
+  global_category?: boolean;
 }
 
 // Vendor entity
@@ -59,14 +62,16 @@ export interface Rack extends BaseEntity {
 
 // Unit entity
 export interface Unit extends BaseEntity {
-  name: string;
-  short_name?: string;
+  unit_name: string;
+  unit_code?: string;
+  is_global?: boolean;
 }
 
 // Variant entity
 export interface Variant extends BaseEntity {
   name: string;
   description?: string;
+  global_variant?: boolean;
 }
 
 // Stock Audit entity

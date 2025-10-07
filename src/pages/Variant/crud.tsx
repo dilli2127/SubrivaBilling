@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo } from "react";
-import { Input, Select, Tag } from "antd";
+import { Input, Select, Switch, Tag } from "antd";
+import { CheckCircleTwoTone } from '@ant-design/icons';
 import { Option } from "antd/es/mentions";
 import { useApiActions } from "../../services/api/useApiActions";
 import { useDynamicSelector } from "../../services/redux";
@@ -36,6 +37,25 @@ const VariantCrud: React.FC = () => {
           <Tag color="blue">
             {businessType || '-'}
           </Tag>
+        ),
+      },
+      {
+        title: 'Global Variant',
+        dataIndex: 'global_variant',
+        key: 'global_variant',
+        render: (globalVariant: boolean) => (
+          globalVariant ? (
+            <Tag
+              icon={<CheckCircleTwoTone twoToneColor="#52c41a" />}
+              color="success"
+            >
+              Yes
+            </Tag>
+          ) : (
+            <Tag color="default">
+              No
+            </Tag>
+          )
         ),
       }] : []),
     ],
@@ -123,6 +143,18 @@ const VariantCrud: React.FC = () => {
             <Option value="Electrical Store">Electrical Store</Option>
             <Option value="Restaurant / Café">Restaurant / Café</Option>
           </Select>
+        ),
+      },
+      {
+        label: 'Global Variant',
+        name: 'global_variant',
+        valuePropName: 'checked',
+        component: (
+          <Switch
+            checkedChildren="Yes"
+            unCheckedChildren="No"
+            defaultChecked={false}
+          />
         ),
       }] : []),
     ],

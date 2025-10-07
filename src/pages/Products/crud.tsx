@@ -117,6 +117,16 @@ const ProductCrud: React.FC = () => {
         ),
       },
       {
+        title: 'HSN Code',
+        dataIndex: 'hsn_code',
+        key: 'hsn_code',
+        render: (hsnCode: string) => (
+          <Tag color="orange">
+            {hsnCode || '-'}
+          </Tag>
+        ),
+      },
+      {
         title: 'Variant',
         dataIndex: 'variant',
         key: 'variant',
@@ -218,6 +228,12 @@ const ProductCrud: React.FC = () => {
         name: 'sku',
         rules: [],
         component: <Input placeholder="Optional SKU code" />,
+      },
+      {
+        label: 'HSN Code',
+        name: 'hsn_code',
+        rules: [],
+        component: <Input placeholder="Enter HSN code" />,
       },
       {
         label: 'Variant',

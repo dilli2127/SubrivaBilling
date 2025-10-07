@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
-import { Input, InputNumber, Select, Tag } from 'antd';
+import { Input, InputNumber, Select, Switch, Tag } from 'antd';
+import { CheckCircleTwoTone } from '@ant-design/icons';
 import { GenericCrudPage } from '../../components/common/GenericCrudPage';
 import { Category } from '../../types/entities';
 import { getEntityApiRoutes } from '../../helpers/CrudFactory';
@@ -13,7 +14,7 @@ const CategoryCrud: React.FC = () => {
     title: 'Categories',
     columns: [
       { title: 'Name', dataIndex: 'category_name', key: 'category_name' },
-      { title: 'HSN Code', dataIndex: 'hsn_code', key: 'hsn_code' },
+      { title: 'Short Name', dataIndex: 'short_name', key: 'short_name' },
       { title: 'Tax Percentage', dataIndex: 'tax_percentage', key: 'tax_percentage' },
       ...(isSuperAdmin ? [{
         title: 'Business Type',
@@ -23,6 +24,25 @@ const CategoryCrud: React.FC = () => {
           <Tag color="blue">
             {businessType || '-'}
           </Tag>
+        ),
+      },
+      {
+        title: 'Global Category',
+        dataIndex: 'global_category',
+        key: 'global_category',
+        render: (globalCategory: boolean) => (
+          globalCategory ? (
+            <Tag
+              icon={<CheckCircleTwoTone twoToneColor="#52c41a" />}
+              color="success"
+            >
+              Yes
+            </Tag>
+          ) : (
+            <Tag color="default">
+              No
+            </Tag>
+          )
         ),
       }] : []),
     ],
@@ -34,10 +54,10 @@ const CategoryCrud: React.FC = () => {
         component: <Input placeholder="Enter category name" />,
       },
       {
-        label: 'HSN Code',
-        name: 'hsn_code',
-        rules: [{ required: true, message: 'Please enter HSN code' }],
-        component: <Input placeholder="Enter HSN code" />,
+        label: 'Short Name',
+        name: 'short_name',
+        rules: [{ required: false }],
+        component: <Input placeholder="Enter short name (optional)" />,
       },
       {
         label: 'Tax Percentage',
@@ -84,6 +104,18 @@ const CategoryCrud: React.FC = () => {
             <Select.Option value="Electrical Store">Electrical Store</Select.Option>
             <Select.Option value="Restaurant / Café">Restaurant / Café</Select.Option>
           </Select>
+        ),
+      },
+      {
+        label: 'Global Category',
+        name: 'global_category',
+        valuePropName: 'checked',
+        component: (
+          <Switch
+            checkedChildren="Yes"
+            unCheckedChildren="No"
+            defaultChecked={false}
+          />
         ),
       }] : []),
     ],
