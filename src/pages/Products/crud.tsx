@@ -14,6 +14,7 @@ import {
 } from '@ant-design/icons';
 import { GenericCrudPage } from '../../components/common/GenericCrudPage';
 import { getEntityApiRoutes } from '../../helpers/CrudFactory';
+import { getCurrentUserRole } from '../../helpers/auth';
 
 const { Option } = Select;
 
@@ -32,6 +33,8 @@ type Category = {
 
 const ProductCrud: React.FC = () => {
   const dispatch: Dispatch<any> = useDispatch();
+  const currentUserRole = getCurrentUserRole();
+  const isSuperAdmin = currentUserRole?.toLowerCase() === 'superadmin';
 
   const getApiRouteVariant = createApiRouteGetter('Variant');
   const getApiRouteCategory = createApiRouteGetter('Category');
@@ -144,6 +147,16 @@ const ProductCrud: React.FC = () => {
             </Tag>
           ),
       },
+      ...(isSuperAdmin ? [{
+        title: 'Business Type',
+        dataIndex: 'business_type',
+        key: 'business_type',
+        render: (businessType: string) => (
+          <Tag color="blue">
+            {businessType || '-'}
+          </Tag>
+        ),
+      }] : []),
     ],
     formItems: [
       {
@@ -209,10 +222,44 @@ const ProductCrud: React.FC = () => {
           />
         ),
       },
+      ...(isSuperAdmin ? [{
+        label: 'Business Type',
+        name: 'business_type',
+        rules: [{ required: true, message: 'Please select business type!' }],
+        component: (
+          <Select
+            placeholder="Select business type"
+            allowClear
+          >
+            <Option value="Supermarket / Grocery Store">Supermarket / Grocery Store</Option>
+            <Option value="Medical / Pharmacy">Medical / Pharmacy</Option>
+            <Option value="Hardware Store">Hardware Store</Option>
+            <Option value="Hardware and Electronics Store">Hardware and Electronics Store</Option>
+            <Option value="Electronics Store">Electronics Store</Option>
+            <Option value="Stationery / Book Store">Stationery / Book Store</Option>
+            <Option value="Clothing / Textile Store">Clothing / Textile Store</Option>
+            <Option value="Footwear Store">Footwear Store</Option>
+            <Option value="Bakery / Sweet Shop">Bakery / Sweet Shop</Option>
+            <Option value="Fruits & Vegetables Shop">Fruits & Vegetables Shop</Option>
+            <Option value="Furniture Store">Furniture Store</Option>
+            <Option value="Automobile / Spare Parts">Automobile / Spare Parts</Option>
+            <Option value="Mobile Accessories Store">Mobile Accessories Store</Option>
+            <Option value="Cosmetics / Beauty Store">Cosmetics / Beauty Store</Option>
+            <Option value="Jewellery / Fancy Store">Jewellery / Fancy Store</Option>
+            <Option value="Pet Store">Pet Store</Option>
+            <Option value="General Store">General Store</Option>
+            <Option value="Wholesale Business">Wholesale Business</Option>
+            <Option value="Computer & Laptop Store">Computer & Laptop Store</Option>
+            <Option value="Mobile And Laptop Store">Mobile And Laptop Store</Option>
+            <Option value="Electrical Store">Electrical Store</Option>
+            <Option value="Restaurant / Café">Restaurant / Café</Option>
+          </Select>
+        ),
+      }] : []),
     ],
     apiRoutes: getEntityApiRoutes('Product'),
     formColumns: 2,
-  }), [variantMap, categoryMap, variantItems, categoryItems, variantLoading, categoryLoading]);
+  }), [variantMap, categoryMap, variantItems, categoryItems, variantLoading, categoryLoading, isSuperAdmin]);
 
   return (
     <GenericCrudPage
