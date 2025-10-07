@@ -10,6 +10,32 @@ import {
 } from 'antd';
 import { CheckCircleTwoTone, CloseCircleTwoTone } from '@ant-design/icons';
 
+const businessTypes = [
+  { name: "Supermarket / Grocery Store" },
+  { name: "Medical / Pharmacy" },
+  { name: "Hardware Store" },
+  { name: "Hardware and Electronics Store" },
+  { name: "Electronics Store" },
+  { name: "Stationery / Book Store" },
+  { name: "Clothing / Textile Store" },
+  { name: "Footwear Store" },
+  { name: "Bakery / Sweet Shop" },
+  { name: "Fruits & Vegetables Shop" },
+  { name: "Furniture Store" },
+  { name: "Automobile / Spare Parts" },
+  { name: "Mobile Accessories Store" },
+  { name: "Cosmetics / Beauty Store" },
+  { name: "Jewellery / Fancy Store" },
+  { name: "Pet Store" },
+  { name: "General Store" },
+  { name: "Wholesale Business" },
+  { name: "Computer & Laptop Store" },
+  { name: "Mobile And Laptop Store" },
+  { name: "Electrical Store" },
+  { name: "Restaurant / Café" },
+];
+
+
 export const organisationFormItems = [
   {
     label: 'Organization Name',
@@ -20,8 +46,20 @@ export const organisationFormItems = [
   {
     label: 'Business Type',
     name: 'business_type',
-    rules: [{ required: true, message: 'Please enter business type!' }],
-    component: <Input placeholder="Enter business type" />,
+    rules: [{ required: true, message: 'Please select business type!' }],
+    component: (
+      <Select
+        placeholder="Select business type"
+        showSearch
+        filterOption={(input, option) =>
+          (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+        }
+        options={businessTypes.map(type => ({
+          value: type.name,
+          label: type.name,
+        }))}
+      />
+    ),
   },
   {
     label: 'Email',
