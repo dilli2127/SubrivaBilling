@@ -41,6 +41,7 @@ const StorageStockList = lazy(() => import("../pages/StockAudit/StorageStockList
 const Reports = lazy(() => import("../pages/Reports/index"));
 const SalesReport = lazy(() => import("../pages/Reports/SalesReport"));
 const CustomerReport = lazy(() => import("../pages/Reports/CustomerReport"));
+const UserProfile = lazy(() => import("../pages/UserProfile"));
 
 
 const routerData: RouteConfig[] = [
@@ -434,6 +435,16 @@ const routerData: RouteConfig[] = [
         element: (
           <Suspense fallback={<Loader />}>
             <CustomerReport />
+          </Suspense>
+        ),
+        children: [],
+      },
+      {
+        key: "user_profile",
+        path: "profile",
+        element: (
+          <Suspense fallback={<Loader />}>
+            <UserProfile />
           </Suspense>
         ),
         children: [],

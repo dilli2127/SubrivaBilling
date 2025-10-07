@@ -1,0 +1,188 @@
+.userProfileContainer {
+  padding: 24px;
+  background: #f0f2f5;
+  min-height: calc(100vh - 64px);
+}
+
+.userProfileHeader {
+  margin-bottom: 24px;
+}
+
+.userProfileHeader h2 {
+  margin-bottom: 8px;
+  color: #1890ff;
+}
+
+.profileCard {
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: box-shadow 0.3s ease;
+}
+
+.profileCard:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+.profileOverview {
+  text-align: center;
+}
+
+.profileAvatarSection {
+  padding: 20px 0;
+}
+
+.profileAvatar {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  font-size: 48px;
+  font-weight: bold;
+  color: white;
+  margin: 0 auto;
+}
+
+.profileDetails :global(.ant-form-item-label) > label {
+  font-weight: 600;
+  color: #262626;
+}
+
+.profileDetails :global(.ant-input-affix-wrapper),
+.profileDetails :global(.ant-input) {
+  border-radius: 6px;
+}
+
+.securityCard {
+  background: linear-gradient(to right, #ffffff, #f9f9fb);
+}
+
+.securitySection {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.securityItem {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #f0f0f0;
+  transition: all 0.3s ease;
+}
+
+.securityItem:hover {
+  border-color: #1890ff;
+  box-shadow: 0 2px 8px rgba(24, 144, 255, 0.1);
+}
+
+.securityItemContent {
+  flex: 1;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .userProfileContainer {
+    padding: 16px;
+  }
+
+  .profileAvatar {
+    font-size: 36px;
+  }
+
+  .securityItem {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .securityItemContent {
+    margin-bottom: 12px;
+  }
+}
+
+/* Form styling with global selectors for Ant Design */
+.profileCard :global(.ant-form-item-has-error) :global(.ant-input-affix-wrapper) {
+  border-color: #ff4d4f !important;
+}
+
+.profileCard :global(.ant-form-item-has-error) :global(.ant-input-affix-wrapper:focus),
+.profileCard :global(.ant-form-item-has-error) :global(.ant-input-affix-wrapper-focused) {
+  box-shadow: 0 0 0 2px rgba(255, 77, 79, 0.1);
+}
+
+/* Descriptions styling */
+.profileOverview :global(.ant-descriptions-item-label) {
+  font-weight: 600;
+  color: #595959;
+}
+
+.profileOverview :global(.ant-descriptions-item-content) {
+  color: #262626;
+}
+
+/* Tags in profile */
+.profileOverview :global(.ant-tag) {
+  border-radius: 12px;
+  border: none;
+  font-weight: 500;
+}
+
+/* Button styling */
+.profileCard :global(.ant-btn-primary) {
+  border-radius: 6px;
+  font-weight: 500;
+  height: 40px;
+  box-shadow: 0 2px 4px rgba(24, 144, 255, 0.2);
+}
+
+.profileCard :global(.ant-btn-primary:hover) {
+  box-shadow: 0 4px 8px rgba(24, 144, 255, 0.3);
+  transform: translateY(-1px);
+  transition: all 0.3s ease;
+}
+
+.profileCard :global(.ant-btn-default) {
+  border-radius: 6px;
+  font-weight: 500;
+  height: 40px;
+}
+
+/* Divider styling */
+.profileOverview :global(.ant-divider) {
+  margin: 20px 0;
+}
+
+/* Card title styling */
+.profileCard :global(.ant-card-head-title) {
+  font-size: 18px;
+  font-weight: 600;
+  color: #262626;
+}
+
+/* Input focus effect */
+.profileCard :global(.ant-input-affix-wrapper:focus),
+.profileCard :global(.ant-input-affix-wrapper-focused) {
+  border-color: #1890ff;
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.1);
+}
+
+/* Loading state */
+.profileCard :global(.ant-spin-container) {
+  min-height: 200px;
+}
+
+/* Success message animation */
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+:global(.ant-message-notice) {
+  animation: slideInRight 0.3s ease;
+}
+

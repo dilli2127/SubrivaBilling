@@ -1,8 +1,11 @@
 import React, { createContext, useContext, useMemo } from 'react';
 
 interface User {
+  _id?: string;
   name?: string;
   username?: string;
+  email?: string;
+  mobile?: string;
   roleItems?: any;
   usertype?: string;
   user_role?: string;
