@@ -262,7 +262,6 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
   function getRandomMessage() {
     return messages[Math.floor(Math.random() * messages.length)];
   }
-  console.log('userItem', userItem);
   return (
     <Layout style={{ minHeight: '100vh' }}>
       {/* Header */}
