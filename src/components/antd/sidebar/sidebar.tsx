@@ -253,15 +253,16 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
   // Motivational messages
   const messages = [
     "🚀 Let's make today amazing!",
-    "💡 Remember: Small steps = Big results.",
-    "🔥 Stay positive, work hard, make it happen!",
-    "🎯 Focus and win the day.",
-    "🌟 Welcome back! Ready to shine?",
-    "Unlike the stomach, the brain doesn't alert when it's empty"
+    '💡 Remember: Small steps = Big results.',
+    '🔥 Stay positive, work hard, make it happen!',
+    '🎯 Focus and win the day.',
+    '🌟 Welcome back! Ready to shine?',
+    "Unlike the stomach, the brain doesn't alert when it's empty",
   ];
   function getRandomMessage() {
     return messages[Math.floor(Math.random() * messages.length)];
   }
+  console.log('userItem', userItem);
   return (
     <Layout style={{ minHeight: '100vh' }}>
       {/* Header */}
@@ -282,20 +283,29 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
             />
           </div>
           <div className="description-branch">
-            <div>{userItem?.roleItems?.description}</div>
-            <div>{userItem?.branchItems?.branch_name}</div>
+            {userItem?.roleItems?.description ? (
+              <>
+                <div>{userItem?.roleItems?.name}</div>
+                <div>{userItem?.branchItems?.branch_name}</div>
+              </>
+            ) : (
+              <>
+                <div>{userItem?.user_role?.toUpperCase()}</div>
+                <div>{userItem?.usertype?.toUpperCase()}</div>
+              </>
+            )}
           </div>
         </div>
         <h2 className="header-title">Subriva Billing</h2>
         <div className="header-right">
           <UpdateStatus className="update-status-header" />
-          
+
           {userItem && (
             <>
               <div>
                 <span className="welcome-mse">{getGreeting()},</span>
                 <span className="welcome-text">
-                  {(userItem.name || userItem.username)?.toUpperCase()}
+                  {(userItem.name || userItem.organization_name)?.toUpperCase()}
                 </span>
                 <div className="have-a-nice-day">{getRandomMessage()}</div>
               </div>
