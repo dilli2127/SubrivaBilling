@@ -13,7 +13,7 @@ export const useDashboardData = () => {
   const SalesChartData = getApiRouteDashBoard('SalesChartData');
   const PurchaseChartData = getApiRouteDashBoard('PurchaseChartData');
   const FinancialData = getApiRouteDashBoard('FinancialData' as any);
-  const InventoryMetrics = getApiRouteDashBoard('SalesChartData' as any);
+  const InventoryMetrics = getApiRouteDashBoard('InventoryMetrics' as any);
   const SalesAnalytics = getApiRouteDashBoard('SalesChartData' as any);
   const OperationsData = getApiRouteDashBoard('SalesChartData' as any);
   const RecentInvoices = getApiRouteDashBoard('SalesChartData' as any);

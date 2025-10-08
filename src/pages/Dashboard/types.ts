@@ -69,19 +69,35 @@ export interface FinancialDataResponse {
 
 export interface InventoryDataResponse {
   result?: {
-    totalStockValue?: number;
-    totalItems?: number;
-    deadStockCount?: number;
-    fastMovingCount?: number;
-    slowMovingCount?: number;
-    inStockCount?: number;
-    outOfStockCount?: number;
-    lowStockCount?: number;
-    reorderCount?: number;
-    categoryWiseStock?: any[];
-    deadStockItems?: any[];
-    fastMovingItems?: any[];
-    slowMovingItems?: any[];
+    totalStockValue?: {
+      value: number;
+      items: number;
+    };
+    deadStock?: {
+      count: number;
+      description: string;
+      items: any[];
+    };
+    fastMoving?: {
+      count: number;
+      description: string;
+      items: any[];
+    };
+    slowMoving?: {
+      count: number;
+      description: string;
+      items: any[];
+    };
+    stockStatusBreakdown?: {
+      inStock: number;
+      outOfStock: number;
+      lowStock: number;
+      reorderNeeded: number;
+    };
+    inventoryTurnover?: {
+      chartData: any[];
+      averageTurnover: number;
+    };
     [key: string]: any;
   };
 }

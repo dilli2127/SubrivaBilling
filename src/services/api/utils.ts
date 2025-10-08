@@ -145,6 +145,11 @@ export const API_ROUTES = {
       method: API_METHODS.POST,
       endpoint: "/dashboard/getSalesAnalytics",
     },
+    InventoryMetrics: {
+      identifier: "GetInventoryMetrics",
+      method: API_METHODS.POST,
+      endpoint: "/dashboard/inventory_metrics",
+    },
   },
   StockAvailable: {
     GetProductStockCount: {

@@ -58,10 +58,10 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
                 Total Stock Value
               </Title>
               <Title level={3} style={{ color: '#fff', margin: 0 }}>
-                ₹{InventoryMetricsItems?.result?.totalStockValue || '0'}
+                ₹{InventoryMetricsItems?.result?.totalStockValue?.value || '0'}
               </Title>
               <Text style={{ color: '#fff', opacity: 0.8, fontSize: 12 }}>
-                {InventoryMetricsItems?.result?.totalItems || 0} items
+                {InventoryMetricsItems?.result?.totalStockValue?.items || 0} items
               </Text>
             </Space>
           </Card>
@@ -81,10 +81,10 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
                 Dead Stock
               </Title>
               <Title level={3} style={{ color: '#fff', margin: 0 }}>
-                {InventoryMetricsItems?.result?.deadStockCount || '0'}
+                {InventoryMetricsItems?.result?.deadStock?.count || '0'}
               </Title>
               <Text style={{ color: '#fff', opacity: 0.8, fontSize: 12 }}>
-                Not sold in 90+ days
+                {InventoryMetricsItems?.result?.deadStock?.description || 'Not sold in 90+ days'}
               </Text>
             </Space>
           </Card>
@@ -104,10 +104,10 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
                 Fast Moving
               </Title>
               <Title level={3} style={{ color: '#fff', margin: 0 }}>
-                {InventoryMetricsItems?.result?.fastMovingCount || '0'}
+                {InventoryMetricsItems?.result?.fastMoving?.count || '0'}
               </Title>
               <Text style={{ color: '#fff', opacity: 0.8, fontSize: 12 }}>
-                High turnover items
+                {InventoryMetricsItems?.result?.fastMoving?.description || 'High turnover items'}
               </Text>
             </Space>
           </Card>
@@ -127,10 +127,10 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
                 Slow Moving
               </Title>
               <Title level={3} style={{ color: '#fff', margin: 0 }}>
-                {InventoryMetricsItems?.result?.slowMovingCount || '0'}
+                {InventoryMetricsItems?.result?.slowMoving?.count || '0'}
               </Title>
               <Text style={{ color: '#fff', opacity: 0.8, fontSize: 12 }}>
-                Low turnover items
+                {InventoryMetricsItems?.result?.slowMoving?.description || 'Low turnover items'}
               </Text>
             </Space>
           </Card>
@@ -146,7 +146,7 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
                 <Card style={{ background: '#f6ffed', border: 'none' }}>
                   <Statistic
                     title="In Stock"
-                    value={InventoryMetricsItems?.result?.inStockCount || 0}
+                    value={InventoryMetricsItems?.result?.stockStatusBreakdown?.inStock || 0}
                     prefix={<CheckCircleOutlined />}
                     valueStyle={{ color: '#52c41a' }}
                   />
@@ -156,7 +156,7 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
                 <Card style={{ background: '#fff1f0', border: 'none' }}>
                   <Statistic
                     title="Out of Stock"
-                    value={InventoryMetricsItems?.result?.outOfStockCount || 0}
+                    value={InventoryMetricsItems?.result?.stockStatusBreakdown?.outOfStock || 0}
                     prefix={<CloseCircleOutlined />}
                     valueStyle={{ color: '#f5222d' }}
                   />
@@ -166,7 +166,7 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
                 <Card style={{ background: '#fff7e6', border: 'none' }}>
                   <Statistic
                     title="Low Stock"
-                    value={InventoryMetricsItems?.result?.lowStockCount || 0}
+                    value={InventoryMetricsItems?.result?.stockStatusBreakdown?.lowStock || 0}
                     prefix={<WarningOutlined />}
                     valueStyle={{ color: '#fa8c16' }}
                   />
@@ -176,7 +176,7 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
                 <Card style={{ background: '#f0f5ff', border: 'none' }}>
                   <Statistic
                     title="Reorder Needed"
-                    value={InventoryMetricsItems?.result?.reorderCount || 0}
+                    value={InventoryMetricsItems?.result?.stockStatusBreakdown?.reorderNeeded || 0}
                     prefix={<SyncOutlined />}
                     valueStyle={{ color: '#1890ff' }}
                   />
@@ -189,13 +189,13 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
           <Card title="Inventory Turnover" bordered={false}>
             <ResponsiveContainer width="100%" height={200}>
               <BarChart
-                data={InventoryMetricsItems?.result?.categoryWiseStock || []}
+                data={InventoryMetricsItems?.result?.inventoryTurnover?.chartData || []}
               >
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="category" />
+                <XAxis dataKey="month" />
                 <YAxis />
                 <RechartsTooltip />
-                <Bar dataKey="value" fill="#8884d8" />
+                <Bar dataKey="turnover" fill="#8884d8" />
               </BarChart>
             </ResponsiveContainer>
           </Card>
@@ -215,7 +215,7 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
             bordered={false}
           >
             <List
-              dataSource={InventoryMetricsItems?.result?.deadStockItems || []}
+              dataSource={InventoryMetricsItems?.result?.deadStock?.items || []}
               size="small"
               renderItem={(item: any) => (
                 <List.Item>
@@ -240,7 +240,7 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
             bordered={false}
           >
             <List
-              dataSource={InventoryMetricsItems?.result?.fastMovingItems || []}
+              dataSource={InventoryMetricsItems?.result?.fastMoving?.items || []}
               size="small"
               renderItem={(item: any) => (
                 <List.Item>
@@ -265,7 +265,7 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
             bordered={false}
           >
             <List
-              dataSource={InventoryMetricsItems?.result?.slowMovingItems || []}
+              dataSource={InventoryMetricsItems?.result?.slowMoving?.items || []}
               size="small"
               renderItem={(item: any) => (
                 <List.Item>

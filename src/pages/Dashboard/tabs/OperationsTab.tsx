@@ -15,6 +15,7 @@ import {
   TruckOutlined,
   SwapOutlined,
   FileTextOutlined,
+  InfoCircleOutlined,
 } from '@ant-design/icons';
 import {
   ResponsiveContainer,
@@ -40,7 +41,9 @@ export const OperationsTab: React.FC<OperationsTabProps> = ({
   OperationsDataItems,
 }) => {
   return (
-    <div>
+    <div style={{ position: 'relative', minHeight: '70vh' }}>
+      {/* UI Preview with reduced opacity */}
+      <div style={{ opacity: 0.3, pointerEvents: 'none' }}>
       {/* Operations Metrics */}
       <Row gutter={[16, 16]}>
         <Col xs={24} sm={12} md={6}>
@@ -247,6 +250,43 @@ export const OperationsTab: React.FC<OperationsTabProps> = ({
           </Card>
         </Col>
       </Row>
+      </div>
+      
+      {/* Centered Coming Soon Message */}
+      <div
+        style={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          zIndex: 10,
+          width: '90%',
+          maxWidth: '600px',
+        }}
+      >
+        <Card
+          style={{
+            textAlign: 'center',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+          }}
+        >
+          <Space direction="vertical" size="large" style={{ width: '100%' }}>
+            <InfoCircleOutlined style={{ fontSize: 64, color: '#1890ff' }} />
+            <div>
+              <Typography.Title level={2} style={{ margin: 0 }}>
+                Coming Soon!
+              </Typography.Title>
+              <Typography.Text type="secondary" style={{ fontSize: 16 }}>
+                This feature is currently under development.
+              </Typography.Text>
+            </div>
+            <Typography.Paragraph style={{ margin: 0, fontSize: 14 }}>
+              The API integration is in progress and will be available soon.
+              Stay tuned for updates!
+            </Typography.Paragraph>
+          </Space>
+        </Card>
+      </div>
     </div>
   );
 };
