@@ -183,18 +183,6 @@ export const menuItems = [
         icon: <FileSearchOutlined />,
         path: '/reports',
       },
-      {
-        key: 'sales-report',
-        label: 'Sale Report',
-        icon: <LineChartOutlined />,
-        path: '/reports/sales',
-      },
-      {
-        key: 'customer-report',
-        label: 'Customer Report',
-        icon: <PieChartOutlined />,
-        path: '/reports/customers',
-      },
     ],
   },
   {

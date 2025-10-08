@@ -39,8 +39,6 @@ const TenantAccount = lazy(() => import("../pages/TentantAccount/crud"));
 const BranchStockAvailable = lazy(() => import("../pages/BranchProductStocks/List"));
 const StorageStockList = lazy(() => import("../pages/StockAudit/StorageStockList"));
 const Reports = lazy(() => import("../pages/Reports/index"));
-const SalesReport = lazy(() => import("../pages/Reports/SalesReport"));
-const CustomerReport = lazy(() => import("../pages/Reports/CustomerReport"));
 const UserProfile = lazy(() => import("../pages/UserProfile"));
 
 
@@ -415,26 +413,6 @@ const routerData: RouteConfig[] = [
         element: (
           <Suspense fallback={<Loader />}>
             <Reports />
-          </Suspense>
-        ),
-        children: [],
-      },
-      {
-        key: "sales_report",
-        path: "reports/sales",
-        element: (
-          <Suspense fallback={<Loader />}>
-            <SalesReport />
-          </Suspense>
-        ),
-        children: [],
-      },
-      {
-        key: "customer_report",
-        path: "reports/customers",
-        element: (
-          <Suspense fallback={<Loader />}>
-            <CustomerReport />
           </Suspense>
         ),
         children: [],
