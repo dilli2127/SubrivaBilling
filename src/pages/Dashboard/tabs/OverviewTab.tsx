@@ -159,7 +159,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
           <Card bordered={false} style={{ borderRadius: 12 }}>
             <Statistic
               title="Low Stock Items"
-              value={DashBoardItems?.result?.lowStockCount || 0}
+              value={stockAlerts?.length || 0}
               prefix={<WarningOutlined />}
               valueStyle={{ color: '#cf1322' }}
             />
@@ -168,7 +168,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
         <Col xs={24} sm={12} md={6}>
           <Card bordered={false} style={{ borderRadius: 12 }}>
             <Statistic
-              title="Today's Orders"
+              title="Today's Billed"
               value={DashBoardItems?.result?.todaysOrders || 0}
               prefix={<FileTextOutlined />}
               valueStyle={{ color: '#1890ff' }}

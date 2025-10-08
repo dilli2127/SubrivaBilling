@@ -12,12 +12,12 @@ export const useDashboardData = () => {
   const dashboardCount = getApiRouteDashBoard('GetCount');
   const SalesChartData = getApiRouteDashBoard('SalesChartData');
   const PurchaseChartData = getApiRouteDashBoard('PurchaseChartData');
-  const FinancialData = getApiRouteDashBoard('SalesChartData' as any);
+  const FinancialData = getApiRouteDashBoard('FinancialData' as any);
   const InventoryMetrics = getApiRouteDashBoard('SalesChartData' as any);
   const SalesAnalytics = getApiRouteDashBoard('SalesChartData' as any);
   const OperationsData = getApiRouteDashBoard('SalesChartData' as any);
   const RecentInvoices = getApiRouteDashBoard('SalesChartData' as any);
-  const LowStockAlerts = getApiRouteDashBoard('SalesChartData' as any);
+  const LowStockAlerts = getApiRouteDashBoard('StockAlert' as any);
   const TopProducts = getApiRouteDashBoard('SalesChartData' as any);
   const TopCustomers = getApiRouteDashBoard('SalesChartData' as any);
 

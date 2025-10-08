@@ -23,22 +23,42 @@ export interface DashboardItemsResponse {
 
 export interface FinancialDataResponse {
   result?: {
-    todaysProfit?: number;
-    todaysProfitMargin?: number;
-    pendingPayables?: number;
-    vendorsCount?: number;
-    monthlyExpenses?: number;
-    expensesGrowth?: number;
-    cashFlow?: number;
-    currentWeekSales?: number;
-    lastWeekSales?: number;
-    weekOverWeekGrowth?: number;
-    currentMonthSales?: number;
-    lastMonthSales?: number;
-    monthOverMonthGrowth?: number;
-    currentYearSales?: number;
-    lastYearSales?: number;
-    yearOverYearGrowth?: number;
+    todayProfit?: {
+      amount: number;
+      margin: number;
+      revenue: number;
+      cogs: number;
+    };
+    pendingPayables?: {
+      amount: number;
+      vendorCount: number;
+    };
+    monthlyExpenses?: {
+      amount: number;
+      growth: number;
+      lastMonth: number;
+    };
+    cashFlow?: {
+      amount: number;
+      status: string;
+      revenue: number;
+      expenses: number;
+    };
+    currentWeekSales?: {
+      amount: number;
+      lastWeek: number;
+      growth: number;
+    };
+    currentMonthSales?: {
+      amount: number;
+      lastMonth: number;
+      growth: number | null;
+    };
+    currentYearSales?: {
+      amount: number;
+      lastYear: number;
+      growth: number;
+    };
     paymentCollectionRate?: number;
     collectedAmount?: number;
     pendingAmount?: number;

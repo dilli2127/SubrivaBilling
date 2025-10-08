@@ -130,6 +130,21 @@ export const API_ROUTES = {
       method: API_METHODS.POST,
       endpoint: "/dashboard/purchased_chart",
     },
+    StockAlert: {
+      identifier: "GetStockAlert",
+      method: API_METHODS.POST,
+      endpoint: "/dashboard/getStockAlerts",
+    },
+    FinancialData: {
+      identifier: "GetFinancialData",
+      method: API_METHODS.POST,
+      endpoint: "/dashboard/financialData",
+    },
+    SalesAnalytics: {
+      identifier: "GetSalesAnalytics",
+      method: API_METHODS.POST,
+      endpoint: "/dashboard/getSalesAnalytics",
+    },
   },
   StockAvailable: {
     GetProductStockCount: {

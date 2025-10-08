@@ -51,10 +51,10 @@ export const FinanceTab: React.FC<FinanceTabProps> = ({
                 Today's Profit
               </Title>
               <Title level={3} style={{ color: '#fff', margin: 0 }}>
-                ₹{FinancialDataItems?.result?.todaysProfit || '0'}
+                ₹{FinancialDataItems?.result?.todayProfit?.amount || '0'}
               </Title>
               <Text style={{ color: '#fff', opacity: 0.8, fontSize: 12 }}>
-                Margin: {FinancialDataItems?.result?.todaysProfitMargin || 0}%
+                Margin: {FinancialDataItems?.result?.todayProfit?.margin || 0}%
               </Text>
             </Space>
           </Card>
@@ -74,10 +74,10 @@ export const FinanceTab: React.FC<FinanceTabProps> = ({
                 Pending Payables
               </Title>
               <Title level={3} style={{ color: '#fff', margin: 0 }}>
-                ₹{FinancialDataItems?.result?.pendingPayables || '0'}
+                ₹{FinancialDataItems?.result?.pendingPayables?.amount || '0'}
               </Title>
               <Text style={{ color: '#fff', opacity: 0.8, fontSize: 12 }}>
-                To {FinancialDataItems?.result?.vendorsCount || 0} vendors
+                To {FinancialDataItems?.result?.pendingPayables?.vendorCount || 0} vendors
               </Text>
             </Space>
           </Card>
@@ -97,11 +97,11 @@ export const FinanceTab: React.FC<FinanceTabProps> = ({
                 Monthly Expenses
               </Title>
               <Title level={3} style={{ color: '#fff', margin: 0 }}>
-                ₹{FinancialDataItems?.result?.monthlyExpenses || '0'}
+                ₹{FinancialDataItems?.result?.monthlyExpenses?.amount || '0'}
               </Title>
               <Text style={{ color: '#fff', opacity: 0.8, fontSize: 12 }}>
                 <ArrowUpOutlined /> +
-                {FinancialDataItems?.result?.expensesGrowth || 0}% vs last month
+                {FinancialDataItems?.result?.monthlyExpenses?.growth || 0}% vs last month
               </Text>
             </Space>
           </Card>
@@ -121,12 +121,10 @@ export const FinanceTab: React.FC<FinanceTabProps> = ({
                 Cash Flow
               </Title>
               <Title level={3} style={{ color: '#fff', margin: 0 }}>
-                ₹{FinancialDataItems?.result?.cashFlow || '0'}
+                ₹{FinancialDataItems?.result?.cashFlow?.amount || '0'}
               </Title>
               <Text style={{ color: '#fff', opacity: 0.8, fontSize: 12 }}>
-                {(FinancialDataItems?.result?.cashFlow || 0) >= 0
-                  ? 'Positive'
-                  : 'Negative'}
+                {FinancialDataItems?.result?.cashFlow?.status || 'Neutral'}
               </Text>
             </Space>
           </Card>
@@ -139,27 +137,27 @@ export const FinanceTab: React.FC<FinanceTabProps> = ({
           <Card title="Week-over-Week" bordered={false}>
             <Statistic
               title="Current Week Sales"
-              value={FinancialDataItems?.result?.currentWeekSales || 0}
+              value={FinancialDataItems?.result?.currentWeekSales?.amount || 0}
               prefix="₹"
               valueStyle={{ color: '#3f8600' }}
             />
             <Divider style={{ margin: '12px 0' }} />
             <Space>
               <Text type="secondary">Last Week:</Text>
-              <Text>₹{FinancialDataItems?.result?.lastWeekSales || 0}</Text>
+              <Text>₹{FinancialDataItems?.result?.currentWeekSales?.lastWeek || 0}</Text>
             </Space>
             <br />
             <Space>
               <Text type="secondary">Growth:</Text>
-              {(FinancialDataItems?.result?.weekOverWeekGrowth || 0) >= 0 ? (
+              {(FinancialDataItems?.result?.currentWeekSales?.growth || 0) >= 0 ? (
                 <Text style={{ color: '#3f8600' }}>
                   <ArrowUpOutlined />
-                  {FinancialDataItems?.result?.weekOverWeekGrowth || 0}%
+                  {FinancialDataItems?.result?.currentWeekSales?.growth || 0}%
                 </Text>
               ) : (
                 <Text style={{ color: '#cf1322' }}>
                   <ArrowDownOutlined />
-                  {Math.abs(FinancialDataItems?.result?.weekOverWeekGrowth || 0)}
+                  {Math.abs(FinancialDataItems?.result?.currentWeekSales?.growth || 0)}
                   %
                 </Text>
               )}
@@ -170,28 +168,28 @@ export const FinanceTab: React.FC<FinanceTabProps> = ({
           <Card title="Month-over-Month" bordered={false}>
             <Statistic
               title="Current Month Sales"
-              value={FinancialDataItems?.result?.currentMonthSales || 0}
+              value={FinancialDataItems?.result?.currentMonthSales?.amount || 0}
               prefix="₹"
               valueStyle={{ color: '#1890ff' }}
             />
             <Divider style={{ margin: '12px 0' }} />
             <Space>
               <Text type="secondary">Last Month:</Text>
-              <Text>₹{FinancialDataItems?.result?.lastMonthSales || 0}</Text>
+              <Text>₹{FinancialDataItems?.result?.currentMonthSales?.lastMonth || 0}</Text>
             </Space>
             <br />
             <Space>
               <Text type="secondary">Growth:</Text>
-              {(FinancialDataItems?.result?.monthOverMonthGrowth || 0) >= 0 ? (
+              {(FinancialDataItems?.result?.currentMonthSales?.growth || 0) >= 0 ? (
                 <Text style={{ color: '#3f8600' }}>
                   <ArrowUpOutlined />
-                  {FinancialDataItems?.result?.monthOverMonthGrowth || 0}%
+                  {FinancialDataItems?.result?.currentMonthSales?.growth || 0}%
                 </Text>
               ) : (
                 <Text style={{ color: '#cf1322' }}>
                   <ArrowDownOutlined />
                   {Math.abs(
-                    FinancialDataItems?.result?.monthOverMonthGrowth || 0
+                    FinancialDataItems?.result?.currentMonthSales?.growth || 0
                   )}
                   %
                 </Text>
@@ -203,27 +201,27 @@ export const FinanceTab: React.FC<FinanceTabProps> = ({
           <Card title="Year-over-Year" bordered={false}>
             <Statistic
               title="Current Year Sales"
-              value={FinancialDataItems?.result?.currentYearSales || 0}
+              value={FinancialDataItems?.result?.currentYearSales?.amount || 0}
               prefix="₹"
               valueStyle={{ color: '#722ed1' }}
             />
             <Divider style={{ margin: '12px 0' }} />
             <Space>
               <Text type="secondary">Last Year:</Text>
-              <Text>₹{FinancialDataItems?.result?.lastYearSales || 0}</Text>
+              <Text>₹{FinancialDataItems?.result?.currentYearSales?.lastYear || 0}</Text>
             </Space>
             <br />
             <Space>
               <Text type="secondary">Growth:</Text>
-              {(FinancialDataItems?.result?.yearOverYearGrowth || 0) >= 0 ? (
+              {(FinancialDataItems?.result?.currentYearSales?.growth || 0) >= 0 ? (
                 <Text style={{ color: '#3f8600' }}>
                   <ArrowUpOutlined />
-                  {FinancialDataItems?.result?.yearOverYearGrowth || 0}%
+                  {FinancialDataItems?.result?.currentYearSales?.growth || 0}%
                 </Text>
               ) : (
                 <Text style={{ color: '#cf1322' }}>
                   <ArrowDownOutlined />
-                  {Math.abs(FinancialDataItems?.result?.yearOverYearGrowth || 0)}
+                  {Math.abs(FinancialDataItems?.result?.currentYearSales?.growth || 0)}
                   %
                 </Text>
               )}
