@@ -1,12 +1,13 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { Dispatch } from 'redux';
 import { dynamic_request, useDynamicSelector } from '../../../services/redux';
 import { createApiRouteGetter } from '../../../helpers/Common_functions';
 
-export const useDashboardData = () => {
+export const useDashboardData = (activeTab: string) => {
   const dispatch: Dispatch<any> = useDispatch();
   const getApiRouteDashBoard = createApiRouteGetter('DashBoard');
+  const [loadedTabs, setLoadedTabs] = useState<Set<string>>(new Set(['1'])); // Tab 1 loads by default
 
   // API Routes
   const dashboardCount = getApiRouteDashBoard('GetCount');
@@ -62,33 +63,50 @@ export const useDashboardData = () => {
     TopCustomers.identifier
   );
 
-  // Fetch all dashboard data
-  const fetchData = useCallback(() => {
-    [
-      dashboardCount,
-      SalesChartData,
-      PurchaseChartData,
-      FinancialData,
-      InventoryMetrics,
-      SalesAnalytics,
-      OperationsData,
-      RecentInvoices,
-      LowStockAlerts,
-      TopProducts,
-      TopCustomers,
-    ].forEach(route => {
-      dispatch(
-        dynamic_request(
-          { method: route.method, endpoint: route.endpoint, data: {} },
-          route.identifier
-        )
-      );
-    });
+  // Helper function to dispatch API request
+  const fetchApiData = useCallback((route: any) => {
+    dispatch(
+      dynamic_request(
+        { method: route.method, endpoint: route.endpoint, data: {} },
+        route.identifier
+      )
+    );
+  }, [dispatch]);
+
+  // Fetch data based on active tab
+  const fetchTabData = useCallback((tabKey: string) => {
+    switch (tabKey) {
+      case '1': // Overview Tab
+        fetchApiData(dashboardCount);
+        fetchApiData(SalesChartData);
+        fetchApiData(PurchaseChartData);
+        fetchApiData(LowStockAlerts);
+        break;
+      case '2': // Finance Tab
+        fetchApiData(FinancialData);
+        fetchApiData(RecentInvoices);
+        break;
+      case '3': // Inventory Tab
+        fetchApiData(InventoryMetrics);
+        break;
+      case '4': // Sales Analysis Tab
+        fetchApiData(SalesAnalytics);
+        fetchApiData(TopProducts);
+        fetchApiData(TopCustomers);
+        break;
+      case '5': // Operations Tab
+        fetchApiData(OperationsData);
+        break;
+      case '6': // Performance Tab
+        fetchApiData(SalesAnalytics);
+        break;
+      default:
+        break;
+    }
   }, [
     dispatch,
     dashboardCount,
     SalesChartData,
-    PurchaseChartData,
     FinancialData,
     InventoryMetrics,
     SalesAnalytics,
@@ -97,11 +115,21 @@ export const useDashboardData = () => {
     LowStockAlerts,
     TopProducts,
     TopCustomers,
+    fetchApiData,
   ]);
 
+  // Load data for active tab only once
   useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+    if (!loadedTabs.has(activeTab)) {
+      fetchTabData(activeTab);
+      setLoadedTabs(prev => new Set(prev).add(activeTab));
+    }
+  }, [activeTab, loadedTabs, fetchTabData]);
+
+  // Initial load for tab 1
+  useEffect(() => {
+    fetchTabData('1');
+  }, []);
 
   // Return all data
   return {
@@ -115,7 +143,7 @@ export const useDashboardData = () => {
     stockAlerts: LowStockAlertsItems?.result || [],
     topProducts: TopProductsItems?.result || [],
     topCustomers: TopCustomersItems?.result || [],
-    refetch: fetchData,
+    refetch: () => fetchTabData(activeTab),
   };
 };
 

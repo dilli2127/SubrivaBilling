@@ -23,7 +23,7 @@ const { Title, Text } = Typography;
 const Dashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState('1');
 
-  // Get all dashboard data from custom hook
+  // Get all dashboard data from custom hook (pass active tab for lazy loading)
   const {
     DashBoardItems,
     SalesChartDataItems,
@@ -35,7 +35,7 @@ const Dashboard: React.FC = () => {
     stockAlerts,
     topProducts,
     topCustomers,
-  } = useDashboardData();
+  } = useDashboardData(activeTab);
 
   // Keyboard navigation for tabs
   useEffect(() => {
