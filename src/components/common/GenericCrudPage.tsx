@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import {
   Button,
   Row,
@@ -108,6 +108,7 @@ export const GenericCrudPage = <T extends BaseEntity>({
 }: GenericCrudPageProps<T>) => {
   // SuperAdmin filters hook
   const superAdminFilters = useSuperAdminFilters();
+  const isInitialMount = useRef(true);
   
   const {
     loading,
@@ -145,6 +146,12 @@ export const GenericCrudPage = <T extends BaseEntity>({
 
   // Apply superadmin filters whenever they change
   useEffect(() => {
+    // Skip the initial mount to avoid duplicate API call
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+    
     if (enableSuperAdminFilters) {
       const apiFilters = superAdminFilters.getApiFilters();
       const newFilters = { ...filterValues, ...apiFilters };
