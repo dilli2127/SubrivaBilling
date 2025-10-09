@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import {
   Card,
   Row,
@@ -68,6 +68,8 @@ import {
 } from 'recharts';
 import dayjs from 'dayjs';
 import styles from './Reports.module.css';
+import { useApiActions } from '../../services/api/useApiActions';
+import { useDynamicSelector } from '../../services/redux/selector';
 
 const { Title, Text } = Typography;
 const { RangePicker } = DatePicker;
@@ -128,28 +130,356 @@ const Reports: React.FC = () => {
     dayjs().subtract(30, 'days'),
     dayjs(),
   ]);
+  const [selectedTenant, setSelectedTenant] = useState<string>('all');
+  const [selectedOrganisation, setSelectedOrganisation] = useState<string>('all');
   const [selectedBranch, setSelectedBranch] = useState<string>('all');
-  const [selectedReport, setSelectedReport] = useState<string>('comprehensive');
+  // Remove selectedReport state - we'll use activeTab instead
   const [loading, setLoading] = useState(false);
   const [exportModalVisible, setExportModalVisible] = useState(false);
-  const [exportFormat, setExportFormat] = useState<'pdf' | 'excel' | 'csv'>('pdf');
+  const [exportFormat, setExportFormat] = useState<'pdf' | 'excel' | 'csv'>('excel');
   const [exportOptions, setExportOptions] = useState<string[]>(['summary', 'charts', 'tables']);
   const [activeTab, setActiveTab] = useState('1');
   const [form] = Form.useForm();
+  const [reportCache, setReportCache] = useState<{[key: string]: any}>({});
+
+  // Get user role
+  const userItem = useMemo(() => {
+    const data = sessionStorage.getItem('user');
+    return data ? JSON.parse(data) : null;
+  }, []);
+
+  const userRole = userItem?.roleItems?.name || userItem?.usertype || userItem?.user_role || '';
+  const isSuperAdmin = userRole.toLowerCase() === 'superadmin';
+  const isTenant = userRole.toLowerCase() === 'tenant';
+
+  // API hooks
+  const { getEntityApi } = useApiActions();
+  const TenantsApi = getEntityApi('Tenant');
+  const OrganisationsApi = getEntityApi('Organisations');
+  const BranchesApi = getEntityApi('Braches');
+
+  // Selectors for dropdowns data
+  const { items: tenantsItems } = useDynamicSelector(TenantsApi.getIdentifier('GetAll'));
+  const { items: organisationsItems } = useDynamicSelector(OrganisationsApi.getIdentifier('GetAll'));
+  const { items: branchesItems } = useDynamicSelector(BranchesApi.getIdentifier('GetAll'));
+
+  // Fetch data on mount
+  useEffect(() => {
+    if (isSuperAdmin) {
+      TenantsApi('GetAll');
+    }
+    if (isSuperAdmin || isTenant) {
+      OrganisationsApi('GetAll');
+    }
+    BranchesApi('GetAll');
+  }, [isSuperAdmin, isTenant]);
+
+  // Prepare dropdown options
+  const tenantOptions = useMemo(() => {
+    return tenantsItems?.result?.map((tenant: any) => ({
+      label: tenant.organization_name || tenant.contact_name || tenant.username,
+      value: tenant._id,
+    })) || [];
+  }, [tenantsItems]);
+
+  const organisationOptions = useMemo(() => {
+    let orgs = organisationsItems?.result || [];
+    // Filter by selected tenant if applicable
+    if (isSuperAdmin && selectedTenant !== 'all') {
+      orgs = orgs.filter((org: any) => org.tenant_id === selectedTenant);
+    }
+    return orgs.map((org: any) => ({
+      label: org.org_name || org.name,
+      value: org._id,
+    }));
+  }, [organisationsItems, selectedTenant, isSuperAdmin]);
+
+  const branchOptions = useMemo(() => {
+    let branches = branchesItems?.result || [];
+    // Filter by selected organisation if applicable
+    if (selectedOrganisation !== 'all') {
+      branches = branches.filter((branch: any) => 
+        branch.organisation_id === selectedOrganisation || branch.org_id === selectedOrganisation
+      );
+    }
+    return branches.map((branch: any) => ({
+      label: branch.branch_name || branch.name,
+      value: branch._id,
+    }));
+  }, [branchesItems, selectedOrganisation]);
+
+  // Handle tenant change - reset dependent filters
+  const handleTenantChange = (value: string) => {
+    setSelectedTenant(value);
+    setSelectedOrganisation('all');
+    setSelectedBranch('all');
+    // Refetch organisations for selected tenant
+    if (value !== 'all') {
+      OrganisationsApi('GetAll', { tenant_id: value });
+    } else {
+      OrganisationsApi('GetAll');
+    }
+  };
+
+  // Handle organisation change - reset branch filter
+  const handleOrganisationChange = (value: string) => {
+    setSelectedOrganisation(value);
+    setSelectedBranch('all');
+    // Refetch branches for selected organisation
+    if (value !== 'all') {
+      BranchesApi('GetAll', { organisation_id: value });
+    } else {
+      BranchesApi('GetAll');
+    }
+  };
+
+  // Map tab keys to report types
+  const getReportTypeFromTab = (tabKey: string) => {
+    switch (tabKey) {
+      case '1': return 'comprehensive';
+      case '2': return 'financial';
+      case '3': return 'sales';
+      case '4': return 'customer';
+      case '5': return 'inventory';
+      case '6': return 'staff';
+      case '7': return 'payment';
+      default: return 'comprehensive';
+    }
+  };
 
   const fetchReportData = useCallback(() => {
     setLoading(true);
-    // Simulate API call - replace with actual API integration
-    setTimeout(() => {
+    
+    const reportType = getReportTypeFromTab(activeTab);
+    
+    // Create cache key based on filters
+    const cacheKey = `${reportType}_${selectedTenant}_${selectedOrganisation}_${selectedBranch}_${dateRange?.[0]?.format('YYYY-MM-DD')}_${dateRange?.[1]?.format('YYYY-MM-DD')}`;
+    
+    // Check if data is already cached
+    if (reportCache[cacheKey]) {
       setLoading(false);
-      message.success('Report data refreshed successfully');
+      message.success('Report data loaded from cache');
+      return;
+    }
+    
+    // Simulate API call based on active tab
+    // In production, you would pass these filters to your API:
+    const apiFilters = {
+      ...(isSuperAdmin && selectedTenant !== 'all' && { tenant_id: selectedTenant }),
+      ...(selectedOrganisation !== 'all' && { organisation_id: selectedOrganisation }),
+      ...(selectedBranch !== 'all' && { branch_id: selectedBranch }),
+      startDate: dateRange?.[0]?.format('YYYY-MM-DD'),
+      endDate: dateRange?.[1]?.format('YYYY-MM-DD'),
+    };
+    
+    setTimeout(() => {
+      // Cache the data
+      const reportData = generateReportData(reportType);
+      setReportCache(prev => ({
+        ...prev,
+        [cacheKey]: reportData
+      }));
+      
+      setLoading(false);
+      message.success(`${reportType} report data refreshed successfully`);
     }, 1000);
-  }, []);
+  }, [activeTab, selectedTenant, selectedOrganisation, selectedBranch, dateRange, reportCache, isSuperAdmin]);
+
+  // Generate mock data based on report type
+  const generateReportData = (reportType: string) => {
+    switch (reportType) {
+      case 'inventory':
+        return {
+          totalProducts: 1245,
+          stockValue: 850000,
+          lowStockItems: 42,
+          outOfStock: 18,
+          categoryData: mockProductPerformance,
+          stockMovement: mockSalesData
+        };
+      case 'financial':
+        return {
+          totalRevenue: 328000,
+          totalExpenses: 230894,
+          netProfit: 97106,
+          cashFlow: mockSalesData
+        };
+      case 'sales':
+        return {
+          totalSales: 328000,
+          avgOrderValue: 356,
+          conversionRate: 24.5,
+          topCustomers: mockTopCustomers,
+          salesData: mockSalesData
+        };
+      case 'customer':
+        return {
+          totalCustomers: 510,
+          newThisMonth: 45,
+          vipCustomers: 85,
+          customerSegments: mockCustomerSegments
+        };
+      case 'staff':
+        return {
+          totalStaff: 24,
+          staffPerformance: mockStaffPerformance,
+          avgConversion: 75.8,
+          targetAchievement: 91
+        };
+      case 'payment':
+        return {
+          totalCollected: 356000,
+          pending: 28000,
+          overdue: 11000,
+          collectionRate: 92.7,
+          paymentMethods: mockPaymentMethods
+        };
+      default:
+        return {
+          totalRevenue: 328000,
+          netProfit: 97106,
+          totalOrders: 921,
+          activeCustomers: 510,
+          salesData: mockSalesData,
+          customerSegments: mockCustomerSegments
+        };
+    }
+  };
 
   const handleExport = () => {
-    message.success(`Exporting report as ${exportFormat.toUpperCase()}...`);
+    const reportType = getReportTypeFromTab(activeTab);
+    const cacheKey = `${reportType}_${selectedTenant}_${selectedOrganisation}_${selectedBranch}_${dateRange?.[0]?.format('YYYY-MM-DD')}_${dateRange?.[1]?.format('YYYY-MM-DD')}`;
+    const reportData = reportCache[cacheKey];
+    
+    if (!reportData) {
+      message.error('No data available to export. Please apply filters first.');
+      return;
+    }
+    
+    // Export based on active tab (report type)
+    if (exportFormat === 'excel') {
+      exportToExcel(reportData, reportType);
+    } else if (exportFormat === 'pdf') {
+      exportToPDF(reportData, reportType);
+    } else {
+      exportToCSV(reportData, reportType);
+    }
+    
     setExportModalVisible(false);
-    // Implement actual export functionality
+  };
+
+  // Excel export function
+  const exportToExcel = (data: any, reportType: string) => {
+    // Create workbook data based on report type
+    let excelData: any[] = [];
+    const fileName = `${reportType}_report_${dayjs().format('YYYY-MM-DD')}`;
+    
+    // Get selected filter labels
+    const getTenantLabel = () => {
+      if (selectedTenant === 'all') return 'All Tenants';
+      const tenant = tenantOptions.find((t: any) => t.value === selectedTenant);
+      return tenant?.label || selectedTenant;
+    };
+    
+    const getOrganisationLabel = () => {
+      if (selectedOrganisation === 'all') return 'All Organisations';
+      const org = organisationOptions.find((o: any) => o.value === selectedOrganisation);
+      return org?.label || selectedOrganisation;
+    };
+    
+    const getBranchLabel = () => {
+      if (selectedBranch === 'all') return 'All Branches';
+      const branch = branchOptions.find((b: any) => b.value === selectedBranch);
+      return branch?.label || selectedBranch;
+    };
+    
+    switch (reportType) {
+      case 'inventory':
+        excelData = [
+          ['Inventory Report', '', '', ''],
+          ['Date Range:', dateRange?.[0]?.format('YYYY-MM-DD'), 'to', dateRange?.[1]?.format('YYYY-MM-DD')],
+          ...(isSuperAdmin ? [['Tenant:', getTenantLabel(), '', '']] : []),
+          ...((isSuperAdmin || isTenant) ? [['Organisation:', getOrganisationLabel(), '', '']] : []),
+          ['Branch:', getBranchLabel(), '', ''],
+          ['', '', '', ''],
+          ['Total Products', 'Stock Value', 'Low Stock Items', 'Out of Stock'],
+          [data.totalProducts, `₹${data.stockValue.toLocaleString()}`, data.lowStockItems, data.outOfStock],
+          ['', '', '', ''],
+          ['Category', 'Sales', 'Profit', 'Margin'],
+          ...data.categoryData.map((item: any) => [
+            item.name, 
+            `₹${item.sales.toLocaleString()}`, 
+            `₹${item.profit.toLocaleString()}`, 
+            `${item.margin}%`
+          ])
+        ];
+        break;
+      case 'sales':
+        excelData = [
+          ['Sales Report', '', '', ''],
+          ['Date Range:', dateRange?.[0]?.format('YYYY-MM-DD'), 'to', dateRange?.[1]?.format('YYYY-MM-DD')],
+          ...(isSuperAdmin ? [['Tenant:', getTenantLabel(), '', '']] : []),
+          ...((isSuperAdmin || isTenant) ? [['Organisation:', getOrganisationLabel(), '', '']] : []),
+          ['Branch:', getBranchLabel(), '', ''],
+          ['', '', '', ''],
+          ['Total Sales', 'Avg Order Value', 'Conversion Rate', ''],
+          [`₹${data.totalSales.toLocaleString()}`, `₹${data.avgOrderValue}`, `${data.conversionRate}%`, ''],
+          ['', '', '', ''],
+          ['Customer Name', 'Total Purchase', 'Orders', 'Outstanding'],
+          ...data.topCustomers.map((customer: any) => [
+            customer.name,
+            `₹${customer.totalPurchase.toLocaleString()}`,
+            customer.orders,
+            `₹${customer.outstanding.toLocaleString()}`
+          ])
+        ];
+        break;
+      default:
+        excelData = [
+          ['Report Data', '', '', ''],
+          ['Date Range:', dateRange?.[0]?.format('YYYY-MM-DD'), 'to', dateRange?.[1]?.format('YYYY-MM-DD')],
+          ...(isSuperAdmin ? [['Tenant:', getTenantLabel(), '', '']] : []),
+          ...((isSuperAdmin || isTenant) ? [['Organisation:', getOrganisationLabel(), '', '']] : []),
+          ['Branch:', getBranchLabel(), '', ''],
+          ['', '', '', ''],
+          ...Object.entries(data).map(([key, value]) => [key, value, '', ''])
+        ];
+    }
+    
+    // Convert to CSV format for download
+    const csvContent = excelData.map(row => row.join(',')).join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `${fileName}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    message.success(`${reportType} report exported to Excel successfully!`);
+  };
+
+  // PDF export function
+  const exportToPDF = (data: any, reportType: string) => {
+    message.info('PDF export functionality will be implemented with a PDF library');
+  };
+
+  // CSV export function
+  const exportToCSV = (data: any, reportType: string) => {
+    const csvData = Object.entries(data).map(([key, value]) => `${key},${value}`).join('\n');
+    const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `${reportType}_report_${dayjs().format('YYYY-MM-DD')}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    message.success(`${reportType} report exported to CSV successfully!`);
   };
 
   const handlePrint = () => {
@@ -1165,7 +1495,7 @@ const Reports: React.FC = () => {
 
         {/* Filters */}
         <Row gutter={16} align="middle">
-          <Col xs={24} sm={8} md={6}>
+          <Col xs={24} sm={12} md={6}>
             <Space direction="vertical" size={2} style={{ width: '100%' }}>
               <Text strong><CalendarOutlined /> Date Range:</Text>
               <RangePicker
@@ -1175,46 +1505,90 @@ const Reports: React.FC = () => {
               />
             </Space>
           </Col>
-          <Col xs={24} sm={8} md={6}>
+
+          {/* Tenant Dropdown - Only for SuperAdmin */}
+          {isSuperAdmin && (
+            <Col xs={24} sm={12} md={6}>
+              <Space direction="vertical" size={2} style={{ width: '100%' }}>
+                <Text strong>Tenant:</Text>
+                <Select
+                  value={selectedTenant}
+                  onChange={handleTenantChange}
+                  style={{ width: '100%' }}
+                  showSearch
+                  optionFilterProp="children"
+                  filterOption={(input, option: any) =>
+                    String(option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+                  }
+                >
+                  <Option value="all">All Tenants</Option>
+                  {tenantOptions.map((option: any) => (
+                    <Option key={option.value} value={option.value}>
+                      {option.label}
+                    </Option>
+                  ))}
+                </Select>
+              </Space>
+            </Col>
+          )}
+
+          {/* Organisation Dropdown - For SuperAdmin and Tenant */}
+          {(isSuperAdmin || isTenant) && (
+            <Col xs={24} sm={12} md={6}>
+              <Space direction="vertical" size={2} style={{ width: '100%' }}>
+                <Text strong>Organisation:</Text>
+                <Select
+                  value={selectedOrganisation}
+                  onChange={handleOrganisationChange}
+                  style={{ width: '100%' }}
+                  showSearch
+                  optionFilterProp="children"
+                  filterOption={(input, option: any) =>
+                    String(option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+                  }
+                >
+                  <Option value="all">All Organisations</Option>
+                  {organisationOptions.map((option: any) => (
+                    <Option key={option.value} value={option.value}>
+                      {option.label}
+                    </Option>
+                  ))}
+                </Select>
+              </Space>
+            </Col>
+          )}
+
+          {/* Branch Dropdown - For All Users */}
+          <Col xs={24} sm={12} md={6}>
             <Space direction="vertical" size={2} style={{ width: '100%' }}>
               <Text strong>Branch:</Text>
               <Select
                 value={selectedBranch}
                 onChange={setSelectedBranch}
                 style={{ width: '100%' }}
+                showSearch
+                optionFilterProp="children"
+                filterOption={(input, option: any) =>
+                  String(option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+                }
               >
                 <Option value="all">All Branches</Option>
-                <Option value="branch1">Main Branch</Option>
-                <Option value="branch2">Branch A</Option>
-                <Option value="branch3">Branch B</Option>
+                {branchOptions.map((option: any) => (
+                  <Option key={option.value} value={option.value}>
+                    {option.label}
+                  </Option>
+                ))}
               </Select>
             </Space>
           </Col>
-          <Col xs={24} sm={8} md={6}>
-            <Space direction="vertical" size={2} style={{ width: '100%' }}>
-              <Text strong>Report Type:</Text>
-              <Select
-                value={selectedReport}
-                onChange={setSelectedReport}
-                style={{ width: '100%' }}
-              >
-                <Option value="comprehensive">Comprehensive Report</Option>
-                <Option value="financial">Financial Analysis</Option>
-                <Option value="sales">Sales Analytics</Option>
-                <Option value="customer">Customer Analytics</Option>
-                <Option value="inventory">Inventory Report</Option>
-                <Option value="staff">Staff Performance</Option>
-                <Option value="payment">Payment Analysis</Option>
-              </Select>
-            </Space>
-          </Col>
+
           <Col xs={24} sm={24} md={6}>
             <Button
               type="primary"
               icon={<FilterOutlined />}
               onClick={fetchReportData}
               loading={loading}
-              style={{ width: '100%', marginTop: 22 }}
+              style={{ marginTop: 22, width: '100%' }}
               size="large"
             >
               Apply Filters
