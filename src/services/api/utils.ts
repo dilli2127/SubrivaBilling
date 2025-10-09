@@ -172,6 +172,68 @@ export const API_ROUTES = {
       endpoint: "/revert_stock",
     },
   },
+  Reports: {
+    GetSalesReport: {
+      identifier: "GetSalesReport",
+      method: API_METHODS.POST,
+      endpoint: "/reports/sales",
+    },
+    GetProductSalesReport: {
+      identifier: "GetProductSalesReport",
+      method: API_METHODS.POST,
+      endpoint: "/reports/product-sales",
+    },
+    GetCustomerSalesReport: {
+      identifier: "GetCustomerSalesReport",
+      method: API_METHODS.POST,
+      endpoint: "/reports/customer-sales",
+    },
+    GetStockReport: {
+      identifier: "GetStockReport",
+      method: API_METHODS.POST,
+      endpoint: "/reports/stock",
+    },
+    GetProfitLossReport: {
+      identifier: "GetProfitLossReport",
+      method: API_METHODS.POST,
+      endpoint: "/reports/profit-loss",
+    },
+    GetOutstandingPaymentsReport: {
+      identifier: "GetOutstandingPaymentsReport",
+      method: API_METHODS.POST,
+      endpoint: "/reports/outstanding-payments",
+    },
+    GetPaymentCollectionReport: {
+      identifier: "GetPaymentCollectionReport",
+      method: API_METHODS.POST,
+      endpoint: "/reports/payment-collection",
+    },
+    GetExpenseReport: {
+      identifier: "GetExpenseReport",
+      method: API_METHODS.POST,
+      endpoint: "/reports/expenses",
+    },
+    GetGSTReport: {
+      identifier: "GetGSTReport",
+      method: API_METHODS.POST,
+      endpoint: "/reports/gst",
+    },
+    GetTopProductsReport: {
+      identifier: "GetTopProductsReport",
+      method: API_METHODS.POST,
+      endpoint: "/reports/top-products",
+    },
+    GetTopCustomersReport: {
+      identifier: "GetTopCustomersReport",
+      method: API_METHODS.POST,
+      endpoint: "/reports/top-customers",
+    },
+    GetStockExpiryReport: {
+      identifier: "GetStockExpiryReport",
+      method: API_METHODS.POST,
+      endpoint: "/reports/stock-expiry",
+    },
+  },
   CmsImage: createCrudRoutes("/cms_image", "CmsImage"),
   Customer: createCrudRoutes("/customer", "Customer"),
   Unit: createCrudRoutes("/unit", "Unit"),

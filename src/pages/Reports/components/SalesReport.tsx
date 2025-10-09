@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card, Row, Col, Statistic, Progress, Table, Tag } from 'antd';
+import { Card, Row, Col, Statistic, Progress, Table, Tag, Empty } from 'antd';
 import { TrophyOutlined } from '@ant-design/icons';
 import {
   BarChart,
@@ -12,83 +12,156 @@ import {
   ResponsiveContainer,
   AreaChart,
   Area,
+  LineChart,
+  Line,
 } from 'recharts';
-import { mockProductPerformance, mockSalesData, mockTopCustomers } from '../utils/mockData';
+import { useSpecialApiFetchers } from '../../../services/api/specialApiFetchers';
+import { useDynamicSelector } from '../../../services/redux/selector';
 
 const SalesReport: React.FC = () => {
+  const { Reports } = useSpecialApiFetchers();
+  
+  // Get data from Redux store
+  const salesReportData = useDynamicSelector(Reports.getIdentifier('GetSalesReport'));
+  const productSalesData = useDynamicSelector(Reports.getIdentifier('GetProductSalesReport'));
+  const topProductsData = useDynamicSelector(Reports.getIdentifier('GetTopProductsReport'));
+  
+  // Extract data
+  const salesSummary = salesReportData?.result?.summary || {};
+  const productSales = productSalesData?.result?.products || [];
+  const topProducts = topProductsData?.result?.top_products || [];
+  const salesData = salesReportData?.result?.sales || [];
+  
+  // Calculate average bill value and prepare chart data
+  const avgBillValue = salesSummary.average_bill_value || 0;
+  const totalRevenue = salesSummary.total_revenue || 0;
+  const totalBills = salesSummary.total_bills || 0;
+  const totalCollected = salesSummary.total_collected || 0;
+  const totalOutstanding = salesSummary.total_outstanding || 0;
+  
+  // Calculate percentages for progress bars
+  const revenuePercent = totalRevenue > 0 ? Math.min((totalRevenue / (totalRevenue * 1.2)) * 100, 100) : 0;
+  const collectionPercent = totalRevenue > 0 ? Math.min((totalCollected / totalRevenue) * 100, 100) : 0;
+  const outstandingPercent = totalRevenue > 0 ? Math.min((totalOutstanding / totalRevenue) * 100, 100) : 0;
+  
+  // Prepare product category data for chart
+  const categoryChartData = productSales.slice(0, 10).map((product: any) => ({
+    name: product.name || 'Unknown',
+    sales: parseFloat(product.total_revenue) || 0,
+    quantity: parseInt(product.total_quantity_sold) || 0,
+  }));
+  
+  // Prepare sales trend data (if grouped data available)
+  const trendData = Array.isArray(salesData) && salesData.length > 0 && salesData[0]?.period
+    ? salesData.map((item: any) => ({
+        period: item.period,
+        revenue: parseFloat(item.total_sales) || 0,
+        transactions: parseInt(item.total_transactions) || 0,
+      }))
+    : [];
+
   return (
     <div>
       {/* Sales Metrics */}
       <Row gutter={[16, 16]}>
         <Col xs={12} md={6}>
           <Card bordered={false} style={{ borderRadius: 12 }}>
-            <Statistic title="Total Sales" value={328000} prefix="₹" valueStyle={{ color: '#1890ff' }} />
-            <Progress percent={82} size="small" />
+            <Statistic 
+              title="Total Revenue" 
+              value={totalRevenue} 
+              prefix="₹" 
+              precision={2}
+              valueStyle={{ color: '#1890ff' }} 
+            />
+            <Progress percent={Math.round(revenuePercent)} size="small" />
           </Card>
         </Col>
         <Col xs={12} md={6}>
           <Card bordered={false} style={{ borderRadius: 12 }}>
-            <Statistic title="Avg Order Value" value={356} prefix="₹" valueStyle={{ color: '#52c41a' }} />
-            <Progress percent={68} size="small" />
+            <Statistic 
+              title="Avg Bill Value" 
+              value={avgBillValue} 
+              prefix="₹" 
+              precision={2}
+              valueStyle={{ color: '#52c41a' }} 
+            />
+            <Progress percent={Math.round(revenuePercent * 0.8)} size="small" strokeColor="#52c41a" />
           </Card>
         </Col>
         <Col xs={12} md={6}>
           <Card bordered={false} style={{ borderRadius: 12 }}>
-            <Statistic title="Conversion Rate" value={24.5} suffix="%" precision={1} valueStyle={{ color: '#722ed1' }} />
-            <Progress percent={74} size="small" />
+            <Statistic 
+              title="Total Collected" 
+              value={totalCollected} 
+              prefix="₹" 
+              precision={2}
+              valueStyle={{ color: '#722ed1' }} 
+            />
+            <Progress percent={Math.round(collectionPercent)} size="small" strokeColor="#722ed1" />
           </Card>
         </Col>
         <Col xs={12} md={6}>
           <Card bordered={false} style={{ borderRadius: 12 }}>
-            <Statistic title="Repeat Customer Rate" value={46} suffix="%" valueStyle={{ color: '#fa8c16' }} />
-            <Progress percent={46} size="small" />
+            <Statistic 
+              title="Outstanding" 
+              value={totalOutstanding} 
+              prefix="₹" 
+              precision={2}
+              valueStyle={{ color: '#fa8c16' }} 
+            />
+            <Progress percent={Math.round(outstandingPercent)} size="small" strokeColor="#fa8c16" />
           </Card>
         </Col>
       </Row>
 
-      {/* Sales by Category & Orders */}
+      {/* Sales by Product & Trend */}
       <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
         <Col xs={24} lg={12}>
-          <Card title="Sales by Category" style={{ borderRadius: 12 }}>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={mockProductPerformance}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis />
-                <RechartsTooltip />
-                <Legend />
-                <Bar dataKey="sales" fill="#1890ff" name="Sales (₹)" />
-              </BarChart>
-            </ResponsiveContainer>
+          <Card title="Top Products by Revenue" style={{ borderRadius: 12 }}>
+            {categoryChartData.length > 0 ? (
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={categoryChartData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" angle={-45} textAnchor="end" height={100} />
+                  <YAxis />
+                  <RechartsTooltip />
+                  <Legend />
+                  <Bar dataKey="sales" fill="#1890ff" name="Revenue (₹)" />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <Empty description="No product sales data available" />
+            )}
           </Card>
         </Col>
         <Col xs={24} lg={12}>
-          <Card title="Monthly Orders Trend" style={{ borderRadius: 12 }}>
-            <ResponsiveContainer width="100%" height={300}>
-              <AreaChart data={mockSalesData}>
-                <defs>
-                  <linearGradient id="colorOrders" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#8884d8" stopOpacity={0.8} />
-                    <stop offset="95%" stopColor="#8884d8" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" />
-                <YAxis />
-                <RechartsTooltip />
-                <Area type="monotone" dataKey="orders" stroke="#8884d8" fillOpacity={1} fill="url(#colorOrders)" />
-              </AreaChart>
-            </ResponsiveContainer>
+          <Card title="Sales Trend" style={{ borderRadius: 12 }}>
+            {trendData.length > 0 ? (
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart data={trendData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="period" />
+                  <YAxis />
+                  <RechartsTooltip />
+                  <Legend />
+                  <Line type="monotone" dataKey="revenue" stroke="#1890ff" name="Revenue (₹)" />
+                  <Line type="monotone" dataKey="transactions" stroke="#52c41a" name="Transactions" />
+                </LineChart>
+              </ResponsiveContainer>
+            ) : (
+              <Empty description="No trend data available. Use group_by filter to see trends." />
+            )}
           </Card>
         </Col>
       </Row>
 
-      {/* Top Customers */}
+      {/* Top Products Table */}
       <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
         <Col xs={24}>
-          <Card title={<><TrophyOutlined /> Top 5 Customers</>} style={{ borderRadius: 12 }}>
+          <Card title={<><TrophyOutlined /> Top 10 Products</>} style={{ borderRadius: 12 }}>
             <Table
-              dataSource={mockTopCustomers}
+              dataSource={topProducts}
+              rowKey="_id"
               columns={[
                 {
                   title: 'Rank',
@@ -100,33 +173,46 @@ const SalesReport: React.FC = () => {
                     </Tag>
                   ),
                 },
-                { title: 'Customer Name', dataIndex: 'name', key: 'name' },
+                { 
+                  title: 'Product Name', 
+                  dataIndex: 'name', 
+                  key: 'name',
+                  render: (name: string, record: any) => (
+                    <div>
+                      <div style={{ fontWeight: 500 }}>{name}</div>
+                      {record.VariantItem && (
+                        <div style={{ fontSize: '12px', color: '#888' }}>
+                          {record.VariantItem.variant_name}
+                        </div>
+                      )}
+                    </div>
+                  )
+                },
                 {
-                  title: 'Total Purchase',
-                  dataIndex: 'totalPurchase',
-                  key: 'totalPurchase',
-                  render: (val: number) => `₹${val.toLocaleString()}`,
-                  sorter: (a: any, b: any) => a.totalPurchase - b.totalPurchase,
+                  title: 'Total Revenue',
+                  dataIndex: 'total_revenue',
+                  key: 'total_revenue',
+                  render: (val: string) => `₹${parseFloat(val || '0').toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+                  sorter: (a: any, b: any) => parseFloat(a.total_revenue) - parseFloat(b.total_revenue),
+                },
+                {
+                  title: 'Quantity Sold',
+                  dataIndex: 'total_quantity_sold',
+                  key: 'total_quantity_sold',
+                  render: (val: string) => parseInt(val || '0').toLocaleString(),
+                  sorter: (a: any, b: any) => parseInt(a.total_quantity_sold) - parseInt(b.total_quantity_sold),
                 },
                 {
                   title: 'Orders',
-                  dataIndex: 'orders',
-                  key: 'orders',
-                  sorter: (a: any, b: any) => a.orders - b.orders,
-                },
-                {
-                  title: 'Outstanding',
-                  dataIndex: 'outstanding',
-                  key: 'outstanding',
-                  render: (val: number) => (
-                    <span style={{ color: val > 0 ? '#fa8c16' : '#52c41a' }}>
-                      ₹{val.toLocaleString()}
-                    </span>
-                  ),
+                  dataIndex: 'total_orders',
+                  key: 'total_orders',
+                  render: (val: string) => parseInt(val || '0').toLocaleString(),
+                  sorter: (a: any, b: any) => parseInt(a.total_orders) - parseInt(b.total_orders),
                 },
               ]}
-              pagination={false}
+              pagination={{ pageSize: 10 }}
               size="small"
+              locale={{ emptyText: 'No product data available' }}
             />
           </Card>
         </Col>
