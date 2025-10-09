@@ -87,12 +87,15 @@ const Reports: React.FC = () => {
   // Fetch data on mount
   useEffect(() => {
     if (isSuperAdmin) {
+      // SuperAdmin: Only fetch tenants initially, not organisations
       TenantsApi('GetAll');
-    }
-    if (isSuperAdmin || isTenant) {
+    } else if (isTenant) {
+      // Tenant: Fetch organisations on mount
       OrganisationsApi('GetAll');
+    } else {
+      // OrganisationAdmin/BranchAdmin: Fetch branches on mount
+      BranchesApi('GetAll');
     }
-    BranchesApi('GetAll');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isSuperAdmin, isTenant]);
 
@@ -135,11 +138,9 @@ const Reports: React.FC = () => {
     setSelectedTenant(value);
     setSelectedOrganisation('all');
     setSelectedBranch('all');
-    // Refetch organisations for selected tenant
+    // Fetch organisations for selected tenant (with tenant_id filter)
     if (value !== 'all') {
       OrganisationsApi('GetAll', { tenant_id: value });
-    } else {
-      OrganisationsApi('GetAll');
     }
   };
 
@@ -147,11 +148,9 @@ const Reports: React.FC = () => {
   const handleOrganisationChange = (value: string) => {
     setSelectedOrganisation(value);
     setSelectedBranch('all');
-    // Refetch branches for selected organisation
+    // Fetch branches for selected organisation (with organisation_id filter)
     if (value !== 'all') {
       BranchesApi('GetAll', { organisation_id: value });
-    } else {
-      BranchesApi('GetAll');
     }
   };
 
@@ -323,6 +322,8 @@ const Reports: React.FC = () => {
                   filterOption={(input, option: any) =>
                     String(option?.label ?? '').toLowerCase().includes(input.toLowerCase())
                   }
+                  disabled={isSuperAdmin && selectedTenant === 'all'}
+                  placeholder={isSuperAdmin && selectedTenant === 'all' ? 'Select tenant first' : 'Select organisation'}
                 >
                   <Option value="all">All Organisations</Option>
                   {organisationOptions.map((option: any) => (
@@ -348,6 +349,8 @@ const Reports: React.FC = () => {
                 filterOption={(input, option: any) =>
                   String(option?.label ?? '').toLowerCase().includes(input.toLowerCase())
                 }
+                disabled={(isSuperAdmin || isTenant) && selectedOrganisation === 'all'}
+                placeholder={(isSuperAdmin || isTenant) && selectedOrganisation === 'all' ? 'Select organisation first' : 'Select branch'}
               >
                 <Option value="all">All Branches</Option>
                 {branchOptions.map((option: any) => (
