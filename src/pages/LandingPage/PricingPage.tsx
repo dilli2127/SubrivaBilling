@@ -111,6 +111,8 @@ const PricingPage: React.FC = () => {
       features: [
         "Unlimited invoices",
         "Up to 3 user accounts",
+        "One Organisation",
+        "One Branch",
         "Inventory management",
         "Advanced analytics & reports",
         "Automated reminders",
@@ -133,6 +135,8 @@ const PricingPage: React.FC = () => {
         "All Professional features",
         "Up to 5 user accounts",
         "Multi-location support",
+        "Two Organisations",
+        "Two Branches",
         "Advanced team collaboration",
         "Custom workflows",
         "API access & integrations",
