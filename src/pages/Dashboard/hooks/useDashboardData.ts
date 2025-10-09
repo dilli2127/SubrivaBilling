@@ -4,7 +4,13 @@ import { Dispatch } from 'redux';
 import { dynamic_request, useDynamicSelector } from '../../../services/redux';
 import { createApiRouteGetter } from '../../../helpers/Common_functions';
 
-export const useDashboardData = (activeTab: string) => {
+interface DashboardFilters {
+  tenant_id?: string;
+  organisation_id?: string;
+  branch_id?: string;
+}
+
+export const useDashboardData = (activeTab: string, filters: DashboardFilters = {}) => {
   const dispatch: Dispatch<any> = useDispatch();
   const getApiRouteDashBoard = createApiRouteGetter('DashBoard');
   const [loadedTabs, setLoadedTabs] = useState<Set<string>>(new Set(['1'])); // Tab 1 loads by default
@@ -63,15 +69,15 @@ export const useDashboardData = (activeTab: string) => {
     TopCustomers.identifier
   );
 
-  // Helper function to dispatch API request
+  // Helper function to dispatch API request with filters
   const fetchApiData = useCallback((route: any) => {
     dispatch(
       dynamic_request(
-        { method: route.method, endpoint: route.endpoint, data: {} },
+        { method: route.method, endpoint: route.endpoint, data: filters },
         route.identifier
       )
     );
-  }, [dispatch]);
+  }, [dispatch, filters]);
 
   // Fetch data based on active tab
   const fetchTabData = useCallback((tabKey: string) => {
@@ -103,33 +109,37 @@ export const useDashboardData = (activeTab: string) => {
       default:
         break;
     }
-  }, [
-    dispatch,
-    dashboardCount,
-    SalesChartData,
-    FinancialData,
-    InventoryMetrics,
-    SalesAnalytics,
-    OperationsData,
-    RecentInvoices,
-    LowStockAlerts,
-    TopProducts,
-    TopCustomers,
-    fetchApiData,
-  ]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fetchApiData]);
 
   // Load data for active tab only once
   useEffect(() => {
     if (!loadedTabs.has(activeTab)) {
       fetchTabData(activeTab);
-      setLoadedTabs(prev => new Set(prev).add(activeTab));
+      setLoadedTabs(prev => {
+        const newSet = new Set(prev);
+        newSet.add(activeTab);
+        return newSet;
+      });
     }
-  }, [activeTab, loadedTabs, fetchTabData]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab]);
 
   // Initial load for tab 1
   useEffect(() => {
     fetchTabData('1');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Refetch data when filters change
+  useEffect(() => {
+    if (filters.tenant_id || filters.organisation_id || filters.branch_id) {
+      // Clear loaded tabs to force refetch with new filters
+      setLoadedTabs(new Set());
+      fetchTabData(activeTab);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filters.tenant_id, filters.organisation_id, filters.branch_id]);
 
   // Return all data
   return {

@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { Typography, Tabs, Tooltip } from 'antd';
+import React, { useEffect, useState, useMemo } from 'react';
+import { Typography, Tabs, Tooltip, Card, Row, Col, Select, Space, Button } from 'antd';
 import {
   BarChartOutlined,
   WalletOutlined,
@@ -7,6 +7,8 @@ import {
   RiseOutlined,
   CreditCardOutlined,
   TeamOutlined,
+  FilterOutlined,
+  ReloadOutlined,
 } from '@ant-design/icons';
 import {
   OverviewTab,
@@ -17,13 +19,110 @@ import {
   PerformanceTab,
 } from './tabs';
 import { useDashboardData } from './hooks/useDashboardData';
+import { useApiActions } from '../../services/api/useApiActions';
+import { useDynamicSelector } from '../../services/redux/selector';
 
 const { Title, Text } = Typography;
+const { Option } = Select;
 
 const Dashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState('1');
+  const [selectedTenant, setSelectedTenant] = useState<string>('all');
+  const [selectedOrganisation, setSelectedOrganisation] = useState<string>('all');
+  const [selectedBranch, setSelectedBranch] = useState<string>('all');
 
-  // Get all dashboard data from custom hook (pass active tab for lazy loading)
+  // Get user role
+  const userItem = useMemo(() => {
+    const data = sessionStorage.getItem('user');
+    return data ? JSON.parse(data) : null;
+  }, []);
+
+  const userRole = userItem?.roleItems?.name || userItem?.usertype || userItem?.user_role || '';
+  const isSuperAdmin = userRole.toLowerCase() === 'superadmin';
+  const isTenant = userRole.toLowerCase() === 'tenant';
+
+  // API hooks for dropdowns
+  const { getEntityApi } = useApiActions();
+  const TenantsApi = getEntityApi('Tenant');
+  const OrganisationsApi = getEntityApi('Organisations');
+  const BranchesApi = getEntityApi('Braches');
+
+  // Selectors for dropdowns data
+  const { items: tenantsItems } = useDynamicSelector(TenantsApi.getIdentifier('GetAll'));
+  const { items: organisationsItems } = useDynamicSelector(OrganisationsApi.getIdentifier('GetAll'));
+  const { items: branchesItems } = useDynamicSelector(BranchesApi.getIdentifier('GetAll'));
+
+  // Fetch data on mount based on user role
+  useEffect(() => {
+    if (isSuperAdmin) {
+      TenantsApi('GetAll');
+    } else if (isTenant) {
+      OrganisationsApi('GetAll');
+    } else {
+      BranchesApi('GetAll');
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isSuperAdmin, isTenant]);
+
+  // Prepare dropdown options
+  const tenantOptions = useMemo(() => {
+    return tenantsItems?.result?.map((tenant: any) => ({
+      label: tenant.organization_name || tenant.contact_name || tenant.username,
+      value: tenant._id,
+    })) || [];
+  }, [tenantsItems]);
+
+  const organisationOptions = useMemo(() => {
+    let orgs = organisationsItems?.result || [];
+    if (isSuperAdmin && selectedTenant !== 'all') {
+      orgs = orgs.filter((org: any) => org.tenant_id === selectedTenant);
+    }
+    return orgs.map((org: any) => ({
+      label: org.org_name || org.name,
+      value: org._id,
+    }));
+  }, [organisationsItems, selectedTenant, isSuperAdmin]);
+
+  const branchOptions = useMemo(() => {
+    let branches = branchesItems?.result || [];
+    if (selectedOrganisation !== 'all') {
+      branches = branches.filter((branch: any) => 
+        branch.organisation_id === selectedOrganisation || branch.org_id === selectedOrganisation
+      );
+    }
+    return branches.map((branch: any) => ({
+      label: branch.branch_name || branch.name,
+      value: branch._id,
+    }));
+  }, [branchesItems, selectedOrganisation]);
+
+  // Handle tenant change
+  const handleTenantChange = (value: string) => {
+    setSelectedTenant(value);
+    setSelectedOrganisation('all');
+    setSelectedBranch('all');
+    if (value !== 'all') {
+      OrganisationsApi('GetAll', { tenant_id: value });
+    }
+  };
+
+  // Handle organisation change
+  const handleOrganisationChange = (value: string) => {
+    setSelectedOrganisation(value);
+    setSelectedBranch('all');
+    if (value !== 'all') {
+      BranchesApi('GetAll', { organisation_id: value });
+    }
+  };
+
+  // Memoize filters to prevent unnecessary re-renders
+  const filters = useMemo(() => ({
+    tenant_id: selectedTenant !== 'all' ? selectedTenant : undefined,
+    organisation_id: selectedOrganisation !== 'all' ? selectedOrganisation : undefined,
+    branch_id: selectedBranch !== 'all' ? selectedBranch : undefined,
+  }), [selectedTenant, selectedOrganisation, selectedBranch]);
+
+  // Get all dashboard data from custom hook with filters
   const {
     DashBoardItems,
     SalesChartDataItems,
@@ -35,7 +134,8 @@ const Dashboard: React.FC = () => {
     stockAlerts,
     topProducts,
     topCustomers,
-  } = useDashboardData(activeTab);
+    refetch,
+  } = useDashboardData(activeTab, filters);
 
   // Keyboard navigation for tabs
   useEffect(() => {
@@ -66,6 +166,116 @@ const Dashboard: React.FC = () => {
           Monitor your business performance and key metrics
         </Text>
       </div>
+
+      {/* Filter Section */}
+      <Card style={{ marginBottom: 24, borderRadius: 12 }}>
+        <Row gutter={16} align="middle">
+          {/* Tenant Dropdown - Only for SuperAdmin */}
+          {isSuperAdmin && (
+            <Col xs={24} sm={12} md={6}>
+              <Space direction="vertical" size={2} style={{ width: '100%' }}>
+                <Text strong>Tenant:</Text>
+                <Select
+                  value={selectedTenant}
+                  onChange={handleTenantChange}
+                  style={{ width: '100%' }}
+                  showSearch
+                  optionFilterProp="children"
+                  filterOption={(input, option: any) =>
+                    String(option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+                  }
+                >
+                  <Option value="all">All Tenants</Option>
+                  {tenantOptions.map((option: any) => (
+                    <Option key={option.value} value={option.value}>
+                      {option.label}
+                    </Option>
+                  ))}
+                </Select>
+              </Space>
+            </Col>
+          )}
+
+          {/* Organisation Dropdown - For SuperAdmin and Tenant */}
+          {(isSuperAdmin || isTenant) && (
+            <Col xs={24} sm={12} md={6}>
+              <Space direction="vertical" size={2} style={{ width: '100%' }}>
+                <Text strong>Organisation:</Text>
+                <Select
+                  value={selectedOrganisation}
+                  onChange={handleOrganisationChange}
+                  style={{ width: '100%' }}
+                  showSearch
+                  optionFilterProp="children"
+                  filterOption={(input, option: any) =>
+                    String(option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+                  }
+                  disabled={isSuperAdmin && selectedTenant === 'all'}
+                  placeholder={isSuperAdmin && selectedTenant === 'all' ? 'Select tenant first' : 'Select organisation'}
+                >
+                  <Option value="all">All Organisations</Option>
+                  {organisationOptions.map((option: any) => (
+                    <Option key={option.value} value={option.value}>
+                      {option.label}
+                    </Option>
+                  ))}
+                </Select>
+              </Space>
+            </Col>
+          )}
+
+          {/* Branch Dropdown - For All Users */}
+          <Col xs={24} sm={12} md={6}>
+            <Space direction="vertical" size={2} style={{ width: '100%' }}>
+              <Text strong>Branch:</Text>
+              <Select
+                value={selectedBranch}
+                onChange={setSelectedBranch}
+                style={{ width: '100%' }}
+                showSearch
+                optionFilterProp="children"
+                filterOption={(input, option: any) =>
+                  String(option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+                }
+                disabled={(isSuperAdmin || isTenant) && selectedOrganisation === 'all'}
+                placeholder={(isSuperAdmin || isTenant) && selectedOrganisation === 'all' ? 'Select organisation first' : 'Select branch'}
+              >
+                <Option value="all">All Branches</Option>
+                {branchOptions.map((option: any) => (
+                  <Option key={option.value} value={option.value}>
+                    {option.label}
+                  </Option>
+                ))}
+              </Select>
+            </Space>
+          </Col>
+
+          {/* Apply Filters Button */}
+          <Col xs={24} sm={24} md={6}>
+            <Button
+              type="primary"
+              icon={<FilterOutlined />}
+              onClick={refetch}
+              style={{ marginTop: 22, width: '100%' }}
+              size="large"
+            >
+              Apply Filters
+            </Button>
+          </Col>
+
+          {/* Refresh Button */}
+          <Col xs={24} sm={24} md={6}>
+            <Button
+              icon={<ReloadOutlined />}
+              onClick={refetch}
+              style={{ marginTop: 22, width: '100%' }}
+              size="large"
+            >
+              Refresh Data
+            </Button>
+          </Col>
+        </Row>
+      </Card>
 
       {/* Tabs */}
       <Tabs
