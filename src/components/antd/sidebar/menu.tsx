@@ -229,10 +229,4 @@ export const menuItems = [
       },
     ],
   },
-  {
-    key: 'user_profile',
-    label: 'My Profile',
-    icon: <UserOutlined />,
-    path: '/profile',
-  },
 ];
