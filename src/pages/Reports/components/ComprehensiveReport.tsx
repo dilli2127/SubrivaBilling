@@ -198,7 +198,7 @@ const ComprehensiveReport: React.FC = () => {
                 </ComposedChart>
               </ResponsiveContainer>
             ) : (
-              <Empty description="Use group_by filter (daily/monthly/yearly) to see trends" />
+              <Empty description="(daily/monthly/yearly) to see trends" />
             )}
           </Card>
         </Col>

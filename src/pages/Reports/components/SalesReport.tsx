@@ -149,7 +149,7 @@ const SalesReport: React.FC = () => {
                 </LineChart>
               </ResponsiveContainer>
             ) : (
-              <Empty description="No trend data available. Use group_by filter to see trends." />
+              <Empty description="No trend data available" />
             )}
           </Card>
         </Col>
