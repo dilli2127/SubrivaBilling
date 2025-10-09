@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import {
   Button,
   Row,
@@ -15,6 +15,7 @@ import { BaseEntity } from '../../types/entities';
 import GlobalDrawer from '../antd/GlobalDrawer';
 import AntdForm from '../antd/form/form';
 import GlobalTable from '../antd/GlobalTable';
+import { useSuperAdminFilters } from '../../hooks/useSuperAdminFilters';
 
 // Filter and Button Config Types
 export type FilterConfig = {
@@ -61,6 +62,7 @@ interface GenericCrudPageProps<T extends BaseEntity> {
   onFilterChange?: (values: Record<string, any>) => void;
   customButtons?: CustomButtonConfig[];
   onValuesChange?: (changed: any, all: any) => void;
+  enableSuperAdminFilters?: boolean; // Enable tenant/org/branch dropdowns for superadmin
 }
 
 // Extract actions column to a helper
@@ -102,7 +104,11 @@ export const GenericCrudPage = <T extends BaseEntity>({
   onFilterChange,
   customButtons = [],
   onValuesChange,
+  enableSuperAdminFilters = true, // Enabled by default
 }: GenericCrudPageProps<T>) => {
+  // SuperAdmin filters hook
+  const superAdminFilters = useSuperAdminFilters();
+  
   const {
     loading,
     createLoading,
@@ -129,9 +135,28 @@ export const GenericCrudPage = <T extends BaseEntity>({
 
   const handleFilterChange = useCallback((key: string, value: any) => {
     const newValues = { ...filterValues, [key]: value };
-    setFilterValues(newValues);
-    if (onFilterChange) onFilterChange(newValues);
-  }, [filterValues, setFilterValues, onFilterChange]);
+    // Include superadmin filters if enabled
+    const allFilters = enableSuperAdminFilters 
+      ? { ...newValues, ...superAdminFilters.getApiFilters() }
+      : newValues;
+    setFilterValues(allFilters);
+    if (onFilterChange) onFilterChange(allFilters);
+  }, [filterValues, setFilterValues, onFilterChange, enableSuperAdminFilters, superAdminFilters]);
+
+  // Apply superadmin filters whenever they change
+  useEffect(() => {
+    if (enableSuperAdminFilters) {
+      const apiFilters = superAdminFilters.getApiFilters();
+      const newFilters = { ...filterValues, ...apiFilters };
+      setFilterValues(newFilters);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    superAdminFilters.selectedTenant,
+    superAdminFilters.selectedOrganisation,
+    superAdminFilters.selectedBranch,
+    enableSuperAdminFilters,
+  ]);
 
   const tableColumns = useMemo(() => [
     ...columns,
@@ -154,6 +179,99 @@ export const GenericCrudPage = <T extends BaseEntity>({
         {/* Filters + Actions aligned right and bottom */}
         <Col>
           <Row gutter={[12, 12]} align="bottom" justify="end" wrap>
+            {/* SuperAdmin Filters */}
+            {enableSuperAdminFilters && superAdminFilters.isSuperAdmin && (
+              <Col>
+                <Select
+                  placeholder="Select Tenant"
+                  value={superAdminFilters.selectedTenant}
+                  onChange={(value) => {
+                    superAdminFilters.handleTenantChange(value);
+                    handleFilterChange('tenant_id', value === 'all' ? undefined : value);
+                  }}
+                  allowClear
+                  style={{ width: 200 }}
+                  loading={superAdminFilters.tenantsLoading}
+                  disabled={createLoading || updateLoading || deleteLoading}
+                >
+                  <Select.Option value="all">All Tenants</Select.Option>
+                  {superAdminFilters.tenantOptions.map(opt => (
+                    <Select.Option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </Select.Option>
+                  ))}
+                </Select>
+              </Col>
+            )}
+            
+            {enableSuperAdminFilters && (superAdminFilters.isSuperAdmin || superAdminFilters.isTenant) && (
+              <Col>
+                <Select
+                  placeholder={
+                    superAdminFilters.isSuperAdmin && superAdminFilters.selectedTenant === 'all'
+                      ? 'Select tenant first'
+                      : 'Select Organisation'
+                  }
+                  value={superAdminFilters.selectedOrganisation}
+                  onChange={(value) => {
+                    superAdminFilters.handleOrganisationChange(value);
+                    handleFilterChange('organisation_id', value === 'all' ? undefined : value);
+                  }}
+                  allowClear
+                  style={{ width: 200 }}
+                  loading={superAdminFilters.organisationsLoading}
+                  disabled={
+                    (superAdminFilters.isSuperAdmin && superAdminFilters.selectedTenant === 'all') ||
+                    createLoading ||
+                    updateLoading ||
+                    deleteLoading
+                  }
+                >
+                  <Select.Option value="all">All Organisations</Select.Option>
+                  {superAdminFilters.organisationOptions.map(opt => (
+                    <Select.Option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </Select.Option>
+                  ))}
+                </Select>
+              </Col>
+            )}
+            
+            {enableSuperAdminFilters && (
+              <Col>
+                <Select
+                  placeholder={
+                    (superAdminFilters.isSuperAdmin || superAdminFilters.isTenant) &&
+                    superAdminFilters.selectedOrganisation === 'all'
+                      ? 'Select organisation first'
+                      : 'Select Branch'
+                  }
+                  value={superAdminFilters.selectedBranch}
+                  onChange={(value) => {
+                    superAdminFilters.handleBranchChange(value);
+                    handleFilterChange('branch_id', value === 'all' ? undefined : value);
+                  }}
+                  allowClear
+                  style={{ width: 200 }}
+                  loading={superAdminFilters.branchesLoading}
+                  disabled={
+                    ((superAdminFilters.isSuperAdmin || superAdminFilters.isTenant) &&
+                      superAdminFilters.selectedOrganisation === 'all') ||
+                    createLoading ||
+                    updateLoading ||
+                    deleteLoading
+                  }
+                >
+                  <Select.Option value="all">All Branches</Select.Option>
+                  {superAdminFilters.branchOptions.map(opt => (
+                    <Select.Option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </Select.Option>
+                  ))}
+                </Select>
+              </Col>
+            )}
+
             {/* Filters */}
             {filters.map(filter => (
               <Col key={filter.key}>
