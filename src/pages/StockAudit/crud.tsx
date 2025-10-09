@@ -35,7 +35,7 @@ const StockAuditCrud: React.FC = () => {
   const StockStorageApi = getEntityApi('StockStorage');
 
   const { items: productList, loading } = useDynamicSelector(
-    ProductsApi.getIdentifier('GetAll')
+    ProductsApi.getIdentifier('Get')
   );
   const { items: vendorList, loading: vendorloading } = useDynamicSelector(
     VendorApi.getIdentifier('GetAll')
@@ -67,7 +67,7 @@ const StockAuditCrud: React.FC = () => {
   }, [form, form.getFieldValue('quantity'), form.getFieldValue('buy_price')]);
 
   useEffect(() => {
-    ProductsApi('GetAll');
+    ProductsApi('Get');
     VendorApi('GetAll');
     WarehouseApi('GetAll');
     BranchApi('GetAll');
