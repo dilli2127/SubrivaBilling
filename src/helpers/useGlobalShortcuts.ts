@@ -7,7 +7,7 @@ export function useGlobalShortcuts() {
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.shiftKey && e.key.toLowerCase() === "s") {
+      if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === "s") {
         e.preventDefault();
         navigate("/retaill_billing"); // Updated to retail billing route
       }
