@@ -57,8 +57,8 @@
 }
 
 .logoImage {
-  width: 36px;
-  height: 36px;
+  width: 92px;
+  height: 92px;
   border-radius: 4px;
   object-fit: contain;
   margin-right: 12px;
@@ -70,7 +70,7 @@
 }
 
 .brandName {
-  font-size: 20px;
+  font-size: 26px;
   color: #3B82F6;
   font-weight: 600;
   letter-spacing: 0.3px;
@@ -78,7 +78,7 @@
 }
 
 .brandSuffix {
-  font-size: 20px;
+  font-size: 26px;
   color: #8B5CF6;
   font-weight: 600;
   letter-spacing: 0.3px;
@@ -274,13 +274,13 @@
   }
   
   .logoImage {
-    width: 28px;
-    height: 28px;
+    width: 82px;
+    height: 82px;
   }
   
   .brandName,
   .brandSuffix {
-    font-size: 18px;
+    font-size: 24px;
   }
   
   .desktopNav {
@@ -294,13 +294,13 @@
   }
   
   .logoImage {
-    width: 26px;
-    height: 26px;
+    width: 76px;
+    height: 76px;
   }
   
   .brandName,
   .brandSuffix {
-    font-size: 16px;
+    font-size: 22px;
   }
 }
 
@@ -314,14 +314,14 @@
   }
   
   .logoImage {
-    width: 24px;
-    height: 24px;
+    width: 62px;
+    height: 62px;
     margin-right: 8px;
   }
   
   .brandName,
   .brandSuffix {
-    font-size: 15px;
+    font-size: 20px;
   }
 }
 
@@ -335,13 +335,13 @@
   }
   
   .logoImage {
-    width: 22px;
-    height: 22px;
+    width: 52px;
+    height: 52px;
     margin-right: 6px;
   }
   
   .brandName,
   .brandSuffix {
-    font-size: 14px;
+    font-size: 18px;
   }
 }
