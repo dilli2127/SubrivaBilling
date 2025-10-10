@@ -1,0 +1,300 @@
+/* Email Send Modal Styles */
+.emailSendModal .ant-modal-header {
+  background: #ffffff;
+  border-bottom: 1px solid #f0f0f0;
+  border-radius: 8px 8px 0 0;
+  padding: 20px 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.emailSendModal .ant-modal-title {
+  color: #262626;
+  font-weight: 600;
+  font-size: 18px;
+}
+
+.emailSendHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.emailSendHeader .anticon {
+  font-size: 20px;
+  color: #1890ff;
+}
+
+.emailSendModal .ant-modal-body {
+  padding: 24px;
+}
+
+.emailSendContent {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Email Form */
+.emailForm {
+  margin-bottom: 20px;
+}
+
+.formSection {
+  margin-bottom: 24px;
+}
+
+.formSection .ant-typography {
+  margin-bottom: 16px;
+  color: #262626;
+}
+
+.emailForm .ant-form-item-label > label {
+  font-weight: 600;
+  color: #262626;
+}
+
+.emailForm .ant-input,
+.emailForm .ant-input-affix-wrapper {
+  border-radius: 6px;
+  border: 1px solid #d9d9d9;
+  transition: all 0.3s ease;
+}
+
+.emailForm .ant-input:focus,
+.emailForm .ant-input-affix-wrapper:focus {
+  border-color: #40a9ff;
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+}
+
+.emailForm .ant-input-affix-wrapper .ant-input-prefix {
+  color: #8c8c8c;
+  margin-right: 8px;
+}
+
+/* Form Actions */
+.formActions {
+  display: flex;
+  justify-content: flex-end;
+  padding: 16px 0;
+  border-top: 1px solid #f0f0f0;
+}
+
+.formActions .ant-btn {
+  margin-left: 8px;
+}
+
+.formActions .ant-btn-primary {
+  background: #1890ff;
+  border-color: #1890ff;
+}
+
+.formActions .ant-btn-primary:hover {
+  background: #40a9ff;
+  border-color: #40a9ff;
+}
+
+/* Email Preview */
+.emailPreview {
+  margin-top: 24px;
+  padding: 20px;
+  background: #fafafa;
+  border-radius: 8px;
+  border: 1px solid #f0f0f0;
+}
+
+.previewContent {
+  background: #ffffff;
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.previewHeader {
+  padding: 16px 20px;
+  background: #f8f9fa;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.previewHeader .ant-typography {
+  margin: 0;
+  color: #262626;
+}
+
+.previewBody {
+  padding: 20px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.htmlPreview {
+  font-family: Arial, sans-serif;
+  line-height: 1.6;
+  color: #333;
+}
+
+.htmlPreview h1,
+.htmlPreview h2,
+.htmlPreview h3 {
+  margin: 0 0 16px 0;
+  color: #262626;
+}
+
+.htmlPreview table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+}
+
+.htmlPreview th,
+.htmlPreview td {
+  border: 1px solid #e8e8e8;
+  padding: 12px;
+  text-align: left;
+}
+
+.htmlPreview th {
+  background-color: #f8f9fa;
+  font-weight: 600;
+}
+
+.htmlPreview .total {
+  font-weight: bold;
+  font-size: 16px;
+  background-color: #f0f8ff;
+}
+
+.previewActions {
+  padding: 16px 20px;
+  background: #f8f9fa;
+  border-top: 1px solid #e9ecef;
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+/* Bill Info */
+.billInfo {
+  margin-top: 20px;
+}
+
+.billInfo .ant-alert {
+  border-radius: 6px;
+  border: 1px solid #d9f7be;
+  background-color: #f6ffed;
+}
+
+.billInfo .ant-alert-message {
+  font-weight: 600;
+  color: #262626;
+}
+
+.billInfo .ant-alert-description {
+  color: #595959;
+}
+
+/* Success State */
+.successState {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.successIcon {
+  font-size: 64px;
+  color: #52c41a;
+  margin-bottom: 20px;
+}
+
+.successState .ant-typography {
+  margin-bottom: 16px;
+  color: #262626;
+}
+
+.successState .ant-typography-caption {
+  color: #8c8c8c;
+  font-size: 16px;
+}
+
+/* Loading States */
+.emailSendModal .ant-spin {
+  margin: 20px 0;
+}
+
+.emailSendModal .ant-spin .ant-spin-dot {
+  font-size: 24px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .emailSendModal {
+    width: 95% !important;
+    max-width: 500px;
+  }
+  
+  .emailSendModal .ant-modal-body {
+    padding: 16px;
+  }
+  
+  .formActions {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .formActions .ant-btn {
+    margin: 0;
+    width: 100%;
+  }
+  
+  .previewBody {
+    max-height: 300px;
+  }
+  
+  .previewActions {
+    flex-direction: column;
+  }
+  
+  .previewActions .ant-btn {
+    width: 100%;
+  }
+}
+
+/* Focus styles for accessibility */
+.emailSendModal .ant-input:focus,
+.emailSendModal .ant-btn:focus {
+  outline: 2px solid #1890ff;
+  outline-offset: 2px;
+}
+
+/* Animation for preview */
+.emailPreview {
+  animation: slideInUp 0.3s ease-out;
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Custom scrollbar for preview */
+.previewBody::-webkit-scrollbar {
+  width: 6px;
+}
+
+.previewBody::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.previewBody::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.previewBody::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}

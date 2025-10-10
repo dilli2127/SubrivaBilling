@@ -21,6 +21,7 @@ import {
   UserOutlined,
   CalendarOutlined,
   FileTextOutlined,
+  MailOutlined,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
 import GlobalDrawer from "../../components/antd/GlobalDrawer";
@@ -32,6 +33,7 @@ import GlobalTable from "../../components/antd/GlobalTable";
 import { useHandleApiResponse } from "../../components/common/useHandleApiResponse";
 import { useDispatch } from "react-redux";
 import { dynamic_clear } from "../../services/redux";
+import EmailSendModal from "../../components/common/EmailSendModal";
 import { billingTemplates } from './templates/registry';
 
 const { Title } = Typography;
@@ -53,6 +55,8 @@ const BillListPage = () => {
   });
   const [printModalVisible, setPrintModalVisible] = useState(false);
   const [printBill, setPrintBill] = useState<any>(null);
+  const [emailModalVisible, setEmailModalVisible] = useState(false);
+  const [selectedBillForEmail, setSelectedBillForEmail] = useState<any>(null);
 
   const dispatch = useDispatch();
 
@@ -79,6 +83,11 @@ const BillListPage = () => {
       date: dayjs(record.date),
     });
     setIsDrawerOpen(true);
+  };
+
+  const handleEmail = (record: any) => {
+    setSelectedBillForEmail(record);
+    setEmailModalVisible(true);
   };
 
   const handlePrint = (record: any) => {
@@ -199,6 +208,13 @@ const BillListPage = () => {
               type="link"
               icon={<EyeOutlined />}
               onClick={() => handleView(record)}
+            />
+          </Tooltip>
+          <Tooltip title="Send via Email">
+            <Button
+              type="link"
+              icon={<MailOutlined />}
+              onClick={() => handleEmail(record)}
             />
           </Tooltip>
           <Tooltip title="Print">
@@ -322,6 +338,18 @@ const BillListPage = () => {
           return <TemplateComponent billData={printBill} />;
         })()}
       </Modal>
+
+      {/* Email Send Modal */}
+      <EmailSendModal
+        visible={emailModalVisible}
+        onClose={() => {
+          setEmailModalVisible(false);
+          setSelectedBillForEmail(null);
+        }}
+        billData={selectedBillForEmail}
+        customerEmail={selectedBillForEmail?.customerDetails?.email}
+        customerName={selectedBillForEmail?.customerDetails?.full_name}
+      />
     </div>
   );
 };

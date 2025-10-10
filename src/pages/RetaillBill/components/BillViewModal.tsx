@@ -1,6 +1,7 @@
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import { Modal, Button, Table, Typography } from "antd";
-import { PrinterOutlined } from "@ant-design/icons";
+import { PrinterOutlined, MailOutlined } from "@ant-design/icons";
+import EmailSendModal from '../../../components/common/EmailSendModal';
 
 const { Title, Text } = Typography;
 
@@ -35,6 +36,7 @@ const BillViewModal: React.FC<BillViewModalProps> = ({
   billData,
 }) => {
   const printFrameRef = useRef<HTMLIFrameElement>(null);
+  const [emailModalVisible, setEmailModalVisible] = useState(false);
   const formatAmount = (amount: any) => {
     const numAmount = Number(amount) || 0;
     return numAmount.toFixed(2);
@@ -243,8 +245,15 @@ const BillViewModal: React.FC<BillViewModalProps> = ({
         width={800}
         footer={[
           <Button
-            key="print"
+            key="email"
             type="primary"
+            icon={<MailOutlined />}
+            onClick={() => setEmailModalVisible(true)}
+          >
+            Send via Email
+          </Button>,
+          <Button
+            key="print"
             icon={<PrinterOutlined />}
             onClick={handlePrint}
           >
@@ -410,6 +419,15 @@ const BillViewModal: React.FC<BillViewModalProps> = ({
         ref={printFrameRef}
         style={{ display: "none" }}
         title="print-frame"
+      />
+
+      {/* Email Send Modal */}
+      <EmailSendModal
+        visible={emailModalVisible}
+        onClose={() => setEmailModalVisible(false)}
+        billData={billData}
+        customerEmail={billData?.customerDetails?.email}
+        customerName={billData?.customerDetails?.full_name}
       />
     </>
   );
