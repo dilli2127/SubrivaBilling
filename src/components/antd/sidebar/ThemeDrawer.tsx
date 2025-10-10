@@ -26,7 +26,11 @@ interface ThemeDrawerProps {
 const themeGroups = [
   {
     title: 'Classic',
-    keys: ['classic', 'violet', 'dark', 'sunset', 'forest', 'graphite', 'amber'],
+    keys: ['classic', 'violet', 'dark', 'sunset', 'forest', 'amber'],
+  },
+  {
+    title: 'Grey Gradients',
+    keys: ['silver', 'slate', 'steel', 'ash', 'cloud', 'graphite', 'charcoal'],
   },
   {
     title: 'Modern',
