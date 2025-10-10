@@ -256,4 +256,5 @@ export const API_ROUTES = {
   Tenant: createCrudRoutes("/tenant_accounts", "TenantAccounts"),
   BranchStock: createCrudRoutes("/branch_stock", "BranchStock"),
   StockStorage: createCrudRoutes("/stock_storage", "StockStorage"),
+  Settings: createCrudRoutes("/settings", "Settings"),
 };

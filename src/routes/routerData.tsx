@@ -40,6 +40,7 @@ const BranchStockAvailable = lazy(() => import("../pages/BranchProductStocks/Lis
 const StorageStockList = lazy(() => import("../pages/StockAudit/StorageStockList"));
 const Reports = lazy(() => import("../pages/Reports/index"));
 const UserProfile = lazy(() => import("../pages/UserProfile"));
+const Settings = lazy(() => import("../pages/Settings"));
 
 
 const routerData: RouteConfig[] = [
@@ -423,6 +424,16 @@ const routerData: RouteConfig[] = [
         element: (
           <Suspense fallback={<Loader />}>
             <UserProfile />
+          </Suspense>
+        ),
+        children: [],
+      },
+      {
+        key: "settings",
+        path: "settings",
+        element: (
+          <Suspense fallback={<Loader />}>
+            <Settings />
           </Suspense>
         ),
         children: [],
