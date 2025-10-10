@@ -20,7 +20,6 @@ import {
   SettingOutlined,
   BellOutlined,
   SearchOutlined,
-  MenuOutlined,
   PlayCircleOutlined,
   EyeOutlined,
   DesktopOutlined,
@@ -29,6 +28,7 @@ import {
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import FeaturesSection from '../../components/common/FeaturesSection';
+import LandingPageHeader from '../../components/common/LandingPageHeader';
 import styles from './LandingPage.module.css';
 
 const { Title, Paragraph, Text } = Typography;
@@ -109,6 +109,13 @@ const ElectronLandingPage: React.FC = () => {
 
   return (
     <div className={styles.landingPage}>
+      
+      {/* Landing Page Header */}
+      <LandingPageHeader 
+        title="Subriva Billing"
+        logoUrl="https://freshfocuzstudio.s3.ap-south-1.amazonaws.com/ffs+logo.png"
+        logoAlt="Subriva Billing"
+      />
 
       {/* Hero Section */}
       <section className={styles.heroSection}>

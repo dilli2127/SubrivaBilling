@@ -5,6 +5,7 @@ import React, {
   useCallback,
   useRef,
   useLayoutEffect,
+  useEffect,
 } from 'react';
 import {
   LogoutOutlined,
@@ -12,8 +13,9 @@ import {
   MenuUnfoldOutlined,
   UserOutlined, // Add this import
   BgColorsOutlined,
+  MenuOutlined,
 } from '@ant-design/icons';
-import { Layout, Menu, Modal, Button, Avatar } from 'antd';
+import { Layout, Menu, Modal, Button, Avatar, Drawer } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { menuItems as originalMenuItems } from './menu';
 import './Sidebar.css';
@@ -78,6 +80,8 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
   const [selectedKey, setSelectedKey] = useState('dashboard');
   const [openKeys, setOpenKeys] = useState<string[]>([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const navigate = useNavigate();
   const [theme, setTheme] = useState(getInitialTheme());
   const [themeDrawerOpen, setThemeDrawerOpen] = useState(false);
@@ -94,6 +98,18 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
   const [isDragging, setIsDragging] = useState(false);
   const [dragStartY, setDragStartY] = useState(0);
   const [dragStartTop, setDragStartTop] = useState(0);
+
+  // Check if mobile screen
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // Apply theme variables
   React.useEffect(() => {
@@ -129,8 +145,12 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
     (key: string, path?: string) => {
       setSelectedKey(key);
       if (path) navigate(path);
+      // Close mobile drawer when menu item is clicked
+      if (isMobile) {
+        setMobileDrawerOpen(false);
+      }
     },
-    [navigate]
+    [navigate, isMobile]
   );
 
   const handleLogout = useCallback(() => {
@@ -338,7 +358,7 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
 
       {/* Sidebar + Content */}
       <Layout>
-        {sidebarPosition !== 'top' && (
+        {sidebarPosition !== 'top' && !isMobile && (
           <Sider
             collapsible
             collapsed={collapsed}
@@ -413,9 +433,8 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
         )}
         <Layout
           style={{
-            marginLeft: sidebarPosition === 'left' ? (collapsed ? 80 : 240) : 0,
-            marginRight:
-              sidebarPosition === 'right' ? (collapsed ? 80 : 240) : 0,
+            marginLeft: isMobile ? 0 : (sidebarPosition === 'left' ? (collapsed ? 80 : 240) : 0),
+            marginRight: isMobile ? 0 : (sidebarPosition === 'right' ? (collapsed ? 80 : 240) : 0),
             marginTop: sidebarPosition === 'top' ? 120 : 64, // 64 header + 56 menu
             transition:
               'margin-left 0.3s ease, margin-right 0.3s ease, margin-top 0.3s ease',
@@ -438,25 +457,109 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
       </Layout>
 
       {/* Floating Theme Button - Now Draggable */}
-      <Button
-        icon={<BgColorsOutlined style={{ fontSize: 22 }} />}
-        style={{
-          position: 'fixed',
-          top: `${buttonTop}%`,
-          right: 0,
-          zIndex: 2000,
-          background: '#fff',
-          border: '1px solid #eee',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.10)',
-          borderRadius: '8px 0 0 8px',
-          padding: '10px 12px',
-          transform: 'translateY(-50%)',
-          cursor: isDragging ? 'grabbing' : 'grab',
-          userSelect: 'none',
+      {!isMobile && (
+        <Button
+          icon={<BgColorsOutlined style={{ fontSize: 22 }} />}
+          style={{
+            position: 'fixed',
+            top: `${buttonTop}%`,
+            right: 0,
+            zIndex: 2000,
+            background: '#fff',
+            border: '1px solid #eee',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.10)',
+            borderRadius: '8px 0 0 8px',
+            padding: '10px 12px',
+            transform: 'translateY(-50%)',
+            cursor: isDragging ? 'grabbing' : 'grab',
+            userSelect: 'none',
+          }}
+          onMouseDown={handleMouseDown}
+          onClick={() => setThemeDrawerOpen(true)}
+        />
+      )}
+
+      {/* Mobile Bottom Navigation Bar */}
+      {isMobile && (
+        <div className="mobile-bottom-nav">
+          <button
+            className={`mobile-nav-item ${selectedKey === 'dashboard' ? 'active' : ''}`}
+            onClick={() => handleMenuClick('dashboard', '/dashboard')}
+          >
+            <span className="nav-icon">🏠</span>
+            <span className="nav-label">Home</span>
+          </button>
+          
+          <button
+            className={`mobile-nav-item ${selectedKey.includes('bill') ? 'active' : ''}`}
+            onClick={() => handleMenuClick('retail_bill', '/retail-bill')}
+          >
+            <span className="nav-icon">📄</span>
+            <span className="nav-label">Billing</span>
+          </button>
+          
+          <button
+            className="mobile-nav-item mobile-nav-menu-btn"
+            onClick={() => setMobileDrawerOpen(true)}
+          >
+            <span className="nav-icon menu-icon">
+              <MenuOutlined />
+            </span>
+            <span className="nav-label">Menu</span>
+          </button>
+          
+          <button
+            className={`mobile-nav-item ${selectedKey.includes('report') ? 'active' : ''}`}
+            onClick={() => handleMenuClick('reports', '/reports')}
+          >
+            <span className="nav-icon">📊</span>
+            <span className="nav-label">Reports</span>
+          </button>
+          
+          <button
+            className="mobile-nav-item"
+            onClick={() => navigate('/profile')}
+          >
+            <span className="nav-icon">👤</span>
+            <span className="nav-label">Profile</span>
+          </button>
+        </div>
+      )}
+
+      {/* Mobile Navigation Drawer */}
+      <Drawer
+        title="All Navigation"
+        placement="bottom"
+        onClose={() => setMobileDrawerOpen(false)}
+        open={mobileDrawerOpen}
+        height="70vh"
+        styles={{
+          header: {
+            background: 'linear-gradient(90deg, #4e54c8, #8f94fb)',
+            borderBottom: 'none',
+          },
+          body: {
+            padding: 0,
+            background: 'linear-gradient(180deg, #4e54c8 60%, #8f94fb 100%)',
+          },
         }}
-        onMouseDown={handleMouseDown}
-        onClick={() => setThemeDrawerOpen(true)}
-      />
+      >
+        <Menu
+          mode="inline"
+          selectedKeys={[selectedKey]}
+          theme="light"
+          openKeys={openKeys}
+          onOpenChange={handleOpenChange}
+          className="custom-menu"
+          style={{
+            background: 'transparent',
+            border: 'none',
+            height: '100%',
+          }}
+        >
+          {renderMenuItems(filteredMenuItems)}
+        </Menu>
+      </Drawer>
       {/* Theme Drawer as separate component */}
       <ThemeDrawer
         open={themeDrawerOpen}

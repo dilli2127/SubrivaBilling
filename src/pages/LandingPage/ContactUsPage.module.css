@@ -372,6 +372,19 @@
 }
 
 /* Responsive Design */
+
+/* Large Desktop */
+@media (max-width: 1400px) {
+  .pageTitle {
+    font-size: 44px !important;
+  }
+  
+  .pageSubtitle {
+    font-size: 19px !important;
+  }
+}
+
+/* Desktop */
 @media (max-width: 1200px) {
   .mainContent {
     padding: 60px 20px;
@@ -381,19 +394,47 @@
     padding-left: 0;
     margin-top: 40px;
   }
+  
+  .pageTitle {
+    font-size: 42px !important;
+  }
+  
+  .faqTitle {
+    font-size: 30px !important;
+  }
 }
 
+/* Tablet Landscape */
+@media (max-width: 1024px) {
+  .headerSection {
+    padding: 70px 0 50px 0;
+  }
+  
+  .pageTitle {
+    font-size: 40px !important;
+  }
+  
+  .mainContent {
+    padding: 50px 20px;
+  }
+  
+  .contactFormCard {
+    padding: 35px !important;
+  }
+}
+
+/* Tablet Portrait */
 @media (max-width: 768px) {
   .headerSection {
     padding: 60px 0 40px 0;
   }
   
   .pageTitle {
-    font-size: 36px !important;
+    font-size: 32px !important;
   }
   
   .pageSubtitle {
-    font-size: 18px !important;
+    font-size: 17px !important;
   }
   
   .mainContent {
@@ -401,24 +442,66 @@
   }
   
   .contactFormCard {
-    padding: 24px !important;
-    border-radius: 16px !important;
+    padding: 28px !important;
+    border-radius: 18px !important;
   }
   
-  .formTitle {
-    font-size: 24px !important;
+  .formTitle,
+  .infoTitle {
+    font-size: 22px !important;
+  }
+  
+  .formSubtitle,
+  .infoSubtitle {
+    font-size: 15px !important;
+  }
+  
+  .contactForm :global(.ant-input),
+  .contactForm :global(.ant-input-affix-wrapper),
+  .contactForm :global(.ant-select-selector) {
+    padding: 10px 14px !important;
+    font-size: 14px !important;
   }
   
   .inquiryTypes {
     justify-content: center;
+    gap: 10px;
+  }
+  
+  .inquiryTag {
+    padding: 6px 14px !important;
+    font-size: 14px !important;
+  }
+  
+  .submitButton {
+    height: 44px !important;
+    font-size: 15px !important;
   }
   
   .contactInfoGrid {
     gap: 16px;
+    margin-bottom: 36px;
+  }
+  
+  .infoCardContent {
+    gap: 14px;
+  }
+  
+  .infoIcon {
+    font-size: 22px;
   }
   
   .testimonials {
     gap: 12px;
+  }
+  
+  .testimonialsTitle {
+    font-size: 18px !important;
+    margin-bottom: 20px !important;
+  }
+  
+  .testimonialContent {
+    padding: 16px;
   }
   
   .faqSection {
@@ -426,11 +509,21 @@
   }
   
   .faqTitle {
-    font-size: 28px !important;
+    font-size: 26px !important;
+    margin-bottom: 36px !important;
+  }
+  
+  .faqCard :global(.ant-card-body) {
+    padding: 20px !important;
   }
 }
 
-@media (max-width: 480px) {
+/* Mobile */
+@media (max-width: 640px) {
+  .headerSection {
+    padding: 50px 0 35px 0;
+  }
+  
   .pageTitle {
     font-size: 28px !important;
   }
@@ -439,17 +532,156 @@
     font-size: 16px !important;
   }
   
+  .headerContent {
+    padding: 0 16px;
+  }
+  
+  .mainContent {
+    padding: 35px 12px;
+  }
+  
+  .contactFormCard {
+    padding: 24px !important;
+    border-radius: 16px !important;
+  }
+  
+  .formTitle,
+  .infoTitle {
+    font-size: 20px !important;
+  }
+  
+  .formSubtitle,
+  .infoSubtitle {
+    font-size: 14px !important;
+  }
+  
+  .formHeader {
+    margin-bottom: 30px;
+  }
+  
+  .infoSubtitle {
+    margin-bottom: 24px !important;
+  }
+  
+  .contactForm :global(.ant-input),
+  .contactForm :global(.ant-input-affix-wrapper),
+  .contactForm :global(.ant-select-selector) {
+    padding: 9px 12px !important;
+    font-size: 13px !important;
+  }
+  
+  .inquiryTypes {
+    gap: 8px;
+  }
+  
+  .inquiryTag {
+    padding: 5px 12px !important;
+    font-size: 13px !important;
+  }
+  
+  .submitButton {
+    height: 42px !important;
+    font-size: 14px !important;
+  }
+  
+  .contactInfoGrid {
+    gap: 14px;
+    margin-bottom: 32px;
+  }
+  
+  .infoIcon,
+  .contactIcon {
+    font-size: 20px !important;
+  }
+  
+  .infoCardTitle {
+    font-size: 15px !important;
+  }
+  
+  .infoDetail {
+    font-size: 13px !important;
+  }
+  
+  .testimonials {
+    gap: 10px;
+  }
+  
+  .testimonialsTitle {
+    font-size: 17px !important;
+    margin-bottom: 18px !important;
+  }
+  
+  .testimonialContent {
+    padding: 14px;
+  }
+  
+  .testimonialText {
+    font-size: 13px !important;
+  }
+  
+  .faqSection {
+    margin-top: 50px;
+  }
+  
+  .faqTitle {
+    font-size: 24px !important;
+    margin-bottom: 28px !important;
+  }
+  
+  .faqCard :global(.ant-card-body) {
+    padding: 18px !important;
+  }
+  
+  .faqCard h4 {
+    font-size: 15px !important;
+    margin-bottom: 10px !important;
+  }
+  
+  .faqCard p {
+    font-size: 13px !important;
+  }
+}
+
+/* Small Mobile */
+@media (max-width: 480px) {
+  .headerSection {
+    padding: 45px 0 30px 0;
+  }
+  
+  .pageTitle {
+    font-size: 24px !important;
+  }
+  
+  .pageSubtitle {
+    font-size: 15px !important;
+  }
+  
+  .mainContent {
+    padding: 30px 10px;
+  }
+  
   .contactFormCard {
     padding: 20px !important;
   }
   
-  .formTitle {
-    font-size: 20px !important;
+  .formTitle,
+  .infoTitle {
+    font-size: 18px !important;
+    margin-bottom: 10px !important;
+  }
+  
+  .formSubtitle,
+  .infoSubtitle {
+    font-size: 13px !important;
+  }
+  
+  .formHeader {
+    margin-bottom: 24px;
   }
   
   .inquiryTypes {
     flex-direction: column;
-    align-items: center;
+    align-items: stretch;
   }
   
   .inquiryTag {
@@ -457,13 +689,43 @@
     text-align: center;
   }
   
+  .submitButton {
+    height: 40px !important;
+    font-size: 13px !important;
+  }
+  
   .infoCardContent {
     flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  
+  .infoDetails {
     text-align: center;
   }
   
   .testimonialAuthor {
     justify-content: center;
+  }
+  
+  .faqTitle {
+    font-size: 22px !important;
+  }
+}
+
+/* Extra Small Mobile */
+@media (max-width: 360px) {
+  .pageTitle {
+    font-size: 22px !important;
+  }
+  
+  .formTitle,
+  .infoTitle {
+    font-size: 17px !important;
+  }
+  
+  .faqTitle {
+    font-size: 20px !important;
   }
 }
 

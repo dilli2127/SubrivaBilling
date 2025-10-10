@@ -23,6 +23,8 @@ const LandingPageLayout: React.FC<LandingPageLayoutProps> = ({ children }) => {
       return { currentPage: 'pricing' as const, showBackButton: true };
     } else if (path === '/customers') {
       return { currentPage: 'customers' as const, showBackButton: true };
+    } else if (path === '/contact') {
+      return { currentPage: 'contact' as const, showBackButton: true };
     }
     
     return { currentPage: 'home' as const, showBackButton: false };

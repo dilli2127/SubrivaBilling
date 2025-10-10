@@ -14,6 +14,7 @@
   min-height: 100vh;
 }
 
+
 /* Navigation */
 .landingNav {
   position: fixed;
@@ -1059,15 +1060,120 @@
 }
 
 /* Responsive Design */
-@media (max-width: 1200px) {
-  .dashboardContent {
-    grid-template-columns: 200px 1fr 250px;
+
+/* Large Desktop */
+@media (max-width: 1400px) {
+  .heroTitle {
+    font-size: 3.5rem !important;
+  }
+  
+  .heroSubtitle {
+    font-size: 1.3rem !important;
+  }
+  
+  .downloadTitle {
+    font-size: 2.8rem !important;
   }
 }
 
-@media (max-width: 768px) {
+/* Desktop */
+@media (max-width: 1200px) {
   .heroTitle {
+    font-size: 3rem !important;
+  }
+  
+  .heroSubtitle {
+    font-size: 1.2rem !important;
+  }
+  
+  .downloadTitle {
     font-size: 2.5rem !important;
+  }
+  
+  .dashboardContent {
+    grid-template-columns: 200px 1fr 250px;
+  }
+  
+  .navContainer,
+  .heroContainer,
+  .downloadContainer,
+  .dashboardContainer,
+  .contentContainer {
+    padding: 0 24px;
+  }
+}
+
+/* Tablet Landscape */
+@media (max-width: 1024px) {
+  .heroSection {
+    padding: 80px 0 60px;
+    min-height: 50vh;
+  }
+  
+  .heroTitle {
+    font-size: 2.8rem !important;
+  }
+  
+  .heroSubtitle {
+    font-size: 1.1rem !important;
+  }
+  
+  .downloadSection,
+  .additionalContent {
+    padding: 60px 0;
+  }
+  
+  .downloadTitle {
+    font-size: 2.3rem !important;
+  }
+  
+  .downloadSubtitle {
+    font-size: 1.1rem !important;
+  }
+  
+  .dashboardContent {
+    grid-template-columns: 180px 1fr 220px;
+    gap: 20px;
+  }
+  
+  .ctaButton,
+  .demoButton,
+  .downloadButton {
+    height: 50px !important;
+    padding: 0 30px !important;
+    font-size: 16px !important;
+  }
+  
+  .downloadMainButton {
+    height: 58px !important;
+    padding: 0 40px !important;
+    font-size: 18px !important;
+  }
+  
+  .dashboardPreview {
+    padding: 30px 0;
+    min-height: 60vh;
+  }
+  
+  .landingFooter {
+    padding: 60px 0 30px;
+  }
+}
+
+/* Tablet Portrait */
+@media (max-width: 768px) {
+  .navMenu {
+    display: none;
+  }
+  
+  .heroSection {
+    padding: 90px 0 40px; /* Add top padding for mobile header */
+    min-height: auto;
+  }
+  
+  .heroTitle {
+    font-size: 2.2rem !important;
+    margin-bottom: 16px !important;
   }
   
   .heroTitle .ant-badge-ribbon {
@@ -1080,37 +1186,84 @@
     padding: 3px 8px !important;
   }
   
+  .heroSubtitle {
+    font-size: 1rem !important;
+    margin-bottom: 32px !important;
+  }
+  
+  .heroActions {
+    margin-top: 32px;
+    flex-direction: column;
+    width: 100%;
+    gap: 12px !important;
+  }
+  
+  .heroActions .ant-space-item {
+    width: 100%;
+  }
+  
+  .ctaButton,
+  .demoButton,
+  .downloadButton {
+    width: 100% !important;
+    height: 48px !important;
+    padding: 0 24px !important;
+    font-size: 15px !important;
+    justify-content: center !important;
+  }
+  
+  .downloadSection,
+  .additionalContent {
+    padding: 50px 0;
+  }
+  
   .downloadTitle {
-    font-size: 2.2rem !important;
+    font-size: 1.8rem !important;
+    margin-bottom: 16px !important;
+  }
+  
+  .downloadSubtitle {
+    font-size: 1rem !important;
+    margin-bottom: 32px !important;
+  }
+  
+  .downloadMainButton {
+    width: 100% !important;
+    height: 54px !important;
+    padding: 0 32px !important;
+    font-size: 17px !important;
+    justify-content: center !important;
   }
   
   .downloadFeatures {
     grid-template-columns: 1fr;
-    gap: 20px;
+    gap: 16px;
     padding: 0 10px;
   }
   
   .downloadFeature {
-    padding: 24px 20px;
+    padding: 20px 16px;
   }
   
   .featureIcon {
-    width: 56px;
-    height: 56px;
-    font-size: 20px !important;
+    width: 52px;
+    height: 52px;
+    font-size: 18px !important;
   }
   
   .downloadFeature .ant-typography {
-    font-size: 15px !important;
+    font-size: 14px !important;
   }
   
-  .navMenu {
-    display: none;
+  .dashboardPreview {
+    padding: 24px 0;
+    min-height: auto;
   }
   
   .dashboardContent {
     grid-template-columns: 1fr;
     gap: 16px;
+    padding: 16px;
   }
   
   .dashboardSidebar,
@@ -1122,25 +1275,354 @@
     order: 1;
   }
   
+  .dashboardSearch {
+    min-width: 200px;
+  }
+  
   .navContainer {
     padding: 0 16px;
+    height: 65px;
   }
   
-  .heroContainer {
+  .navContainer .brandIcon {
+    width: 35px;
+    height: 35px;
+    font-size: 16px;
+  }
+  
+  .navBrand h3 {
+    font-size: 20px;
+  }
+  
+  .heroContainer,
+  .downloadContainer,
+  .dashboardContainer,
+  .contentContainer {
     padding: 0 16px;
   }
   
-  .downloadContainer {
-    padding: 0 16px;
+  .landingFooter {
+    padding: 50px 0 24px;
+    min-height: auto;
   }
   
-  .dashboardContainer {
-    padding: 0 16px;
+  .footerBrand {
+    margin-bottom: 32px;
+  }
+  
+  .footerBottom {
+    flex-direction: column;
+    gap: 16px;
+    text-align: center;
   }
   
   .floatingHelp {
     bottom: 16px;
     right: 16px;
+  }
+  
+  .floatingHelp .ant-btn {
+    width: 56px !important;
+    height: 56px !important;
+    font-size: 20px !important;
+  }
+}
+
+/* Mobile Landscape */
+@media (max-width: 640px) {
+  .heroSection {
+    padding: 85px 0 40px; /* Adjust for mobile header */
+  }
+  
+  .heroTitle {
+    font-size: 1.9rem !important;
+  }
+  
+  .heroSubtitle {
+    font-size: 0.95rem !important;
+  }
+  
+  .downloadTitle {
+    font-size: 1.6rem !important;
+  }
+  
+  .downloadSubtitle {
+    font-size: 0.95rem !important;
+  }
+  
+  .dashboardHeader {
+    padding: 12px 16px;
+  }
+  
+  .dashboardBrand {
+    font-size: 16px;
+  }
+  
+  .dashboardIcon {
+    width: 28px;
+    height: 28px;
+    font-size: 14px;
+  }
+  
+  .contentCard h3 {
+    font-size: 20px !important;
+  }
+  
+  .contentCard p {
+    font-size: 15px !important;
+  }
+  
+  .cardIcon {
+    width: 60px;
+    height: 60px;
+    font-size: 28px;
+  }
+}
+
+/* Mobile Portrait */
+@media (max-width: 480px) {
+  .navContainer {
+    padding: 0 12px;
+    height: 60px;
+  }
+  
+  .heroSection {
+    padding: 80px 0 40px; /* Adjust for mobile header */
+  }
+  
+  .navContainer .brandIcon {
+    width: 32px;
+    height: 32px;
+    font-size: 14px;
+  }
+  
+  .navBrand h3 {
+    font-size: 18px;
+  }
+  
+  .heroSection {
+    padding: 50px 0 30px;
+  }
+  
+  .heroTitle {
+    font-size: 1.6rem !important;
+    margin-bottom: 12px !important;
+  }
+  
+  .heroTitle .ant-badge-ribbon {
+    top: -5px !important;
+    right: -12px !important;
+  }
+  
+  .heroTitle .ant-badge-ribbon .ant-badge-ribbon-text {
+    font-size: 9px !important;
+    padding: 2px 6px !important;
+  }
+  
+  .heroSubtitle {
+    font-size: 0.9rem !important;
+    margin-bottom: 24px !important;
+  }
+  
+  .heroActions {
+    margin-top: 24px;
+    gap: 10px !important;
+  }
+  
+  .ctaButton,
+  .demoButton,
+  .downloadButton {
+    height: 44px !important;
+    padding: 0 20px !important;
+    font-size: 14px !important;
+  }
+  
+  .downloadSection,
+  .additionalContent {
+    padding: 40px 0;
+  }
+  
+  .downloadTitle {
+    font-size: 1.4rem !important;
+    margin-bottom: 12px !important;
+  }
+  
+  .downloadSubtitle {
+    font-size: 0.9rem !important;
+    margin-bottom: 24px !important;
+  }
+  
+  .downloadMainButton {
+    height: 48px !important;
+    padding: 0 24px !important;
+    font-size: 15px !important;
+  }
+  
+  .downloadFeature {
+    padding: 16px 12px;
+  }
+  
+  .featureIcon {
+    width: 48px;
+    height: 48px;
+    font-size: 16px !important;
+  }
+  
+  .downloadFeature .ant-typography {
+    font-size: 13px !important;
+  }
+  
+  .heroContainer,
+  .downloadContainer,
+  .dashboardContainer,
+  .contentContainer {
+    padding: 0 12px;
+  }
+  
+  .dashboardPreview {
+    padding: 20px 0;
+  }
+  
+  .dashboardHeader {
+    padding: 10px 12px;
+  }
+  
+  .dashboardBrand {
+    font-size: 14px;
+    gap: 8px;
+  }
+  
+  .dashboardIcon {
+    width: 24px;
+    height: 24px;
+    font-size: 12px;
+  }
+  
+  .dashboardSearch {
+    min-width: 150px;
+    padding: 6px 10px;
+  }
+  
+  .dashboardSearch input {
+    font-size: 13px;
+  }
+  
+  .dashboardActions {
+    gap: 12px;
+    font-size: 12px;
+  }
+  
+  .contentCard {
+    padding: 28px 20px !important;
+  }
+  
+  .contentCard h3 {
+    font-size: 18px !important;
+  }
+  
+  .contentCard p {
+    font-size: 14px !important;
+    margin-bottom: 20px !important;
+  }
+  
+  .cardIcon {
+    width: 56px;
+    height: 56px;
+    margin-bottom: 20px;
+    font-size: 24px;
+  }
+  
+  .landingFooter {
+    padding: 40px 0 20px;
+  }
+  
+  .footerBrand .brandIcon {
+    width: 45px;
+    height: 45px;
+    font-size: 18px;
+  }
+  
+  .footerBrand h4 {
+    font-size: 20px !important;
+  }
+  
+  .footerBrand p {
+    font-size: 13px !important;
+  }
+  
+  .footerLinks h5 {
+    font-size: 16px !important;
+    margin-bottom: 20px !important;
+  }
+  
+  .footerLinks li {
+    margin-bottom: 14px;
+  }
+  
+  .footerLinks a {
+    font-size: 14px;
+  }
+  
+  .footerBottom .ant-typography {
+    font-size: 13px !important;
+  }
+  
+  .footerSocial .ant-btn {
+    width: 36px !important;
+    height: 36px !important;
+    font-size: 14px !important;
+  }
+  
+  .floatingHelp .ant-btn {
+    width: 52px !important;
+    height: 52px !important;
+    font-size: 18px !important;
+  }
+}
+
+/* Extra Small Mobile */
+@media (max-width: 360px) {
+  .navBrand h3 {
+    font-size: 16px;
+  }
+  
+  .heroSection {
+    padding: 75px 0 40px; /* Adjust for small mobile header */
+  }
+  
+  .heroTitle {
+    font-size: 1.4rem !important;
+  }
+  
+  .heroSubtitle {
+    font-size: 0.85rem !important;
+  }
+  
+  .downloadTitle {
+    font-size: 1.3rem !important;
+  }
+  
+  .downloadSubtitle {
+    font-size: 0.85rem !important;
+  }
+  
+  .ctaButton,
+  .demoButton,
+  .downloadButton,
+  .downloadMainButton {
+    font-size: 13px !important;
+  }
+  
+  .dashboardSearch {
+    display: none;
+  }
+  
+  .contentCard h3 {
+    font-size: 16px !important;
+  }
+  
+  .contentCard p {
+    font-size: 13px !important;
   }
 }
 

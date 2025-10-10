@@ -377,3 +377,374 @@ body.dark-mode .ant-select-selection-placeholder {
   margin-top: 2px;
   text-align: center;
 }
+
+/* Mobile Bottom Navigation Bar */
+.mobile-bottom-nav {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 2000;
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(20px);
+  border-top: 1px solid rgba(78, 84, 200, 0.1);
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
+  height: 65px;
+  padding: 0 8px 8px 8px;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  gap: 4px;
+}
+
+.mobile-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 12px;
+  border: none;
+  background: transparent;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  flex: 1;
+  max-width: 80px;
+  position: relative;
+  color: #666;
+}
+
+.mobile-nav-item:active {
+  transform: scale(0.95);
+}
+
+.mobile-nav-item.active {
+  background: rgba(78, 84, 200, 0.1);
+  color: var(--profile-avatar, #4e54c8);
+}
+
+.mobile-nav-item.active::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 30px;
+  height: 3px;
+  background: linear-gradient(90deg, #4e54c8, #8f94fb);
+  border-radius: 0 0 3px 3px;
+}
+
+.mobile-nav-menu-btn {
+  background: linear-gradient(135deg, #4e54c8, #8f94fb);
+  color: white;
+  box-shadow: 0 4px 15px rgba(78, 84, 200, 0.3);
+  transform: scale(1.05);
+}
+
+.mobile-nav-menu-btn:hover {
+  transform: scale(1.08);
+  box-shadow: 0 6px 20px rgba(78, 84, 200, 0.4);
+}
+
+.mobile-nav-menu-btn .nav-icon {
+  font-size: 20px;
+}
+
+.nav-icon {
+  font-size: 24px;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nav-icon.menu-icon {
+  font-size: 18px;
+}
+
+.nav-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+.mobile-nav-menu-btn .nav-label {
+  color: white;
+}
+
+/* Responsive Design for Sidebar */
+@media (max-width: 1024px) {
+  .header-title {
+    font-size: 1.4rem;
+  }
+  
+  .description-branch {
+    font-size: 14px;
+  }
+  
+  .description-branch > div:first-child {
+    font-size: 15px;
+  }
+  
+  .description-branch > div:nth-child(2) {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 768px) {
+  /* Hide desktop sidebar on mobile */
+  .custom-sider {
+    display: none !important;
+  }
+  
+  /* Show mobile bottom navigation */
+  .mobile-bottom-nav {
+    display: flex !important;
+  }
+  
+  /* Adjust header for mobile */
+  .custom-header {
+    padding: 0 12px;
+    height: auto;
+    min-height: 60px;
+    flex-wrap: wrap;
+  }
+  
+  .header-left {
+    gap: 8px;
+    flex: 1;
+  }
+  
+  .sidebar-toggle-btn {
+    display: none !important;
+  }
+  
+  .logo-placeholder {
+    width: 35px;
+    height: 35px;
+    margin-right: 4px;
+  }
+  
+  .header-title {
+    font-size: 1.2rem;
+    flex: initial;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  
+  .description-branch {
+    font-size: 12px;
+  }
+  
+  .description-branch > div:first-child {
+    font-size: 13px;
+  }
+  
+  .description-branch > div:nth-child(2) {
+    font-size: 12px;
+  }
+  
+  .header-right {
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+  
+  .welcome-text {
+    font-size: 14px;
+    display: none;
+  }
+  
+  .welcome-mse {
+    font-size: 13px;
+    display: none;
+  }
+  
+  .have-a-nice-day {
+    display: none;
+  }
+  
+  .update-status-header {
+    display: none;
+  }
+  
+  .profile-avatar {
+    width: 32px !important;
+    height: 32px !important;
+  }
+  
+  .logout-btn {
+    padding: 0 12px;
+    height: 36px;
+    font-size: 14px;
+  }
+  
+  /* Adjust content layout for mobile - account for bottom nav */
+  .ant-layout-content {
+    height: auto !important;
+    min-height: calc(100vh - 125px) !important; /* 60px header + 65px bottom nav */
+    padding-bottom: 20px !important;
+    margin-bottom: 65px; /* Height of bottom nav */
+  }
+  
+  /* Mobile drawer custom styles */
+  .ant-drawer-body {
+    padding: 0;
+  }
+  
+  .ant-drawer-header {
+    background: linear-gradient(90deg, #4e54c8, #8f94fb);
+    border-bottom: none;
+  }
+  
+  .ant-drawer-title {
+    color: white;
+    font-weight: 600;
+  }
+  
+  .ant-drawer-close {
+    color: white;
+  }
+}
+
+@media (max-width: 640px) {
+  .custom-header {
+    padding: 0 8px;
+    min-height: 56px;
+  }
+  
+  .header-left {
+    gap: 6px;
+  }
+  
+  .logo-placeholder {
+    width: 32px;
+    height: 32px;
+  }
+  
+  .header-title {
+    font-size: 1.1rem;
+  }
+  
+  .description-branch {
+    font-size: 11px;
+  }
+  
+  .description-branch > div:first-child {
+    font-size: 12px;
+  }
+  
+  .logout-btn span:not(.anticon) {
+    display: none;
+  }
+  
+  .logout-btn {
+    padding: 0 8px;
+    min-width: 36px;
+  }
+  
+  /* Adjust bottom nav for smaller screens */
+  .mobile-bottom-nav {
+    height: 60px;
+    padding: 0 4px 6px 4px;
+  }
+  
+  .mobile-nav-item {
+    padding: 6px 8px;
+    max-width: 70px;
+  }
+  
+  .nav-icon {
+    font-size: 22px;
+    margin-bottom: 2px;
+  }
+  
+  .nav-label {
+    font-size: 10px;
+  }
+  
+  .ant-layout-content {
+    min-height: calc(100vh - 116px) !important; /* 56px header + 60px bottom nav */
+    margin-bottom: 60px;
+  }
+}
+
+@media (max-width: 480px) {
+  .custom-header {
+    min-height: 52px;
+  }
+  
+  .header-title {
+    font-size: 1rem;
+  }
+  
+  .description-branch {
+    display: none;
+  }
+  
+  .profile-avatar {
+    width: 28px !important;
+    height: 28px !important;
+  }
+  
+  /* Further optimize bottom nav */
+  .mobile-bottom-nav {
+    height: 58px;
+    padding: 0 2px 4px 2px;
+  }
+  
+  .mobile-nav-item {
+    padding: 5px 6px;
+    max-width: 65px;
+  }
+  
+  .nav-icon {
+    font-size: 20px;
+  }
+  
+  .nav-label {
+    font-size: 9px;
+  }
+  
+  .ant-layout-content {
+    min-height: calc(100vh - 110px) !important; /* 52px header + 58px bottom nav */
+    margin-bottom: 58px;
+  }
+}
+
+@media (max-width: 360px) {
+  .header-title {
+    font-size: 0.9rem;
+  }
+  
+  .logo-placeholder {
+    width: 28px;
+    height: 28px;
+  }
+  
+  /* Compact bottom nav for very small screens */
+  .mobile-bottom-nav {
+    height: 56px;
+  }
+  
+  .mobile-nav-item {
+    padding: 4px 4px;
+    max-width: 60px;
+  }
+  
+  .nav-icon {
+    font-size: 18px;
+  }
+  
+  .nav-label {
+    font-size: 8px;
+    letter-spacing: 0.2px;
+  }
+  
+  .ant-layout-content {
+    margin-bottom: 56px;
+  }
+}

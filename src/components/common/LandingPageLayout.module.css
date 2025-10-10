@@ -15,7 +15,7 @@
 }
 
 .landingContent {
-  padding-top: 80px; /* Account for fixed header */
+  padding-top: 40px; 
   min-height: calc(100vh - 80px);
   position: relative;
   z-index: 1;

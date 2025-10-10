@@ -339,27 +339,255 @@
 }
 
 /* Responsive Design */
+
+/* Tablet */
+@media (max-width: 1024px) {
+  .pageTitle {
+    font-size: 2.5rem !important;
+  }
+  
+  .pageSubtitle {
+    font-size: 1.1rem !important;
+  }
+  
+  .sectionTitle {
+    font-size: 1.8rem !important;
+  }
+  
+  .categoryTitle,
+  .featureTitle {
+    font-size: 1.2rem !important;
+  }
+}
+
+/* Tablet Portrait */
 @media (max-width: 768px) {
+  .navMenu {
+    display: none;
+  }
+  
+  .navContainer {
+    padding: 0 16px;
+    height: 65px;
+  }
+  
+  .featuresContent {
+    padding: 85px 0 20px;
+  }
+  
   .pageTitle {
     font-size: 2rem !important;
   }
   
-  .navMenu {
-    display: none;
+  .pageSubtitle {
+    font-size: 1rem !important;
+  }
+  
+  .sectionTitle {
+    font-size: 1.6rem !important;
+  }
+  
+  .categoriesSection,
+  .detailedFeatures {
+    padding: 0 16px;
+    margin-bottom: 30px;
+  }
+  
+  .featuresHeader {
+    margin-bottom: 30px;
+    padding: 0 16px;
+  }
+  
+  .categoryContent,
+  .featureContent {
+    padding: 24px 16px;
+  }
+  
+  .categoryIcon,
+  .featureIconWrapper {
+    width: 50px;
+    height: 50px;
+    margin-bottom: 16px;
+  }
+  
+  .categoryIcon,
+  .featureIcon {
+    font-size: 1.3rem;
+  }
+  
+  .categoryTitle,
+  .featureTitle {
+    font-size: 1.1rem !important;
+    margin-bottom: 16px !important;
+  }
+  
+  .featuresCta {
+    margin: 0 -16px;
+    padding: 30px 16px;
+  }
+  
+  .ctaTitle {
+    font-size: 1.6rem !important;
+  }
+  
+  .ctaSubtitle {
+    font-size: 1rem !important;
+  }
+  
+  .ctaButton,
+  .demoButton {
+    width: 100%;
+    height: 46px !important;
+    padding: 0 24px !important;
+    font-size: 15px !important;
+  }
+  
+  .ctaActions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+}
+
+/* Mobile */
+@media (max-width: 640px) {
+  .navContainer {
+    padding: 0 12px;
+    height: 60px;
   }
   
   .featuresContent {
     padding: 80px 0 20px;
   }
   
+  .pageTitle {
+    font-size: 1.7rem !important;
+  }
+  
+  .pageSubtitle {
+    font-size: 0.95rem !important;
+  }
+  
+  .sectionTitle {
+    font-size: 1.4rem !important;
+  }
+  
   .categoriesSection,
   .detailedFeatures {
-    padding: 0 16px;
+    padding: 0 12px;
+  }
+  
+  .featuresHeader {
+    padding: 0 12px;
+    margin-bottom: 24px;
+  }
+  
+  .categoryContent,
+  .featureContent {
+    padding: 20px 12px;
+  }
+  
+  .categoryIcon,
+  .featureIconWrapper {
+    width: 45px;
+    height: 45px;
+  }
+  
+  .categoryFeatures,
+  .featureBenefits {
+    font-size: 14px;
   }
   
   .featuresCta {
-    margin: 0 -16px;
-    padding: 30px 16px;
+    margin: 0 -12px;
+    padding: 24px 12px;
+  }
+}
+
+/* Small Mobile */
+@media (max-width: 480px) {
+  .featuresContent {
+    padding: 70px 0 16px;
+  }
+  
+  .pageTitle {
+    font-size: 1.5rem !important;
+  }
+  
+  .pageSubtitle {
+    font-size: 0.9rem !important;
+  }
+  
+  .sectionTitle {
+    font-size: 1.3rem !important;
+    margin-bottom: 20px !important;
+  }
+  
+  .categoriesSection,
+  .detailedFeatures {
+    margin-bottom: 24px;
+  }
+  
+  .featuresHeader {
+    margin-bottom: 20px;
+  }
+  
+  .categoryTitle,
+  .featureTitle {
+    font-size: 1rem !important;
+    margin-bottom: 12px !important;
+  }
+  
+  .categoryIcon,
+  .featureIconWrapper {
+    width: 40px;
+    height: 40px;
+    margin-bottom: 12px;
+  }
+  
+  .categoryIcon,
+  .featureIcon {
+    font-size: 1.1rem;
+  }
+  
+  .featureDescription {
+    font-size: 14px !important;
+  }
+  
+  .ctaTitle {
+    font-size: 1.4rem !important;
+  }
+  
+  .ctaSubtitle {
+    font-size: 0.9rem !important;
+    margin-bottom: 20px !important;
+  }
+  
+  .ctaButton,
+  .demoButton {
+    height: 42px !important;
+    padding: 0 20px !important;
+    font-size: 14px !important;
+  }
+}
+
+/* Extra Small Mobile */
+@media (max-width: 360px) {
+  .pageTitle {
+    font-size: 1.3rem !important;
+  }
+  
+  .sectionTitle {
+    font-size: 1.2rem !important;
+  }
+  
+  .categoryTitle,
+  .featureTitle {
+    font-size: 0.95rem !important;
+  }
+  
+  .ctaTitle {
+    font-size: 1.2rem !important;
   }
 }
 

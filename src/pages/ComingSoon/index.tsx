@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import "./ComingSoon.css";
-import AppHeader from "../../components/Header/Header";
 
 const ComingSoon: React.FC = () => {
   const [timeLeft, setTimeLeft] = useState({
