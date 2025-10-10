@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState, useMemo } from 'react';
-import { Input, Select, Space, Switch, Tag } from 'antd';
+import { Input, Select, Space, Switch, Tag, Button } from 'antd';
 import { createApiRouteGetter } from '../../helpers/Common_functions';
 import { dynamic_request, useDynamicSelector } from '../../services/redux';
 import { useDispatch } from 'react-redux';
@@ -11,7 +11,9 @@ import {
   CloseCircleTwoTone,
   TagOutlined,
   TagsOutlined,
+  ScanOutlined,
 } from '@ant-design/icons';
+import BarcodeScanner from '../../components/common/BarcodeScanner';
 import { GenericCrudPage } from '../../components/common/GenericCrudPage';
 import { Product } from '../../types/entities';
 import { getEntityApiRoutes } from '../../helpers/CrudFactory';
@@ -49,6 +51,9 @@ const ProductCrud: React.FC = () => {
   const { loading: categoryLoading, items: categoryItems } = useDynamicSelector(
     categoryRoute.identifier
   );
+
+  const [scannerVisible, setScannerVisible] = useState(false);
+  const [currentForm, setCurrentForm] = useState<any>(null);
 
   const [variantMap, setVariantMap] = useState<Record<string, string>>({});
   const [categoryMap, setCategoryMap] = useState<Record<string, string>>({});
@@ -115,6 +120,16 @@ const ProductCrud: React.FC = () => {
             <BarcodeOutlined style={{ color: '#722ed1' }} />
             <span>{sku || '-'}</span>
           </Space>
+        ),
+      },
+      {
+        title: 'Barcode',
+        dataIndex: 'barcode',
+        key: 'barcode',
+        render: (barcode: string) => (
+          <Tag color="green" icon={<BarcodeOutlined />}>
+            {barcode || '-'}
+          </Tag>
         ),
       },
       {
@@ -251,6 +266,28 @@ const ProductCrud: React.FC = () => {
         component: <Input placeholder="Optional SKU code" />,
       },
       {
+        label: 'Barcode',
+        name: 'barcode',
+        rules: [],
+        component: (
+          <Input.Group compact>
+            <Input
+              placeholder="Enter or scan barcode"
+              style={{ width: 'calc(100% - 100px)' }}
+              onFocus={() => setCurrentForm('barcode')}
+            />
+            <Button
+              type="primary"
+              icon={<ScanOutlined />}
+              onClick={() => setScannerVisible(true)}
+              style={{ width: '100px' }}
+            >
+              Scan
+            </Button>
+          </Input.Group>
+        ),
+      },
+      {
         label: 'HSN Code',
         name: 'hsn_code',
         rules: [],
@@ -361,10 +398,34 @@ const ProductCrud: React.FC = () => {
     },
   }), [variantMap, categoryMap, variantItems, categoryItems, variantLoading, categoryLoading, isSuperAdmin]);
 
+  // Handle barcode scan
+  const handleBarcodeScan = (barcode: string) => {
+    setScannerVisible(false);
+    if (currentForm === 'barcode') {
+      // Find the barcode input field and set its value
+      const barcodeInput = document.querySelector('input[name="barcode"]') as HTMLInputElement;
+      if (barcodeInput) {
+        barcodeInput.value = barcode;
+        barcodeInput.dispatchEvent(new Event('input', { bubbles: true }));
+      }
+    }
+  };
+
   return (
-    <GenericCrudPage
-      config={productConfig}
-    />
+    <>
+      <GenericCrudPage
+        config={productConfig}
+      />
+      
+      {/* Barcode Scanner Modal */}
+      <BarcodeScanner
+        visible={scannerVisible}
+        onClose={() => setScannerVisible(false)}
+        onScan={handleBarcodeScan}
+        title="Scan Product Barcode"
+        description="Scan barcode to add to product"
+      />
+    </>
   );
 };
 

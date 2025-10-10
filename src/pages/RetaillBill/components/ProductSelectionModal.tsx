@@ -1,9 +1,11 @@
 import React, { useEffect, useState, FC, KeyboardEvent, useRef } from 'react';
-import { Modal, Table, Input } from 'antd';
+import { Modal, Table, Input, Button, Space, message } from 'antd';
 import type { InputRef } from 'antd/es/input';
+import { BarcodeOutlined, ScanOutlined } from '@ant-design/icons';
 import { useApiActions } from '../../../services/api/useApiActions';
 import type { ColumnType } from 'antd/es/table';
 import { useDynamicSelector } from '../../../services/redux';
+import BarcodeScanner from '../../../components/common/BarcodeScanner';
 
 const { Search } = Input;
 
@@ -38,6 +40,7 @@ const ProductSelectionModal: FC<ProductSelectionModalProps> = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedRowKey, setSelectedRowKey] = useState<React.Key | null>(null);
   const [highlightedIndex, setHighlightedIndex] = useState<number>(0);
+  const [scannerVisible, setScannerVisible] = useState(false);
   const searchInputRef = useRef<InputRef>(null);
 
   const filteredProducts: Product[] =
@@ -141,6 +144,32 @@ const ProductSelectionModal: FC<ProductSelectionModalProps> = ({
     onSelect(product);
   };
 
+  // Handle barcode scan
+  const handleBarcodeScan = (barcode: string) => {
+    setSearchTerm(barcode);
+    setScannerVisible(false);
+    
+    // Try to find product by barcode/SKU
+    const foundProduct = products?.result?.find((p: Product) => {
+      const searchLower = barcode.toLowerCase();
+      return (
+        (p.sku?.toLowerCase() || '').includes(searchLower) ||
+        (p.name?.toLowerCase() || '').includes(searchLower) ||
+        p.VariantItem?.variant_code?.toLowerCase().includes(searchLower)
+      );
+    });
+
+    if (foundProduct) {
+      // Auto-select the found product
+      setTimeout(() => {
+        onSelect(foundProduct);
+      }, 500);
+      message.success(`Product found: ${foundProduct.name}`);
+    } else {
+      message.warning(`No product found with barcode: ${barcode}`);
+    }
+  };
+
   const handleSearchKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     if (!filteredProducts.length) return;
 
@@ -189,22 +218,33 @@ const ProductSelectionModal: FC<ProductSelectionModalProps> = ({
       destroyOnClose
     >
       <div onClick={handleModalClick}>
-        <Search
-          ref={searchInputRef}
-          placeholder="Search by product name, variant, SKU, or price (use ↑↓ arrows to navigate, Enter to select)"
-          onChange={e => setSearchTerm(e.target.value)}
-          style={{ marginBottom: 16 }}
-          autoFocus
-          onKeyDown={handleSearchKeyDown}
-          onBlur={() => {
-            // Re-focus after a short delay to ensure it stays focused
-            setTimeout(() => {
-              if (visible) {
-                searchInputRef.current?.focus();
-              }
-            }, 10);
-          }}
-        />
+        <Space.Compact style={{ marginBottom: 16, width: '100%' }}>
+          <Search
+            ref={searchInputRef}
+            placeholder="Search by product name, variant, SKU, or price (use ↑↓ arrows to navigate, Enter to select)"
+            onChange={e => setSearchTerm(e.target.value)}
+            style={{ flex: 1 }}
+            autoFocus
+            onKeyDown={handleSearchKeyDown}
+            onBlur={() => {
+              // Re-focus after a short delay to ensure it stays focused
+              setTimeout(() => {
+                if (visible) {
+                  searchInputRef.current?.focus();
+                }
+              }, 10);
+            }}
+            value={searchTerm}
+          />
+          <Button 
+            type="primary" 
+            icon={<ScanOutlined />}
+            onClick={() => setScannerVisible(true)}
+            style={{ minWidth: 100 }}
+          >
+            Scan
+          </Button>
+        </Space.Compact>
         <Table
           dataSource={filteredProducts}
           columns={columns}
@@ -246,9 +286,20 @@ const ProductSelectionModal: FC<ProductSelectionModalProps> = ({
         <br />
         <strong>Search:</strong> Product name, variant name, SKU, or price
         <br />
+        <strong>Barcode Scanner:</strong> Click "Scan" button or use USB barcode scanner
+        <br />
         <strong>Tip:</strong> Press F5 anytime to reopen this modal for product changes
       </div>
       </div>
+
+      {/* Barcode Scanner Modal */}
+      <BarcodeScanner
+        visible={scannerVisible}
+        onClose={() => setScannerVisible(false)}
+        onScan={handleBarcodeScan}
+        title="Scan Product Barcode"
+        description="Scan barcode to find product automatically"
+      />
     </Modal>
   );
 };

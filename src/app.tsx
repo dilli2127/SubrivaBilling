@@ -7,6 +7,7 @@ import ErrorBoundary from './components/common/ErrorBoundary';
 import { AccessibilityProvider } from './components/common/AccessibilityProvider';
 import PerformanceMonitor from './components/common/PerformanceMonitor';
 import { UserProvider } from './components/antd/UserContext';
+import { BarcodeShortcutProvider } from './components/common/BarcodeShortcutProvider';
 
 const App: FC = () =>
 {
@@ -24,14 +25,16 @@ const App: FC = () =>
     <ErrorBoundary>
       <AccessibilityProvider>
         <Provider store={store}>
-          <UserProvider>
-            <PerformanceMonitor 
-              onMetricsUpdate={handlePerformanceMetrics}
-              enableErrorTracking={true}
-              enablePerformanceTracking={true}
-            />
-            <AppRouter />
-          </UserProvider>
+          <BarcodeShortcutProvider>
+            <UserProvider>
+              <PerformanceMonitor 
+                onMetricsUpdate={handlePerformanceMetrics}
+                enableErrorTracking={true}
+                enablePerformanceTracking={true}
+              />
+              <AppRouter />
+            </UserProvider>
+          </BarcodeShortcutProvider>
         </Provider>
       </AccessibilityProvider>
     </ErrorBoundary>
