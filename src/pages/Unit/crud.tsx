@@ -33,7 +33,27 @@ const UnitCrud: React.FC = () => {
             </Tag>
           )
         ),
-      }] : []),
+      }] : [
+        {
+          title: 'Global Unit',
+          dataIndex: 'is_global',
+          key: 'is_global',
+          render: (isGlobal: boolean) => (
+            isGlobal ? (
+              <Tag
+                icon={<CheckCircleTwoTone twoToneColor="#52c41a" />}
+                color="success"
+              >
+                Yes
+              </Tag>
+            ) : (
+              <Tag color="default">
+                No
+              </Tag>
+            )
+          ),
+        }
+      ]),
     ],
     formItems: [
       {
@@ -63,6 +83,22 @@ const UnitCrud: React.FC = () => {
     ],
     apiRoutes: getEntityApiRoutes('Unit'),
     formColumns: 2,
+    canEdit: (record: Unit) => {
+      // If is_global is true, only superadmin can edit
+      if (record.is_global) {
+        return isSuperAdmin;
+      }
+      // Otherwise, all users can edit
+      return true;
+    },
+    canDelete: (record: Unit) => {
+      // If is_global is true, only superadmin can delete
+      if (record.is_global) {
+        return isSuperAdmin;
+      }
+      // Otherwise, all users can delete
+      return true;
+    },
   }), [isSuperAdmin]);
 
   return <GenericCrudPage config={unitConfig} />;

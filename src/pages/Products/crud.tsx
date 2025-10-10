@@ -13,6 +13,7 @@ import {
   TagsOutlined,
 } from '@ant-design/icons';
 import { GenericCrudPage } from '../../components/common/GenericCrudPage';
+import { Product } from '../../types/entities';
 import { getEntityApiRoutes } from '../../helpers/CrudFactory';
 import { getCurrentUserRole } from '../../helpers/auth';
 
@@ -195,7 +196,27 @@ const ProductCrud: React.FC = () => {
             </Tag>
           )
         ),
-      }] : []),
+      }] : [
+        {
+          title: 'Global Product',
+          dataIndex: 'global_product',
+          key: 'global_product',
+          render: (globalProduct: boolean) => (
+            globalProduct ? (
+              <Tag
+                icon={<CheckCircleTwoTone twoToneColor="#52c41a" />}
+                color="success"
+              >
+                Yes
+              </Tag>
+            ) : (
+              <Tag color="default">
+                No
+              </Tag>
+            )
+          ),
+        }
+      ]),
     ],
     formItems: [
       {
@@ -322,6 +343,22 @@ const ProductCrud: React.FC = () => {
     ],
     apiRoutes: getEntityApiRoutes('Product'),
     formColumns: 2,
+    canEdit: (record: Product) => {
+      // If global_product is true, only superadmin can edit
+      if (record.global_product) {
+        return isSuperAdmin;
+      }
+      // Otherwise, all users can edit
+      return true;
+    },
+    canDelete: (record: Product) => {
+      // If global_product is true, only superadmin can delete
+      if (record.global_product) {
+        return isSuperAdmin;
+      }
+      // Otherwise, all users can delete
+      return true;
+    },
   }), [variantMap, categoryMap, variantItems, categoryItems, variantLoading, categoryLoading, isSuperAdmin]);
 
   return (

@@ -25,6 +25,7 @@ export interface Product extends BaseEntity {
   sku?: string;
   barcode?: string;
   hsn_code?: string;
+  global_product?: boolean;
 }
 
 // Category entity

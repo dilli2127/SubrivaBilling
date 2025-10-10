@@ -70,31 +70,42 @@ function getActionsColumn(
   title: string, 
   handleEdit: (record: any) => void, 
   handleDelete: (record: any) => void,
-  deleteLoading: boolean = false
+  deleteLoading: boolean = false,
+  canEdit?: (record: any) => boolean,
+  canDelete?: (record: any) => boolean
 ) {
   return {
     title: 'Actions',
     key: 'actions',
-    render: (_: any, record: object) => (
-      <div style={{ display: 'flex', gap: '10px' }}>
-        <Tooltip title={`Edit ${title}`}>
-          <EditOutlined
-            style={{ cursor: 'pointer', color: '#1890ff' }}
-            onClick={() => handleEdit(record)}
-          />
-        </Tooltip>
-        <Tooltip title={`Delete ${title}`}>
-          <DeleteOutlined
-            style={{ 
-              cursor: deleteLoading ? 'not-allowed' : 'pointer', 
-              color: deleteLoading ? '#d9d9d9' : '#ff4d4f',
-              opacity: deleteLoading ? 0.5 : 1
-            }}
-            onClick={() => !deleteLoading && handleDelete(record)}
-          />
-        </Tooltip>
-      </div>
-    ),
+    render: (_: any, record: object) => {
+      const allowEdit = canEdit ? canEdit(record) : true;
+      const allowDelete = canDelete ? canDelete(record) : true;
+      
+      return (
+        <div style={{ display: 'flex', gap: '10px' }}>
+          <Tooltip title={allowEdit ? `Edit ${title}` : 'No permission to edit'}>
+            <EditOutlined
+              style={{ 
+                cursor: allowEdit ? 'pointer' : 'not-allowed', 
+                color: allowEdit ? '#1890ff' : '#d9d9d9',
+                opacity: allowEdit ? 1 : 0.5
+              }}
+              onClick={() => allowEdit && handleEdit(record)}
+            />
+          </Tooltip>
+          <Tooltip title={allowDelete ? `Delete ${title}` : 'No permission to delete'}>
+            <DeleteOutlined
+              style={{ 
+                cursor: (deleteLoading || !allowDelete) ? 'not-allowed' : 'pointer', 
+                color: (deleteLoading || !allowDelete) ? '#d9d9d9' : '#ff4d4f',
+                opacity: (deleteLoading || !allowDelete) ? 0.5 : 1
+              }}
+              onClick={() => !deleteLoading && allowDelete && handleDelete(record)}
+            />
+          </Tooltip>
+        </div>
+      );
+    },
   };
 }
 
@@ -167,8 +178,8 @@ export const GenericCrudPage = <T extends BaseEntity>({
 
   const tableColumns = useMemo(() => [
     ...columns,
-    getActionsColumn(config.title, handleEdit, handleDelete, deleteLoading)
-  ], [columns, config.title, handleEdit, handleDelete, deleteLoading]);
+    getActionsColumn(config.title, handleEdit, handleDelete, deleteLoading, config.canEdit, config.canDelete)
+  ], [columns, config.title, handleEdit, handleDelete, deleteLoading, config.canEdit, config.canDelete]);
 
   return (
     <div>

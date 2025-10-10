@@ -24,6 +24,8 @@ export interface CrudConfig<T extends BaseEntity> {
   };
   formColumns?: number;
   drawerWidth?: number;
+  canEdit?: (record: T) => boolean;
+  canDelete?: (record: T) => boolean;
 }
 
 export const useGenericCrud = <T extends BaseEntity>(config: CrudConfig<T>) => {

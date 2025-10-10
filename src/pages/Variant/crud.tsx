@@ -57,7 +57,27 @@ const VariantCrud: React.FC = () => {
             </Tag>
           )
         ),
-      }] : []),
+      }] : [
+        {
+          title: 'Global Variant',
+          dataIndex: 'global_variant',
+          key: 'global_variant',
+          render: (globalVariant: boolean) => (
+            globalVariant ? (
+              <Tag
+                icon={<CheckCircleTwoTone twoToneColor="#52c41a" />}
+                color="success"
+              >
+                Yes
+              </Tag>
+            ) : (
+              <Tag color="default">
+                No
+              </Tag>
+            )
+          ),
+        }
+      ]),
     ],
     formItems: [
       {
@@ -160,6 +180,22 @@ const VariantCrud: React.FC = () => {
     ],
     apiRoutes: getEntityApiRoutes("Variant"),
     formColumns: 2,
+    canEdit: (record: Variant) => {
+      // If global_variant is true, only superadmin can edit
+      if (record.global_variant) {
+        return isSuperAdmin;
+      }
+      // Otherwise, all users can edit
+      return true;
+    },
+    canDelete: (record: Variant) => {
+      // If global_variant is true, only superadmin can delete
+      if (record.global_variant) {
+        return isSuperAdmin;
+      }
+      // Otherwise, all users can delete
+      return true;
+    },
   }), [unitItems, unit_get_loading, isSuperAdmin]);
 
   return <GenericCrudPage config={variantConfig} />;

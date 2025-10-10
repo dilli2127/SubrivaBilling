@@ -44,7 +44,27 @@ const CategoryCrud: React.FC = () => {
             </Tag>
           )
         ),
-      }] : []),
+      }] : [
+        {
+          title: 'Global Category',
+          dataIndex: 'global_category',
+          key: 'global_category',
+          render: (globalCategory: boolean) => (
+            globalCategory ? (
+              <Tag
+                icon={<CheckCircleTwoTone twoToneColor="#52c41a" />}
+                color="success"
+              >
+                Yes
+              </Tag>
+            ) : (
+              <Tag color="default">
+                No
+              </Tag>
+            )
+          ),
+        }
+      ]),
     ],
     formItems: [
       {
@@ -75,7 +95,7 @@ const CategoryCrud: React.FC = () => {
       ...(isSuperAdmin ? [{
         label: 'Business Type',
         name: 'business_type',
-        rules: [{ required: true, message: 'Please select business type!' }],
+        rules: [{ required: false, message: 'Please select business type!' }],
         component: (
           <Select
             placeholder="Select business type"
@@ -121,6 +141,22 @@ const CategoryCrud: React.FC = () => {
     ],
     apiRoutes: getEntityApiRoutes('Category'),
     formColumns: 2,
+    canEdit: (record: Category) => {
+      // If global_category is true, only superadmin can edit
+      if (record.global_category) {
+        return isSuperAdmin;
+      }
+      // Otherwise, all users can edit
+      return true;
+    },
+    canDelete: (record: Category) => {
+      // If global_category is true, only superadmin can delete
+      if (record.global_category) {
+        return isSuperAdmin;
+      }
+      // Otherwise, all users can delete
+      return true;
+    },
   }), [isSuperAdmin]);
 
   return <GenericCrudPage config={categoryConfig} />;
