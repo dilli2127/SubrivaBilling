@@ -257,4 +257,5 @@ export const API_ROUTES = {
   BranchStock: createCrudRoutes("/branch_stock", "BranchStock"),
   StockStorage: createCrudRoutes("/stock_storage", "StockStorage"),
   Settings: createCrudRoutes("/settings", "Settings"),
+  FieldMetadata: createCrudRoutes("/field_metadata", "FieldMetadata"),
 };

@@ -16,6 +16,8 @@ import GlobalDrawer from '../antd/GlobalDrawer';
 import AntdForm from '../antd/form/form';
 import GlobalTable from '../antd/GlobalTable';
 import { useSuperAdminFilters } from '../../hooks/useSuperAdminFilters';
+import { useFieldMetadata } from '../../hooks/useFieldMetadata';
+import FieldMetadataManager from './FieldMetadataManager';
 
 // Filter and Button Config Types
 export type FilterConfig = {
@@ -63,6 +65,8 @@ interface GenericCrudPageProps<T extends BaseEntity> {
   customButtons?: CustomButtonConfig[];
   onValuesChange?: (changed: any, all: any) => void;
   enableSuperAdminFilters?: boolean; // Enable tenant/org/branch dropdowns for superadmin
+  enableDynamicFields?: boolean; // Enable dynamic field metadata
+  entityName?: string; // Entity name for dynamic fields (e.g., 'products', 'customers')
 }
 
 // Extract actions column to a helper
@@ -116,6 +120,8 @@ export const GenericCrudPage = <T extends BaseEntity>({
   customButtons = [],
   onValuesChange,
   enableSuperAdminFilters = true, // Enabled by default
+  enableDynamicFields = false,
+  entityName,
 }: GenericCrudPageProps<T>) => {
   // SuperAdmin filters hook
   const superAdminFilters = useSuperAdminFilters();
@@ -138,12 +144,26 @@ export const GenericCrudPage = <T extends BaseEntity>({
     handleSubmit,
     handlePaginationChange,
     columns,
-    formItems,
+    formItems: staticFormItems,
     formColumns = 2,
     drawerWidth,
     filterValues,
     setFilterValues,
   } = useGenericCrud(config);
+
+  // Dynamic fields hook
+  const {
+    formItems: mergedFormItems,
+    loading: metadataLoading,
+    refresh: refreshMetadata,
+  } = useFieldMetadata({
+    entityName: entityName || config.title.toLowerCase(),
+    staticFormItems,
+    enabled: enableDynamicFields,
+  });
+
+  // Use merged form items if dynamic fields are enabled
+  const formItems = enableDynamicFields ? mergedFormItems : staticFormItems;
 
   const handleFilterChange = useCallback((key: string, value: any) => {
     const newValues = { ...filterValues, [key]: value };
@@ -184,7 +204,7 @@ export const GenericCrudPage = <T extends BaseEntity>({
   return (
     <div>
       <Row
-        justify="space-between"
+        justify="end"
         align="bottom"
         gutter={[16, 16]}
         style={{ marginBottom: 16 }}
@@ -359,6 +379,16 @@ export const GenericCrudPage = <T extends BaseEntity>({
                 </Button>
               </Col>
             ))}
+
+            {/* Field Metadata Manager */}
+            {enableDynamicFields && (
+              <Col>
+                <FieldMetadataManager
+                  entityName={entityName || config.title.toLowerCase()}
+                  onFieldsUpdated={refreshMetadata}
+                />
+              </Col>
+            )}
 
             {/* Add Button */}
             <Col>

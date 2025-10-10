@@ -415,6 +415,8 @@ const ProductCrud: React.FC = () => {
     <>
       <GenericCrudPage
         config={productConfig}
+        enableDynamicFields={true}
+        entityName="products"
       />
       
       {/* Barcode Scanner Modal */}
