@@ -17,7 +17,7 @@ import AntdForm from '../antd/form/form';
 import GlobalTable from '../antd/GlobalTable';
 import { useSuperAdminFilters } from '../../hooks/useSuperAdminFilters';
 import { useFieldMetadata } from '../../hooks/useFieldMetadata';
-import FieldMetadataManager from './FieldMetadataManager';
+import FieldMetadataManager from '../FieldMetadataManager';
 
 // Filter and Button Config Types
 export type FilterConfig = {
