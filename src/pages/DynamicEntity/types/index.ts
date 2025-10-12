@@ -3,6 +3,32 @@
  * Provides type safety and better IntelliSense
  */
 
+// Import types without circular dependency
+export interface FieldMetadata {
+  _id: string;
+  entity_name: string;
+  field_name: string;
+  business_type: string;
+  field_type: string;
+  label: string;
+  placeholder?: string;
+  is_required: boolean;
+  validation_rules?: {
+    options?: string[];
+    min?: number;
+    max?: number;
+    pattern?: string;
+    patternMessage?: string;
+    email?: boolean;
+  };
+  display_order: number;
+  is_active: boolean;
+  is_global: boolean;
+  tenant_id?: string;
+  organisation_id?: string;
+  options?: string[];
+}
+
 // Core Entity Definition interface
 export interface EntityDefinition {
   _id: string;

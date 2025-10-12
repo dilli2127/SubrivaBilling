@@ -200,6 +200,21 @@ export const GenericCrudPage = <T extends BaseEntity>({
   // Use merged form items if dynamic fields are enabled
   const formItems = enableDynamicFields ? mergedFormItems : staticFormItems;
 
+  // Generate dynamic columns from field metadata if enabled
+  const enhancedColumns = useMemo(() => {
+    if (!enableDynamicFields || !dynamicFields || dynamicFields.length === 0) {
+      return columns;
+    }
+
+    // Import the column generation utility
+    const { generateColumnsFromMetadata } = require('../../helpers/columnUtils');
+    
+    // Show all fields by default
+    const allFieldNames = dynamicFields.map(field => field.field_name);
+    
+    return generateColumnsFromMetadata(dynamicFields, allFieldNames);
+  }, [columns, enableDynamicFields, dynamicFields]);
+
   const handleFilterChange = useCallback((key: string, value: any) => {
     const newValues = { ...filterValues, [key]: value };
     // Include superadmin filters if enabled
@@ -232,9 +247,9 @@ export const GenericCrudPage = <T extends BaseEntity>({
   ]);
 
   const tableColumns = useMemo(() => [
-    ...columns,
+    ...enhancedColumns,
     getActionsColumn(config.title, handleEdit, handleDelete, deleteLoading, config.canEdit, config.canDelete)
-  ], [columns, config.title, handleEdit, handleDelete, deleteLoading, config.canEdit, config.canDelete]);
+  ], [enhancedColumns, config.title, handleEdit, handleDelete, deleteLoading, config.canEdit, config.canDelete]);
 
   return (
     <div>
@@ -424,6 +439,7 @@ export const GenericCrudPage = <T extends BaseEntity>({
                 />
               </Col>
             )}
+
 
             {/* Add Button */}
             <Col>

@@ -5,13 +5,7 @@ import { useDynamicEntity } from './hooks/useDynamicEntity';
 import { DynamicEntityConfig, FormValuesChangeHandler } from './types';
 
 /**
- * Optimized Dynamic CRUD page that generates forms based on EntityDefinition
- * 
- * Key optimizations:
- * - Uses custom hook for state management
- * - Memoized configurations
- * - Better error handling
- * - Reduced re-renders
+ * Optimized Dynamic CRUD page with column customization
  */
 const DynamicEntityCrud: React.FC = () => {
   const {
@@ -26,52 +20,37 @@ const DynamicEntityCrud: React.FC = () => {
     goToEntityDefinitions,
   } = useDynamicEntity();
 
-  // Memoized configuration to prevent unnecessary re-renders
   const config = useMemo((): DynamicEntityConfig | null => {
     if (!entityDef || !dynamicApiRoutes) return null;
 
     return {
       title: entityDef.plural_name,
       columns: defaultColumns,
-      formItems: [
-        // Dynamic fields will be added via field metadata
-        // entity_name is automatically injected via handleValuesChange
-      ],
+      formItems: [],
       apiRoutes: dynamicApiRoutes,
       formColumns: 2,
       drawerWidth: 700,
-      skipMetadataWrapping: true, // Send fields directly without any wrapping
-      metadataFieldName: 'custom_data', // Field name for dynamic entity metadata
+      skipMetadataWrapping: true,
+      metadataFieldName: 'custom_data',
       enableDynamicFields: true,
       enableSuperAdminFilters: true,
     };
   }, [entityDef, dynamicApiRoutes, defaultColumns]);
 
-  // Optimized form values change handler with proper typing
   const handleValuesChange = useCallback<FormValuesChangeHandler>((_changed, all) => {
-    // Auto-inject entity_name if not present
     if (entityDef && !all.entity_name) {
       all.entity_name = entityDef.entity_name;
     }
   }, [entityDef]);
 
-  // Loading state
   if (loading) {
     return (
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          height: '50vh',
-        }}
-      >
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
         <Spin size="large" tip={`Loading ${entityName} definition...`} />
       </div>
     );
   }
 
-  // Error or not found state
   if (hasError || !isEntityValid || !config) {
     return (
       <Result
