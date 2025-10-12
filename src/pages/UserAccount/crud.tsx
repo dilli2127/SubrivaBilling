@@ -6,6 +6,7 @@ import { usersAccountFormItems } from './formItems';
 import { useApiActions } from '../../services/api/useApiActions';
 import { useDynamicSelector } from '../../services/redux/selector';
 import { Form } from 'antd';
+import { getCurrentUser } from '../../helpers/auth';
 
 const UserAccountCrud: React.FC = () => {
   const { getEntityApi } = useApiActions();
@@ -21,8 +22,7 @@ const UserAccountCrud: React.FC = () => {
     BrachesApi.getIdentifier('GetAll')
   );
   const userItem = useMemo(() => {
-    const data = sessionStorage.getItem('user');
-    return data ? JSON.parse(data) : null;
+    return getCurrentUser();
   }, []);
 
   const userItemRole =

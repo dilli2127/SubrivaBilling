@@ -18,6 +18,7 @@ import {
 import { useDispatch } from "react-redux";
 import { Dispatch } from "redux";
 import { API_ROUTES } from "../../services/api/utils";
+import { setUserData, setAuthToken } from "../../helpers/auth";
 
 const { Title, Text } = Typography;
 
@@ -49,8 +50,9 @@ const Login: React.FC = () => {
   useEffect(() => {
     if (items?.statusCode === 200) {
       message.success("Login successful! Welcome back.");
-      sessionStorage.setItem("token", items?.result?.token);
-      sessionStorage.setItem("user", JSON.stringify(items?.result?.UserItem));
+      // Store encrypted data
+      setAuthToken(items?.result?.token);
+      setUserData(items?.result?.UserItem);
       dispatch(dynamic_clear(API_ROUTES.Login.Create.identifier));
       if (items?.result?.UserItem?.usertype === "admin") {
         navigate("/admin/einvite_crud");

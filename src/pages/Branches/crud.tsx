@@ -35,7 +35,7 @@ const BranchesCrud: React.FC = () => {
       config={{
         title: 'Branches',
         columns: brancheColumns,
-        formItems: branchesFormItems(organisationItems?.result, userRole),
+        formItems: branchesFormItems(organisationItems?.result, userRole || ''),
         apiRoutes: getEntityApiRoutes('Braches'),
         formColumns: 2,
       }}

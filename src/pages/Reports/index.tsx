@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { getCurrentUser } from '../../helpers/auth';
 import {
   Card,
   Row,
@@ -65,8 +66,7 @@ const Reports: React.FC = () => {
 
   // Get user role
   const userItem = useMemo(() => {
-    const data = sessionStorage.getItem('user');
-    return data ? JSON.parse(data) : null;
+    return getCurrentUser();
   }, []);
 
   const userRole = userItem?.roleItems?.name || userItem?.usertype || userItem?.user_role || '';

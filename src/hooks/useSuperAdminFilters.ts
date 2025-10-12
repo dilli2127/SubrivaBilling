@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useApiActions } from '../services/api/useApiActions';
 import { useDynamicSelector } from '../services/redux';
+import { getCurrentUser } from '../helpers/auth';
 
 export interface SuperAdminFiltersReturn {
   isSuperAdmin: boolean;
@@ -37,8 +38,7 @@ export const useSuperAdminFilters = (): SuperAdminFiltersReturn => {
 
   // Get user role
   const userItem = useMemo(() => {
-    const data = sessionStorage.getItem('user');
-    return data ? JSON.parse(data) : null;
+    return getCurrentUser();
   }, []);
 
   const userRole = userItem?.roleItems?.name || userItem?.usertype || userItem?.user_role || '';

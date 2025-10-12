@@ -32,6 +32,7 @@ import { useNavigate } from 'react-router-dom';
 import styles from './Settings.module.css';
 import { useApiActions } from '../../services/api/useApiActions';
 import { useDynamicSelector } from '../../services/redux';
+import { getCurrentUser } from '../../helpers/auth';
 import { useFileUpload } from '../../helpers/useFileUpload';
 
 const { Title, Text } = Typography;
@@ -47,8 +48,7 @@ const Settings: React.FC = () => {
 
   // Get user info
   const userItem = useMemo(() => {
-    const data = sessionStorage.getItem('user');
-    return data ? JSON.parse(data) : null;
+    return getCurrentUser();
   }, []);
 
   // API hooks
@@ -83,12 +83,13 @@ const Settings: React.FC = () => {
   const loadSettings = async () => {
     try {
       // Load organization data
-      if (userItem?.organisation_id) {
-        await OrganisationsApi('Get', {}, userItem.organisation_id);
+      const organisationId = userItem?.organisation_id || userItem?.organisationItems?._id;
+      if (organisationId) {
+        await OrganisationsApi('Get', {}, organisationId);
       }
       
       // Load settings (assuming your backend has a settings endpoint)
-      await SettingsApi('Get', {}, userItem?.organisation_id || userItem?._id);
+      await SettingsApi('Get', {}, organisationId || userItem?._id);
     } catch (error) {
       console.error('Error loading settings:', error);
     }
@@ -154,7 +155,8 @@ const Settings: React.FC = () => {
       setLoading(true);
 
       // Save organization data
-      if (userItem?.organisation_id) {
+      const organisationId = userItem?.organisation_id || userItem?.organisationItems?._id;
+      if (organisationId) {
         await OrganisationsApi('Update', {
           org_name: values.company_name,
           address: values.company_address,
@@ -166,14 +168,14 @@ const Settings: React.FC = () => {
           email: values.company_email,
           website: values.company_website,
           logo: uploadedLogoUrl || values.company_logo,
-        }, userItem.organisation_id);
+        }, organisationId);
       }
 
       // Save settings
       await SettingsApi('Update', {
         ...values,
         company_logo: uploadedLogoUrl || values.company_logo,
-      }, userItem?.organisation_id || userItem?._id);
+      }, organisationId || userItem?._id);
 
       message.success('Settings saved successfully! 🎉');
     } catch (error: any) {

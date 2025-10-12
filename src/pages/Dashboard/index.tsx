@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { Typography, Tabs, Tooltip, Card, Row, Col, Select, Space, Button } from 'antd';
+import { getCurrentUser } from '../../helpers/auth';
 import {
   BarChartOutlined,
   WalletOutlined,
@@ -33,8 +34,7 @@ const Dashboard: React.FC = () => {
 
   // Get user role
   const userItem = useMemo(() => {
-    const data = sessionStorage.getItem('user');
-    return data ? JSON.parse(data) : null;
+    return getCurrentUser();
   }, []);
 
   const userRole = userItem?.roleItems?.name || userItem?.usertype || userItem?.user_role || '';

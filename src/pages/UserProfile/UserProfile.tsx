@@ -26,6 +26,7 @@ import {
   IdcardOutlined,
 } from '@ant-design/icons';
 import { useUser } from '../../components/antd/UserContext';
+import { setUserData, User } from '../../helpers/auth';
 import { useDispatch } from 'react-redux';
 import { Dispatch } from 'redux';
 import { ApiRequest } from '../../services/api/apiService';
@@ -57,7 +58,7 @@ const UserProfile: React.FC = () => {
         name: user.name,
         email: user.email,
         mobile: user.mobile,
-        user_name: user.username,
+        user_name: user.username || '',
       });
     }
   }, [user, form]);
@@ -67,13 +68,16 @@ const UserProfile: React.FC = () => {
       message.success('Profile updated successfully!');
       
       // Update user data in sessionStorage
-      const updatedUser = {
+      const updatedUser: User = {
         ...user,
-        name: form.getFieldValue('name'),
-        email: form.getFieldValue('email'),
-        mobile: form.getFieldValue('mobile'),
+        name: form.getFieldValue('name') || user?.name || '',
+        email: form.getFieldValue('email') || user?.email || '',
+        mobile: form.getFieldValue('mobile') || user?.mobile || '',
+        clientcode: user?.clientcode || '',
+        usertype: user?.usertype || '',
+        active: user?.active ?? true,
       };
-      sessionStorage.setItem('user', JSON.stringify(updatedUser));
+      setUserData(updatedUser);
       
       setIsEditing(false);
       setIsChangingPassword(false);
@@ -138,7 +142,7 @@ const UserProfile: React.FC = () => {
       name: user?.name,
       email: user?.email,
       mobile: user?.mobile,
-      user_name: user?.username,
+      user_name: user?.username || '',
     });
   };
 
@@ -180,7 +184,7 @@ const UserProfile: React.FC = () => {
               <Title level={4} style={{ marginTop: 16, marginBottom: 4 }}>
                 {user?.name || 'User Name'}
               </Title>
-              <Text type="secondary">@{user?.username || 'username'}</Text>
+              <Text type="secondary">@{user?.username || user?.name || 'username'}</Text>
               <div style={{ marginTop: 16 }}>
                 <Tag color="blue" style={{ fontSize: 14, padding: '4px 12px' }}>
                   {userRole}

@@ -4,6 +4,7 @@ import { UserOutlined, LockOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import styles from './Login.module.css';
 import { ApiRequest } from '../../services/api/apiService';
+import { setUserData, setAuthToken } from '../../helpers/auth';
 import {
   dynamic_clear,
   dynamic_request,
@@ -63,8 +64,9 @@ const BillingLogin: React.FC = () => {
 
     if (currentItems?.statusCode === 200) {
       message.success('Login successful! Welcome back.');
-      sessionStorage.setItem('token', currentItems?.result?.token);
-      sessionStorage.setItem('user', JSON.stringify(currentItems?.result?.UserItem));
+      // Store encrypted data
+      setAuthToken(currentItems?.result?.token);
+      setUserData(currentItems?.result?.UserItem);
       dispatch(dynamic_clear(currentRoute.identifier));
       navigate('/dashboard');
     } else if (currentError) {

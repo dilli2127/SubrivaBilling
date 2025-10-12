@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
+import { getCurrentUser } from '../../../helpers/auth';
 import {
   Button,
   Typography,
@@ -141,10 +142,9 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
     useState<number>(0);
 
   // User info - memoized to prevent re-parsing on every render
-  const user = useMemo(
-    () => JSON.parse(sessionStorage.getItem('user') || '{}'),
-    []
-  );
+  const user = useMemo(() => {
+    return getCurrentUser();
+  }, []);
   const branchId = user?.branch_id;
 
   // Helper function to validate stock quantities
@@ -363,7 +363,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
         }));
       }
     }
-  }, [userList, user._id, billdata, billFormData.billed_by_id]);
+  }, [userList, user?._id, billdata, billFormData.billed_by_id]);
 
   // Product and stock options
   const productOptions = useMemo(

@@ -5,6 +5,7 @@ import React, {
   useCallback,
   useMemo,
 } from 'react';
+import { getCurrentUser } from '../../../helpers/auth';
 import {
   Modal,
   Input,
@@ -67,11 +68,7 @@ const UserSelectionModal: React.FC<UserSelectionModalProps> = ({
   
   // Get current user from session storage
   const currentUser = useMemo(() => {
-    try {
-      return JSON.parse(sessionStorage.getItem('user') || '{}');
-    } catch {
-      return {};
-    }
+    return getCurrentUser();
   }, []);
 
   const searchInputRef = useRef<any>(null);
@@ -416,7 +413,7 @@ const UserSelectionModal: React.FC<UserSelectionModalProps> = ({
 
   // Auto-select current user when users are loaded
   useEffect(() => {
-    if (visible && users.length > 0 && currentUser._id && !selectedUser) {
+    if (visible && users.length > 0 && currentUser?._id && !selectedUser) {
       const currentUserInList = users.find((user: User) => user._id === currentUser._id);
       if (currentUserInList) {
         setSelectedUser(currentUserInList);
@@ -437,7 +434,7 @@ const UserSelectionModal: React.FC<UserSelectionModalProps> = ({
         }, 200);
       }
     }
-  }, [visible, users, currentUser._id, selectedUser]);
+  }, [visible, users, currentUser?._id, selectedUser]);
 
   // Focus search input when modal becomes visible
   useEffect(() => {

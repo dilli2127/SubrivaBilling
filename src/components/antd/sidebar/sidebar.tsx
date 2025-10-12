@@ -7,6 +7,7 @@ import React, {
   useLayoutEffect,
   useEffect,
 } from 'react';
+import { getCurrentUser, User } from '../../../helpers/auth';
 import {
   LogoutOutlined,
   MenuFoldOutlined,
@@ -126,9 +127,8 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
     }
   }, [theme]);
 
-  const userItem = useMemo(() => {
-    const data = sessionStorage.getItem('user');
-    return data ? JSON.parse(data) : null;
+  const userItem: User | null = useMemo(() => {
+    return getCurrentUser();
   }, []);
 
   const allowedKeys = useMemo(() => getAllowedMenuKeys(userItem), [userItem]);

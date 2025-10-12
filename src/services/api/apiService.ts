@@ -1,5 +1,6 @@
 import axios, { AxiosInstance } from 'axios';
 import { API_ERROR_CODES } from '../../helpers/constants';
+import { getAuthToken, clearAuthData } from '../../helpers/auth';
 
 export interface ApiResponse<T> {
     statusCode: number;
@@ -30,7 +31,7 @@ class APIService {
 
         // Add request interceptor for token
         this.api.interceptors.request.use((config) => {
-            const token = sessionStorage.getItem('token');
+            const token = getAuthToken();
             if (token) {
                 config.headers['Token'] = token;
             }
@@ -47,7 +48,7 @@ class APIService {
                         error.response.data?.statusCode === 401 ||
                         error.response.data?.message?.toLowerCase().includes('token expired'))
                 ) {
-                    sessionStorage.clear();
+                    clearAuthData();
                     window.location.href = '/billing_login';
                 }
                 return Promise.reject(error);
@@ -73,7 +74,7 @@ class APIService {
     private handleResponse<T>(response: ApiResponse<T>): ApiResponse<T> {
         // Check for 401 status code in response body
         if (response.statusCode === 401) {
-            sessionStorage.clear();
+            clearAuthData();
             window.location.href = '/billing_login';
             return response; // Return response but user will be redirected
         }
