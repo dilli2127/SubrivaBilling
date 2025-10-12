@@ -8,6 +8,7 @@ import {
   DatePicker,
   Space,
   Col,
+  Popconfirm,
 } from 'antd';
 import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import { useGenericCrud, CrudConfig } from '../../hooks/useGenericCrud';
@@ -98,14 +99,22 @@ function getActionsColumn(
             />
           </Tooltip>
           <Tooltip title={allowDelete ? `Delete ${title}` : 'No permission to delete'}>
-            <DeleteOutlined
-              style={{ 
-                cursor: (deleteLoading || !allowDelete) ? 'not-allowed' : 'pointer', 
-                color: (deleteLoading || !allowDelete) ? '#d9d9d9' : '#ff4d4f',
-                opacity: (deleteLoading || !allowDelete) ? 0.5 : 1
-              }}
-              onClick={() => !deleteLoading && allowDelete && handleDelete(record)}
-            />
+            <Popconfirm
+              title={`Delete ${title}`}
+              description="Are you sure you want to delete this item?"
+              onConfirm={() => handleDelete(record)}
+              okText="Yes"
+              cancelText="No"
+              disabled={deleteLoading || !allowDelete}
+            >
+              <DeleteOutlined
+                style={{ 
+                  cursor: (deleteLoading || !allowDelete) ? 'not-allowed' : 'pointer', 
+                  color: (deleteLoading || !allowDelete) ? '#d9d9d9' : '#ff4d4f',
+                  opacity: (deleteLoading || !allowDelete) ? 0.5 : 1
+                }}
+              />
+            </Popconfirm>
           </Tooltip>
         </div>
       );
