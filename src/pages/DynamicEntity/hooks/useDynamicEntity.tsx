@@ -22,7 +22,7 @@ export const useDynamicEntity = (): UseDynamicEntityReturn => {
 
   // Memoized API route getter to prevent recreation
   const getApiRoute = useMemo(() => createApiRouteGetter('EntityDefinition'), []);
-  const entityDefRoute = useMemo(() => getApiRoute('Get'), [getApiRoute]);
+  const entityDefRoute = useMemo(() => getApiRoute('GetAll'), [getApiRoute]);
 
   // Fetch entity definition data
   const { loading, items, error } = useDynamicSelector(entityDefRoute.identifier);
@@ -45,11 +45,17 @@ export const useDynamicEntity = (): UseDynamicEntityReturn => {
 
   // Update entity definition when data changes
   useEffect(() => {
-    if (items?.result && Array.isArray(items.result) && items.result.length > 0) {
-      const definition = items.result[0];
-      setEntityDef(definition);
+    if (items?.result && Array.isArray(items.result) && items.result.length > 0 && entityName) {
+      // Find the specific entity definition that matches the entityName
+      const definition = items.result.find((item: EntityDefinition) => item.entity_name === entityName);
+      if (definition) {
+        setEntityDef(definition);
+      } else {
+        // If no matching entity found, clear the definition
+        setEntityDef(null);
+      }
     }
-  }, [items]);
+  }, [items, entityName]);
 
   // Fetch on mount and when entityName changes
   useEffect(() => {
