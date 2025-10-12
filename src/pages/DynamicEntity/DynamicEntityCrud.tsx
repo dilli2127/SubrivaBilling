@@ -75,6 +75,7 @@ const DynamicEntityCrud: React.FC = () => {
     <GenericCrudPage
       config={config}
       enableDynamicFields={true}
+      showDynamicColumnsInTable={true} // Show dynamic columns in table for pure dynamic entities
       entityName={entityDef?.entity_name}
       enableSuperAdminFilters={true}
       onValuesChange={handleValuesChange}

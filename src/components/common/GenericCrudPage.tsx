@@ -67,7 +67,8 @@ interface GenericCrudPageProps<T extends BaseEntity> {
   customButtons?: CustomButtonConfig[];
   onValuesChange?: (changed: any, all: any) => void;
   enableSuperAdminFilters?: boolean; // Enable tenant/org/branch dropdowns for superadmin
-  enableDynamicFields?: boolean; // Enable dynamic field metadata
+  enableDynamicFields?: boolean; // Enable dynamic field metadata in form
+  showDynamicColumnsInTable?: boolean; // Show dynamic metadata columns in table (default: false for static CRUDs)
   entityName?: string; // Entity name for dynamic fields (e.g., 'products', 'customers')
 }
 
@@ -140,6 +141,7 @@ export const GenericCrudPage = <T extends BaseEntity>({
   onValuesChange,
   enableSuperAdminFilters = true, // Enabled by default
   enableDynamicFields = false,
+  showDynamicColumnsInTable = false, // Disabled by default for static CRUDs
   entityName,
 }: GenericCrudPageProps<T>) => {
   // SuperAdmin filters hook
@@ -202,7 +204,8 @@ export const GenericCrudPage = <T extends BaseEntity>({
 
   // Generate dynamic columns from field metadata if enabled
   const enhancedColumns = useMemo(() => {
-    if (!enableDynamicFields || !dynamicFields || dynamicFields.length === 0) {
+    // Only add dynamic columns to table if explicitly enabled
+    if (!showDynamicColumnsInTable || !enableDynamicFields || !dynamicFields || dynamicFields.length === 0) {
       return columns;
     }
 
@@ -229,7 +232,7 @@ export const GenericCrudPage = <T extends BaseEntity>({
       
       return [...columns, ...newDynamicColumns];
     }
-  }, [columns, enableDynamicFields, dynamicFields]);
+  }, [columns, showDynamicColumnsInTable, enableDynamicFields, dynamicFields]);
 
   const handleFilterChange = useCallback((key: string, value: any) => {
     const newValues = { ...filterValues, [key]: value };

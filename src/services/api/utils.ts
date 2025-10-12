@@ -7,7 +7,11 @@ export const API_METHODS = {
   PATCH: "PATCH",
 };
 
-// Auto-generate CRUD routes for any entity
+/**
+ * Create CRUD routes for STATIC entities
+ * These entities use GenericCrudPage with predefined formItems and columns
+ * Updates use PATCH method (RESTful standard for partial updates)
+ */
 export const createCrudRoutes = (baseEndpoint: string, name: string) => ({
   Create: {
     identifier: `Add${name}`,
@@ -16,7 +20,7 @@ export const createCrudRoutes = (baseEndpoint: string, name: string) => ({
   },
   Update: {
     identifier: `Update${name}`,
-    method: API_METHODS.POST, // Backend uses POST for updates
+    method: API_METHODS.PATCH, // Use PATCH for updates
     endpoint: baseEndpoint,
   },
   Get: {
@@ -35,6 +39,7 @@ export const createCrudRoutes = (baseEndpoint: string, name: string) => ({
     endpoint: baseEndpoint,
   },
 });
+
 
 export const API_ROUTES = {
   Signup: {

@@ -136,7 +136,7 @@ export const productsFormItems = ({
   ...(isSuperAdmin ? [{
     label: 'Business Type',
     name: 'business_type',
-    rules: [{ required: true, message: 'Please select business type!' }],
+    rules: [{ required: false, message: 'Please select business type!' }],
     component: (
       <Select
         placeholder="Select business type"

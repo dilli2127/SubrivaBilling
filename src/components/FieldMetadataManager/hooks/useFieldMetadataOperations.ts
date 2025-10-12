@@ -62,8 +62,9 @@ export const useFieldMetadataOperations = ({
     ) => {
       if (response?.statusCode === 200) {
         showToast('success', `Field ${action} successfully`);
+        // Only fetch fields for the modal view
         fetchFields();
-        if (onFieldsUpdated) onFieldsUpdated();
+        // Clear the request state
         dispatch(dynamic_clear(identifier) as any);
       }
     };
@@ -76,7 +77,6 @@ export const useFieldMetadataOperations = ({
     updateResponse,
     deleteResponse,
     fetchFields,
-    onFieldsUpdated,
     dispatch,
     apiRoutes.create.identifier,
     apiRoutes.update.identifier,

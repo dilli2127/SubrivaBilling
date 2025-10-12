@@ -19,6 +19,7 @@ const FieldMetadataManager: React.FC<FieldMetadataManagerProps> = ({
   const [fieldModalVisible, setFieldModalVisible] = useState(false);
   const [editingField, setEditingField] = useState<FieldMetadata | null>(null);
   const [optionsText, setOptionsText] = useState('');
+  const [hasChanges, setHasChanges] = useState(false);
 
   // Use custom hook for operations
   const {
@@ -79,6 +80,9 @@ const FieldMetadataManager: React.FC<FieldMetadataManagerProps> = ({
       const values = await form.validateFields();
       await handleSubmitField(values, optionsText, editingField);
       
+      // Mark that changes were made
+      setHasChanges(true);
+      
       // Close modal and reset form on success
       setFieldModalVisible(false);
       setEditingField(null);
@@ -90,6 +94,22 @@ const FieldMetadataManager: React.FC<FieldMetadataManagerProps> = ({
   }, [form, optionsText, editingField, handleSubmitField]);
 
   const confirmLoading = createLoading || updateLoading;
+
+  // Handle modal close - notify parent if there were changes
+  const handleModalClose = useCallback(() => {
+    setModalVisible(false);
+    if (hasChanges && onFieldsUpdated) {
+      // Notify parent component to refresh its form items
+      onFieldsUpdated();
+      setHasChanges(false);
+    }
+  }, [hasChanges, onFieldsUpdated]);
+
+  // Wrap delete handler to track changes
+  const handleDelete = useCallback((fieldId: string) => {
+    handleDeleteField(fieldId);
+    setHasChanges(true);
+  }, [handleDeleteField]);
 
   return (
     <>
@@ -105,10 +125,10 @@ const FieldMetadataManager: React.FC<FieldMetadataManagerProps> = ({
       <Modal
         title={`Manage Fields - ${entityName}`}
         open={modalVisible}
-        onCancel={() => setModalVisible(false)}
+        onCancel={handleModalClose}
         width={1000}
         footer={[
-          <Button key="close" onClick={() => setModalVisible(false)}>
+          <Button key="close" onClick={handleModalClose}>
             Close
           </Button>,
         ]}
@@ -137,7 +157,7 @@ const FieldMetadataManager: React.FC<FieldMetadataManagerProps> = ({
             loading={fieldsLoading}
             deleteLoading={deleteLoading}
             onEdit={handleOpenFieldModal}
-            onDelete={handleDeleteField}
+            onDelete={handleDelete}
           />
         </Space>
       </Modal>

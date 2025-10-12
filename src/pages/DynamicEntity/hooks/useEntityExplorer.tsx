@@ -17,10 +17,10 @@ export const useEntityExplorer = (): UseEntityExplorerReturn => {
 
   // Get current user role for permission checks
   const currentUserRole = getCurrentUserRole();
-  const isSuperAdmin = useMemo(() => 
-    currentUserRole?.toLowerCase() === 'superadmin', 
-    [currentUserRole]
-  );
+  const isSuperAdmin = useMemo(() => {
+    const role = currentUserRole?.toLowerCase();
+    return role === 'superadmin' || role === 'tenant' || role === 'admin';
+  }, [currentUserRole]);
 
   // Memoized API route getter
   const getApiRoute = useMemo(() => createApiRouteGetter('EntityDefinition'), []);
