@@ -209,10 +209,26 @@ export const GenericCrudPage = <T extends BaseEntity>({
     // Import the column generation utility
     const { generateColumnsFromMetadata } = require('../../helpers/columnUtils');
     
-    // Show all fields by default
-    const allFieldNames = dynamicFields.map(field => field.field_name);
+    // For normal forms (like Products), combine config.columns with dynamic fields
+    // For pure dynamic forms (like DynamicEntity), show only dynamic fields
+    const isPureDynamicForm = columns.length <= 3 && 
+      columns.every((col: any) => ['_id', 'createdAt', 'updatedAt'].includes(col.key));
     
-    return generateColumnsFromMetadata(dynamicFields, allFieldNames);
+    if (isPureDynamicForm) {
+      // Pure dynamic form - show all dynamic fields only
+      const allFieldNames = dynamicFields.map(field => field.field_name);
+      return generateColumnsFromMetadata(dynamicFields, allFieldNames);
+    } else {
+      // Normal form - combine existing columns with dynamic fields
+      const dynamicFieldNames = dynamicFields.map(field => field.field_name);
+      const dynamicColumns = generateColumnsFromMetadata(dynamicFields, dynamicFieldNames);
+      
+      // Combine existing columns with dynamic columns
+      const existingKeys = columns.map((col: any) => col.key);
+      const newDynamicColumns = dynamicColumns.filter((col: any) => !existingKeys.includes(col.key));
+      
+      return [...columns, ...newDynamicColumns];
+    }
   }, [columns, enableDynamicFields, dynamicFields]);
 
   const handleFilterChange = useCallback((key: string, value: any) => {
