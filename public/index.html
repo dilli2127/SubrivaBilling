@@ -12,8 +12,22 @@
     <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
     
-    <!-- Content Security Policy for Electron -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' data: https: http://localhost:*; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https: http://localhost:*;">
+    <!-- Content Security Policy - Balanced for Electron + React -->
+    <!-- Note: 'unsafe-inline' for styles is needed for Ant Design dynamic styles -->
+    <!-- 'unsafe-eval' removed for better security. If build fails, review React/Webpack config -->
+    <meta http-equiv="Content-Security-Policy" content="
+      default-src 'self';
+      script-src 'self';
+      style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+      font-src 'self' https://fonts.gstatic.com data:;
+      img-src 'self' data: https: blob:;
+      connect-src 'self' https://www.subrivabilling.com https://*.subrivabilling.com http://localhost:8249 http://127.0.0.1:8249;
+      frame-src 'none';
+      object-src 'none';
+      base-uri 'self';
+      form-action 'self';
+      upgrade-insecure-requests;
+    ">
 
     <!--
       manifest.json provides metadata used when your web app is installed on a

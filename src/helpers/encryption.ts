@@ -1,9 +1,11 @@
-// Simple encryption/decryption utilities for session storage
+import CryptoJS from 'crypto-js';
+
+// AES encryption/decryption utilities for session storage
 class SessionStorageEncryption {
-  private static readonly SECRET_KEY = 'your-app-secret-key'; // In production, use environment variable
+  // In production, use environment variable
+  private static readonly SECRET_KEY = process.env.REACT_APP_ENCRYPTION_KEY || 'subriva-default-secret-key-change-in-production';
   
-  // Simple encryption using base64 (for basic protection)
-  // For production, consider using crypto-js or similar library
+  // AES encryption for sensitive data
   static encrypt(data: any): string {
     try {
       if (!data) {
@@ -11,7 +13,7 @@ class SessionStorageEncryption {
         return '';
       }
       const jsonString = JSON.stringify(data);
-      const encrypted = btoa(jsonString); // Base64 encoding
+      const encrypted = CryptoJS.AES.encrypt(jsonString, this.SECRET_KEY).toString();
       return encrypted;
     } catch (error) {
       console.error('Encryption failed:', error);
@@ -25,7 +27,14 @@ class SessionStorageEncryption {
         console.warn('Decryption: No encrypted data provided');
         return null;
       }
-      const jsonString = atob(encryptedData); // Base64 decoding
+      const bytes = CryptoJS.AES.decrypt(encryptedData, this.SECRET_KEY);
+      const jsonString = bytes.toString(CryptoJS.enc.Utf8);
+      
+      if (!jsonString) {
+        console.error('Decryption resulted in empty string');
+        return null;
+      }
+      
       const decrypted = JSON.parse(jsonString);
       return decrypted;
     } catch (error) {

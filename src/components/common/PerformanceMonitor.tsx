@@ -1,4 +1,5 @@
-import React, { useEffect, useCallback } from 'react';
+import React, { useEffect, useCallback, useState } from 'react';
+import { logErrorToBackend } from '../../helpers/errorLogging';
 
 interface PerformanceMetrics {
   pageLoadTime: number;
@@ -66,16 +67,24 @@ const PerformanceMonitor: React.FC<PerformanceMonitorProps> = ({
   useEffect(() => {
     if (enableErrorTracking) {
       const handleError = (event: ErrorEvent) => {
-
+        console.error('Global error:', event.error);
         setMetrics(prev => ({ ...prev, errorCount: prev.errorCount + 1 }));
         
-        // You can send error to external service here
-        // sendErrorToService(event.error);
+        // Log to backend securely
+        if (event.error instanceof Error) {
+          logErrorToBackend(event.error).catch(console.error);
+        }
       };
 
       const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
-
+        console.error('Unhandled promise rejection:', event.reason);
         setMetrics(prev => ({ ...prev, errorCount: prev.errorCount + 1 }));
+        
+        // Log to backend securely
+        const error = event.reason instanceof Error 
+          ? event.reason 
+          : new Error(String(event.reason));
+        logErrorToBackend(error).catch(console.error);
       };
 
       window.addEventListener('error', handleError);

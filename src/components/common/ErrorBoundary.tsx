@@ -1,5 +1,6 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { Result, Button } from 'antd';
+import { logErrorToBackend } from '../../helpers/errorLogging';
 
 interface Props {
   children: ReactNode;
@@ -22,8 +23,12 @@ class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-
-    // You can log the error to an error reporting service here
+    console.error('Error caught by boundary:', error, errorInfo);
+    
+    // Log error to backend securely
+    logErrorToBackend(error, errorInfo).catch(err => {
+      console.error('Failed to log error:', err);
+    });
   }
 
   handleReload = () => {

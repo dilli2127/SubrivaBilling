@@ -1,0 +1,57 @@
+# Subriva Billing - Environment Variables Example
+# Copy this file to .env and fill in your values
+
+# ============================================
+# SECURITY SETTINGS (REQUIRED FOR PRODUCTION)
+# ============================================
+
+# Encryption key for session storage (minimum 32 characters)
+# Generate with: node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+REACT_APP_ENCRYPTION_KEY=your-secret-key-change-this-min-32-chars-long-use-crypto-random-generator
+
+# API Base URL
+REACT_APP_API_BASE_URL=https://api.probilldesk.com
+
+# ============================================
+# OPTIONAL SETTINGS
+# ============================================
+
+# Enable performance logging in production
+# REACT_APP_ENABLE_PERFORMANCE_LOGGING=true
+
+# Sentry DSN for error tracking (if using Sentry)
+# REACT_APP_SENTRY_DSN=https://your-sentry-dsn
+
+# Google Analytics ID (if using GA)
+# REACT_APP_GA_ID=UA-XXXXXXXXX-X
+
+# Enable debug mode (development only)
+# REACT_APP_DEBUG_MODE=true
+
+# ============================================
+# ELECTRON SETTINGS
+# ============================================
+
+# Auto-update server URL
+# REACT_APP_UPDATE_SERVER_URL=https://updates.probilldesk.com
+
+# ============================================
+# FEATURE FLAGS
+# ============================================
+
+# Enable experimental features
+# REACT_APP_ENABLE_BETA_FEATURES=false
+
+# Enable thermal printer support
+# REACT_APP_ENABLE_THERMAL_PRINTER=true
+
+# ============================================
+# NOTES
+# ============================================
+# 
+# 1. Never commit .env file to version control
+# 2. Use different keys for dev/staging/production
+# 3. Rotate encryption keys periodically
+# 4. Keep API URLs secure
+# 5. Review all environment variables before deployment
+

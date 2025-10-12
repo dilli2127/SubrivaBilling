@@ -1,5 +1,6 @@
 // src/helpers/auth.ts
 import SessionStorageEncryption from './encryption';
+import { clearCSRFToken, setCSRFToken } from './csrfToken';
 
 export interface User {
   _id?: string;
@@ -63,15 +64,18 @@ export function setUserData(user: User): void {
   SessionStorageEncryption.setItem('user', user);
 }
 
-// Store auth token (encrypted)
+// Store auth token (encrypted) and generate CSRF token
 export function setAuthToken(token: string): void {
   SessionStorageEncryption.setItem('token', token);
+  // Generate CSRF token on successful authentication
+  setCSRFToken();
 }
 
-// Clear all auth data
+// Clear all auth data including CSRF token
 export function clearAuthData(): void {
   SessionStorageEncryption.removeItem('user');
   SessionStorageEncryption.removeItem('token');
+  clearCSRFToken();
 }
 
 // Check if user is authenticated

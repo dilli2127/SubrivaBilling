@@ -1,6 +1,7 @@
 import axios, { AxiosInstance } from 'axios';
 import { API_ERROR_CODES } from '../../helpers/constants';
 import { getAuthToken, clearAuthData } from '../../helpers/auth';
+import { getCSRFToken } from '../../helpers/csrfToken';
 
 export interface ApiResponse<T> {
     statusCode: number;
@@ -29,12 +30,19 @@ class APIService {
             },
         });
 
-        // Add request interceptor for token
+        // Add request interceptor for token and CSRF
         this.api.interceptors.request.use((config) => {
             const token = getAuthToken();
             if (token) {
                 config.headers['Token'] = token;
             }
+            
+            // Add CSRF token for state-changing requests
+            if (config.method && ['post', 'put', 'patch', 'delete'].includes(config.method.toLowerCase())) {
+                const csrfToken = getCSRFToken();
+                config.headers['X-CSRF-Token'] = csrfToken;
+            }
+            
             return config;
         });
 

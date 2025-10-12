@@ -9,6 +9,7 @@ import {
   ExclamationCircleOutlined
 } from '@ant-design/icons';
 import { useApiActions } from '../../services/api/useApiActions';
+import { sanitizeRichText } from '../../helpers/sanitize';
 import styles from './EmailSendModal.module.css';
 
 const { Title, Text } = Typography;
@@ -195,11 +196,16 @@ Subriva Billing Team
 
     setSending(true);
     try {
-      // Call your backend API
-      const response = await fetch('/api/send-invoice-email', {
+      // Call backend email API
+      const token = sessionStorage.getItem('token');
+      const csrfToken = sessionStorage.getItem('csrf-token');
+      
+      const response = await fetch(`${process.env.REACT_APP_API_URL || ''}/email/send-invoice`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'token': token || '',
+          'x-csrf-token': csrfToken || ''
         },
         body: JSON.stringify({
           customerEmail: values.to,
@@ -359,7 +365,7 @@ Subriva Billing Team
                   <div className={styles.previewBody}>
                     <div 
                       className={styles.htmlPreview}
-                      dangerouslySetInnerHTML={{ __html: emailPreview.html }}
+                      dangerouslySetInnerHTML={{ __html: sanitizeRichText(emailPreview.html) }}
                     />
                   </div>
                   
