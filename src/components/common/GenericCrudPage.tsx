@@ -88,13 +88,20 @@ function getActionsColumn(
       const allowDelete = canDelete ? canDelete(record) : true;
       
       return (
-        <div style={{ display: 'flex', gap: '10px' }}>
+        <div style={{ 
+          display: 'flex', 
+          gap: '16px', 
+          justifyContent: 'center',
+          alignItems: 'center'
+        }}>
           <Tooltip title={allowEdit ? `Edit ${title}` : 'No permission to edit'}>
             <EditOutlined
               style={{ 
                 cursor: allowEdit ? 'pointer' : 'not-allowed', 
                 color: allowEdit ? '#1890ff' : '#d9d9d9',
-                opacity: allowEdit ? 1 : 0.5
+                opacity: allowEdit ? 1 : 0.5,
+                fontSize: '16px',
+                padding: '4px'
               }}
               onClick={() => allowEdit && handleEdit(record)}
             />
@@ -112,7 +119,9 @@ function getActionsColumn(
                 style={{ 
                   cursor: (deleteLoading || !allowDelete) ? 'not-allowed' : 'pointer', 
                   color: (deleteLoading || !allowDelete) ? '#d9d9d9' : '#ff4d4f',
-                  opacity: (deleteLoading || !allowDelete) ? 0.5 : 1
+                  opacity: (deleteLoading || !allowDelete) ? 0.5 : 1,
+                  fontSize: '16px',
+                  padding: '4px'
                 }}
               />
             </Popconfirm>

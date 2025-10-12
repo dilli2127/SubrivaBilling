@@ -5,13 +5,13 @@ import { Dispatch } from 'redux';
 import { dynamic_request, useDynamicSelector } from '../../../services/redux';
 import { createApiRouteGetter } from '../../../helpers/Common_functions';
 import { getCurrentUserRole } from '../../../helpers/auth';
-import { EntityDefinition } from './useDynamicEntity';
+import { EntityDefinition, UseEntityExplorerReturn } from '../types';
 
 /**
  * Custom hook for Entity Explorer functionality
  * Handles entity definitions fetching, user permissions, and navigation
  */
-export const useEntityExplorer = () => {
+export const useEntityExplorer = (): UseEntityExplorerReturn => {
   const navigate = useNavigate();
   const dispatch: Dispatch<any> = useDispatch();
 

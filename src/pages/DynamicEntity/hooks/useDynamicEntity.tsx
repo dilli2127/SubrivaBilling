@@ -1,37 +1,20 @@
-import React, { useCallback, useMemo, useState, useEffect } from 'react';
+import { useCallback, useMemo, useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Dispatch } from 'redux';
 import { dynamic_request, useDynamicSelector } from '../../../services/redux';
 import { createApiRouteGetter } from '../../../helpers/Common_functions';
-
-export interface EntityDefinition {
-  _id: string;
-  entity_name: string;
-  display_name: string;
-  plural_name: string;
-  description?: string;
-  icon?: string;
-  is_active: boolean;
-  is_global: boolean;
-  tenant_id?: string;
-  organisation_id?: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface DynamicApiRoutes {
-  get: { method: string; endpoint: string; identifier: string };
-  create: { method: string; endpoint: string; identifier: string };
-  update: { method: string; endpoint: string; identifier: string };
-  delete: { method: string; endpoint: string; identifier: string };
-}
+import { 
+  EntityDefinition, 
+  DynamicApiRoutes, 
+  UseDynamicEntityReturn 
+} from '../types';
 
 /**
  * Custom hook for managing dynamic entity operations
  * Handles entity definition fetching, API route generation, and entity validation
  */
-export const useDynamicEntity = () => {
+export const useDynamicEntity = (): UseDynamicEntityReturn => {
   const { entityName } = useParams<{ entityName: string }>();
   const navigate = useNavigate();
   const dispatch: Dispatch<any> = useDispatch();
@@ -103,15 +86,19 @@ export const useDynamicEntity = () => {
     };
   }, [entityName]);
 
-  // Optimized columns configuration
+  // Optimized columns configuration with better spacing
   const defaultColumns = useMemo(() => [
     {
       title: 'ID',
       dataIndex: '_id',
       key: '_id',
-      width: 100,
       render: (text: string) => (
-        <span style={{ fontFamily: 'monospace', fontSize: '12px' }}>
+        <span style={{ 
+          fontFamily: 'monospace', 
+          fontSize: '13px',
+          fontWeight: 500,
+          color: '#1890ff'
+        }}>
           {text.substring(0, 8)}...
         </span>
       ),
@@ -120,21 +107,27 @@ export const useDynamicEntity = () => {
       title: 'Created',
       dataIndex: 'createdAt',
       key: 'createdAt',
-      width: 120,
-      render: (date: string) => new Date(date).toLocaleDateString(),
+      render: (date: string) => (
+        <span style={{ fontSize: '13px', color: '#666' }}>
+          {new Date(date).toLocaleDateString()}
+        </span>
+      ),
     },
     {
       title: 'Updated',
       dataIndex: 'updatedAt',
       key: 'updatedAt',
-      width: 120,
-      render: (date: string) => new Date(date).toLocaleDateString(),
+      render: (date: string) => (
+        <span style={{ fontSize: '13px', color: '#666' }}>
+          {new Date(date).toLocaleDateString()}
+        </span>
+      ),
     },
   ], []);
 
   // Validation helpers
   const isEntityValid = useMemo(() => {
-    return entityDef && entityDef.is_active;
+    return Boolean(entityDef && entityDef.is_active);
   }, [entityDef]);
 
   const hasError = useMemo(() => {

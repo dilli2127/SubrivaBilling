@@ -1,58 +1,31 @@
-import React, { useEffect } from 'react';
+import React, { memo } from 'react';
 import { Card, Row, Col, Typography, Button, Tag, Space, Spin } from 'antd';
 import {
   AppstoreAddOutlined,
   RightOutlined,
   PlusOutlined,
 } from '@ant-design/icons';
-import { useNavigate } from 'react-router-dom';
-import { dynamic_request, useDynamicSelector } from '../../services/redux';
-import { useDispatch } from 'react-redux';
-import { createApiRouteGetter } from '../../helpers/Common_functions';
-import { Dispatch } from 'redux';
-import { getCurrentUserRole } from '../../helpers/auth';
+import { useEntityExplorer } from './hooks/useEntityExplorer';
 
 const { Title, Paragraph } = Typography;
 
-interface EntityDefinition {
-  _id: string;
-  entity_name: string;
-  display_name: string;
-  plural_name: string;
-  description?: string;
-  icon?: string;
-  is_active: boolean;
-  is_global: boolean;
-}
-
 /**
- * Entity Explorer - Browse and access all custom entities
+ * Optimized Entity Explorer - Browse and access all custom entities
+ * 
+ * Key optimizations:
+ * - Uses custom hook for state management
+ * - Memoized component to prevent unnecessary re-renders
+ * - Better separation of concerns
  */
-const EntityExplorer: React.FC = () => {
-  const navigate = useNavigate();
-  const dispatch: Dispatch<any> = useDispatch();
-  const currentUserRole = getCurrentUserRole();
-  const isSuperAdmin = currentUserRole?.toLowerCase() === 'superadmin';
-
-  // Fetch entity definitions
-  const getApiRoute = createApiRouteGetter('EntityDefinition');
-  const entityRoute = getApiRoute('Get');
-  const { loading, items } = useDynamicSelector(entityRoute.identifier);
-
-  useEffect(() => {
-    dispatch(
-      dynamic_request(
-        {
-          method: entityRoute.method,
-          endpoint: entityRoute.endpoint,
-          data: { is_active: true },
-        },
-        entityRoute.identifier
-      )
-    );
-  }, [dispatch, entityRoute]);
-
-  const entities: EntityDefinition[] = items?.result || [];
+const EntityExplorer: React.FC = memo(() => {
+  const {
+    entities,
+    loading,
+    hasEntities,
+    isSuperAdmin,
+    navigateToEntity,
+    navigateToDefinitions,
+  } = useEntityExplorer();
 
   if (loading) {
     return (
@@ -86,7 +59,7 @@ const EntityExplorer: React.FC = () => {
             <Button
               type="primary"
               icon={<PlusOutlined />}
-              onClick={() => navigate('/entity-definitions')}
+              onClick={navigateToDefinitions}
             >
               Manage Entity Definitions
             </Button>
@@ -94,7 +67,7 @@ const EntityExplorer: React.FC = () => {
         </Col>
       </Row>
 
-      {entities.length === 0 ? (
+      {!hasEntities ? (
         <Card>
           <div style={{ textAlign: 'center', padding: '40px 0' }}>
             <AppstoreAddOutlined style={{ fontSize: 64, color: '#d9d9d9' }} />
@@ -110,7 +83,7 @@ const EntityExplorer: React.FC = () => {
               <Button
                 type="primary"
                 icon={<PlusOutlined />}
-                onClick={() => navigate('/entity-definitions')}
+                onClick={navigateToDefinitions}
                 style={{ marginTop: 16 }}
               >
                 Create Entity Definition
@@ -124,7 +97,7 @@ const EntityExplorer: React.FC = () => {
             <Col xs={24} sm={12} md={8} lg={6} key={entity._id}>
               <Card
                 hoverable
-                onClick={() => navigate(`/dynamic-entity/${entity.entity_name}`)}
+                onClick={() => navigateToEntity(entity.entity_name)}
                 style={{ height: '100%' }}
               >
                 <Space direction="vertical" style={{ width: '100%' }}>
@@ -169,7 +142,9 @@ const EntityExplorer: React.FC = () => {
       )}
     </div>
   );
-};
+});
+
+EntityExplorer.displayName = 'EntityExplorer';
 
 export default EntityExplorer;
 
