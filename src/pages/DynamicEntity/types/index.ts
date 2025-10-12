@@ -52,6 +52,7 @@ export interface DynamicEntityConfig {
   formColumns: number;
   drawerWidth: number;
   skipMetadataWrapping: boolean;
+  metadataFieldName?: string; // Field name for metadata (default: 'meta_data_values', can be 'custom_data')
   enableDynamicFields?: boolean;
   enableSuperAdminFilters?: boolean;
 }

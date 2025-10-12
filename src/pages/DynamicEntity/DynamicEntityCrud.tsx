@@ -41,6 +41,7 @@ const DynamicEntityCrud: React.FC = () => {
       formColumns: 2,
       drawerWidth: 700,
       skipMetadataWrapping: true, // Send fields directly without any wrapping
+      metadataFieldName: 'custom_data', // Field name for dynamic entity metadata
       enableDynamicFields: true,
       enableSuperAdminFilters: true,
     };

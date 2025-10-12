@@ -203,12 +203,8 @@ export const useGenericCrud = <T extends BaseEntity>(config: CrudConfig<T>) => {
     (values: Partial<T>) => {
       let payload: any = { ...values };
 
-      // Skip metadata wrapping if explicitly requested (for dynamic entities)
-      if (config.skipMetadataWrapping) {
-        // Send fields directly without any wrapping
-        payload = { ...values };
-      } else if (config.dynamicFieldNames && config.dynamicFieldNames.length > 0) {
-        // Normal CRUD entities - wrap dynamic fields in metadata
+      // Handle metadata wrapping based on configuration
+      if (config.dynamicFieldNames && config.dynamicFieldNames.length > 0) {
         const staticFields: any = {};
         const metaDataValues: any = {};
         const metadataFieldName = config.metadataFieldName || 'meta_data_values';
@@ -228,12 +224,21 @@ export const useGenericCrud = <T extends BaseEntity>(config: CrudConfig<T>) => {
           }
         });
 
-        // Only add metadata field if it has content
+        // Wrap dynamic fields in metadata container
         if (Object.keys(metaDataValues).length > 0) {
-          payload = {
-            ...staticFields,
-            [metadataFieldName]: metaDataValues,
-          };
+          if (config.skipMetadataWrapping) {
+            // For dynamic entities: send all dynamic fields directly in the metadata field
+            payload = {
+              ...staticFields,
+              [metadataFieldName]: metaDataValues,
+            };
+          } else {
+            // For normal CRUD: wrap in metadata field
+            payload = {
+              ...staticFields,
+              [metadataFieldName]: metaDataValues,
+            };
+          }
         } else {
           payload = staticFields;
         }
