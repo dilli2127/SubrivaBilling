@@ -90,6 +90,8 @@ const UserAccountCrud: React.FC = () => {
         formColumns: 2,
       }}
       onValuesChange={handleValuesChange}
+      enableDynamicFields={true}
+      entityName="users"
     />
   );
 };

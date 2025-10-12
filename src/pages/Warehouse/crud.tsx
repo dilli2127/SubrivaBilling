@@ -120,7 +120,13 @@ const warehouseConfig = {
 };
 
 const WarehouseCrud: React.FC = () => {
-  return <GenericCrudPage config={warehouseConfig} />;
+  return (
+    <GenericCrudPage 
+      config={warehouseConfig}
+      enableDynamicFields={true}
+      entityName="warehouse"
+    />
+  );
 };
 
 export default WarehouseCrud;

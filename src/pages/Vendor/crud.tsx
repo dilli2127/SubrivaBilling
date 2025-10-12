@@ -136,7 +136,13 @@ const vendorConfig = {
 };
 
 const VendorCrud: React.FC = () => {
-  return <GenericCrudPage config={vendorConfig} />;
+  return (
+    <GenericCrudPage 
+      config={vendorConfig}
+      enableDynamicFields={true}
+      entityName="vendor"
+    />
+  );
 };
 
 export default VendorCrud;

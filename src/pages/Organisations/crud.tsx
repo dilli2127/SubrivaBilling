@@ -14,7 +14,13 @@ const organisationsConfig = {
 };
 
 const OrganisationsCrud: React.FC = () => {
-  return <GenericCrudPage config={organisationsConfig} />;
+  return (
+    <GenericCrudPage 
+      config={organisationsConfig}
+      enableDynamicFields={true}
+      entityName="organisations"
+    />
+  );
 };
 
 export default memo(OrganisationsCrud);

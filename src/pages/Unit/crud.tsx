@@ -101,7 +101,13 @@ const UnitCrud: React.FC = () => {
     },
   }), [isSuperAdmin]);
 
-  return <GenericCrudPage config={unitConfig} />;
+  return (
+    <GenericCrudPage 
+      config={unitConfig}
+      enableDynamicFields={true}
+      entityName="unit"
+    />
+  );
 };
 
 export default UnitCrud;

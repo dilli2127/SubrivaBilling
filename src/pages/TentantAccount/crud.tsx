@@ -14,6 +14,8 @@ const TenantAccount: React.FC = () => {
         apiRoutes: getEntityApiRoutes('Tenant'),
         formColumns: 2,
       }}
+      enableDynamicFields={true}
+      entityName="tenant"
     />
   );
 };

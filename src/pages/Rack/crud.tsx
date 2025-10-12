@@ -36,7 +36,13 @@ const rackConfig = {
 };
 
 const RackCrud: React.FC = () => {
-  return <GenericCrudPage config={rackConfig} />;
+  return (
+    <GenericCrudPage 
+      config={rackConfig}
+      enableDynamicFields={true}
+      entityName="rack"
+    />
+  );
 };
 
 export default RackCrud; 

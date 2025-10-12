@@ -26,6 +26,7 @@ export interface CrudConfig<T extends BaseEntity> {
   drawerWidth?: number;
   canEdit?: (record: T) => boolean;
   canDelete?: (record: T) => boolean;
+  dynamicFieldNames?: string[]; // Names of dynamic metadata fields
 }
 
 export const useGenericCrud = <T extends BaseEntity>(config: CrudConfig<T>) => {
@@ -127,8 +128,16 @@ export const useGenericCrud = <T extends BaseEntity>(config: CrudConfig<T>) => {
   const handleEdit = useCallback((record: T) => {
     const newRecord: any = {};
 
+    // Process main record fields
     for (const key in record) {
+      if (!record.hasOwnProperty(key)) continue;
+      
       const value = record[key];
+
+      // Skip meta_data_values - we'll handle it separately
+      if (key === 'meta_data_values') {
+        continue;
+      }
 
       if (
         typeof value === 'string' &&
@@ -138,6 +147,31 @@ export const useGenericCrud = <T extends BaseEntity>(config: CrudConfig<T>) => {
         newRecord[key] = dayjs(value);
       } else {
         newRecord[key] = value;
+      }
+    }
+
+    // If meta_data_values exists, flatten it into the record
+    const metaDataValues = (record as any).meta_data_values;
+    if (metaDataValues && typeof metaDataValues === 'object') {
+      for (const key in metaDataValues) {
+        if (!metaDataValues.hasOwnProperty(key)) continue;
+        
+        const value = metaDataValues[key];
+        
+        // Skip if value is null or undefined
+        if (value === null || value === undefined) {
+          continue;
+        }
+        
+        if (
+          typeof value === 'string' &&
+          isStrictDate(value) &&
+          dayjs(value, undefined, true).isValid()
+        ) {
+          newRecord[key] = dayjs(value);
+        } else {
+          newRecord[key] = value;
+        }
       }
     }
 
@@ -164,13 +198,46 @@ export const useGenericCrud = <T extends BaseEntity>(config: CrudConfig<T>) => {
 
   const handleSubmit = useCallback(
     (values: Partial<T>) => {
+      let payload: any = { ...values };
+
+      // If dynamic field names are provided, separate them into meta_data_values
+      if (config.dynamicFieldNames && config.dynamicFieldNames.length > 0) {
+        const staticFields: any = {};
+        const metaDataValues: any = {};
+
+        Object.keys(values).forEach((key) => {
+          const value = (values as any)[key];
+          
+          if (config.dynamicFieldNames?.includes(key)) {
+            // This is a dynamic metadata field
+            // Only add non-undefined values
+            if (value !== undefined) {
+              metaDataValues[key] = value;
+            }
+          } else {
+            // This is a static field
+            staticFields[key] = value;
+          }
+        });
+
+        // Only add meta_data_values if it has content
+        if (Object.keys(metaDataValues).length > 0) {
+          payload = {
+            ...staticFields,
+            meta_data_values: metaDataValues,
+          };
+        } else {
+          payload = staticFields;
+        }
+      }
+
       if (initialValues._id) {
-        update(initialValues._id, values);
+        update(initialValues._id, payload);
       } else {
-        create(values);
+        create(payload);
       }
     },
-    [initialValues._id, create, update]
+    [initialValues._id, create, update, config.dynamicFieldNames]
   );
 
   // No local filtering; all filtering is server-side

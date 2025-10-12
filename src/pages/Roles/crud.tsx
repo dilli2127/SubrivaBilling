@@ -14,6 +14,8 @@ const RolesCrud: React.FC = () => {
         apiRoutes: getEntityApiRoutes('Roles'),
         formColumns: 2,
       }}
+      enableDynamicFields={true}
+      entityName="roles"
     />
   );
 };

@@ -138,7 +138,13 @@ const ExpensesCrud = () => {
     apiRoutes,
     formColumns: 2,
   };
-  return <GenericCrudPage config={config} />;
+  return (
+    <GenericCrudPage 
+      config={config}
+      enableDynamicFields={true}
+      entityName="expenses"
+    />
+  );
 };
 
 export default ExpensesCrud;

@@ -136,6 +136,33 @@ export const GenericCrudPage = <T extends BaseEntity>({
   const superAdminFilters = useSuperAdminFilters();
   const isInitialMount = useRef(true);
   
+  // Dynamic fields hook - fetch first to get field names
+  const {
+    formItems: mergedFormItems,
+    loading: metadataLoading,
+    refresh: refreshMetadata,
+    dynamicFields,
+  } = useFieldMetadata({
+    entityName: entityName || config.title.toLowerCase(),
+    staticFormItems: config.formItems,
+    enabled: enableDynamicFields,
+  });
+
+  // Extract dynamic field names for payload separation - memoized
+  const dynamicFieldNames = useMemo(
+    () => enableDynamicFields && dynamicFields ? dynamicFields.map((field) => field.field_name) : [],
+    [dynamicFields, enableDynamicFields]
+  );
+
+  // Memoize config with dynamic field names
+  const enhancedConfig = useMemo(
+    () => ({
+      ...config,
+      dynamicFieldNames: dynamicFieldNames.length > 0 ? dynamicFieldNames : undefined,
+    }),
+    [config, dynamicFieldNames]
+  );
+  
   const {
     loading,
     createLoading,
@@ -158,18 +185,7 @@ export const GenericCrudPage = <T extends BaseEntity>({
     drawerWidth,
     filterValues,
     setFilterValues,
-  } = useGenericCrud(config);
-
-  // Dynamic fields hook
-  const {
-    formItems: mergedFormItems,
-    loading: metadataLoading,
-    refresh: refreshMetadata,
-  } = useFieldMetadata({
-    entityName: entityName || config.title.toLowerCase(),
-    staticFormItems,
-    enabled: enableDynamicFields,
-  });
+  } = useGenericCrud(enhancedConfig);
 
   // Use merged form items if dynamic fields are enabled
   const formItems = enableDynamicFields ? mergedFormItems : staticFormItems;

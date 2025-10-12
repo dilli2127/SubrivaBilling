@@ -117,7 +117,13 @@ const customerConfig = {
 };
 
 const CustomerCrud: React.FC = () => {
-  return <GenericCrudPage config={customerConfig} />;
+  return (
+    <GenericCrudPage 
+      config={customerConfig}
+      enableDynamicFields={true}
+      entityName="customer"
+    />
+  );
 };
 
 export default CustomerCrud;

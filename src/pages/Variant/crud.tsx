@@ -198,7 +198,13 @@ const VariantCrud: React.FC = () => {
     },
   }), [unitItems, unit_get_loading, isSuperAdmin]);
 
-  return <GenericCrudPage config={variantConfig} />;
+  return (
+    <GenericCrudPage 
+      config={variantConfig}
+      enableDynamicFields={true}
+      entityName="variant"
+    />
+  );
 };
 
 export default VariantCrud;

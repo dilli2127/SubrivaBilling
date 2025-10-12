@@ -40,6 +40,8 @@ const BranchesCrud: React.FC = () => {
         formColumns: 2,
       }}
       customButtons={customButtons}
+      enableDynamicFields={true}
+      entityName="branches"
     />
   );
 };
