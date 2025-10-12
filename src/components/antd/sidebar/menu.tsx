@@ -188,7 +188,7 @@ export const menuItems = [
   },
   {
     key: 'custom_entities',
-    label: 'Custom Entities',
+    label: 'Custom Forms',
     icon: <AppstoreOutlined />,
     path: '/entities',
   },
