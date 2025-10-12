@@ -16,7 +16,7 @@ export const createCrudRoutes = (baseEndpoint: string, name: string) => ({
   },
   Update: {
     identifier: `Update${name}`,
-    method: API_METHODS.PATCH,
+    method: API_METHODS.POST, // Backend uses POST for updates
     endpoint: baseEndpoint,
   },
   Get: {
@@ -258,4 +258,5 @@ export const API_ROUTES = {
   StockStorage: createCrudRoutes("/stock_storage", "StockStorage"),
   Settings: createCrudRoutes("/settings", "Settings"),
   FieldMetadata: createCrudRoutes("/field_metadata", "FieldMetadata"),
+  EntityDefinition: createCrudRoutes("/entity_definitions", "EntityDefinition"),
 };

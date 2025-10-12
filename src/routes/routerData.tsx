@@ -42,6 +42,11 @@ const Reports = lazy(() => import("../pages/Reports/index"));
 const UserProfile = lazy(() => import("../pages/UserProfile"));
 const Settings = lazy(() => import("../pages/Settings"));
 
+// Dynamic Entity System
+const EntityDefinitionsCrud = lazy(() => import("../pages/EntityDefinitions/crud"));
+const EntityExplorer = lazy(() => import("../pages/DynamicEntity/EntityExplorer"));
+const DynamicEntityCrud = lazy(() => import("../pages/DynamicEntity/DynamicEntityCrud"));
+
 
 const routerData: RouteConfig[] = [
   {
@@ -434,6 +439,37 @@ const routerData: RouteConfig[] = [
         element: (
           <Suspense fallback={<Loader />}>
             <Settings />
+          </Suspense>
+        ),
+        children: [],
+      },
+      // Dynamic Entity System Routes
+      {
+        key: "entity_definitions",
+        path: "entity-definitions",
+        element: (
+          <Suspense fallback={<Loader />}>
+            <EntityDefinitionsCrud />
+          </Suspense>
+        ),
+        children: [],
+      },
+      {
+        key: "entity_explorer",
+        path: "entities",
+        element: (
+          <Suspense fallback={<Loader />}>
+            <EntityExplorer />
+          </Suspense>
+        ),
+        children: [],
+      },
+      {
+        key: "dynamic_entity",
+        path: "dynamic-entity/:entityName",
+        element: (
+          <Suspense fallback={<Loader />}>
+            <DynamicEntityCrud />
           </Suspense>
         ),
         children: [],

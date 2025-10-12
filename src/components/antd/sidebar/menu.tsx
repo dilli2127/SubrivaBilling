@@ -20,6 +20,7 @@ import {
   BankOutlined,
   MinusCircleOutlined,
   LineHeightOutlined,
+  AppstoreOutlined,
 } from '@ant-design/icons';
 
 export const menuItems = [
@@ -186,6 +187,12 @@ export const menuItems = [
     ],
   },
   {
+    key: 'custom_entities',
+    label: 'Custom Entities',
+    icon: <AppstoreOutlined />,
+    path: '/entities',
+  },
+  {
     key: 'settings',
     label: 'Settings',
     icon: <SettingOutlined />,
@@ -232,6 +239,12 @@ export const menuItems = [
         label: 'Tenant List',
         icon: <BankOutlined />,
         path: '/tenant_account',
+      },
+      {
+        key: 'entity_definitions',
+        label: 'Entity Definitions',
+        icon: <AppstoreAddOutlined />,
+        path: '/entity-definitions',
       },
     ],
   },

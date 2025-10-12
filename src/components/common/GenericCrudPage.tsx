@@ -60,6 +60,7 @@ interface GenericCrudPageProps<T extends BaseEntity> {
   config: Omit<CrudConfig<T>, 'columns' | 'formItems'> & {
     columns: CrudColumn[];
     formItems: CrudFormItem[];
+    metadataFieldName?: string; // Field name for metadata (default: 'meta_data_values', can be 'custom_data')
   };
   filters?: FilterConfig[];
   onFilterChange?: (values: Record<string, any>) => void;

@@ -27,6 +27,8 @@ export interface CrudConfig<T extends BaseEntity> {
   canEdit?: (record: T) => boolean;
   canDelete?: (record: T) => boolean;
   dynamicFieldNames?: string[]; // Names of dynamic metadata fields
+  metadataFieldName?: string; // Field name for storing metadata (default: 'meta_data_values', can be 'custom_data')
+  skipMetadataWrapping?: boolean; // If true, send fields directly without any wrapping
 }
 
 export const useGenericCrud = <T extends BaseEntity>(config: CrudConfig<T>) => {
@@ -127,6 +129,7 @@ export const useGenericCrud = <T extends BaseEntity>(config: CrudConfig<T>) => {
   // Event handlers
   const handleEdit = useCallback((record: T) => {
     const newRecord: any = {};
+    const metadataFieldName = config.metadataFieldName || 'meta_data_values';
 
     // Process main record fields
     for (const key in record) {
@@ -134,8 +137,8 @@ export const useGenericCrud = <T extends BaseEntity>(config: CrudConfig<T>) => {
       
       const value = record[key];
 
-      // Skip meta_data_values - we'll handle it separately
-      if (key === 'meta_data_values') {
+      // Skip metadata field - we'll handle it separately
+      if (key === metadataFieldName || key === 'meta_data_values' || key === 'custom_data') {
         continue;
       }
 
@@ -150,8 +153,8 @@ export const useGenericCrud = <T extends BaseEntity>(config: CrudConfig<T>) => {
       }
     }
 
-    // If meta_data_values exists, flatten it into the record
-    const metaDataValues = (record as any).meta_data_values;
+    // If metadata field exists, flatten it into the record
+    const metaDataValues = (record as any)[metadataFieldName];
     if (metaDataValues && typeof metaDataValues === 'object') {
       for (const key in metaDataValues) {
         if (!metaDataValues.hasOwnProperty(key)) continue;
@@ -177,7 +180,7 @@ export const useGenericCrud = <T extends BaseEntity>(config: CrudConfig<T>) => {
 
     setInitialValues(newRecord);
     setDrawerVisible(true);
-  }, []);
+  }, [config.metadataFieldName]);
 
   const handleDelete = useCallback(
     (record: T) => {
@@ -200,10 +203,15 @@ export const useGenericCrud = <T extends BaseEntity>(config: CrudConfig<T>) => {
     (values: Partial<T>) => {
       let payload: any = { ...values };
 
-      // If dynamic field names are provided, separate them into meta_data_values
-      if (config.dynamicFieldNames && config.dynamicFieldNames.length > 0) {
+      // Skip metadata wrapping if explicitly requested (for dynamic entities)
+      if (config.skipMetadataWrapping) {
+        // Send fields directly without any wrapping
+        payload = { ...values };
+      } else if (config.dynamicFieldNames && config.dynamicFieldNames.length > 0) {
+        // Normal CRUD entities - wrap dynamic fields in metadata
         const staticFields: any = {};
         const metaDataValues: any = {};
+        const metadataFieldName = config.metadataFieldName || 'meta_data_values';
 
         Object.keys(values).forEach((key) => {
           const value = (values as any)[key];
@@ -220,11 +228,11 @@ export const useGenericCrud = <T extends BaseEntity>(config: CrudConfig<T>) => {
           }
         });
 
-        // Only add meta_data_values if it has content
+        // Only add metadata field if it has content
         if (Object.keys(metaDataValues).length > 0) {
           payload = {
             ...staticFields,
-            meta_data_values: metaDataValues,
+            [metadataFieldName]: metaDataValues,
           };
         } else {
           payload = staticFields;
@@ -237,7 +245,7 @@ export const useGenericCrud = <T extends BaseEntity>(config: CrudConfig<T>) => {
         create(payload);
       }
     },
-    [initialValues._id, create, update, config.dynamicFieldNames]
+    [initialValues._id, create, update, config.dynamicFieldNames, config.metadataFieldName, config.skipMetadataWrapping]
   );
 
   // No local filtering; all filtering is server-side
