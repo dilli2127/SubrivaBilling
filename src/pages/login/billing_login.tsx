@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import styles from './Login.module.css';
 import { ApiRequest } from '../../services/api/apiService';
 import { setUserData, setAuthToken } from '../../helpers/auth';
+import { setPermissions, setMenuKeys, setUserData as setUserDataHelper } from '../../helpers/permissionHelper';
 import {
   dynamic_clear,
   dynamic_request,
@@ -67,6 +68,22 @@ const BillingLogin: React.FC = () => {
       // Store encrypted data
       setAuthToken(currentItems?.result?.token);
       setUserData(currentItems?.result?.UserItem);
+      
+      // Store permissions for role-based access control
+      if (currentItems?.result?.permissions) {
+        setPermissions(currentItems.result.permissions);
+      }
+      
+      // Store menuKeys for menu filtering
+      if (currentItems?.result?.menuKeys) {
+        setMenuKeys(currentItems.result.menuKeys);
+      }
+      
+      // Store complete user data for new API structure
+      if (currentItems?.result) {
+        setUserDataHelper(currentItems.result);
+      }
+      
       dispatch(dynamic_clear(currentRoute.identifier));
       navigate('/dashboard');
     } else if (currentError) {

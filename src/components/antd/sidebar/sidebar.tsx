@@ -18,7 +18,7 @@ import {
 } from '@ant-design/icons';
 import { Layout, Menu, Modal, Button, Avatar, Drawer } from 'antd';
 import { useNavigate } from 'react-router-dom';
-import { menuItems as originalMenuItems } from './menu';
+import { menuItems as originalMenuItems, getFilteredMenuItems } from './menu';
 import './Sidebar.css';
 import ThemeDrawer from './ThemeDrawer';
 import { themePresets } from './themePresets';
@@ -36,48 +36,10 @@ const getInitialTheme = () => {
   return saved || 'classic';
 };
 
-const getAllowedMenuKeys = (user: any): string[] => {
-  const role =
-    user?.roleItems?.name?.toLowerCase() ||
-    user?.usertype?.toLowerCase() ||
-    user?.user_role?.toLowerCase();
-
-  const allowed = Array.isArray(user?.roleItems?.allowedMenuKeys)
-    ? user.roleItems.allowedMenuKeys
-    : [];
-
-  if (role === 'superadmin') {
-    // Return all menu keys (including children) for superadmin
-    const getAllKeys = (items: any[]): string[] =>
-      items.reduce((acc: string[], item: any) => {
-        acc.push(item.key);
-        if (item.children) {
-          acc.push(...getAllKeys(item.children));
-        }
-        return acc;
-      }, []);
-    return getAllKeys(originalMenuItems);
-  }
-
-  if (role === 'tenant') {
-    return getAllKeysExcludingTenantManage(originalMenuItems);
-  }
-
-  return allowed;
-};
-
-const getAllKeysExcludingTenantManage = (items: any[]): string[] =>
-  items.reduce((acc: string[], item: any) => {
-    if (item.key === 'tenant_manage') return acc;
-    acc.push(item.key);
-    if (item.children) {
-      acc.push(...getAllKeysExcludingTenantManage(item.children));
-    }
-    return acc;
-  }, []);
+// Removed getAllowedMenuKeys - now using permission-based filtering
 
 const Sidebar: React.FC<SidebarProps> = ({ children }) => {
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(false); // Start with expanded sidebar
   const [selectedKey, setSelectedKey] = useState('dashboard');
   const [openKeys, setOpenKeys] = useState<string[]>([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -131,7 +93,7 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
     return getCurrentUser();
   }, []);
 
-  const allowedKeys = useMemo(() => getAllowedMenuKeys(userItem), [userItem]);
+  // Removed allowedKeys - now using permission-based filtering
 
   const handleOpenChange = useCallback(
     (keys: string[]) => {
@@ -208,24 +170,10 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
 
   // Memoize filteredMenuItems
   const filteredMenuItems = useMemo(() => {
-    const filterMenu = (items: any[]): any[] =>
-      items
-        .filter(
-          (item: any) =>
-            allowedKeys.includes(item.key) ||
-            item.children?.some((child: any) => allowedKeys.includes(child.key))
-        )
-        .map((item: any) => {
-          if (item.children) {
-            const children = filterMenu(item.children);
-            return children.length > 0 ? { ...item, children } : null;
-          }
-          return item;
-        })
-        .filter(Boolean);
-
-    return filterMenu(originalMenuItems);
-  }, [allowedKeys]);
+    // Use the new permission-based filtering directly
+    const items = getFilteredMenuItems();
+    return items;
+  }, [userItem]); // Re-compute when user changes
 
   // Memoize renderMenuItems
   const renderMenuItems = useCallback(

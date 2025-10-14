@@ -27,26 +27,17 @@ class ElectronBackendService {
    * Initialize the backend URL
    */
   private async initializeBackendUrl(): Promise<void> {
-    console.log('🔍 Environment check:', {
-      REACT_APP_API_URL: process.env.REACT_APP_API_URL,
-      NODE_ENV: process.env.NODE_ENV,
-      isElectron: this.isElectron
-    });
-    
     if (this.isElectron && window.electronAPI) {
       try {
         this.backendUrl = await window.electronAPI.getBackendUrl();
-        console.log('✅ Backend URL from Electron:', this.backendUrl);
       } catch (error) {
-        console.error('❌ Failed to get backend URL from Electron:', error);
+        console.error('Failed to get backend URL from Electron:', error);
         // Fallback to environment variable or default
         this.backendUrl = 'http://localhost:8247'; // Force your port
-        console.log('🔄 Using fallback URL:', this.backendUrl);
       }
     } else {
       // If not in Electron, use environment variable or fallback
       this.backendUrl = 'http://localhost:8247'; // Force your port
-      console.log('🌐 Using web environment URL:', this.backendUrl);
     }
   }
 
@@ -93,7 +84,6 @@ class ElectronBackendService {
         });
 
         if (response.ok) {
-          console.log('✅ Backend is ready');
           return true;
         }
       } catch (error) {
@@ -104,7 +94,6 @@ class ElectronBackendService {
       await new Promise(resolve => setTimeout(resolve, 500));
     }
 
-    console.warn('⚠️ Backend did not become ready within timeout');
     return false;
   }
 

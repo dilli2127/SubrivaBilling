@@ -82,7 +82,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
         },
         (errorMessage: string) => {
           // Handle scan errors silently (camera still active)
-          console.log('Scan error:', errorMessage);
+          // Error handled silently to maintain user experience
         }
       );
 

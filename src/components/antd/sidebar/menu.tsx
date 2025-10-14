@@ -22,6 +22,95 @@ import {
   LineHeightOutlined,
   AppstoreOutlined,
 } from '@ant-design/icons';
+import { getPermissions, isSuperAdmin, canManageTenants, getMenuKeys, getUserData } from '../../../helpers/permissionHelper';
+
+// Function to filter menu items based on permissions
+export const getFilteredMenuItems = () => {
+  try {
+    // SuperAdmin can see all menus without restrictions
+    const isSuper = isSuperAdmin();
+    
+    if (isSuper) {
+      return menuItems;
+    }
+    
+    // Try new API structure first (menuKeys array)
+    const menuKeys = getMenuKeys();
+    
+    if (menuKeys && menuKeys.length > 0) {
+      const filteredItems = menuItems.map(item => {
+        // If item has children, filter them based on menuKeys
+        if (item.children) {
+          const filteredChildren = item.children.filter(child => {
+            return menuKeys.includes(child.key);
+          });
+
+          // Only show parent if it has visible children
+          return filteredChildren.length > 0 ? { ...item, children: filteredChildren } : null;
+        }
+
+        // For single menu items, check if allowed
+        return menuKeys.includes(item.key) ? item : null;
+      }).filter(Boolean);
+      
+      return filteredItems;
+    }
+    
+    // Fallback to old structure (permissions with allowed_menu_keys)
+    const permissions = getPermissions();
+    
+    // If no permissions found, show basic menus only
+    if (!permissions || Object.keys(permissions).length === 0) {
+      const basicMenus = menuItems.filter(item => 
+        item.key === 'dashboard' || 
+        item.key === 'SalesRecords'
+      );
+      return basicMenus;
+    }
+    
+    // Get all allowed menu keys from permissions
+    const allowedMenuKeys = new Set<string>();
+    Object.values(permissions).forEach((perm: any) => {
+      if (perm.allowed_menu_keys && Array.isArray(perm.allowed_menu_keys)) {
+        perm.allowed_menu_keys.forEach((key: string) => allowedMenuKeys.add(key));
+      }
+    });
+
+    // If no allowed menu keys, show basic menus
+    if (allowedMenuKeys.size === 0) {
+      const basicMenus = menuItems.filter(item => 
+        item.key === 'dashboard' || 
+        item.key === 'SalesRecords'
+      );
+      return basicMenus;
+    }
+
+    const filteredItems = menuItems.map(item => {
+      // If item has children, filter them based on allowed_menu_keys
+      if (item.children) {
+        const filteredChildren = item.children.filter(child => {
+          return allowedMenuKeys.has(child.key);
+        });
+
+        // Only show parent if it has visible children
+        return filteredChildren.length > 0 ? { ...item, children: filteredChildren } : null;
+      }
+
+      // For single menu items, check if allowed
+      return allowedMenuKeys.has(item.key) ? item : null;
+    }).filter(Boolean);
+    
+    return filteredItems;
+  } catch (error) {
+    console.error('Error filtering menu items:', error);
+    // Fallback to basic menus if there's an error
+    return menuItems.filter(item => 
+      item.key === 'dashboard' || 
+      item.key === 'SalesRecords' ||
+      item.key === 'master_settings'
+    );
+  }
+};
 
 export const menuItems = [
   {
@@ -226,6 +315,12 @@ export const menuItems = [
         label: 'Roles',
         icon: <BankOutlined />,
         path: '/roles',
+      },
+      {
+        key: 'permissions',
+        label: 'Permissions',
+        icon: <BankOutlined />,
+        path: '/permissions',
       },
     ],
   },

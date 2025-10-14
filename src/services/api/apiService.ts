@@ -46,21 +46,31 @@ class APIService {
             return config;
         });
 
-        // Add response interceptor for token expiration
+        // Add response interceptor for token expiration and permission errors
         this.api.interceptors.response.use(
             response => response,
-            error => {
-                if (
-                    error.response &&
-                    (error.response.status === 401 ||
-                        error.response.data?.statusCode === 401 ||
-                        error.response.data?.message?.toLowerCase().includes('token expired'))
-                ) {
-                    clearAuthData();
-                    window.location.href = '/billing_login';
-                }
-                return Promise.reject(error);
-            }
+            // error => {
+            //     if (error.response && error.response.status === 401) {
+            //         const errorMessage = error.response.data?.exception || error.response.data?.message || '';
+                    
+            //         // Check if it's a permission denied error
+            //         if (errorMessage.toLowerCase().includes('access denied') || 
+            //             errorMessage.toLowerCase().includes('insufficient permissions')) {
+            //             // Permission denied - don't clear auth, just reject
+            //             console.warn('Permission denied:', errorMessage);
+            //             return Promise.reject(error);
+            //         }
+                    
+            //         // Token expired - clear auth and redirect
+            //         if (error.response.data?.statusCode === 401 ||
+            //             errorMessage.toLowerCase().includes('token expired') ||
+            //             errorMessage.toLowerCase().includes('unauthorized')) {
+            //             clearAuthData();
+            //             window.location.href = '/billing_login';
+            //         }
+            //     }
+            //     return Promise.reject(error);
+            // }
         );
     }
 
@@ -81,11 +91,11 @@ class APIService {
     // Handle successful responses
     private handleResponse<T>(response: ApiResponse<T>): ApiResponse<T> {
         // Check for 401 status code in response body
-        if (response.statusCode === 401) {
-            clearAuthData();
-            window.location.href = '/billing_login';
-            return response; // Return response but user will be redirected
-        }
+        // if (response.statusCode === 401) {
+        //     clearAuthData();
+        //     window.location.href = '/billing_login';
+        //     return response; // Return response but user will be redirected
+        // }
         
         return {
             statusCode: response.statusCode,

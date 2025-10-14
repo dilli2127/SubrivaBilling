@@ -1,6 +1,7 @@
 // src/helpers/auth.ts
 import SessionStorageEncryption from './encryption';
 import { clearCSRFToken, setCSRFToken } from './csrfToken';
+import { clearPermissions } from './permissionHelper';
 
 export interface User {
   _id?: string;
@@ -28,7 +29,6 @@ export function getCurrentUser(): User | null {
     try {
       const fallbackUser = sessionStorage.getItem('user');
       if (fallbackUser) {
-        console.log('Using fallback user data from session storage');
         return JSON.parse(fallbackUser);
       }
     } catch (error) {
@@ -52,7 +52,6 @@ export function getAuthToken(): string | null {
     // Fallback to direct session storage for backward compatibility
     const fallbackToken = sessionStorage.getItem('token');
     if (fallbackToken) {
-      console.log('Using fallback token from session storage');
       return fallbackToken;
     }
   }
@@ -71,11 +70,12 @@ export function setAuthToken(token: string): void {
   setCSRFToken();
 }
 
-// Clear all auth data including CSRF token
+// Clear all auth data including CSRF token and permissions
 export function clearAuthData(): void {
   SessionStorageEncryption.removeItem('user');
   SessionStorageEncryption.removeItem('token');
   clearCSRFToken();
+  clearPermissions();
 }
 
 // Check if user is authenticated
