@@ -40,7 +40,8 @@ export interface UserData {
     };
   };
   permissions?: PermissionsMap;
-  menuKeys?: string[];
+  allowedMenuKeys?: string[];
+  // Deprecated: menuConfig removed from backend, use permissions instead
   menuConfig?: {
     [resource: string]: {
       canCreate: boolean;
@@ -141,7 +142,8 @@ export function clearPermissions(): void {
 }
 
 /**
- * Get menuKeys from localStorage
+ * Get allowedMenuKeys from localStorage
+ * Note: Stored as 'menuKeys' for backward compatibility
  */
 export function getMenuKeys(): string[] {
   try {
@@ -151,19 +153,21 @@ export function getMenuKeys(): string[] {
     }
     return [];
   } catch (error) {
-    console.error('Error getting menuKeys:', error);
+    console.error('Error getting allowedMenuKeys:', error);
     return [];
   }
 }
 
 /**
- * Store menuKeys in localStorage
+ * Store allowedMenuKeys in localStorage
+ * Note: Stored as 'menuKeys' for backward compatibility
+ * @param menuKeys - Array of allowed menu keys (from response.allowedMenuKeys)
  */
 export function setMenuKeys(menuKeys: string[]): void {
   try {
     localStorage.setItem('menuKeys', JSON.stringify(menuKeys));
   } catch (error) {
-    console.error('Error setting menuKeys:', error);
+    console.error('Error setting allowedMenuKeys:', error);
   }
 }
 

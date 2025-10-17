@@ -4,7 +4,7 @@ import { UserOutlined, LockOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import styles from './Login.module.css';
 import { ApiRequest } from '../../services/api/apiService';
-import { setUserData, setAuthToken } from '../../helpers/auth';
+import { setUserData, setAuthToken, setTokens } from '../../helpers/auth';
 import { setPermissions, setMenuKeys, setUserData as setUserDataHelper } from '../../helpers/permissionHelper';
 import {
   dynamic_clear,
@@ -65,23 +65,38 @@ const BillingLogin: React.FC = () => {
 
     if (currentItems?.statusCode === 200) {
       message.success('Login successful! Welcome back.');
-      // Store encrypted data
-      setAuthToken(currentItems?.result?.token);
-      setUserData(currentItems?.result?.UserItem);
       
-      // Store permissions for role-based access control
-      if (currentItems?.result?.permissions) {
-        setPermissions(currentItems.result.permissions);
+      const result = currentItems.result;
+      
+      // Store tokens - support both old and new formats
+      if (result?.accessToken && result?.refreshToken) {
+        // New format with refresh tokens
+        setTokens(result.accessToken, result.refreshToken);
+        console.log('Stored access token (expires in:', result.accessTokenExpiresIn, ')');
+        console.log('Stored refresh token (expires in:', result.refreshTokenExpiresIn, ')');
+      } else if (result?.token) {
+        // Fallback to old format for backward compatibility
+        setAuthToken(result.token);
       }
       
-      // Store menuKeys for menu filtering
-      if (currentItems?.result?.menuKeys) {
-        setMenuKeys(currentItems.result.menuKeys);
+      // Store user data
+      if (result?.UserItem) {
+        setUserData(result.UserItem);
+      }
+      
+      // Store permissions for role-based access control
+      if (result?.permissions) {
+        setPermissions(result.permissions);
+      }
+      
+      // Store allowedMenuKeys for menu filtering (NOT menuKeys - that was removed)
+      if (result?.allowedMenuKeys) {
+        setMenuKeys(result.allowedMenuKeys);
       }
       
       // Store complete user data for new API structure
-      if (currentItems?.result) {
-        setUserDataHelper(currentItems.result);
+      if (result) {
+        setUserDataHelper(result);
       }
       
       dispatch(dynamic_clear(currentRoute.identifier));

@@ -66,8 +66,12 @@ export {
   getCurrentUser,
   getCurrentUserRole,
   getAuthToken,
+  getRefreshToken,
   setUserData,
   setAuthToken,
+  setAccessToken,
+  setRefreshToken,
+  setTokens,
   clearAuthData,
   isAuthenticated
 } from './auth';

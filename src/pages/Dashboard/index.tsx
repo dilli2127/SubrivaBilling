@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { Typography, Tabs, Tooltip, Card, Row, Col, Select, Space, Button } from 'antd';
 import { getCurrentUser } from '../../helpers/auth';
+import SessionStorageEncryption from '../../helpers/encryption';
 import {
   BarChartOutlined,
   WalletOutlined,
@@ -37,9 +38,13 @@ const Dashboard: React.FC = () => {
     return getCurrentUser();
   }, []);
 
-  const userRole = userItem?.roleItems?.name || userItem?.usertype || userItem?.user_role || '';
+  // Get user type from scope first (preferred), fallback to user_type
+  const scopeData = SessionStorageEncryption.getItem('scope');
+  const userRole = scopeData?.userType || userItem?.user_type || userItem?.usertype || userItem?.user_role || '';
   const isSuperAdmin = userRole.toLowerCase() === 'superadmin';
   const isTenant = userRole.toLowerCase() === 'tenant';
+  const isOrganisationUser = userRole.toLowerCase() === 'organisationuser';
+  const isBranchUser = userRole.toLowerCase() === 'branchuser';
 
   // API hooks for dropdowns
   const { getEntityApi } = useApiActions();
@@ -58,11 +63,12 @@ const Dashboard: React.FC = () => {
       TenantsApi('GetAll');
     } else if (isTenant) {
       OrganisationsApi('GetAll');
-    } else {
+    } else if (isOrganisationUser) {
       BranchesApi('GetAll');
     }
+    // BranchUser: Don't fetch anything (no dropdowns needed)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isSuperAdmin, isTenant]);
+  }, [isSuperAdmin, isTenant, isOrganisationUser, isBranchUser]);
 
   // Prepare dropdown options
   const tenantOptions = useMemo(() => {
@@ -196,8 +202,8 @@ const Dashboard: React.FC = () => {
             </Col>
           )}
 
-          {/* Organisation Dropdown - For SuperAdmin and Tenant */}
-          {(isSuperAdmin || isTenant) && (
+          {/* Organisation Dropdown - For SuperAdmin and Tenant only (not OrganisationUser or BranchUser) */}
+          {(isSuperAdmin || isTenant) && !isOrganisationUser && !isBranchUser && (
             <Col xs={24} sm={12} md={6}>
               <Space direction="vertical" size={2} style={{ width: '100%' }}>
                 <Text strong>Organisation:</Text>
@@ -224,31 +230,33 @@ const Dashboard: React.FC = () => {
             </Col>
           )}
 
-          {/* Branch Dropdown - For All Users */}
-          <Col xs={24} sm={12} md={6}>
-            <Space direction="vertical" size={2} style={{ width: '100%' }}>
-              <Text strong>Branch:</Text>
-              <Select
-                value={selectedBranch}
-                onChange={setSelectedBranch}
-                style={{ width: '100%' }}
-                showSearch
-                optionFilterProp="children"
-                filterOption={(input, option: any) =>
-                  String(option?.label ?? '').toLowerCase().includes(input.toLowerCase())
-                }
-                disabled={(isSuperAdmin || isTenant) && selectedOrganisation === 'all'}
-                placeholder={(isSuperAdmin || isTenant) && selectedOrganisation === 'all' ? 'Select organisation first' : 'Select branch'}
-              >
-                <Option value="all">All Branches</Option>
-                {branchOptions.map((option: any) => (
-                  <Option key={option.value} value={option.value}>
-                    {option.label}
-                  </Option>
-                ))}
-              </Select>
-            </Space>
-          </Col>
+          {/* Branch Dropdown - For SuperAdmin, Tenant, and OrganisationUser (not BranchUser) */}
+          {(isSuperAdmin || isTenant || isOrganisationUser) && !isBranchUser && (
+            <Col xs={24} sm={12} md={6}>
+              <Space direction="vertical" size={2} style={{ width: '100%' }}>
+                <Text strong>Branch:</Text>
+                <Select
+                  value={selectedBranch}
+                  onChange={setSelectedBranch}
+                  style={{ width: '100%' }}
+                  showSearch
+                  optionFilterProp="children"
+                  filterOption={(input, option: any) =>
+                    String(option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+                  }
+                  disabled={(isSuperAdmin || isTenant) && selectedOrganisation === 'all'}
+                  placeholder={(isSuperAdmin || isTenant) && selectedOrganisation === 'all' ? 'Select organisation first' : 'Select branch'}
+                >
+                  <Option value="all">All Branches</Option>
+                  {branchOptions.map((option: any) => (
+                    <Option key={option.value} value={option.value}>
+                      {option.label}
+                    </Option>
+                  ))}
+                </Select>
+              </Space>
+            </Col>
+          )}
 
           {/* Apply Filters Button */}
           <Col xs={24} sm={24} md={6}>

@@ -1,6 +1,6 @@
-import axios, { AxiosInstance } from 'axios';
+import axios, { AxiosInstance, AxiosError, InternalAxiosRequestConfig } from 'axios';
 import { API_ERROR_CODES } from '../../helpers/constants';
-import { getAuthToken, clearAuthData } from '../../helpers/auth';
+import { getAuthToken, getRefreshToken, setAccessToken, setRefreshToken, clearAuthData } from '../../helpers/auth';
 import { getCSRFToken } from '../../helpers/csrfToken';
 
 export interface ApiResponse<T> {
@@ -19,6 +19,8 @@ export interface ApiRequest {
 
 class APIService {
     private api: AxiosInstance;
+    private isRefreshing: boolean = false;
+    private refreshSubscribers: Array<(token: string) => void> = [];
 
     constructor(baseURL: string) {
         this.api = axios.create({
@@ -35,6 +37,8 @@ class APIService {
             const token = getAuthToken();
             if (token) {
                 config.headers['Token'] = token;
+                // Also add Authorization header for modern APIs
+                config.headers['Authorization'] = `Bearer ${token}`;
             }
             
             // Add CSRF token for state-changing requests
@@ -46,32 +50,111 @@ class APIService {
             return config;
         });
 
-        // Add response interceptor for token expiration and permission errors
+        // Add response interceptor for automatic token refresh on 401
         this.api.interceptors.response.use(
             response => response,
-            // error => {
-            //     if (error.response && error.response.status === 401) {
-            //         const errorMessage = error.response.data?.exception || error.response.data?.message || '';
+            async (error: AxiosError) => {
+                const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
+                
+                if (error.response && error.response.status === 401 && !originalRequest._retry) {
+                    const errorMessage = (error.response.data as any)?.exception || 
+                                       (error.response.data as any)?.message || '';
                     
-            //         // Check if it's a permission denied error
-            //         if (errorMessage.toLowerCase().includes('access denied') || 
-            //             errorMessage.toLowerCase().includes('insufficient permissions')) {
-            //             // Permission denied - don't clear auth, just reject
-            //             console.warn('Permission denied:', errorMessage);
-            //             return Promise.reject(error);
-            //         }
+                    // Check if it's a permission denied error (not token expiration)
+                    if (errorMessage.toLowerCase().includes('access denied') || 
+                        errorMessage.toLowerCase().includes('insufficient permissions')) {
+                        // Permission denied - don't clear auth, just reject
+                        console.warn('Permission denied:', errorMessage);
+                        return Promise.reject(error);
+                    }
                     
-            //         // Token expired - clear auth and redirect
-            //         if (error.response.data?.statusCode === 401 ||
-            //             errorMessage.toLowerCase().includes('token expired') ||
-            //             errorMessage.toLowerCase().includes('unauthorized')) {
-            //             clearAuthData();
-            //             window.location.href = '/billing_login';
-            //         }
-            //     }
-            //     return Promise.reject(error);
-            // }
+                    // Token expired - try to refresh
+                    if (this.isRefreshing) {
+                        // If already refreshing, queue this request
+                        return new Promise((resolve) => {
+                            this.refreshSubscribers.push((token: string) => {
+                                if (originalRequest.headers) {
+                                    originalRequest.headers['Token'] = token;
+                                    originalRequest.headers['Authorization'] = `Bearer ${token}`;
+                                }
+                                resolve(this.api.request(originalRequest));
+                            });
+                        });
+                    }
+
+                    originalRequest._retry = true;
+                    this.isRefreshing = true;
+
+                    try {
+                        const newAccessToken = await this.refreshAccessToken();
+                        
+                        if (newAccessToken) {
+                            // Update token in original request
+                            if (originalRequest.headers) {
+                                originalRequest.headers['Token'] = newAccessToken;
+                                originalRequest.headers['Authorization'] = `Bearer ${newAccessToken}`;
+                            }
+                            
+                            // Process queued requests
+                            this.refreshSubscribers.forEach(callback => callback(newAccessToken));
+                            this.refreshSubscribers = [];
+                            
+                            // Retry original request
+                            return this.api.request(originalRequest);
+                        }
+                    } catch (refreshError) {
+                        // Refresh failed - logout user
+                        console.error('Token refresh failed:', refreshError);
+                        clearAuthData();
+                        window.location.href = '/billing_login';
+                        return Promise.reject(refreshError);
+                    } finally {
+                        this.isRefreshing = false;
+                    }
+                }
+                
+                return Promise.reject(error);
+            }
         );
+    }
+
+    // Refresh access token using refresh token
+    private async refreshAccessToken(): Promise<string | null> {
+        const refreshToken = getRefreshToken();
+        
+        if (!refreshToken) {
+            console.warn('No refresh token available');
+            return null;
+        }
+
+        try {
+            const response = await axios.post(
+                `${this.api.defaults.baseURL}/auth/refresh-token`,
+                { refreshToken },
+                {
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                }
+            );
+
+            if (response.data?.statusCode === 200) {
+                const { accessToken, refreshToken: newRefreshToken } = response.data.result;
+                
+                // Store new tokens
+                setAccessToken(accessToken);
+                if (newRefreshToken) {
+                    setRefreshToken(newRefreshToken);
+                }
+                
+                return accessToken;
+            }
+            
+            return null;
+        } catch (error) {
+            console.error('Failed to refresh access token:', error);
+            throw error;
+        }
     }
 
     // Method to send requests to the API

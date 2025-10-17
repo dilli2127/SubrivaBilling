@@ -311,7 +311,7 @@ export const GenericCrudPage = <T extends BaseEntity>({
               </Col>
             )}
             
-            {enableSuperAdminFilters && (superAdminFilters.isSuperAdmin || superAdminFilters.isTenant) && (
+            {enableSuperAdminFilters && (superAdminFilters.isSuperAdmin || superAdminFilters.isTenant) && !superAdminFilters.isOrganisationUser && !superAdminFilters.isBranchUser && (
               <Col>
                 <Select
                   placeholder={
@@ -344,7 +344,7 @@ export const GenericCrudPage = <T extends BaseEntity>({
               </Col>
             )}
             
-            {enableSuperAdminFilters && (
+            {enableSuperAdminFilters && (superAdminFilters.isSuperAdmin || superAdminFilters.isTenant || superAdminFilters.isOrganisationUser) && !superAdminFilters.isBranchUser && (
               <Col>
                 <Select
                   placeholder={

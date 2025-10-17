@@ -2,10 +2,13 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useApiActions } from '../services/api/useApiActions';
 import { useDynamicSelector } from '../services/redux';
 import { getCurrentUser } from '../helpers/auth';
+import SessionStorageEncryption from '../helpers/encryption';
 
 export interface SuperAdminFiltersReturn {
   isSuperAdmin: boolean;
   isTenant: boolean;
+  isOrganisationUser: boolean;
+  isBranchUser: boolean;
   
   // Selected values
   selectedTenant: string;
@@ -41,9 +44,13 @@ export const useSuperAdminFilters = (): SuperAdminFiltersReturn => {
     return getCurrentUser();
   }, []);
 
-  const userRole = userItem?.roleItems?.name || userItem?.usertype || userItem?.user_role || '';
+  // Get user type from scope first (preferred), fallback to user_type
+  const scopeData = SessionStorageEncryption.getItem('scope');
+  const userRole = scopeData?.userType || userItem?.user_type || userItem?.usertype || userItem?.user_role || '';
   const isSuperAdmin = userRole.toLowerCase() === 'superadmin';
   const isTenant = userRole.toLowerCase() === 'tenant';
+  const isOrganisationUser = userRole.toLowerCase() === 'organisationuser';
+  const isBranchUser = userRole.toLowerCase() === 'branchuser';
 
   // API hooks
   const { getEntityApi } = useApiActions();
@@ -70,12 +77,13 @@ export const useSuperAdminFilters = (): SuperAdminFiltersReturn => {
     } else if (isTenant) {
       // Tenant: Fetch organisations on mount
       OrganisationsApi('GetAll');
-    } else {
-      // OrganisationAdmin/BranchAdmin: Fetch branches on mount
+    } else if (isOrganisationUser) {
+      // OrganisationUser: Fetch branches on mount
       BranchesApi('GetAll');
     }
+    // BranchUser: Don't fetch anything (no dropdowns needed)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isSuperAdmin, isTenant]);
+  }, [isSuperAdmin, isTenant, isOrganisationUser, isBranchUser]);
 
   // Prepare dropdown options
   const tenantOptions = useMemo(() => {
@@ -156,16 +164,18 @@ export const useSuperAdminFilters = (): SuperAdminFiltersReturn => {
       filters.org_id = selectedOrganisation; // Some APIs use org_id
     }
     
-    if (selectedBranch && selectedBranch !== 'all') {
+    if ((isSuperAdmin || isTenant || isOrganisationUser) && selectedBranch && selectedBranch !== 'all') {
       filters.branch_id = selectedBranch;
     }
     
     return filters;
-  }, [isSuperAdmin, isTenant, selectedTenant, selectedOrganisation, selectedBranch]);
+  }, [isSuperAdmin, isTenant, isOrganisationUser, selectedTenant, selectedOrganisation, selectedBranch]);
 
   return {
     isSuperAdmin,
     isTenant,
+    isOrganisationUser,
+    isBranchUser,
     selectedTenant,
     selectedOrganisation,
     selectedBranch,

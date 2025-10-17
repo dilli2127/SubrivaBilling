@@ -11,6 +11,7 @@ export interface User {
   mobile: string;
   clientcode: string;
   usertype: string;
+  user_type?: string;
   active: boolean;
   organization_name?: string;
   branch_id?: string;
@@ -45,17 +46,40 @@ export function getCurrentUserRole(): string | null {
   return user?.roleItems?.name || user?.usertype || user?.user_role || null;
 }
 
-// Get authentication token
+// Get authentication token (access token)
 export function getAuthToken(): string | null {
+  // Try accessToken first (new pattern)
+  const accessToken = SessionStorageEncryption.getItem('accessToken');
+  if (accessToken) {
+    return accessToken;
+  }
+  
+  // Fallback to 'token' for backward compatibility
   const token = SessionStorageEncryption.getItem('token');
-  if (!token) {
+  if (token) {
+    return token;
+  }
+  
+  // Last resort - check direct session storage
+  const fallbackToken = sessionStorage.getItem('token') || sessionStorage.getItem('accessToken');
+  if (fallbackToken) {
+    return fallbackToken;
+  }
+  
+  return null;
+}
+
+// Get refresh token
+export function getRefreshToken(): string | null {
+  const refreshToken = SessionStorageEncryption.getItem('refreshToken');
+  if (!refreshToken) {
     // Fallback to direct session storage for backward compatibility
-    const fallbackToken = sessionStorage.getItem('token');
-    if (fallbackToken) {
-      return fallbackToken;
+    const fallbackRefreshToken = sessionStorage.getItem('refreshToken');
+    if (fallbackRefreshToken) {
+      return fallbackRefreshToken;
     }
   }
-  return token;
+  return refreshToken;
 }
 
 // Store user data (encrypted)
@@ -66,16 +90,45 @@ export function setUserData(user: User): void {
 // Store auth token (encrypted) and generate CSRF token
 export function setAuthToken(token: string): void {
   SessionStorageEncryption.setItem('token', token);
+  // Also store as accessToken for consistency
+  SessionStorageEncryption.setItem('accessToken', token);
   // Generate CSRF token on successful authentication
   setCSRFToken();
+}
+
+// Store access token (new pattern)
+export function setAccessToken(accessToken: string): void {
+  SessionStorageEncryption.setItem('accessToken', accessToken);
+  // Also store as 'token' for backward compatibility
+  SessionStorageEncryption.setItem('token', accessToken);
+  // Generate CSRF token on successful authentication
+  setCSRFToken();
+}
+
+// Store refresh token
+export function setRefreshToken(refreshToken: string): void {
+  SessionStorageEncryption.setItem('refreshToken', refreshToken);
+}
+
+// Store both access and refresh tokens
+export function setTokens(accessToken: string, refreshToken: string): void {
+  setAccessToken(accessToken);
+  setRefreshToken(refreshToken);
 }
 
 // Clear all auth data including CSRF token and permissions
 export function clearAuthData(): void {
   SessionStorageEncryption.removeItem('user');
   SessionStorageEncryption.removeItem('token');
+  SessionStorageEncryption.removeItem('accessToken');
+  SessionStorageEncryption.removeItem('refreshToken');
   clearCSRFToken();
   clearPermissions();
+  
+  // Also clear direct storage for safety
+  sessionStorage.removeItem('token');
+  sessionStorage.removeItem('accessToken');
+  sessionStorage.removeItem('refreshToken');
 }
 
 // Check if user is authenticated

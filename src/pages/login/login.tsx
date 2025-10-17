@@ -18,7 +18,8 @@ import {
 import { useDispatch } from "react-redux";
 import { Dispatch } from "redux";
 import { API_ROUTES } from "../../services/api/utils";
-import { setUserData, setAuthToken } from "../../helpers/auth";
+import { setUserData, setAuthToken, setTokens } from "../../helpers/auth";
+import { setPermissions, setMenuKeys, setUserData as setUserDataHelper } from "../../helpers/permissionHelper";
 
 const { Title, Text } = Typography;
 
@@ -50,11 +51,43 @@ const Login: React.FC = () => {
   useEffect(() => {
     if (items?.statusCode === 200) {
       message.success("Login successful! Welcome back.");
-      // Store encrypted data
-      setAuthToken(items?.result?.token);
-      setUserData(items?.result?.UserItem);
+      
+      const result = items.result;
+      
+      // Store tokens - support both old and new formats
+      if (result?.accessToken && result?.refreshToken) {
+        // New format with refresh tokens
+        setTokens(result.accessToken, result.refreshToken);
+        console.log('Stored access token (expires in:', result.accessTokenExpiresIn, ')');
+        console.log('Stored refresh token (expires in:', result.refreshTokenExpiresIn, ')');
+      } else if (result?.token) {
+        // Fallback to old format for backward compatibility
+        setAuthToken(result.token);
+      }
+      
+      // Store user data
+      if (result?.UserItem) {
+        setUserData(result.UserItem);
+      }
+      
+      // Store permissions for role-based access control
+      if (result?.permissions) {
+        setPermissions(result.permissions);
+      }
+      
+      // Store allowedMenuKeys for menu filtering (NOT menuKeys - that was removed)
+      if (result?.allowedMenuKeys) {
+        setMenuKeys(result.allowedMenuKeys);
+      }
+      
+      // Store complete user data for new API structure
+      if (result) {
+        setUserDataHelper(result);
+      }
+      
       dispatch(dynamic_clear(API_ROUTES.Login.Create.identifier));
-      if (items?.result?.UserItem?.usertype === "admin") {
+      
+      if (result?.UserItem?.usertype === "admin") {
         navigate("/admin/einvite_crud");
       } else {
         navigate("/dashboard");
@@ -62,7 +95,7 @@ const Login: React.FC = () => {
     } else if (items?.statusCode && items.statusCode !== 200) {
         message.error(items?.message || "Login failed, please try again");
     }
-  }, [items]);
+  }, [items, dispatch, navigate]);
   return (
     <div className="login-background">
       <div className="login-form-container">

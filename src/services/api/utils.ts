@@ -264,4 +264,11 @@ export const API_ROUTES = {
   Settings: createCrudRoutes("/settings", "Settings"),
   FieldMetadata: createCrudRoutes("/field_metadata", "FieldMetadata"),
   EntityDefinition: createCrudRoutes("/entity_definitions", "EntityDefinition"),
+  PlanLimits: {
+    Get: {
+      identifier: "GetPlanLimits",
+      method: API_METHODS.GET,
+      endpoint: "/tenant/plan-limits",
+    },
+  },
 };

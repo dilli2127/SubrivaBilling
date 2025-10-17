@@ -34,12 +34,12 @@ export const getFilteredMenuItems = () => {
       return menuItems;
     }
     
-    // Try new API structure first (menuKeys array)
+    // Try new API structure first (allowedMenuKeys array from login response)
     const menuKeys = getMenuKeys();
     
     if (menuKeys && menuKeys.length > 0) {
       const filteredItems = menuItems.map(item => {
-        // If item has children, filter them based on menuKeys
+        // If item has children, filter them based on allowedMenuKeys
         if (item.children) {
           const filteredChildren = item.children.filter(child => {
             return menuKeys.includes(child.key);
