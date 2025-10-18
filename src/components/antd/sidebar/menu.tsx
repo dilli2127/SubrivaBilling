@@ -59,13 +59,9 @@ export const getFilteredMenuItems = () => {
     // Fallback to old structure (permissions with allowed_menu_keys)
     const permissions = getPermissions();
     
-    // If no permissions found, show basic menus only
+    // If no permissions found, show nothing
     if (!permissions || Object.keys(permissions).length === 0) {
-      const basicMenus = menuItems.filter(item => 
-        item.key === 'dashboard' || 
-        item.key === 'SalesRecords'
-      );
-      return basicMenus;
+      return []; // Show nothing when no permissions
     }
     
     // Get all allowed menu keys from permissions
@@ -76,13 +72,9 @@ export const getFilteredMenuItems = () => {
       }
     });
 
-    // If no allowed menu keys, show basic menus
+    // If no allowed menu keys, show nothing
     if (allowedMenuKeys.size === 0) {
-      const basicMenus = menuItems.filter(item => 
-        item.key === 'dashboard' || 
-        item.key === 'SalesRecords'
-      );
-      return basicMenus;
+      return []; // Show nothing when no allowed menu keys
     }
 
     const filteredItems = menuItems.map(item => {
@@ -103,12 +95,8 @@ export const getFilteredMenuItems = () => {
     return filteredItems;
   } catch (error) {
     console.error('Error filtering menu items:', error);
-    // Fallback to basic menus if there's an error
-    return menuItems.filter(item => 
-      item.key === 'dashboard' || 
-      item.key === 'SalesRecords' ||
-      item.key === 'master_settings'
-    );
+    // Show nothing if there's an error
+    return [];
   }
 };
 

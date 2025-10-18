@@ -1,23 +1,14 @@
-import React, { memo, useEffect } from 'react';
-import { GenericCrudPage } from '../../components/common/GenericCrudPage';
-import { getEntityApiRoutes } from '../../helpers/CrudFactory';
-import { rolesFormItems } from './formItems';
-import { rolesColumns } from './columns';
+import React, { memo } from 'react';
+import RolesCrudNew from './RolesCrudNew';
 
+/**
+ * Roles CRUD Page - Main Entry Point
+ * 
+ * Updated to use new permission system that sends `permissions` array
+ * instead of `allowedMenuKeys` to the backend.
+ */
 const RolesCrud: React.FC = () => {
-  return (
-    <GenericCrudPage
-      config={{
-        title: 'Roles',
-        columns: rolesColumns,
-        formItems: rolesFormItems(),
-        apiRoutes: getEntityApiRoutes('Roles'),
-        formColumns: 2,
-      }}
-      enableDynamicFields={true}
-      entityName="roles"
-    />
-  );
+  return <RolesCrudNew />;
 };
 
 export default memo(RolesCrud);
