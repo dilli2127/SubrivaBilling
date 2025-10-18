@@ -1,4 +1,5 @@
 import axios, { AxiosInstance, AxiosError, InternalAxiosRequestConfig } from 'axios';
+import { message } from 'antd';
 import { API_ERROR_CODES } from '../../helpers/constants';
 import { getAuthToken, getRefreshToken, setAccessToken, setRefreshToken, clearAuthData } from '../../helpers/auth';
 import { getCSRFToken } from '../../helpers/csrfToken';
@@ -21,6 +22,7 @@ class APIService {
     private api: AxiosInstance;
     private isRefreshing: boolean = false;
     private refreshSubscribers: Array<(token: string) => void> = [];
+    private hasShownSessionExpiredMessage: boolean = false;
 
     constructor(baseURL: string) {
         this.api = axios.create({
@@ -62,9 +64,14 @@ class APIService {
                     
                     // Check if it's a permission denied error (not token expiration)
                     if (errorMessage.toLowerCase().includes('access denied') || 
-                        errorMessage.toLowerCase().includes('insufficient permissions')) {
-                        // Permission denied - don't clear auth, just reject
+                        errorMessage.toLowerCase().includes('insufficient permissions') ||
+                        errorMessage.toLowerCase().includes('permission')) {
+                        // Permission denied - don't clear auth, just show error with full message
                         console.warn('Permission denied:', errorMessage);
+                        message.error({
+                            content: 'You do not have permission to perform this action.',
+                            duration: 5,
+                        });
                         return Promise.reject(error);
                     }
                     
@@ -105,8 +112,15 @@ class APIService {
                     } catch (refreshError) {
                         // Refresh failed - logout user
                         console.error('Token refresh failed:', refreshError);
+                        
+                        // Show error message only once to avoid multiple toasts
+                        if (!this.hasShownSessionExpiredMessage) {
+                            this.hasShownSessionExpiredMessage = true;
+                            message.error('Your session has expired. Please login again.');
+                        }
+                        
                         clearAuthData();
-                        window.location.href = '/billing_login';
+                        window.location.href = '#/billing_login';
                         return Promise.reject(refreshError);
                     } finally {
                         this.isRefreshing = false;
@@ -173,12 +187,39 @@ class APIService {
 
     // Handle successful responses
     private handleResponse<T>(response: ApiResponse<T>): ApiResponse<T> {
-        // Check for 401 status code in response body
-        // if (response.statusCode === 401) {
-        //     clearAuthData();
-        //     window.location.href = '/billing_login';
-        //     return response; // Return response but user will be redirected
-        // }
+        // Check for 401 status code in response body (some APIs return 401 in body, not HTTP status)
+        if (response.statusCode === 401) {
+            // Check both exception and message fields for the error text
+            const errorMessage = (response as any).exception || response.message || '';
+            
+            console.log('401 Response - Exception:', (response as any).exception, 'Message:', response.message);
+            
+            // Check if it's a permission denied error (not token expiration)
+            if (errorMessage.toLowerCase().includes('access denied') || 
+                errorMessage.toLowerCase().includes('insufficient permissions') ||
+                errorMessage.toLowerCase().includes('permission')) {
+                // Permission denied - don't clear auth, just show error with full message
+                console.warn('Permission denied:', errorMessage);
+                message.error({
+                    content: 'You do not have permission to perform this action.',
+                    duration: 5,
+                });
+                return response;
+            }
+            
+            // Token expired - logout user
+            console.warn('Token expired (401 in response body)');
+            
+            // Show error message only once to avoid multiple toasts
+            if (!this.hasShownSessionExpiredMessage) {
+                this.hasShownSessionExpiredMessage = true;
+                message.error('Your session has expired. Please login again.');
+            }
+            
+            clearAuthData();
+            window.location.href = '#/billing_login';
+            return response; // Return response but user will be redirected
+        }
         
         return {
             statusCode: response.statusCode,
