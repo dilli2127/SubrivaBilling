@@ -323,12 +323,6 @@ export const menuItems = [
         icon: <BankOutlined />,
         path: '/tenant_account',
       },
-      {
-        key: 'entity_definitions',
-        label: 'Entity Definitions',
-        icon: <AppstoreAddOutlined />,
-        path: '/entity-definitions',
-      },
     ],
   },
 ];
