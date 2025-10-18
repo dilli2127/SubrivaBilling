@@ -4,10 +4,11 @@ import { dynamic_request, useDynamicSelector } from '../../services/redux';
 import { useDispatch } from 'react-redux';
 import { Dispatch } from 'redux';
 import BarcodeScanner from '../../components/common/BarcodeScanner';
-import { GenericCrudPage } from '../../components/common/GenericCrudPage';
+import { PermissionAwareCrudPage } from '../../components/common/PermissionAwareCrudPage';
 import { Product } from '../../types/entities';
 import { getEntityApiRoutes } from '../../helpers/CrudFactory';
 import { getCurrentUserRole } from '../../helpers/auth';
+import { RESOURCES } from '../../helpers/permissionHelper';
 import { productsColumns } from './columns';
 import { productsFormItems } from './formItems';
 
@@ -73,20 +74,20 @@ const ProductCrud: React.FC = () => {
     }),
     apiRoutes: getEntityApiRoutes('Product'),
     formColumns: 2,
+    // Custom business logic for global products
+    // Note: PermissionAwareCrudPage will combine these with user permissions
     canEdit: (record: Product) => {
-      // If global_product is true, only superadmin can edit
+      // Global products can only be edited by superadmin
       if (record.global_product) {
         return isSuperAdmin;
       }
-      // Otherwise, all users can edit
       return true;
     },
     canDelete: (record: Product) => {
-      // If global_product is true, only superadmin can delete
+      // Global products can only be deleted by superadmin
       if (record.global_product) {
         return isSuperAdmin;
       }
-      // Otherwise, all users can delete
       return true;
     },
   }), [variantMap, variantItems, categoryItems, variantLoading, categoryLoading, isSuperAdmin]);
@@ -106,7 +107,8 @@ const ProductCrud: React.FC = () => {
 
   return (
     <>
-      <GenericCrudPage
+      <PermissionAwareCrudPage
+        resource={RESOURCES.PRODUCT}
         config={productConfig}
         enableDynamicFields={true}
         entityName="products"

@@ -16,6 +16,9 @@ interface PermissionAwareCrudPageProps<T extends BaseEntity> {
     columns: CrudColumn[];
     formItems: CrudFormItem[];
     metadataFieldName?: string;
+    canCreate?: () => boolean;
+    canEdit?: (record: any) => boolean;
+    canDelete?: (record: any) => boolean;
   };
   filters?: FilterConfig[];
   onFilterChange?: (values: Record<string, any>) => void;
@@ -56,12 +59,19 @@ export function PermissionAwareCrudPage<T extends BaseEntity>({
   const canUpdateResource = canUpdate(resource);
   const canDeleteResource = canDelete(resource);
 
-  // Add permission checks to columns
+  // Merge permission checks with any existing custom logic
   const enhancedConfig = {
     ...config,
-    // Add permission checks to action buttons
-    canEdit: () => canUpdateResource,
-    canDelete: () => canDeleteResource,
+    // Combine permission checks with custom logic (if any)
+    canCreate: config.canCreate 
+      ? () => canCreateResource && config.canCreate!()
+      : () => canCreateResource,
+    canEdit: config.canEdit
+      ? (record: any) => canUpdateResource && config.canEdit!(record)
+      : () => canUpdateResource,
+    canDelete: config.canDelete
+      ? (record: any) => canDeleteResource && config.canDelete!(record)
+      : () => canDeleteResource,
   };
 
   return <GenericCrudPage config={enhancedConfig} {...otherProps} />;

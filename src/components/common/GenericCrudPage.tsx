@@ -61,6 +61,7 @@ interface GenericCrudPageProps<T extends BaseEntity> {
     columns: CrudColumn[];
     formItems: CrudFormItem[];
     metadataFieldName?: string; // Field name for metadata (default: 'meta_data_values', can be 'custom_data')
+    canCreate?: () => boolean; // Permission check for create action
   };
   filters?: FilterConfig[];
   onFilterChange?: (values: Record<string, any>) => void;
@@ -461,16 +462,23 @@ export const GenericCrudPage = <T extends BaseEntity>({
 
 
             {/* Add Button */}
-            <Col>
-              <Button 
-                type="primary" 
-                onClick={handleDrawerOpen}
-                loading={createLoading}
-                disabled={createLoading}
-              >
-                Add {config.title}
-              </Button>
-            </Col>
+            {(() => {
+              const canCreateItem = config.canCreate ? config.canCreate() : true;
+              return canCreateItem ? (
+                <Col>
+                  <Tooltip title={!canCreateItem ? 'No permission to create' : ''}>
+                    <Button 
+                      type="primary" 
+                      onClick={handleDrawerOpen}
+                      loading={createLoading}
+                      disabled={createLoading || !canCreateItem}
+                    >
+                      Add {config.title}
+                    </Button>
+                  </Tooltip>
+                </Col>
+              ) : null;
+            })()}
           </Row>
         </Col>
       </Row>

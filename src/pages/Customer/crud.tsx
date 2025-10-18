@@ -6,9 +6,10 @@ import {
   PhoneOutlined,
   UserOutlined,
 } from '@ant-design/icons';
-import { GenericCrudPage } from '../../components/common/GenericCrudPage';
+import { PermissionAwareCrudPage } from '../../components/common/PermissionAwareCrudPage';
 import { Customer } from '../../types/entities';
 import { getEntityApiRoutes } from '../../helpers/CrudFactory';
+import { RESOURCES } from '../../helpers/permissionHelper';
 
 const { Option } = Select;
 
@@ -118,7 +119,8 @@ const customerConfig = {
 
 const CustomerCrud: React.FC = () => {
   return (
-    <GenericCrudPage 
+    <PermissionAwareCrudPage 
+      resource={RESOURCES.CUSTOMER}
       config={customerConfig}
       enableDynamicFields={true}
       entityName="customer"
