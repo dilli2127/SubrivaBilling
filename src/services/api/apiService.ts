@@ -27,7 +27,7 @@ class APIService {
     constructor(baseURL: string) {
         this.api = axios.create({
             baseURL,
-            timeout: 10000,
+            timeout: 60000, // 60 seconds timeout for slow connections
             headers: {
                 'Content-Type': 'application/json',
                 // Token header will be set by the interceptor
