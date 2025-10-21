@@ -1,32 +1,22 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   Card,
   Tabs,
   Form,
-  Input,
-  Button,
-  Upload,
-  Switch,
   Select,
-  InputNumber,
   message,
-  Space,
-  Divider,
   Row,
   Col,
   Typography,
 } from 'antd';
 import {
   SettingOutlined,
-  SaveOutlined,
   ShopOutlined,
   PercentageOutlined,
   FileTextOutlined,
   PrinterOutlined,
   CheckCircleOutlined,
   BellOutlined,
-  UploadOutlined,
-  CameraOutlined,
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import styles from './Settings.module.css';
@@ -34,9 +24,17 @@ import { useApiActions } from '../../services/api/useApiActions';
 import { useDynamicSelector } from '../../services/redux';
 import { getCurrentUser } from '../../helpers/auth';
 import { useFileUpload } from '../../helpers/useFileUpload';
+import SessionStorageEncryption from '../../helpers/encryption';
+import {
+  CompanyTab,
+  TaxTab,
+  InvoiceTab,
+  PrinterTab,
+  DefaultsTab,
+  NotificationsTab,
+} from './tabs';
 
 const { Title, Text } = Typography;
-const { TextArea } = Input;
 const { Option } = Select;
 
 const Settings: React.FC = () => {
@@ -45,18 +43,28 @@ const Settings: React.FC = () => {
   const [activeTab, setActiveTab] = useState('company');
   const { handleFileUpload, url: uploadedLogoUrl } = useFileUpload();
   const navigate = useNavigate();
+  const [selectedTenant, setSelectedTenant] = useState<string>('all');
+  const [selectedOrganisation, setSelectedOrganisation] = useState<string>('all');
 
-  // Get user info
-  const userItem = useMemo(() => {
-    return getCurrentUser();
-  }, []);
+  // Get user info with memoization
+  const userItem = useMemo(() => getCurrentUser(), []);
+  
+  // Get user role with memoization to prevent unnecessary recalculations
+  const { userRole, isSuperAdmin, isTenant } = useMemo(() => {
+    const scopeData = SessionStorageEncryption.getItem('scope');
+    const role = scopeData?.userType || userItem?.user_type || userItem?.usertype || userItem?.user_role || '';
+    return {
+      userRole: role,
+      isSuperAdmin: role.toLowerCase() === 'superadmin',
+      isTenant: role.toLowerCase() === 'tenant'
+    };
+  }, [userItem]);
 
   // API hooks
   const { getEntityApi } = useApiActions();
   const SettingsApi = getEntityApi('Settings');
   const OrganisationsApi = getEntityApi('Organisations');
-  const CustomersApi = getEntityApi('Customer');
-  const WarehouseApi = getEntityApi('Warehouse');
+  const TenantsApi = getEntityApi('Tenant');
 
   // Selectors
   const { items: settingsData } = useDynamicSelector(
@@ -65,25 +73,50 @@ const Settings: React.FC = () => {
   const { items: organisationData } = useDynamicSelector(
     OrganisationsApi.getIdentifier('Get')
   );
-  const { items: customersList } = useDynamicSelector(
-    CustomersApi.getIdentifier('GetAll')
+  const { items: tenantsItems } = useDynamicSelector(
+    TenantsApi.getIdentifier('GetAll')
   );
-  const { items: warehousesList } = useDynamicSelector(
-    WarehouseApi.getIdentifier('GetAll')
+  const { items: organisationsItems } = useDynamicSelector(
+    OrganisationsApi.getIdentifier('GetAll')
   );
 
   // Load settings on mount
   useEffect(() => {
     loadSettings();
-    CustomersApi('GetAll');
-    WarehouseApi('GetAll');
+    
+    // Fetch data based on user role
+    if (isSuperAdmin) {
+      TenantsApi('GetAll');
+      // Don't fetch all organisations initially for superadmin
+    } else if (isTenant) {
+      // Fetch organisations for logged-in tenant
+      // Backend will automatically filter based on tenant authentication
+      OrganisationsApi('GetAll');
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const loadSettings = async () => {
+  // Handle tenant selection change - fetch organisations for selected tenant
+  const handleTenantChange = useCallback((tenantId: string) => {
+    setSelectedTenant(tenantId || 'all');
+    setSelectedOrganisation('all'); // Clear organisation selection
+    
+    if (tenantId && tenantId !== 'all') {
+      // Fetch organisations for the selected tenant
+      OrganisationsApi('GetAll', { tenant_id: tenantId });
+    }
+    // If "all" or cleared, don't fetch organisations (keep dropdown disabled)
+  }, [OrganisationsApi]);
+
+  const loadSettings = useCallback(async () => {
     try {
+      // Determine which organisation to load
+      let organisationId = selectedOrganisation !== 'all' ? selectedOrganisation : null;
+      if (!organisationId) {
+        organisationId = userItem?.organisation_id || userItem?.organisationItems?._id;
+      }
+      
       // Load organization data
-      const organisationId = userItem?.organisation_id || userItem?.organisationItems?._id;
       if (organisationId) {
         await OrganisationsApi('Get', {}, organisationId);
       }
@@ -93,7 +126,14 @@ const Settings: React.FC = () => {
     } catch (error) {
       console.error('Error loading settings:', error);
     }
-  };
+  }, [selectedOrganisation, userItem, OrganisationsApi, SettingsApi]);
+
+  // Reload settings when selected organisation changes
+  useEffect(() => {
+    if (selectedOrganisation && selectedOrganisation !== 'all') {
+      loadSettings();
+    }
+  }, [selectedOrganisation, loadSettings]);
 
   // Populate form when data loads
   useEffect(() => {
@@ -102,18 +142,19 @@ const Settings: React.FC = () => {
       const org = organisationData?.result || {};
       
       form.setFieldsValue({
-        // Company Settings
-        company_name: org.org_name || org.organization_name || '',
+        // Company Settings - Map API fields to form fields
+        company_name: org.org_name || '',
         company_address: org.address || '',
         company_city: org.city || '',
         company_state: org.state || '',
         company_pincode: org.pincode || '',
-        company_gstin: org.gstin || org.gst_number || '',
-        company_phone: org.phone || org.contact_phone || '',
-        company_email: org.email || org.contact_email || '',
+        company_gstin: org.gst_number || '',
+        company_phone: org.phone || '',
+        company_email: org.email || '',
         company_website: org.website || '',
-        company_logo: org.logo || '',
-
+        company_logo: org.logo_url || '',
+        business_type: org.business_type || '',
+        
         // Tax Settings
         tax_enabled: settings.tax_enabled !== false,
         tax_type: settings.tax_type || 'GST',
@@ -135,8 +176,6 @@ const Settings: React.FC = () => {
 
         // Default Values
         default_payment_mode: settings.default_payment_mode || 'cash',
-        default_customer_id: settings.default_customer_id || '',
-        default_warehouse_id: settings.default_warehouse_id || '',
 
         // Notification Settings
         email_notifications: settings.email_notifications !== false,
@@ -149,48 +188,159 @@ const Settings: React.FC = () => {
     }
   }, [settingsData, organisationData, form]);
 
-  const handleSave = async () => {
+  const handleSave = useCallback(async () => {
     try {
+      // Check if organization is selected for SuperAdmin and Tenant users
+      if ((isSuperAdmin || isTenant) && selectedOrganisation === 'all') {
+        message.error('Please select an organisation before updating settings');
+        return;
+      }
+
       const values = await form.validateFields();
       setLoading(true);
 
-      // Save organization data
-      const organisationId = userItem?.organisation_id || userItem?.organisationItems?._id;
-      if (organisationId) {
+      // Determine the organisation ID to update
+      let organisationId = selectedOrganisation !== 'all' ? selectedOrganisation : null;
+      if (!organisationId) {
+        organisationId = userItem?.organisation_id || userItem?.organisationItems?._id;
+      }
+
+      // Additional validation for SuperAdmin and Tenant users to ensure we have a valid organisation ID
+      if ((isSuperAdmin || isTenant) && !organisationId) {
+        message.error('Please select an organisation before updating settings');
+        return;
+      }
+
+      // Only update organization data if we're on the company tab
+      if (activeTab === 'company' && organisationId) {
         await OrganisationsApi('Update', {
           org_name: values.company_name,
           address: values.company_address,
           city: values.company_city,
           state: values.company_state,
           pincode: values.company_pincode,
-          gstin: values.company_gstin,
+          gst_number: values.company_gstin,
           phone: values.company_phone,
           email: values.company_email,
           website: values.company_website,
-          logo: uploadedLogoUrl || values.company_logo,
+          logo_url: uploadedLogoUrl || values.company_logo,
+          business_type: values.business_type,
         }, organisationId);
       }
 
-      // Save settings
-      await SettingsApi('Update', {
-        ...values,
-        company_logo: uploadedLogoUrl || values.company_logo,
-      }, organisationId || userItem?._id);
+      // Save settings - Send only relevant data based on active tab
+      if (activeTab !== 'company') {
+        let newSettingsData: any = {};
 
-      message.success('Settings saved successfully! 🎉');
+        // Tax & GST tab - only tax settings
+        if (activeTab === 'tax') {
+          newSettingsData = {
+            tax_enabled: values.tax_enabled,
+            tax_type: values.tax_type,
+          };
+        }
+        // Invoice tab - only invoice settings
+        else if (activeTab === 'invoice') {
+          newSettingsData = {
+            invoice_prefix: values.invoice_prefix,
+            invoice_starting_number: values.invoice_starting_number,
+            invoice_footer: values.invoice_footer,
+            invoice_terms: values.invoice_terms,
+            show_logo_on_invoice: values.show_logo_on_invoice,
+            show_terms_on_invoice: values.show_terms_on_invoice,
+          };
+        }
+        // Printer tab - only printer settings
+        else if (activeTab === 'printer') {
+          newSettingsData = {
+            thermal_printer_enabled: values.thermal_printer_enabled,
+            printer_port: values.printer_port,
+            printer_baud_rate: values.printer_baud_rate,
+            paper_width: values.paper_width,
+            auto_print: values.auto_print,
+          };
+        }
+        // Defaults tab - only default values
+        else if (activeTab === 'defaults') {
+          newSettingsData = {
+            default_payment_mode: values.default_payment_mode,
+          };
+        }
+        // Notifications tab - only notification settings
+        else if (activeTab === 'notifications') {
+          newSettingsData = {
+            email_notifications: values.email_notifications,
+            sms_notifications: values.sms_notifications,
+            low_stock_alert: values.low_stock_alert,
+            low_stock_threshold: values.low_stock_threshold,
+            payment_reminder: values.payment_reminder,
+            daily_report_email: values.daily_report_email,
+          };
+        }
+
+        // Check if settings exist, if not create new settings
+        const existingSettings = settingsData?.result;
+        const hasExistingSettings = existingSettings && (
+          existingSettings._id || 
+          existingSettings.id || 
+          (typeof existingSettings === 'object' && Object.keys(existingSettings).some(key => 
+            key !== '_id' && key !== 'id' && existingSettings[key] !== null && existingSettings[key] !== undefined
+          ))
+        );
+        const targetId = organisationId || userItem?._id;
+        
+        if (hasExistingSettings) {
+          // Update existing settings - use the settings ID or target ID
+          const settingsId = existingSettings._id || existingSettings.id || targetId;
+          await SettingsApi('Update', {
+            ...newSettingsData,
+            organisation_id: targetId, // Include organisation_id for updates too
+          }, settingsId);
+        } else {
+          // Create new settings for the first time
+          await SettingsApi('Create', {
+            ...newSettingsData,
+            organisation_id: targetId, // Include organisation_id for new settings
+          }, targetId);
+        }
+
+        // Reload settings after save to get updated data
+        await SettingsApi('Get', {}, targetId);
+      }
+
+      const tabLabels = {
+        company: 'Company Settings',
+        tax: 'Tax & GST Settings',
+        invoice: 'Invoice Settings',
+        printer: 'Printer Settings',
+        defaults: 'Default Values',
+        notifications: 'Notification Settings'
+      };
+
+      message.success(`${tabLabels[activeTab as keyof typeof tabLabels] || 'Settings'} saved successfully! 🎉`);
     } catch (error: any) {
       message.error(error.message || 'Failed to save settings');
     } finally {
       setLoading(false);
     }
-  };
+  }, [
+    isSuperAdmin, 
+    isTenant, 
+    selectedOrganisation, 
+    userItem, 
+    activeTab, 
+    OrganisationsApi, 
+    SettingsApi,
+    uploadedLogoUrl,
+    settingsData
+  ]);
 
-  const handleReset = () => {
+  const handleReset = useCallback(() => {
     form.resetFields();
     message.info('Form reset to last saved values');
-  };
+  }, [form]);
 
-  const handleLogoUpload = async (file: any) => {
+  const handleLogoUpload = useCallback(async (file: any) => {
     try {
       const url = await handleFileUpload(file);
       form.setFieldValue('company_logo', url);
@@ -199,27 +349,28 @@ const Settings: React.FC = () => {
       message.error('Failed to upload logo');
     }
     return false; // Prevent default upload
-  };
+  }, [handleFileUpload, form]);
 
-  const testPrinter = () => {
+  const testPrinter = useCallback(() => {
     message.info('Printing test page... Check your thermal printer');
     // Add actual printer test logic here
-  };
+  }, []);
 
-  // Prepare options
-  const customerOptions = useMemo(() => {
-    return customersList?.result?.map((customer: any) => ({
-      label: customer.customer_name || customer.name,
-      value: customer._id,
+  // Prepare options for dropdowns
+  const tenantOptions = useMemo(() => {
+    return tenantsItems?.result?.map((tenant: any) => ({
+      label: tenant.organization_name || tenant.tenant_name,
+      value: tenant._id,
     })) || [];
-  }, [customersList]);
+  }, [tenantsItems]);
 
-  const warehouseOptions = useMemo(() => {
-    return warehousesList?.result?.map((warehouse: any) => ({
-      label: warehouse.warehouse_name || warehouse.name,
-      value: warehouse._id,
+  const organisationOptions = useMemo(() => {
+    return organisationsItems?.result?.map((org: any) => ({
+      label: org.org_name || org.organization_name || org.name,
+      value: org._id,
     })) || [];
-  }, [warehousesList]);
+  }, [organisationsItems]);
+
 
   return (
     <div className={styles.settingsContainer}>
@@ -230,6 +381,64 @@ const Settings: React.FC = () => {
           Settings
         </Title>
       </div>
+
+      {/* Filter Dropdowns for SuperAdmin and Tenant */}
+      {(isSuperAdmin || isTenant) && (
+        <Card style={{ marginBottom: 16 }}>
+          <Row gutter={16}>
+            {/* Tenant Dropdown - Only for SuperAdmin */}
+            {isSuperAdmin && (
+              <Col xs={24} sm={12} md={8}>
+                <div style={{ marginBottom: 8 }}>
+                  <Text strong>Tenant</Text>
+                </div>
+                <Select
+                  style={{ width: '100%' }}
+                  placeholder="Select Tenant"
+                  value={selectedTenant}
+                  onChange={handleTenantChange}
+                  showSearch
+                  optionFilterProp="children"
+                  allowClear
+                >
+                  <Option value="all">All Tenants</Option>
+                  {tenantOptions.map((option: any) => (
+                    <Option key={option.value} value={option.value}>
+                      {option.label}
+                    </Option>
+                  ))}
+                </Select>
+              </Col>
+            )}
+
+            {/* Organisation Dropdown - For SuperAdmin and Tenant */}
+            {(isSuperAdmin || isTenant) && (
+              <Col xs={24} sm={12} md={8}>
+                <div style={{ marginBottom: 8 }}>
+                  <Text strong>Organisation</Text>
+                </div>
+                <Select
+                  style={{ width: '100%' }}
+                  placeholder="Select Organisation"
+                  value={selectedOrganisation}
+                  onChange={setSelectedOrganisation}
+                  showSearch
+                  optionFilterProp="children"
+                  allowClear
+                  disabled={isSuperAdmin && (selectedTenant === 'all' || !selectedTenant)}
+                >
+                  <Option value="all">All Organisations</Option>
+                  {organisationOptions.map((option: any) => (
+                    <Option key={option.value} value={option.value}>
+                      {option.label}
+                    </Option>
+                  ))}
+                </Select>
+              </Col>
+            )}
+          </Row>
+        </Card>
+      )}
 
       {/* Settings Tabs */}
       <Card className={styles.tabsCard}>
@@ -246,141 +455,14 @@ const Settings: React.FC = () => {
                 </span>
               ),
               children: (
-                <Form form={form} layout="vertical" className={styles.settingsForm}>
-                  <div className={styles.sectionTitle}>
-                    <ShopOutlined />
-                    Company Information
-                  </div>
-
-                  <div className={styles.infoBox}>
-                    This information will appear on your invoices and reports
-                  </div>
-
-                  <Row gutter={16}>
-                    <Col span={24}>
-                      <Form.Item
-                        label="Company Logo"
-                        name="company_logo"
-                        extra="Upload your company logo (PNG, JPG - Max 2MB)"
-                      >
-                        <Upload
-                          beforeUpload={handleLogoUpload}
-                          showUploadList={false}
-                          accept="image/*"
-                        >
-                          <Button icon={<UploadOutlined />}>Upload Logo</Button>
-                        </Upload>
-                      </Form.Item>
-                      {(uploadedLogoUrl || form.getFieldValue('company_logo')) && (
-                        <img
-                          src={uploadedLogoUrl || form.getFieldValue('company_logo')}
-                          alt="Company Logo"
-                          className={styles.logoPreview}
-                        />
-                      )}
-                    </Col>
-
-                    <Col span={12}>
-                      <Form.Item
-                        label="Company Name"
-                        name="company_name"
-                        rules={[{ required: true, message: 'Please enter company name' }]}
-                      >
-                        <Input placeholder="Enter company name" />
-                      </Form.Item>
-                    </Col>
-
-                    <Col span={12}>
-                      <Form.Item
-                        label="GSTIN / Tax ID"
-                        name="company_gstin"
-                      >
-                        <Input placeholder="e.g., 29AABCU9603R1ZX" />
-                      </Form.Item>
-                    </Col>
-
-                    <Col span={24}>
-                      <Form.Item
-                        label="Address"
-                        name="company_address"
-                        rules={[{ required: true, message: 'Please enter address' }]}
-                      >
-                        <TextArea rows={2} placeholder="Enter complete address" />
-                      </Form.Item>
-                    </Col>
-
-                    <Col span={8}>
-                      <Form.Item
-                        label="City"
-                        name="company_city"
-                        rules={[{ required: true }]}
-                      >
-                        <Input placeholder="City" />
-                      </Form.Item>
-                    </Col>
-
-                    <Col span={8}>
-                      <Form.Item
-                        label="State"
-                        name="company_state"
-                        rules={[{ required: true }]}
-                      >
-                        <Input placeholder="State" />
-                      </Form.Item>
-                    </Col>
-
-                    <Col span={8}>
-                      <Form.Item
-                        label="Pincode"
-                        name="company_pincode"
-                        rules={[{ required: true }]}
-                      >
-                        <Input placeholder="Pincode" />
-                      </Form.Item>
-                    </Col>
-
-                    <Col span={12}>
-                      <Form.Item
-                        label="Phone Number"
-                        name="company_phone"
-                        rules={[{ required: true }]}
-                      >
-                        <Input placeholder="+91 XXXXX XXXXX" />
-                      </Form.Item>
-                    </Col>
-
-                    <Col span={12}>
-                      <Form.Item
-                        label="Email Address"
-                        name="company_email"
-                        rules={[{ type: 'email' }]}
-                      >
-                        <Input placeholder="company@example.com" />
-                      </Form.Item>
-                    </Col>
-
-                    <Col span={12}>
-                      <Form.Item
-                        label="Website"
-                        name="company_website"
-                      >
-                        <Input placeholder="https://www.example.com" />
-                      </Form.Item>
-                    </Col>
-                  </Row>
-
-                  <div className={styles.formActions}>
-                    <Button onClick={handleReset}>Reset</Button>
-                    <Button
-                      type="primary"
-                      icon={<SaveOutlined />}
-                      onClick={handleSave}
-                      loading={loading}
-                    >
-                      Save Company Settings
-                    </Button>
-                  </div>
-                </Form>
+                <CompanyTab
+                  form={form}
+                  loading={loading}
+                  onSave={handleSave}
+                  onReset={handleReset}
+                  uploadedLogoUrl={uploadedLogoUrl}
+                  onLogoUpload={handleLogoUpload}
+                />
               ),
             },
             {
@@ -391,94 +473,12 @@ const Settings: React.FC = () => {
                 </span>
               ),
               children: (
-                <Form form={form} layout="vertical" className={styles.settingsForm}>
-                  <div className={styles.sectionTitle}>
-                    <PercentageOutlined />
-                    Tax Configuration
-                  </div>
-
-                  <div className={styles.infoBox}>
-                    Global tax settings. Tax rates are configured per category, and tax inclusion is handled at billing level.
-                  </div>
-
-                  <Form.Item
-                    label="Enable Tax/GST"
-                    name="tax_enabled"
-                    valuePropName="checked"
-                    extra="Enable or disable tax calculation across the entire application"
-                  >
-                    <Switch checkedChildren="Enabled" unCheckedChildren="Disabled" />
-                  </Form.Item>
-
-                  <Form.Item
-                    label="Tax Type"
-                    name="tax_type"
-                    extra="Select the type of tax applicable to your business"
-                  >
-                    <Select>
-                      <Option value="GST">GST (India)</Option>
-                      <Option value="VAT">VAT</Option>
-                      <Option value="Sales Tax">Sales Tax</Option>
-                    </Select>
-                  </Form.Item>
-
-                  <Divider>Tax Rate Configuration</Divider>
-
-                  <div className={styles.warningBox}>
-                    ⚠️ <strong>Tax Rates:</strong> Configured individually for each product category.<br />
-                    Go to <strong>Products → Category</strong> to set specific tax rates (e.g., Food: 5%, Electronics: 18%).
-                  </div>
-
-                  <Space direction="vertical" size="middle" style={{ width: '100%', marginTop: 16 }}>
-                    <Button
-                      type="dashed"
-                      icon={<PercentageOutlined />}
-                      onClick={() => navigate('/category_crud')}
-                      block
-                    >
-                      Go to Category Management
-                    </Button>
-                  </Space>
-
-                  <Divider>Tax Inclusion</Divider>
-
-                  <div className={styles.warningBox}>
-                    ⚠️ <strong>Tax Inclusive/Exclusive:</strong> Handled at the billing level.<br />
-                    You can choose tax inclusion per bill in the <strong>Billing Page</strong>.
-                  </div>
-
-                  <Space direction="vertical" size="middle" style={{ width: '100%', marginTop: 16 }}>
-                    <Button
-                      type="dashed"
-                      icon={<FileTextOutlined />}
-                      onClick={() => navigate('/retaill_billing')}
-                      block
-                    >
-                      Go to Billing Page
-                    </Button>
-                  </Space>
-
-                  <Divider />
-
-                  <div className={styles.successBox}>
-                    ✅ <strong>Your Tax System Architecture:</strong><br />
-                    • <strong>Global (Here):</strong> Enable/Disable tax & Tax type (GST/VAT)<br />
-                    • <strong>Category Level:</strong> Tax rates per product category<br />
-                    • <strong>Billing Level:</strong> Tax inclusive/exclusive per bill
-                  </div>
-
-                  <div className={styles.formActions}>
-                    <Button onClick={handleReset}>Reset</Button>
-                    <Button
-                      type="primary"
-                      icon={<SaveOutlined />}
-                      onClick={handleSave}
-                      loading={loading}
-                    >
-                      Save Tax Settings
-                    </Button>
-                  </div>
-                </Form>
+                <TaxTab
+                  form={form}
+                  loading={loading}
+                  onSave={handleSave}
+                  onReset={handleReset}
+                />
               ),
             },
             {
@@ -489,92 +489,12 @@ const Settings: React.FC = () => {
                 </span>
               ),
               children: (
-                <Form form={form} layout="vertical" className={styles.settingsForm}>
-                  <div className={styles.sectionTitle}>
-                    <FileTextOutlined />
-                    Invoice Settings
-                  </div>
-
-                  <div className={styles.infoBox}>
-                    Customize how your invoices are generated and displayed
-                  </div>
-
-                  <Row gutter={16}>
-                    <Col span={12}>
-                      <Form.Item
-                        label="Invoice Prefix"
-                        name="invoice_prefix"
-                        rules={[{ required: true }]}
-                        extra="e.g., INV, BILL, REC"
-                      >
-                        <Input placeholder="INV" />
-                      </Form.Item>
-                    </Col>
-
-                    <Col span={12}>
-                      <Form.Item
-                        label="Starting Invoice Number"
-                        name="invoice_starting_number"
-                        rules={[{ required: true }]}
-                      >
-                        <InputNumber min={1} style={{ width: '100%' }} />
-                      </Form.Item>
-                    </Col>
-                  </Row>
-
-                  <Form.Item
-                    label="Invoice Footer Text"
-                    name="invoice_footer"
-                    extra="This text will appear at the bottom of invoices"
-                  >
-                    <TextArea
-                      rows={3}
-                      placeholder="Thank you for your business!"
-                    />
-                  </Form.Item>
-
-                  <Form.Item
-                    label="Terms & Conditions"
-                    name="invoice_terms"
-                  >
-                    <TextArea
-                      rows={4}
-                      placeholder="Enter terms and conditions..."
-                    />
-                  </Form.Item>
-
-                  <Divider>Display Options</Divider>
-
-                  <Space direction="vertical" size="middle" style={{ width: '100%' }}>
-                    <Form.Item
-                      label="Show Logo on Invoice"
-                      name="show_logo_on_invoice"
-                      valuePropName="checked"
-                    >
-                      <Switch />
-                    </Form.Item>
-
-                    <Form.Item
-                      label="Show Terms & Conditions on Invoice"
-                      name="show_terms_on_invoice"
-                      valuePropName="checked"
-                    >
-                      <Switch />
-                    </Form.Item>
-                  </Space>
-
-                  <div className={styles.formActions}>
-                    <Button onClick={handleReset}>Reset</Button>
-                    <Button
-                      type="primary"
-                      icon={<SaveOutlined />}
-                      onClick={handleSave}
-                      loading={loading}
-                    >
-                      Save Invoice Settings
-                    </Button>
-                  </div>
-                </Form>
+                <InvoiceTab
+                  form={form}
+                  loading={loading}
+                  onSave={handleSave}
+                  onReset={handleReset}
+                />
               ),
             },
             {
@@ -585,96 +505,13 @@ const Settings: React.FC = () => {
                 </span>
               ),
               children: (
-                <Form form={form} layout="vertical" className={styles.settingsForm}>
-                  <div className={styles.sectionTitle}>
-                    <PrinterOutlined />
-                    Thermal Printer Configuration
-                  </div>
-
-                  <div className={styles.warningBox}>
-                    ⚠️ Make sure your thermal printer is connected before testing
-                  </div>
-
-                  <Form.Item
-                    label="Enable Thermal Printer"
-                    name="thermal_printer_enabled"
-                    valuePropName="checked"
-                  >
-                    <Switch />
-                  </Form.Item>
-
-                  <Row gutter={16}>
-                    <Col span={12}>
-                      <Form.Item
-                        label="Printer Port"
-                        name="printer_port"
-                      >
-                        <Select>
-                          <Option value="COM1">COM1</Option>
-                          <Option value="COM2">COM2</Option>
-                          <Option value="COM3">COM3</Option>
-                          <Option value="USB">USB</Option>
-                          <Option value="Bluetooth">Bluetooth</Option>
-                        </Select>
-                      </Form.Item>
-                    </Col>
-
-                    <Col span={12}>
-                      <Form.Item
-                        label="Baud Rate"
-                        name="printer_baud_rate"
-                      >
-                        <Select>
-                          <Option value={9600}>9600</Option>
-                          <Option value={19200}>19200</Option>
-                          <Option value={38400}>38400</Option>
-                          <Option value={115200}>115200</Option>
-                        </Select>
-                      </Form.Item>
-                    </Col>
-
-                    <Col span={12}>
-                      <Form.Item
-                        label="Paper Width (mm)"
-                        name="paper_width"
-                      >
-                        <Select>
-                          <Option value={58}>58mm (2 inch)</Option>
-                          <Option value={80}>80mm (3 inch)</Option>
-                        </Select>
-                      </Form.Item>
-                    </Col>
-                  </Row>
-
-                  <Form.Item
-                    label="Auto Print After Bill"
-                    name="auto_print"
-                    valuePropName="checked"
-                  >
-                    <Switch />
-                  </Form.Item>
-
-                  <Button
-                    type="dashed"
-                    icon={<PrinterOutlined />}
-                    onClick={testPrinter}
-                    className={styles.printerTestButton}
-                  >
-                    Test Printer
-                  </Button>
-
-                  <div className={styles.formActions}>
-                    <Button onClick={handleReset}>Reset</Button>
-                    <Button
-                      type="primary"
-                      icon={<SaveOutlined />}
-                      onClick={handleSave}
-                      loading={loading}
-                    >
-                      Save Printer Settings
-                    </Button>
-                  </div>
-                </Form>
+                <PrinterTab
+                  form={form}
+                  loading={loading}
+                  onSave={handleSave}
+                  onReset={handleReset}
+                  onTestPrinter={testPrinter}
+                />
               ),
             },
             {
@@ -685,78 +522,12 @@ const Settings: React.FC = () => {
                 </span>
               ),
               children: (
-                <Form form={form} layout="vertical" className={styles.settingsForm}>
-                  <div className={styles.sectionTitle}>
-                    <CheckCircleOutlined />
-                    Default Values
-                  </div>
-
-                  <div className={styles.infoBox}>
-                    These values will be pre-selected when creating new records
-                  </div>
-
-                  <div className={styles.defaultsGrid}>
-                    <Form.Item
-                      label="Default Payment Mode"
-                      name="default_payment_mode"
-                    >
-                      <Select>
-                        <Option value="cash">💵 Cash</Option>
-                        <Option value="upi">📱 UPI</Option>
-                        <Option value="card">💳 Card</Option>
-                        <Option value="credit">📝 Credit</Option>
-                      </Select>
-                    </Form.Item>
-
-                    <Form.Item
-                      label="Default Customer"
-                      name="default_customer_id"
-                    >
-                      <Select
-                        showSearch
-                        placeholder="Select default customer"
-                        optionFilterProp="children"
-                        allowClear
-                      >
-                        {customerOptions.map((option: any) => (
-                          <Option key={option.value} value={option.value}>
-                            {option.label}
-                          </Option>
-                        ))}
-                      </Select>
-                    </Form.Item>
-
-                    <Form.Item
-                      label="Default Warehouse"
-                      name="default_warehouse_id"
-                    >
-                      <Select
-                        showSearch
-                        placeholder="Select default warehouse"
-                        optionFilterProp="children"
-                        allowClear
-                      >
-                        {warehouseOptions.map((option: any) => (
-                          <Option key={option.value} value={option.value}>
-                            {option.label}
-                          </Option>
-                        ))}
-                      </Select>
-                    </Form.Item>
-                  </div>
-
-                  <div className={styles.formActions}>
-                    <Button onClick={handleReset}>Reset</Button>
-                    <Button
-                      type="primary"
-                      icon={<SaveOutlined />}
-                      onClick={handleSave}
-                      loading={loading}
-                    >
-                      Save Default Values
-                    </Button>
-                  </div>
-                </Form>
+                <DefaultsTab
+                  form={form}
+                  loading={loading}
+                  onSave={handleSave}
+                  onReset={handleReset}
+                />
               ),
             },
             {
@@ -767,100 +538,12 @@ const Settings: React.FC = () => {
                 </span>
               ),
               children: (
-                <Form form={form} layout="vertical" className={styles.settingsForm}>
-                  <div className={styles.sectionTitle}>
-                    <BellOutlined />
-                    Notification Preferences
-                  </div>
-
-                  <div className={styles.infoBox}>
-                    Control how and when you receive notifications
-                  </div>
-
-                  <div className={styles.notificationItem}>
-                    <div className={styles.notificationLabel}>
-                      <div className={styles.notificationTitle}>Email Notifications</div>
-                      <div className={styles.notificationDesc}>
-                        Receive notifications via email
-                      </div>
-                    </div>
-                    <Form.Item name="email_notifications" valuePropName="checked" noStyle>
-                      <Switch />
-                    </Form.Item>
-                  </div>
-
-                  <div className={styles.notificationItem}>
-                    <div className={styles.notificationLabel}>
-                      <div className={styles.notificationTitle}>SMS Notifications</div>
-                      <div className={styles.notificationDesc}>
-                        Receive notifications via SMS
-                      </div>
-                    </div>
-                    <Form.Item name="sms_notifications" valuePropName="checked" noStyle>
-                      <Switch />
-                    </Form.Item>
-                  </div>
-
-                  <Divider />
-
-                  <div className={styles.notificationItem}>
-                    <div className={styles.notificationLabel}>
-                      <div className={styles.notificationTitle}>Low Stock Alerts</div>
-                      <div className={styles.notificationDesc}>
-                        Get notified when product stock is low
-                      </div>
-                    </div>
-                    <Form.Item name="low_stock_alert" valuePropName="checked" noStyle>
-                      <Switch />
-                    </Form.Item>
-                  </div>
-
-                  <Form.Item
-                    label="Low Stock Threshold"
-                    name="low_stock_threshold"
-                    extra="Notify when stock goes below this quantity"
-                  >
-                    <InputNumber min={0} style={{ width: 200 }} />
-                  </Form.Item>
-
-                  <Divider />
-
-                  <div className={styles.notificationItem}>
-                    <div className={styles.notificationLabel}>
-                      <div className={styles.notificationTitle}>Payment Reminders</div>
-                      <div className={styles.notificationDesc}>
-                        Send reminders for pending payments
-                      </div>
-                    </div>
-                    <Form.Item name="payment_reminder" valuePropName="checked" noStyle>
-                      <Switch />
-                    </Form.Item>
-                  </div>
-
-                  <div className={styles.notificationItem}>
-                    <div className={styles.notificationLabel}>
-                      <div className={styles.notificationTitle}>Daily Report Email</div>
-                      <div className={styles.notificationDesc}>
-                        Receive daily sales report via email
-                      </div>
-                    </div>
-                    <Form.Item name="daily_report_email" valuePropName="checked" noStyle>
-                      <Switch />
-                    </Form.Item>
-                  </div>
-
-                  <div className={styles.formActions}>
-                    <Button onClick={handleReset}>Reset</Button>
-                    <Button
-                      type="primary"
-                      icon={<SaveOutlined />}
-                      onClick={handleSave}
-                      loading={loading}
-                    >
-                      Save Notification Settings
-                    </Button>
-                  </div>
-                </Form>
+                <NotificationsTab
+                  form={form}
+                  loading={loading}
+                  onSave={handleSave}
+                  onReset={handleReset}
+                />
               ),
             },
           ]}

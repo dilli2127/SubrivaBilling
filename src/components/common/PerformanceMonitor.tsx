@@ -63,30 +63,31 @@ const PerformanceMonitor: React.FC<PerformanceMonitorProps> = ({
     }
   }, [enablePerformanceTracking]);
 
+  // Memoized error handlers
+  const handleError = useCallback((event: ErrorEvent) => {
+    console.error('Global error:', event.error);
+    setMetrics(prev => ({ ...prev, errorCount: prev.errorCount + 1 }));
+    
+    // Log to backend securely
+    if (event.error instanceof Error) {
+      logErrorToBackend(event.error).catch(console.error);
+    }
+  }, []);
+
+  const handleUnhandledRejection = useCallback((event: PromiseRejectionEvent) => {
+    console.error('Unhandled promise rejection:', event.reason);
+    setMetrics(prev => ({ ...prev, errorCount: prev.errorCount + 1 }));
+    
+    // Log to backend securely
+    const error = event.reason instanceof Error 
+      ? event.reason 
+      : new Error(String(event.reason));
+    logErrorToBackend(error).catch(console.error);
+  }, []);
+
   // Track errors
   useEffect(() => {
     if (enableErrorTracking) {
-      const handleError = (event: ErrorEvent) => {
-        console.error('Global error:', event.error);
-        setMetrics(prev => ({ ...prev, errorCount: prev.errorCount + 1 }));
-        
-        // Log to backend securely
-        if (event.error instanceof Error) {
-          logErrorToBackend(event.error).catch(console.error);
-        }
-      };
-
-      const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
-        console.error('Unhandled promise rejection:', event.reason);
-        setMetrics(prev => ({ ...prev, errorCount: prev.errorCount + 1 }));
-        
-        // Log to backend securely
-        const error = event.reason instanceof Error 
-          ? event.reason 
-          : new Error(String(event.reason));
-        logErrorToBackend(error).catch(console.error);
-      };
-
       window.addEventListener('error', handleError);
       window.addEventListener('unhandledrejection', handleUnhandledRejection);
 
@@ -95,15 +96,16 @@ const PerformanceMonitor: React.FC<PerformanceMonitorProps> = ({
         window.removeEventListener('unhandledrejection', handleUnhandledRejection);
       };
     }
-  }, [enableErrorTracking]);
+  }, [enableErrorTracking, handleError, handleUnhandledRejection]);
+
+  // Memoized user interaction handler
+  const handleUserInteraction = useCallback(() => {
+    setMetrics(prev => ({ ...prev, userInteractions: prev.userInteractions + 1 }));
+  }, []);
 
   // Track user interactions
   useEffect(() => {
     if (enablePerformanceTracking) {
-      const handleUserInteraction = () => {
-        setMetrics(prev => ({ ...prev, userInteractions: prev.userInteractions + 1 }));
-      };
-
       const events = ['click', 'keydown', 'scroll', 'input'];
       events.forEach(event => {
         document.addEventListener(event, handleUserInteraction, { passive: true });
@@ -115,7 +117,7 @@ const PerformanceMonitor: React.FC<PerformanceMonitorProps> = ({
         });
       };
     }
-  }, [enablePerformanceTracking]);
+  }, [enablePerformanceTracking, handleUserInteraction]);
 
   // Notify parent component of metrics updates
   useEffect(() => {
@@ -125,15 +127,15 @@ const PerformanceMonitor: React.FC<PerformanceMonitorProps> = ({
   // Log performance warnings
   useEffect(() => {
     if (metrics.pageLoadTime > 3000) {
-
+      console.warn(`Slow page load detected: ${metrics.pageLoadTime}ms`);
     }
     
     if (metrics.memoryUsage > 100) {
-
+      console.warn(`High memory usage detected: ${metrics.memoryUsage}MB`);
     }
     
     if (metrics.errorCount > 5) {
-
+      console.warn(`High error count detected: ${metrics.errorCount} errors`);
     }
   }, [metrics]);
 

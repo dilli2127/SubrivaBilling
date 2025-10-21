@@ -108,13 +108,31 @@ export const RESOURCES = {
  */
 export type PermissionAction = 'create' | 'read' | 'update' | 'delete';
 
+// Cache for permissions to reduce localStorage reads
+let cachedPermissions: PermissionsMap | null = null;
+let permissionsCacheTimestamp = 0;
+const PERMISSIONS_CACHE_DURATION = 10000; // 10 seconds
+
 /**
- * Get all permissions from localStorage
+ * Get all permissions from localStorage with caching
  */
 export function getPermissions(): PermissionsMap {
   try {
+    const now = Date.now();
+    
+    // Return cached permissions if still valid
+    if (cachedPermissions && (now - permissionsCacheTimestamp) < PERMISSIONS_CACHE_DURATION) {
+      return cachedPermissions;
+    }
+
     const perms = localStorage.getItem('permissions');
-    return perms ? JSON.parse(perms) : {};
+    const permissions = perms ? JSON.parse(perms) : {};
+    
+    // Update cache
+    cachedPermissions = permissions;
+    permissionsCacheTimestamp = now;
+    
+    return permissions;
   } catch (error) {
     console.error('Error reading permissions:', error);
     return {};
@@ -122,36 +140,58 @@ export function getPermissions(): PermissionsMap {
 }
 
 /**
- * Store permissions in localStorage
+ * Store permissions in localStorage and update cache
  */
 export function setPermissions(permissions: PermissionsMap): void {
   try {
     localStorage.setItem('permissions', JSON.stringify(permissions));
+    // Update cache immediately
+    cachedPermissions = permissions;
+    permissionsCacheTimestamp = Date.now();
   } catch (error) {
     console.error('Error storing permissions:', error);
   }
 }
 
 /**
- * Clear permissions from localStorage
+ * Clear permissions from localStorage and cache
  */
 export function clearPermissions(): void {
   localStorage.removeItem('permissions');
   localStorage.removeItem('menuKeys');
   localStorage.removeItem('userData');
+  // Clear all caches
+  cachedPermissions = null;
+  permissionsCacheTimestamp = 0;
+  cachedMenuKeys = null;
+  menuKeysCacheTimestamp = 0;
 }
 
+// Cache for menu keys
+let cachedMenuKeys: string[] | null = null;
+let menuKeysCacheTimestamp = 0;
+
 /**
- * Get allowedMenuKeys from localStorage
+ * Get allowedMenuKeys from localStorage with caching
  * Note: Stored as 'menuKeys' for backward compatibility
  */
 export function getMenuKeys(): string[] {
   try {
-    const menuKeys = localStorage.getItem('menuKeys');
-    if (menuKeys) {
-      return JSON.parse(menuKeys);
+    const now = Date.now();
+    
+    // Return cached menu keys if still valid
+    if (cachedMenuKeys && (now - menuKeysCacheTimestamp) < PERMISSIONS_CACHE_DURATION) {
+      return cachedMenuKeys;
     }
-    return [];
+
+    const menuKeys = localStorage.getItem('menuKeys');
+    const keys = menuKeys ? JSON.parse(menuKeys) : [];
+    
+    // Update cache
+    cachedMenuKeys = keys;
+    menuKeysCacheTimestamp = now;
+    
+    return keys;
   } catch (error) {
     console.error('Error getting allowedMenuKeys:', error);
     return [];
@@ -159,13 +199,16 @@ export function getMenuKeys(): string[] {
 }
 
 /**
- * Store allowedMenuKeys in localStorage
+ * Store allowedMenuKeys in localStorage and update cache
  * Note: Stored as 'menuKeys' for backward compatibility
  * @param menuKeys - Array of allowed menu keys (from response.allowedMenuKeys)
  */
 export function setMenuKeys(menuKeys: string[]): void {
   try {
     localStorage.setItem('menuKeys', JSON.stringify(menuKeys));
+    // Update cache immediately
+    cachedMenuKeys = menuKeys;
+    menuKeysCacheTimestamp = Date.now();
   } catch (error) {
     console.error('Error setting allowedMenuKeys:', error);
   }

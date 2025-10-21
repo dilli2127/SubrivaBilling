@@ -157,7 +157,7 @@ export const AVAILABLE_RESOURCES: ResourceDefinition[] = [
     label: 'Custom Forms',
     category: 'Advanced',
     description: 'Custom entity management',
-    menus: ['custom_entities']
+    menus: ['custom_forms']
   },
   
   // Settings
@@ -224,29 +224,52 @@ export const AVAILABLE_RESOURCES: ResourceDefinition[] = [
 ];
 
 /**
- * Group resources by category
+ * Group resources by category with memoization
  */
+let groupedResourcesCache: Record<string, ResourceDefinition[]> | null = null;
+
 export const getGroupedResources = (): Record<string, ResourceDefinition[]> => {
-  return AVAILABLE_RESOURCES.reduce((acc, resource) => {
+  if (groupedResourcesCache) {
+    return groupedResourcesCache;
+  }
+
+  groupedResourcesCache = AVAILABLE_RESOURCES.reduce((acc, resource) => {
     if (!acc[resource.category]) {
       acc[resource.category] = [];
     }
     acc[resource.category].push(resource);
     return acc;
   }, {} as Record<string, ResourceDefinition[]>);
+
+  return groupedResourcesCache;
 };
 
 /**
- * Get all categories
+ * Get all categories with memoization
  */
+let categoriesCache: string[] | null = null;
+
 export const getCategories = (): string[] => {
-  return Array.from(new Set(AVAILABLE_RESOURCES.map(r => r.category)));
+  if (categoriesCache) {
+    return categoriesCache;
+  }
+
+  categoriesCache = Array.from(new Set(AVAILABLE_RESOURCES.map(r => r.category)));
+  return categoriesCache;
 };
 
 /**
- * Get resource by name
+ * Get resource by name with memoization
  */
+const resourceLookupCache = new Map<string, ResourceDefinition | undefined>();
+
 export const getResourceByName = (resourceName: string): ResourceDefinition | undefined => {
-  return AVAILABLE_RESOURCES.find(r => r.resource === resourceName);
+  if (resourceLookupCache.has(resourceName)) {
+    return resourceLookupCache.get(resourceName);
+  }
+
+  const resource = AVAILABLE_RESOURCES.find(r => r.resource === resourceName);
+  resourceLookupCache.set(resourceName, resource);
+  return resource;
 };
 

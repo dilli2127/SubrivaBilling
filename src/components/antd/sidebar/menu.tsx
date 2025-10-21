@@ -1,3 +1,4 @@
+import React, { useMemo } from 'react';
 import {
   DashboardOutlined,
   FileTextOutlined,
@@ -22,66 +23,75 @@ import {
   LineHeightOutlined,
   AppstoreOutlined,
 } from '@ant-design/icons';
-import { getPermissions, isSuperAdmin, canManageTenants, getMenuKeys, getUserData } from '../../../helpers/permissionHelper';
+import { getPermissions, isSuperAdmin, getMenuKeys } from '../../../helpers/permissionHelper';
+
+// Cache for filtered menu items to avoid recalculation on every render
+let cachedFilteredItems: any[] | null = null;
+let cacheTimestamp = 0;
+const CACHE_DURATION = 30000; // 30 seconds
 
 // Function to filter menu items based on permissions
 export const getFilteredMenuItems = () => {
   try {
+    const now = Date.now();
+    
+    // Return cached result if still valid
+    if (cachedFilteredItems && (now - cacheTimestamp) < CACHE_DURATION) {
+      return cachedFilteredItems;
+    }
+
     // SuperAdmin can see all menus without restrictions
     const isSuper = isSuperAdmin();
     
     if (isSuper) {
-      return menuItems;
+      cachedFilteredItems = menuItems;
+      cacheTimestamp = now;
+      return cachedFilteredItems;
     }
     
     // Try new API structure first (allowedMenuKeys array from login response)
     const menuKeys = getMenuKeys();
     
+    let allowedKeys: Set<string> | string[] | null = null;
+    
     if (menuKeys && menuKeys.length > 0) {
-      const filteredItems = menuItems.map(item => {
-        // If item has children, filter them based on allowedMenuKeys
-        if (item.children) {
-          const filteredChildren = item.children.filter(child => {
-            return menuKeys.includes(child.key);
-          });
-
-          // Only show parent if it has visible children
-          return filteredChildren.length > 0 ? { ...item, children: filteredChildren } : null;
-        }
-
-        // For single menu items, check if allowed
-        return menuKeys.includes(item.key) ? item : null;
-      }).filter(Boolean);
+      allowedKeys = menuKeys;
+    } else {
+      // Fallback to old structure (permissions with allowed_menu_keys)
+      const permissions = getPermissions();
       
-      return filteredItems;
-    }
-    
-    // Fallback to old structure (permissions with allowed_menu_keys)
-    const permissions = getPermissions();
-    
-    // If no permissions found, show nothing
-    if (!permissions || Object.keys(permissions).length === 0) {
-      return []; // Show nothing when no permissions
-    }
-    
-    // Get all allowed menu keys from permissions
-    const allowedMenuKeys = new Set<string>();
-    Object.values(permissions).forEach((perm: any) => {
-      if (perm.allowed_menu_keys && Array.isArray(perm.allowed_menu_keys)) {
-        perm.allowed_menu_keys.forEach((key: string) => allowedMenuKeys.add(key));
+      // If no permissions found, show nothing
+      if (!permissions || Object.keys(permissions).length === 0) {
+        cachedFilteredItems = [];
+        cacheTimestamp = now;
+        return cachedFilteredItems;
       }
-    });
+      
+      // Get all allowed menu keys from permissions
+      const allowedMenuKeys = new Set<string>();
+      Object.values(permissions).forEach((perm: any) => {
+        if (perm.allowed_menu_keys && Array.isArray(perm.allowed_menu_keys)) {
+          perm.allowed_menu_keys.forEach((key: string) => allowedMenuKeys.add(key));
+        }
+      });
 
-    // If no allowed menu keys, show nothing
-    if (allowedMenuKeys.size === 0) {
-      return []; // Show nothing when no allowed menu keys
+      // If no allowed menu keys, show nothing
+      if (allowedMenuKeys.size === 0) {
+        cachedFilteredItems = [];
+        cacheTimestamp = now;
+        return cachedFilteredItems;
+      }
+      
+      allowedKeys = allowedMenuKeys;
     }
 
     const filteredItems = menuItems.map(item => {
-      // If item has children, filter them based on allowed_menu_keys
+      // If item has children, filter them based on allowed keys
       if (item.children) {
         const filteredChildren = item.children.filter(child => {
-          return allowedMenuKeys.has(child.key);
+          return Array.isArray(allowedKeys) 
+            ? allowedKeys.includes(child.key)
+            : allowedKeys.has(child.key);
         });
 
         // Only show parent if it has visible children
@@ -89,15 +99,28 @@ export const getFilteredMenuItems = () => {
       }
 
       // For single menu items, check if allowed
-      return allowedMenuKeys.has(item.key) ? item : null;
+      const isAllowed = Array.isArray(allowedKeys) 
+        ? allowedKeys.includes(item.key)
+        : allowedKeys.has(item.key);
+        
+      return isAllowed ? item : null;
     }).filter(Boolean);
     
-    return filteredItems;
+    cachedFilteredItems = filteredItems;
+    cacheTimestamp = now;
+    return cachedFilteredItems;
   } catch (error) {
     console.error('Error filtering menu items:', error);
     // Show nothing if there's an error
-    return [];
+    cachedFilteredItems = [];
+    cacheTimestamp = Date.now();
+    return cachedFilteredItems;
   }
+};
+
+// Hook to use filtered menu items with memoization
+export const useFilteredMenuItems = () => {
+  return useMemo(() => getFilteredMenuItems(), []);
 };
 
 export const menuItems = [
@@ -264,7 +287,7 @@ export const menuItems = [
     ],
   },
   {
-    key: 'custom_entities',
+    key: 'custom_forms',
     label: 'Custom Forms',
     icon: <AppstoreOutlined />,
     path: '/entities',
