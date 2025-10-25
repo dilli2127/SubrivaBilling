@@ -3,7 +3,6 @@ import React, {
   useState,
   useMemo,
   useCallback,
-  useRef,
   useLayoutEffect,
   useEffect,
 } from 'react';
@@ -18,7 +17,7 @@ import {
 } from '@ant-design/icons';
 import { Layout, Menu, Modal, Button, Avatar, Drawer } from 'antd';
 import { useNavigate } from 'react-router-dom';
-import { menuItems as originalMenuItems, getFilteredMenuItems } from './menu';
+import { getFilteredMenuItems } from './menu';
 import './Sidebar.css';
 import ThemeDrawer from './ThemeDrawer';
 import { themePresets } from './themePresets';
@@ -62,22 +61,27 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
   const [dragStartY, setDragStartY] = useState(0);
   const [dragStartTop, setDragStartTop] = useState(0);
 
-  // Check if mobile screen
+  // Check if mobile screen - memoized to prevent recreation
+  const checkMobile = useCallback(() => {
+    setIsMobile(window.innerWidth <= 768);
+  }, []);
+
   useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth <= 768);
-    };
-    
     checkMobile();
     window.addEventListener('resize', checkMobile);
     
     return () => window.removeEventListener('resize', checkMobile);
-  }, []);
+  }, [checkMobile]);
 
-  // Apply theme variables
-  React.useEffect(() => {
-    const preset = themePresets.find(t => t.key === theme) || themePresets[0];
-    Object.entries(preset.variables).forEach(([key, value]) => {
+  // Memoize theme preset to prevent recreation
+  const themePreset = useMemo(() => 
+    themePresets.find(t => t.key === theme) || themePresets[0], 
+    [theme]
+  );
+
+  // Apply theme variables - memoized to prevent recreation
+  const applyTheme = useCallback(() => {
+    Object.entries(themePreset.variables).forEach(([key, value]) => {
       document.body.style.setProperty(key, value);
     });
     localStorage.setItem('sidebarTheme', theme);
@@ -87,7 +91,11 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
     } else {
       document.body.classList.remove('dark-mode');
     }
-  }, [theme]);
+  }, [theme, themePreset]);
+
+  React.useEffect(() => {
+    applyTheme();
+  }, [applyTheme]);
 
   const userItem: User | null = useMemo(() => {
     return getCurrentUser();

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, useMemo } from 'react';
 import { Form } from 'antd';
 import { getEntityHooks } from '../services/redux/api/apiSlice';
 import { CrudColumn, CrudFormItem } from '../components/common/GenericCrudPage';
@@ -20,11 +20,51 @@ export interface CrudConfig<T extends BaseEntity> {
   skipMetadataWrapping?: boolean; // If true, send fields directly without any wrapping
 }
 
-export const useGenericCrud = <T extends BaseEntity>(config: CrudConfig<T>) => {
+export interface CrudReturn<T extends BaseEntity> {
+  // State
+  loading: boolean;
+  createLoading: boolean;
+  updateLoading: boolean;
+  deleteLoading: boolean;
+  items: T[];
+  pagination?: {
+    current: number;
+    pageSize: number;
+    total?: number;
+  };
+  drawerVisible: boolean;
+  initialValues: Partial<T>;
+  form: ReturnType<typeof Form.useForm>[0];
+  filterValues: Record<string, unknown>;
+  setFilterValues: (values: Record<string, unknown>) => void;
+
+  // Actions
+  handleEdit: (record: T) => void;
+  handleDelete: (record: T) => void;
+  handleDrawerOpen: () => void;
+  resetForm: () => void;
+  handleSubmit: (values: Partial<T>) => Promise<void>;
+  handlePaginationChange: (pageNumber: number, pageLimit: number) => void;
+
+  // Config
+  title: string;
+  entityName: string;
+  columns: CrudColumn[];
+  formItems: CrudFormItem[];
+  formColumns?: number;
+  drawerWidth?: number;
+  canEdit?: (record: T) => boolean;
+  canDelete?: (record: T) => boolean;
+  dynamicFieldNames?: string[];
+  metadataFieldName?: string;
+  skipMetadataWrapping?: boolean;
+}
+
+export const useGenericCrud = <T extends BaseEntity>(config: CrudConfig<T>): CrudReturn<T> => {
   const [form] = Form.useForm();
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [initialValues, setInitialValues] = useState<Partial<T>>({});
-  const [filterValues, setFilterValues] = useState<Record<string, any>>({});
+  const [filterValues, setFilterValues] = useState<Record<string, unknown>>({});
   const [pagination, setPagination] = useState({
     current: 1,
     pageSize: 10,
@@ -33,12 +73,12 @@ export const useGenericCrud = <T extends BaseEntity>(config: CrudConfig<T>) => {
   // Get RTK Query hooks for this entity
   const entityHooks = getEntityHooks(config.entityName);
   
-  // Query parameters
-  const queryParams = {
+  // Memoize query parameters to prevent unnecessary re-renders
+  const queryParams = useMemo(() => ({
     page: pagination.current,
     limit: pagination.pageSize,
     ...filterValues,
-  };
+  }), [pagination.current, pagination.pageSize, filterValues]);
 
   // RTK Query hooks
   const {
@@ -52,13 +92,9 @@ export const useGenericCrud = <T extends BaseEntity>(config: CrudConfig<T>) => {
   const [updateMutation, { isLoading: updateLoading, error: updateError }] = entityHooks.useUpdateMutation();
   const [deleteMutation, { isLoading: deleteLoading, error: deleteError }] = entityHooks.useDeleteMutation();
 
-  // Extract data from RTK Query response
-  const items = queryData?.result || [];
-  const paginationData = queryData?.pagination;
-
-  console.log("RTK Query data:", queryData);
-  console.log("items:", items);
-  // CRUD operations using RTK Query
+  // Memoize data extraction to prevent unnecessary re-renders
+  const items = useMemo(() => queryData?.result || [], [queryData?.result]);
+  const paginationData = useMemo(() => queryData?.pagination, [queryData?.pagination]);
   const getAll = useCallback(() => {
     refetchQuery();
   }, [refetchQuery]);
@@ -70,8 +106,10 @@ export const useGenericCrud = <T extends BaseEntity>(config: CrudConfig<T>) => {
         showToast('success', `${config.title} created successfully`);
         refetchQuery();
         return result;
-      } catch (error: any) {
-        const errorMessage = error?.data?.message || `Failed to create ${config.title}`;
+      } catch (error: unknown) {
+        const errorMessage = 
+          (error as { data?: { message?: string } })?.data?.message || 
+          `Failed to create ${config.title}`;
         showToast('error', errorMessage);
         throw error;
       }
@@ -86,8 +124,10 @@ export const useGenericCrud = <T extends BaseEntity>(config: CrudConfig<T>) => {
         showToast('success', `${config.title} updated successfully`);
         refetchQuery();
         return result;
-      } catch (error: any) {
-        const errorMessage = error?.data?.message || `Failed to update ${config.title}`;
+      } catch (error: unknown) {
+        const errorMessage = 
+          (error as { data?: { message?: string } })?.data?.message || 
+          `Failed to update ${config.title}`;
         showToast('error', errorMessage);
         throw error;
       }
@@ -102,8 +142,10 @@ export const useGenericCrud = <T extends BaseEntity>(config: CrudConfig<T>) => {
         showToast('success', `${config.title} deleted successfully`);
         refetchQuery();
         return result;
-      } catch (error: any) {
-        const errorMessage = error?.data?.message || `Failed to delete ${config.title}`;
+      } catch (error: unknown) {
+        const errorMessage = 
+          (error as { data?: { message?: string } })?.data?.message || 
+          `Failed to delete ${config.title}`;
         showToast('error', errorMessage);
         throw error;
       }
@@ -115,68 +157,56 @@ export const useGenericCrud = <T extends BaseEntity>(config: CrudConfig<T>) => {
     setPagination({ current: pageNumber, pageSize: pageLimit });
   }, []);
 
-  function isStrictDate(value: string): boolean {
-    // Only matches real ISO-like date formats (YYYY-MM-DD or with time)
-    return /^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|[+-]\d{2}:\d{2})?)?$/.test(
-      value
-    );
-  }
+  // Memoize date validation regex to prevent recreation
+  const dateRegex = useMemo(() => 
+    /^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|[+-]\d{2}:\d{2})?)?$/,
+    []
+  );
+
+  const isStrictDate = useCallback((value: string): boolean => {
+    return dateRegex.test(value);
+  }, [dateRegex]);
+
+  // Optimized date parsing function
+  const parseDateValue = useCallback((value: unknown): unknown => {
+    if (typeof value === 'string' && isStrictDate(value)) {
+      const parsedDate = dayjs(value, undefined, true);
+      return parsedDate.isValid() ? parsedDate : value;
+    }
+    return value;
+  }, [isStrictDate]);
 
   // Event handlers
   const handleEdit = useCallback((record: T) => {
-    const newRecord: any = {};
+    const newRecord: Record<string, unknown> = {};
     const metadataFieldName = config.metadataFieldName || 'meta_data_values';
 
     // Process main record fields
-    for (const key in record) {
-      if (!record.hasOwnProperty(key)) continue;
-      
-      const value = record[key];
-
+    Object.entries(record).forEach(([key, value]) => {
       // Skip metadata field - we'll handle it separately
       if (key === metadataFieldName || key === 'meta_data_values' || key === 'custom_data') {
-        continue;
+        return;
       }
 
-      if (
-        typeof value === 'string' &&
-        isStrictDate(value) &&
-        dayjs(value, undefined, true).isValid()
-      ) {
-        newRecord[key] = dayjs(value);
-      } else {
-        newRecord[key] = value;
-      }
-    }
+      newRecord[key] = parseDateValue(value);
+    });
 
     // If metadata field exists, flatten it into the record
-    const metaDataValues = (record as any)[metadataFieldName];
-    if (metaDataValues && typeof metaDataValues === 'object') {
-      for (const key in metaDataValues) {
-        if (!metaDataValues.hasOwnProperty(key)) continue;
-        
-        const value = metaDataValues[key];
-        
+    const metaDataValues = (record as Record<string, unknown>)[metadataFieldName];
+    if (metaDataValues && typeof metaDataValues === 'object' && metaDataValues !== null) {
+      Object.entries(metaDataValues).forEach(([key, value]) => {
         // Skip if value is null or undefined
         if (value === null || value === undefined) {
-          continue;
+          return;
         }
         
-        if (
-          typeof value === 'string' &&
-          isStrictDate(value) &&
-          dayjs(value, undefined, true).isValid()
-        ) {
-          newRecord[key] = dayjs(value);
-        } else {
-          newRecord[key] = value;
-        }
-      }
+        newRecord[key] = parseDateValue(value);
+      });
     }
 
-    setInitialValues(newRecord);
+    setInitialValues(newRecord as Partial<T>);
     setDrawerVisible(true);
-  }, [config.metadataFieldName]);
+  }, [config.metadataFieldName, parseDateValue]);
 
   const handleDelete = useCallback(
     (record: T) => {
@@ -195,56 +225,48 @@ export const useGenericCrud = <T extends BaseEntity>(config: CrudConfig<T>) => {
     form.resetFields();
   }, [form]);
 
+  // Optimized payload processing function
+  const processPayload = useCallback((values: Partial<T>): Record<string, unknown> => {
+    if (!config.dynamicFieldNames || config.dynamicFieldNames.length === 0) {
+      return values as Record<string, unknown>;
+    }
+
+    const staticFields: Record<string, unknown> = {};
+    const metaDataValues: Record<string, unknown> = {};
+    const metadataFieldName = config.metadataFieldName || 'meta_data_values';
+
+    Object.entries(values).forEach(([key, value]) => {
+      if (config.dynamicFieldNames?.includes(key)) {
+        // This is a dynamic metadata field
+        if (value !== undefined) {
+          metaDataValues[key] = value;
+        }
+      } else {
+        // This is a static field
+        staticFields[key] = value;
+      }
+    });
+
+    // Return payload based on configuration
+    if (Object.keys(metaDataValues).length > 0) {
+      return {
+        ...staticFields,
+        [metadataFieldName]: metaDataValues,
+      };
+    }
+    
+    return staticFields;
+  }, [config.dynamicFieldNames, config.metadataFieldName]);
+
   const handleSubmit = useCallback(
     async (values: Partial<T>) => {
-      let payload: any = { ...values };
-
-      // Handle metadata wrapping based on configuration
-      if (config.dynamicFieldNames && config.dynamicFieldNames.length > 0) {
-        const staticFields: any = {};
-        const metaDataValues: any = {};
-        const metadataFieldName = config.metadataFieldName || 'meta_data_values';
-
-        Object.keys(values).forEach((key) => {
-          const value = (values as any)[key];
-          
-          if (config.dynamicFieldNames?.includes(key)) {
-            // This is a dynamic metadata field
-            // Only add non-undefined values
-            if (value !== undefined) {
-              metaDataValues[key] = value;
-            }
-          } else {
-            // This is a static field
-            staticFields[key] = value;
-          }
-        });
-
-        // Wrap dynamic fields in metadata container
-        if (Object.keys(metaDataValues).length > 0) {
-          if (config.skipMetadataWrapping) {
-            // For dynamic entities: send all dynamic fields directly in the metadata field
-            payload = {
-              ...staticFields,
-              [metadataFieldName]: metaDataValues,
-            };
-          } else {
-            // For normal CRUD: wrap in metadata field
-            payload = {
-              ...staticFields,
-              [metadataFieldName]: metaDataValues,
-            };
-          }
-        } else {
-          payload = staticFields;
-        }
-      }
+      const payload = processPayload(values);
 
       try {
         if (initialValues._id) {
-          await update(initialValues._id, payload);
+          await update(initialValues._id, payload as Partial<T>);
         } else {
-          await create(payload);
+          await create(payload as Partial<T>);
         }
         resetForm();
       } catch (error) {
@@ -252,13 +274,13 @@ export const useGenericCrud = <T extends BaseEntity>(config: CrudConfig<T>) => {
         console.error('Submit error:', error);
       }
     },
-    [initialValues._id, create, update, resetForm, config.dynamicFieldNames, config.metadataFieldName, config.skipMetadataWrapping]
+    [initialValues._id, create, update, resetForm, processPayload]
   );
 
-  // Load data on mount and when filters change
+  // Trigger initial data load on mount
   useEffect(() => {
     getAll();
-  }, [getAll]);
+  }, []); // Empty dependency array - only run on mount
 
   return {
     // State

@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
+import React, { useMemo, useCallback, useEffect, useRef } from 'react';
 import {
   Button,
   Row,
@@ -6,7 +6,6 @@ import {
   Tooltip,
   Select,
   DatePicker,
-  Space,
   Col,
   Popconfirm,
 } from 'antd';
@@ -245,6 +244,17 @@ const GenericCrudPageComponent = <T extends BaseEntity>({
     if (onFilterChange) onFilterChange(allFilters);
   }, [filterValues, setFilterValues, onFilterChange, enableSuperAdminFilters, superAdminFilters]);
 
+  // Memoize superadmin filters to prevent unnecessary re-renders
+  const superAdminApiFilters = useMemo(() => {
+    if (!enableSuperAdminFilters) return {};
+    return superAdminFilters.getApiFilters();
+  }, [
+    superAdminFilters.selectedTenant,
+    superAdminFilters.selectedOrganisation,
+    superAdminFilters.selectedBranch,
+    enableSuperAdminFilters,
+  ]);
+
   // Apply superadmin filters whenever they change
   useEffect(() => {
     // Skip the initial mount to avoid duplicate API call
@@ -253,18 +263,11 @@ const GenericCrudPageComponent = <T extends BaseEntity>({
       return;
     }
     
-    if (enableSuperAdminFilters) {
-      const apiFilters = superAdminFilters.getApiFilters();
-      const newFilters = { ...filterValues, ...apiFilters };
+    if (Object.keys(superAdminApiFilters).length > 0) {
+      const newFilters = { ...filterValues, ...superAdminApiFilters };
       setFilterValues(newFilters);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    superAdminFilters.selectedTenant,
-    superAdminFilters.selectedOrganisation,
-    superAdminFilters.selectedBranch,
-    enableSuperAdminFilters,
-  ]);
+  }, [superAdminApiFilters, filterValues, setFilterValues]);
 
   const tableColumns = useMemo(() => [
     ...enhancedColumns,
@@ -386,7 +389,7 @@ const GenericCrudPageComponent = <T extends BaseEntity>({
                 {filter.type === 'input' && (
                   <Input
                     placeholder={filter.placeholder || filter.label}
-                    value={filterValues[filter.key] || ''}
+                    value={(filterValues[filter.key] as string) || ''}
                     onChange={e =>
                       handleFilterChange(filter.key, e.target.value)
                     }
@@ -397,7 +400,7 @@ const GenericCrudPageComponent = <T extends BaseEntity>({
                 {filter.type === 'select' && (
                   <Select
                     placeholder={filter.placeholder || filter.label}
-                    value={filterValues[filter.key]}
+                    value={filterValues[filter.key] as any}
                     onChange={val => {
                       handleFilterChange(filter.key, val);
                       if (filter.onChange) filter.onChange(val);
@@ -416,7 +419,7 @@ const GenericCrudPageComponent = <T extends BaseEntity>({
                 {filter.type === 'date' && (
                   <DatePicker
                     placeholder={filter.placeholder || filter.label}
-                    value={filterValues[filter.key]}
+                    value={filterValues[filter.key] as any}
                     onChange={date => handleFilterChange(filter.key, date)}
                     style={{ width: filter.width || 200 }}
                     disabled={createLoading || updateLoading || deleteLoading}
@@ -429,7 +432,7 @@ const GenericCrudPageComponent = <T extends BaseEntity>({
             <Col>
               <Input
                 placeholder={`Search ${config.title}`}
-                value={filterValues['searchString'] || ''}
+                value={(filterValues['searchString'] as string) || ''}
                 onChange={e => handleFilterChange('searchString', e.target.value)}
                 style={{ width: 200 }}
                 disabled={createLoading || updateLoading || deleteLoading}
@@ -488,8 +491,8 @@ const GenericCrudPageComponent = <T extends BaseEntity>({
         data={items}
         loading={loading || deleteLoading}
         rowKeyField="_id"
-        totalCount={pagination?.totalCount || 0}
-        pageLimit={pagination?.pageLimit || 10}
+        totalCount={pagination?.total || 0}
+        pageLimit={pagination?.pageSize || 10}
         onPaginationChange={handlePaginationChange}
       />
 

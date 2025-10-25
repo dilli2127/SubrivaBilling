@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { Form, message } from 'antd';
 import { useApiActions } from '../../services/api/useApiActions';
 import { GenericCrudPage } from '../../components/common/GenericCrudPage';
@@ -30,11 +30,12 @@ const StockAuditCrud: React.FC = () => {
   const { data: branchData, isLoading: branchLoading } = apiSlice.useGetBranchesQuery({});
   const { data: rackData, isLoading: rackLoading } = apiSlice.useGetRackQuery({});
 
-  const productList = (productData as any)?.result || [];
-  const vendorList = (vendorData as any)?.result || [];
-  const wareHouseList = (wareHouseData as any)?.result || [];
-  const branchList = (branchData as any)?.result || [];
-  const rackList = (rackData as any)?.result || [];
+  // Memoize data extraction to prevent unnecessary re-renders
+  const productList = useMemo(() => (productData as any)?.result || [], [productData]);
+  const vendorList = useMemo(() => (vendorData as any)?.result || [], [vendorData]);
+  const wareHouseList = useMemo(() => (wareHouseData as any)?.result || [], [wareHouseData]);
+  const branchList = useMemo(() => (branchData as any)?.result || [], [branchData]);
+  const rackList = useMemo(() => (rackData as any)?.result || [], [rackData]);
 
   // Use RTK Query mutations
   const [createBranchStock, { isLoading: createLoading }] = apiSlice.useCreateBranchStockMutation();
@@ -47,21 +48,23 @@ const StockAuditCrud: React.FC = () => {
     StockRevertFromBranch.getIdentifier('RevertStock')
   );
 
+  // Memoize form field watchers to prevent unnecessary re-renders
+  const quantity = form.getFieldValue('quantity');
+  const buyPrice = form.getFieldValue('buy_price');
+  
   useEffect(() => {
-    const qty = form.getFieldValue('quantity');
-    const price = form.getFieldValue('buy_price');
-    if (qty && price) {
-      form.setFieldsValue({ total_cost: qty * price });
+    if (quantity && buyPrice) {
+      form.setFieldsValue({ total_cost: quantity * buyPrice });
     }
-  }, [form, form.getFieldValue('quantity'), form.getFieldValue('buy_price')]);
+  }, [quantity, buyPrice, form]);
 
-  // Handler to open allocate drawer
-  const handleAllocate = (record: any) => {
+  // Memoize handlers to prevent unnecessary re-renders
+  const handleAllocate = useCallback((record: any) => {
     setAllocateRecord(record);
     setAllocateDrawerOpen(true);
-  };
+  }, []);
 
-  const handleAllocateSubmit = async (values: any) => {
+  const handleAllocateSubmit = useCallback(async (values: any) => {
     try {
       await createBranchStock({
         ...values,
@@ -82,32 +85,28 @@ const StockAuditCrud: React.FC = () => {
     } catch (error) {
       message.error('Failed to allocate stock');
     }
-  };
+  }, [allocateRecord, createBranchStock]);
 
-  // Handler to open revert drawer
-  const handleRevert = (record: any) => {
+  const handleRevert = useCallback((record: any) => {
     setRevertRecord(record);
     setRevertDrawerOpen(true);
-  };
+  }, []);
 
-  // Handler for revert submit
-  const handleRevertSubmit = async (values: any) => {
+  const handleRevertSubmit = useCallback(async (values: any) => {
     await StockRevertFromBranch('RevertStock', {
       ...values,
       stock_audit_id: revertRecord._id,
     });
     setRevertDrawerOpen(false);
     setRevertRecord(null);
-  };
+  }, [revertRecord, StockRevertFromBranch]);
 
-  // Handler to open stockout drawer
-  const handleStockout = (record: any) => {
+  const handleStockout = useCallback((record: any) => {
     setStockoutRecord(record);
     setStockoutDrawerOpen(true);
-  };
+  }, []);
 
-  // Handler for stockout submit
-  const handleStockoutSubmit = async (values: any) => {
+  const handleStockoutSubmit = useCallback(async (values: any) => {
     try {
       await createStockOut({
         ...values,
@@ -119,16 +118,14 @@ const StockAuditCrud: React.FC = () => {
     } catch (error) {
       message.error('Failed to create stock out');
     }
-  };
+  }, [stockoutRecord, createStockOut]);
 
-  // Handler to open storage allocate drawer
-  const handleStorageAllocate = (record: any) => {
+  const handleStorageAllocate = useCallback((record: any) => {
     setStorageAllocateRecord(record);
     setStorageAllocateDrawerOpen(true);
-  };
+  }, []);
 
-  // Handler for storage allocate submit
-  const handleStorageAllocateSubmit = async (values: any) => {
+  const handleStorageAllocateSubmit = useCallback(async (values: any) => {
     try {
       await createStockStorage({
         ...values,
@@ -140,9 +137,10 @@ const StockAuditCrud: React.FC = () => {
     } catch (error) {
       message.error('Failed to allocate storage');
     }
-  };
+  }, [storageAllocateRecord, createStockStorage]);
 
-  const stockAuditConfig = {
+  // Memoize config to prevent unnecessary re-renders
+  const stockAuditConfig = useMemo(() => ({
     title: 'Stock Audit',
     columns: stockAuditColumns({
       onAllocate: handleAllocate,
@@ -161,7 +159,18 @@ const StockAuditCrud: React.FC = () => {
     entityName: 'StockAudit',
     formColumns: 3,
     drawerWidth: 1200,
-  };
+  }), [
+    handleAllocate,
+    handleRevert,
+    handleStockout,
+    handleStorageAllocate,
+    productList,
+    vendorList,
+    wareHouseList,
+    loading,
+    vendorloading,
+    wareHouseLoading
+  ]);
 
   return (
     <>

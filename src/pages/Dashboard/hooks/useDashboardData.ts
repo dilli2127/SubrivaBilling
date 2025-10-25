@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, useMemo } from 'react';
 import { apiSlice } from '../../../services/redux/api/apiSlice';
 
 interface DashboardFilters {
@@ -62,12 +62,7 @@ export const useDashboardData = (activeTab: string, filters: DashboardFilters = 
   useEffect(() => {
     if (filters.tenant_id || filters.organisation_id || filters.branch_id) {
       // Clear loaded tabs to force refetch with new filters
-      setLoadedTabs(new Set());
-      setLoadedTabs(prev => {
-        const newSet = new Set(prev);
-        newSet.add(activeTab);
-        return newSet;
-      });
+      setLoadedTabs(new Set([activeTab]));
     }
   }, [filters.tenant_id, filters.organisation_id, filters.branch_id, activeTab]);
 
@@ -78,8 +73,8 @@ export const useDashboardData = (activeTab: string, filters: DashboardFilters = 
     refetchStockAlerts();
   }, [refetchStats, refetchSalesChart, refetchPurchaseChart, refetchStockAlerts]);
 
-  // Return all data
-  return {
+  // Memoize return object to prevent unnecessary re-renders
+  const returnData = useMemo(() => ({
     DashBoardItems: statsData,
     SalesChartDataItems: salesChartData,
     FinancialDataItems: undefined, // Will be implemented when needed
@@ -91,6 +86,14 @@ export const useDashboardData = (activeTab: string, filters: DashboardFilters = 
     topProducts: [],
     topCustomers: [],
     refetch,
-  };
+  }), [
+    statsData,
+    salesChartData,
+    stockAlertsData,
+    refetch
+  ]);
+
+  // Return memoized data
+  return returnData;
 };
 

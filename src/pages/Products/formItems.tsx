@@ -1,8 +1,105 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Input, Select, Switch, Button } from 'antd';
 import { ScanOutlined } from '@ant-design/icons';
 
 const { Option } = Select;
+
+// Memoized form components to prevent recreation
+const ProductNameInput = React.memo(() => (
+  <Input placeholder="e.g., HP Toner 85A" />
+));
+
+const SKUInput = React.memo(() => (
+  <Input placeholder="e.g., HP-85A-TONER" />
+));
+
+const BarcodeInput = React.memo(({ onScanClick, onBarcodeInputFocus }: { onScanClick: () => void; onBarcodeInputFocus: () => void }) => (
+  <Input.Group compact>
+    <Input
+      placeholder="e.g., 1234567890123"
+      style={{ width: 'calc(100% - 40px)' }}
+      onFocus={onBarcodeInputFocus}
+    />
+    <Button
+      type="primary"
+      icon={<ScanOutlined />}
+      onClick={onScanClick}
+      style={{ width: 40 }}
+    />
+  </Input.Group>
+));
+
+const HSNCodeInput = React.memo(() => (
+  <Input placeholder="e.g., 8443.32.10" />
+));
+
+const BrandNameInput = React.memo(() => (
+  <Input placeholder="e.g., HP" />
+));
+
+const BusinessTypeInput = React.memo(() => (
+  <Input placeholder="e.g., Technology" />
+));
+
+// Memoized Select components
+const CategorySelect = React.memo(({ categoryItems, categoryLoading }: { categoryItems: any; categoryLoading: boolean }) => (
+  <Select
+    placeholder="Select category"
+    loading={categoryLoading}
+    showSearch
+    allowClear
+  >
+    {(categoryItems?.result || []).map((cat: Category) => (
+      <Option key={cat._id} value={cat._id}>
+        {cat.category_name}
+      </Option>
+    ))}
+  </Select>
+));
+
+const VariantSelect = React.memo(({ variantItems, variantLoading }: { variantItems: any; variantLoading: boolean }) => (
+  <Select
+    placeholder="Select variant"
+    loading={variantLoading}
+    showSearch
+    allowClear
+  >
+    {(variantItems?.result || []).map((variant: Variant) => (
+      <Option key={variant._id} value={variant._id}>
+        {variant.variant_name} ({variant.unit})
+      </Option>
+    ))}
+  </Select>
+));
+
+const BusinessTypeSelect = React.memo(() => (
+  <Select
+    placeholder="Select business type"
+    allowClear
+  >
+    <Option value="Supermarket / Grocery Store">Supermarket / Grocery Store</Option>
+    <Option value="Medical / Pharmacy">Medical / Pharmacy</Option>
+    <Option value="Hardware Store">Hardware Store</Option>
+    <Option value="Hardware and Electronics Store">Hardware and Electronics Store</Option>
+    <Option value="Electronics Store">Electronics Store</Option>
+    <Option value="Stationery / Book Store">Stationery / Book Store</Option>
+    <Option value="Clothing / Textile Store">Clothing / Textile Store</Option>
+    <Option value="Footwear Store">Footwear Store</Option>
+    <Option value="Bakery / Sweet Shop">Bakery / Sweet Shop</Option>
+    <Option value="Fruits & Vegetables Shop">Fruits & Vegetables Shop</Option>
+    <Option value="Furniture Store">Furniture Store</Option>
+    <Option value="Automobile / Spare Parts">Automobile / Spare Parts</Option>
+    <Option value="Mobile Accessories Store">Mobile Accessories Store</Option>
+    <Option value="Cosmetics / Beauty Store">Cosmetics / Beauty Store</Option>
+    <Option value="Jewellery / Fancy Store">Jewellery / Fancy Store</Option>
+    <Option value="Pet Store">Pet Store</Option>
+    <Option value="General Store">General Store</Option>
+    <Option value="Wholesale Business">Wholesale Business</Option>
+    <Option value="Computer & Laptop Store">Computer & Laptop Store</Option>
+    <Option value="Mobile And Laptop Store">Mobile And Laptop Store</Option>
+    <Option value="Other">Other</Option>
+  </Select>
+));
 
 type Variant = {
   _id: string;
@@ -40,80 +137,37 @@ export const productsFormItems = ({
     label: 'Product Name',
     name: 'name',
     rules: [{ required: true, message: 'Please enter the product name!' }],
-    component: <Input placeholder="e.g., HP Toner 85A" />,
+    component: <ProductNameInput />,
   },
   {
     label: 'Category',
     name: 'category',
     rules: [{ required: true, message: 'Please select a category!' }],
-    component: (
-      <Select
-        placeholder="Select category"
-        loading={categoryLoading}
-        showSearch
-        allowClear
-      >
-        {(categoryItems?.result || []).map((cat: Category) => (
-          <Option key={cat._id} value={cat._id}>
-            {cat.category_name}
-          </Option>
-        ))}
-      </Select>
-    ),
+    component: <CategorySelect categoryItems={categoryItems} categoryLoading={categoryLoading} />,
   },
   {
     label: 'SKU / Code',
     name: 'sku',
     rules: [],
-    component: <Input placeholder="Optional SKU code" />,
+    component: <SKUInput />,
   },
   {
     label: 'Barcode',
     name: 'barcode',
     rules: [],
-    component: (
-      <Input.Group compact>
-        <Input
-          placeholder="Enter or scan barcode"
-          style={{ width: 'calc(100% - 100px)' }}
-          onFocus={onBarcodeInputFocus}
-        />
-        <Button
-          type="primary"
-          icon={<ScanOutlined />}
-          onClick={onScanClick}
-          style={{ width: '100px' }}
-        >
-          Scan
-        </Button>
-      </Input.Group>
-    ),
+    component: <BarcodeInput onScanClick={onScanClick} onBarcodeInputFocus={onBarcodeInputFocus} />,
   },
   {
     label: 'HSN Code',
     name: 'hsn_code',
     rules: [],
-    component: <Input placeholder="Enter HSN code" />,
+    component: <HSNCodeInput />,
   },
   {
     label: 'Variant',
     name: 'variant',
     rules: [{ required: true, message: 'Please select a variant!' }],
-    component: (
-      <Select
-        placeholder="Select variant"
-        loading={variantLoading}
-        allowClear
-        showSearch
-      >
-        {(variantItems?.result || []).map((variant: Variant) => (
-          <Option key={variant._id} value={variant._id}>
-            {variant.variant_name} - {variant.unit} - {variant.pack_type} (
-            {variant.pack_size})
-          </Option>
-        ))}
-      </Select>
-    ),
+    component: <VariantSelect variantItems={variantItems} variantLoading={variantLoading} />,
   },
   {
     label: 'Status',
@@ -131,41 +185,13 @@ export const productsFormItems = ({
     label: 'Brand Name',
     name: 'brand_name',
     rules: [],
-    component: <Input placeholder="Enter brand name" />,
+    component: <BrandNameInput />,
   },
   ...(isSuperAdmin ? [{
     label: 'Business Type',
     name: 'business_type',
     rules: [{ required: false, message: 'Please select business type!' }],
-    component: (
-      <Select
-        placeholder="Select business type"
-        allowClear
-      >
-        <Option value="Supermarket / Grocery Store">Supermarket / Grocery Store</Option>
-        <Option value="Medical / Pharmacy">Medical / Pharmacy</Option>
-        <Option value="Hardware Store">Hardware Store</Option>
-        <Option value="Hardware and Electronics Store">Hardware and Electronics Store</Option>
-        <Option value="Electronics Store">Electronics Store</Option>
-        <Option value="Stationery / Book Store">Stationery / Book Store</Option>
-        <Option value="Clothing / Textile Store">Clothing / Textile Store</Option>
-        <Option value="Footwear Store">Footwear Store</Option>
-        <Option value="Bakery / Sweet Shop">Bakery / Sweet Shop</Option>
-        <Option value="Fruits & Vegetables Shop">Fruits & Vegetables Shop</Option>
-        <Option value="Furniture Store">Furniture Store</Option>
-        <Option value="Automobile / Spare Parts">Automobile / Spare Parts</Option>
-        <Option value="Mobile Accessories Store">Mobile Accessories Store</Option>
-        <Option value="Cosmetics / Beauty Store">Cosmetics / Beauty Store</Option>
-        <Option value="Jewellery / Fancy Store">Jewellery / Fancy Store</Option>
-        <Option value="Pet Store">Pet Store</Option>
-        <Option value="General Store">General Store</Option>
-        <Option value="Wholesale Business">Wholesale Business</Option>
-        <Option value="Computer & Laptop Store">Computer & Laptop Store</Option>
-        <Option value="Mobile And Laptop Store">Mobile And Laptop Store</Option>
-        <Option value="Electrical Store">Electrical Store</Option>
-        <Option value="Restaurant / Café">Restaurant / Café</Option>
-      </Select>
-    ),
+    component: <BusinessTypeSelect />,
   },
   {
     label: 'Global Product',

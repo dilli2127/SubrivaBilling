@@ -16,23 +16,42 @@ const ProductCrud: React.FC = () => {
   const { data: variantData, isLoading: variantLoading } = apiSlice.useGetVariantQuery({});
   const { data: categoryData, isLoading: categoryLoading } = apiSlice.useGetCategoryQuery({});
 
-  const variantItems = (variantData as any)?.result || [];
-  const categoryItems = (categoryData as any)?.result || [];
+  const variantItems = useMemo(() => (variantData as any)?.result || [], [variantData]);
+  const categoryItems = useMemo(() => (categoryData as any)?.result || [], [categoryData]);
 
   const [scannerVisible, setScannerVisible] = useState(false);
   const [currentForm, setCurrentForm] = useState<any>(null);
 
-  const [variantMap, setVariantMap] = useState<Record<string, string>>({});
-
-  const createMap = (items: any[], labelKey: string) =>
+  const createMap = useCallback((items: any[], labelKey: string) =>
     items.reduce((acc: Record<string, string>, item) => {
       acc[item._id] = item[labelKey];
       return acc;
-    }, {});
+    }, {}), []);
 
-  useEffect(() => {
-    setVariantMap(createMap(variantItems?.result || [], 'variant_name'));
-  }, [variantItems]);
+  const variantMap = useMemo(() => 
+    createMap(variantItems, 'variant_name'), 
+    [variantItems, createMap]
+  );
+
+  // Memoize callback functions to prevent recreation
+  const handleScanClick = useCallback(() => setScannerVisible(true), []);
+  const handleBarcodeInputFocus = useCallback(() => setCurrentForm('barcode'), []);
+  
+  const canEdit = useCallback((record: Product) => {
+    // Global products can only be edited by superadmin
+    if (record.global_product) {
+      return isSuperAdmin;
+    }
+    return true;
+  }, [isSuperAdmin]);
+  
+  const canDelete = useCallback((record: Product) => {
+    // Global products can only be deleted by superadmin
+    if (record.global_product) {
+      return isSuperAdmin;
+    }
+    return true;
+  }, [isSuperAdmin]);
 
   const productConfig = useMemo(() => ({
     title: 'Products',
@@ -43,28 +62,16 @@ const ProductCrud: React.FC = () => {
       categoryLoading,
       variantLoading,
       isSuperAdmin,
-      onScanClick: () => setScannerVisible(true),
-      onBarcodeInputFocus: () => setCurrentForm('barcode'),
+      onScanClick: handleScanClick,
+      onBarcodeInputFocus: handleBarcodeInputFocus,
     }),
     entityName: 'Product',
     formColumns: 2,
     // Custom business logic for global products
     // Note: PermissionAwareCrudPage will combine these with user permissions
-    canEdit: (record: Product) => {
-      // Global products can only be edited by superadmin
-      if (record.global_product) {
-        return isSuperAdmin;
-      }
-      return true;
-    },
-    canDelete: (record: Product) => {
-      // Global products can only be deleted by superadmin
-      if (record.global_product) {
-        return isSuperAdmin;
-      }
-      return true;
-    },
-  }), [variantMap, variantItems, categoryItems, variantLoading, categoryLoading, isSuperAdmin]);
+    canEdit,
+    canDelete,
+  }), [variantMap, variantItems, categoryItems, variantLoading, categoryLoading, isSuperAdmin, handleScanClick, handleBarcodeInputFocus, canEdit, canDelete]);
 
   // Handle barcode scan
   const handleBarcodeScan = (barcode: string) => {

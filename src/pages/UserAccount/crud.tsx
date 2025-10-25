@@ -12,36 +12,39 @@ const UserAccountCrud: React.FC = () => {
   const { data: organisationData } = apiSlice.useGetOrganisationsQuery({});
   const { data: branchesData } = apiSlice.useGetBranchesQuery({});
 
-  const rolesItems = (rolesData as any)?.result || [];
-  const orgaisationItems = (organisationData as any)?.result || [];
-  const branchesItems = (branchesData as any)?.result || [];
+  const rolesItems = useMemo(() => (rolesData as any)?.result || [], [rolesData]);
+  const orgaisationItems = useMemo(() => (organisationData as any)?.result || [], [organisationData]);
+  const branchesItems = useMemo(() => (branchesData as any)?.result || [], [branchesData]);
+  
   const userItem = useMemo(() => {
     return getCurrentUser();
   }, []);
 
-  const userItemRole =
+  const userItemRole = useMemo(() =>
     userItem?.roleItems?.name ||
     userItem?.usertype ||
     userItem?.user_role ||
-    '';
+    '', [userItem]);
 
-  // Prepare roles for the select
-  const roles =
+  // Memoize select options to prevent recreation
+  const roles = useMemo(() =>
     rolesItems?.result?.map((role: any) => ({
       label: role.name,
       value: role._id,
-    })) || [];
-  const organisation =
+    })) || [], [rolesItems]);
+    
+  const organisation = useMemo(() =>
     orgaisationItems?.result?.map((organisation: any) => ({
       label: organisation.org_name || organisation.name,
       value: organisation._id,
-    })) || [];
-  const branches =
+    })) || [], [orgaisationItems]);
+    
+  const branches = useMemo(() =>
     branchesItems?.result?.map((branch: any) => ({
       label: branch.branch_name || branch.name,
       value: branch._id,
       organisation_id: branch.organisation_id || branch.org_id, // ensure this property exists for filtering
-    })) || [];
+    })) || [], [branchesItems]);
 
   // Dependent select logic
   const [form] = Form.useForm();
