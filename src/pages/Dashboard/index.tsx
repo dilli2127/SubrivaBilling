@@ -53,9 +53,9 @@ const Dashboard: React.FC = () => {
   const BranchesApi = getEntityApi('Braches');
 
   // RTK Query for dropdowns
-  const { data: tenantsData, isLoading: tenantsLoading } = apiSlice.useGetTenantAccountQuery({});
-  const { data: organisationsData, isLoading: organisationsLoading } = apiSlice.useGetOrganisationQuery({});
-  const { data: branchesData, isLoading: branchesLoading } = apiSlice.useGetBranchQuery({});
+  const { data: tenantsData, isLoading: tenantsLoading } = apiSlice.useGetTenantAccountsQuery({});
+  const { data: organisationsData, isLoading: organisationsLoading } = apiSlice.useGetOrganisationsQuery({});
+  const { data: branchesData, isLoading: branchesLoading } = apiSlice.useGetBranchesQuery({});
 
   const tenantsItems = (tenantsData as any)?.result || [];
   const organisationsItems = (organisationsData as any)?.result || [];

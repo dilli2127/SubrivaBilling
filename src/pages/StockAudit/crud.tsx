@@ -27,7 +27,7 @@ const StockAuditCrud: React.FC = () => {
   const { data: productData, isLoading: loading } = apiSlice.useGetProductQuery({});
   const { data: vendorData, isLoading: vendorloading } = apiSlice.useGetVendorQuery({});
   const { data: wareHouseData, isLoading: wareHouseLoading } = apiSlice.useGetWarehouseQuery({});
-  const { data: branchData, isLoading: branchLoading } = apiSlice.useGetBranchQuery({});
+  const { data: branchData, isLoading: branchLoading } = apiSlice.useGetBranchesQuery({});
   const { data: rackData, isLoading: rackLoading } = apiSlice.useGetRackQuery({});
 
   const productList = (productData as any)?.result || [];
