@@ -1,4 +1,4 @@
-import { useGetProductsQuery } from '../api/apiSlice';
+import { apiSlice } from '../api/apiSlice';
 
 export const useProductsRTK = (params: { page?: number; limit?: number; [key: string]: any } = {}) => {
   const {
@@ -7,7 +7,7 @@ export const useProductsRTK = (params: { page?: number; limit?: number; [key: st
     isLoading,
     isFetching,
     refetch,
-  } = useGetProductsQuery(params);
+  } = apiSlice.useGetProductQuery(params);
 
   return {
     products: (data as any)?.result || [],

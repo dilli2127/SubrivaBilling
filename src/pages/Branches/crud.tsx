@@ -3,11 +3,11 @@ import { GenericCrudPage } from '../../components/common/GenericCrudPage';
 import { branchesFormItems } from './formItems';
 import { brancheColumns } from './columns';
 import { getCurrentUserRole } from '../../helpers/auth';
-import { useGetOrganisationsQuery } from '../../services/redux/api/apiSlice';
+import { apiSlice } from '../../services/redux/api/apiSlice';
 
 const BranchesCrud: React.FC = () => {
   // Use RTK Query for fetching organizations
-  const { data: organisationData } = useGetOrganisationsQuery({});
+  const { data: organisationData } = apiSlice.useGetOrganisationsQuery({});
   const organisationItems = (organisationData as any)?.result || [];
 
   const customButtons = [

@@ -4,13 +4,13 @@ import { usersAccountColumns } from './columns';
 import { usersAccountFormItems } from './formItems';
 import { Form } from 'antd';
 import { getCurrentUser } from '../../helpers/auth';
-import { useGetRolesQuery, useGetOrganisationsQuery, useGetBranchesQuery } from '../../services/redux/api/apiSlice';
+import { apiSlice } from '../../services/redux/api/apiSlice';
 
 const UserAccountCrud: React.FC = () => {
   // Use RTK Query for fetching related data
-  const { data: rolesData } = useGetRolesQuery({});
-  const { data: organisationData } = useGetOrganisationsQuery({});
-  const { data: branchesData } = useGetBranchesQuery({});
+  const { data: rolesData } = apiSlice.useGetRolesQuery({});
+  const { data: organisationData } = apiSlice.useGetOrganisationsQuery({});
+  const { data: branchesData } = apiSlice.useGetBranchesQuery({});
 
   const rolesItems = (rolesData as any)?.result || [];
   const orgaisationItems = (organisationData as any)?.result || [];

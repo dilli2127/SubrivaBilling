@@ -5,11 +5,11 @@ import { Option } from "antd/es/mentions";
 import { GenericCrudPage } from "../../components/common/GenericCrudPage";
 import { Variant } from "../../types/entities";
 import { getCurrentUserRole } from "../../helpers/auth";
-import { useGetUnitsQuery } from "../../services/redux/api/apiSlice";
+import { apiSlice } from '../../services/redux/api/apiSlice';
 
 const VariantCrud: React.FC = () => {
   // Use RTK Query for fetching units
-  const { data: unitData, isLoading: unit_get_loading } = useGetUnitsQuery({});
+  const { data: unitData, isLoading: unit_get_loading } = apiSlice.useGetUnitsQuery({});
   const unitItems = (unitData as any)?.result || [];
   
   const currentUserRole = getCurrentUserRole();

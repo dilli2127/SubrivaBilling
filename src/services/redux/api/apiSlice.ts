@@ -1,6 +1,6 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { RootState } from '../store';
-import { API_ROUTES } from '../../api/utils';
+import { API_ROUTES, getCrudEntities, getDynamicTagTypes } from '../../api/utils';
 import { getAuthToken } from '../../../helpers/auth';
 import { getCSRFToken } from '../../../helpers/csrfToken';
 
@@ -69,62 +69,33 @@ const baseQueryWithReauth = async (args: any, api: any, extraOptions: any) => {
 // Helper function to create dynamic endpoints based on API_ROUTES
 const createDynamicEndpoints = (builder: any) => {
   const endpoints: any = {};
-
-  // Get all entity names from API_ROUTES that use createCrudRoutes
-  const crudEntities = Object.keys(API_ROUTES).filter(entityName => {
-    const entity = API_ROUTES[entityName as keyof typeof API_ROUTES];
-    return entity && typeof entity === 'object' && 'GetAll' in entity;
-  });
+  
+  // Get all CRUD entities dynamically
+  const crudEntities = getCrudEntities();
 
   // Create endpoints for each CRUD entity
-  crudEntities.forEach(entityName => {
-    const entityRoutes = API_ROUTES[
-      entityName as keyof typeof API_ROUTES
-    ] as any;
-
-    // Get the actual entity name from the createCrudRoutes call
-    // For entities like "Tenant" that use "TenantAccounts", we need to use the actual entity name
-    const actualEntityName =
-      entityRoutes.GetAll?.identifier?.replace('GetAll', '') || entityName;
-
-    // Handle pluralization for RTK Query endpoints
-    // For simple entities that don't already end with 's', add 's' to make them plural
-    // For compound words like "BranchStock", "StockStorage", etc., keep them as is
-    const isCompoundWord =
-      actualEntityName.includes('Stock') ||
-      actualEntityName.includes('Storage') ||
-      actualEntityName.includes('Account') ||
-      actualEntityName.includes('History') ||
-      actualEntityName.includes('Number') ||
-      actualEntityName.includes('Definition') ||
-      actualEntityName.includes('Metadata') ||
-      actualEntityName.includes('Record');
-
-    const endpointName = isCompoundWord
-      ? actualEntityName
-      : actualEntityName.endsWith('s')
-        ? actualEntityName
-        : `${actualEntityName}s`;
+  crudEntities.forEach(entity => {
+    const { name, routes, key } = entity;
 
     // Get All endpoint
-    endpoints[`get${endpointName}`] = builder.query({
+    endpoints[`get${name}`] = builder.query({
       query: (
         params: { page?: number; limit?: number; [key: string]: any } = {}
       ) => {
-        const route = entityRoutes.GetAll;
+        const route = routes.GetAll;
         return {
           url: route.endpoint,
           method: route.method,
           body: { page: 1, limit: 10, ...params },
         };
       },
-      providesTags: [entityName],
+      providesTags: [name],
     });
 
     // Get by ID endpoint
-    endpoints[`get${endpointName}ById`] = builder.query({
+    endpoints[`get${name}ById`] = builder.query({
       query: ({ id, ...params }: { id: string; [key: string]: any }) => {
-        const route = entityRoutes.Get;
+        const route = routes.Get;
         return {
           url: `${route.endpoint}/${id}`,
           method: route.method,
@@ -132,27 +103,27 @@ const createDynamicEndpoints = (builder: any) => {
         };
       },
       providesTags: (result: any, error: any, { id }: { id: string }) => [
-        { type: entityName, id },
+        { type: name, id },
       ],
     });
 
     // Create endpoint
-    endpoints[`create${endpointName}`] = builder.mutation({
+    endpoints[`create${name}`] = builder.mutation({
       query: (data: any) => {
-        const route = entityRoutes.Create;
+        const route = routes.Create;
         return {
           url: route.endpoint,
           method: route.method,
           body: data,
         };
       },
-      invalidatesTags: [entityName],
+      invalidatesTags: [name],
     });
 
     // Update endpoint
-    endpoints[`update${endpointName}`] = builder.mutation({
+    endpoints[`update${name}`] = builder.mutation({
       query: ({ id, data }: { id: string; data: any }) => {
-        const route = entityRoutes.Update;
+        const route = routes.Update;
         return {
           url: `${route.endpoint}/${id}`,
           method: route.method,
@@ -160,23 +131,23 @@ const createDynamicEndpoints = (builder: any) => {
         };
       },
       invalidatesTags: (result: any, error: any, { id }: { id: string }) => [
-        { type: entityName, id },
-        entityName,
+        { type: name, id },
+        name,
       ],
     });
 
     // Delete endpoint
-    endpoints[`delete${endpointName}`] = builder.mutation({
+    endpoints[`delete${name}`] = builder.mutation({
       query: (id: string) => {
-        const route = entityRoutes.Delete;
+        const route = routes.Delete;
         return {
           url: `${route.endpoint}/${id}`,
           method: route.method,
         };
       },
       invalidatesTags: (result: any, error: any, id: string) => [
-        { type: entityName, id },
-        entityName,
+        { type: name, id },
+        name,
       ],
     });
   });
@@ -189,36 +160,9 @@ export const apiSlice = createApi({
   reducerPath: 'api',
   baseQuery: baseQueryWithReauth,
   tagTypes: [
-    'Product',
-    'Customer',
-    'Sale',
-    'Inventory',
-    'User',
-    'Invoice',
     'Dashboard',
-    'Category',
-    'Unit',
-    'Variant',
-    'Vendor',
-    'Rack',
-    'Warehouse',
-    'StockAudit',
-    'SalesRecord',
-    'PaymentHistory',
-    'Expenses',
-    'StockOut',
-    'InvoiceNumber',
-    'Organisations',
-    'Braches',
-    'Roles',
-    'BillingUsers',
-    'Tenant',
-    'BranchStock',
-    'StockStorage',
-    'Settings',
-    'FieldMetadata',
-    'EntityDefinition',
     'PlanLimits',
+    ...getDynamicTagTypes(), // Dynamically generated tag types from CRUD entities
   ],
   endpoints: builder => {
     // Get dynamic endpoints
@@ -327,7 +271,7 @@ export const apiSlice = createApi({
   },
 });
 
-// Export all generated hooks
+// Export all generated hooks dynamically
 export const {
   // Authentication
   useLoginMutation,
@@ -343,228 +287,22 @@ export const {
   // Plan Limits
   useGetPlanLimitsQuery,
 
-  // Dynamic CRUD hooks - these are generated automatically by RTK Query
-  // Products
-  useGetProductsQuery,
-  useGetProductByIdQuery,
-  useCreateProductMutation,
-  useUpdateProductMutation,
-  useDeleteProductMutation,
-
-  // Customers
-  useGetCustomersQuery,
-  useGetCustomerByIdQuery,
-  useCreateCustomerMutation,
-  useUpdateCustomerMutation,
-  useDeleteCustomerMutation,
-
-  // Users
-  useGetUsersQuery,
-  useGetUserByIdQuery,
-  useCreateUserMutation,
-  useUpdateUserMutation,
-  useDeleteUserMutation,
-
-  // Billing Users
-  useGetBillingUsersQuery,
-  useGetBillingUserByIdQuery,
-  useCreateBillingUserMutation,
-  useUpdateBillingUserMutation,
-  useDeleteBillingUserMutation,
-
-  // Branch Stock
-  useGetBranchStockQuery,
-  useGetBranchStockByIdQuery,
-  useCreateBranchStockMutation,
-  useUpdateBranchStockMutation,
-  useDeleteBranchStockMutation,
-
-  // Categories
-  useGetCategoriesQuery,
-  useGetCategoryByIdQuery,
-  useCreateCategoryMutation,
-  useUpdateCategoryMutation,
-  useDeleteCategoryMutation,
-
-  // Units
-  useGetUnitsQuery,
-  useGetUnitByIdQuery,
-  useCreateUnitMutation,
-  useUpdateUnitMutation,
-  useDeleteUnitMutation,
-
-  // Variants
-  useGetVariantsQuery,
-  useGetVariantByIdQuery,
-  useCreateVariantMutation,
-  useUpdateVariantMutation,
-  useDeleteVariantMutation,
-
-  // Vendors
-  useGetVendorsQuery,
-  useGetVendorByIdQuery,
-  useCreateVendorMutation,
-  useUpdateVendorMutation,
-  useDeleteVendorMutation,
-
-  // Racks
-  useGetRacksQuery,
-  useGetRackByIdQuery,
-  useCreateRackMutation,
-  useUpdateRackMutation,
-  useDeleteRackMutation,
-
-  // Warehouses
-  useGetWarehousesQuery,
-  useGetWarehouseByIdQuery,
-  useCreateWarehouseMutation,
-  useUpdateWarehouseMutation,
-  useDeleteWarehouseMutation,
-
-  // Stock Audit
-  useGetStockAuditQuery,
-  useGetStockAuditByIdQuery,
-  useCreateStockAuditMutation,
-  useUpdateStockAuditMutation,
-  useDeleteStockAuditMutation,
-
-  // Sales Record
-  useGetSalesRecordQuery,
-  useGetSalesRecordByIdQuery,
-  useCreateSalesRecordMutation,
-  useUpdateSalesRecordMutation,
-  useDeleteSalesRecordMutation,
-
-  // Payment History
-  useGetPaymentHistoryQuery,
-  useGetPaymentHistoryByIdQuery,
-  useCreatePaymentHistoryMutation,
-  useUpdatePaymentHistoryMutation,
-  useDeletePaymentHistoryMutation,
-
-  // Expenses
-  useGetExpensesQuery,
-  useGetExpenseByIdQuery,
-  useCreateExpenseMutation,
-  useUpdateExpenseMutation,
-  useDeleteExpenseMutation,
-
-  // Stock Out
-  useGetStockOutQuery,
-  useGetStockOutByIdQuery,
-  useCreateStockOutMutation,
-  useUpdateStockOutMutation,
-  useDeleteStockOutMutation,
-
-  // Invoice Number
-  useGetInvoiceNumberQuery,
-  useGetInvoiceNumberByIdQuery,
-  useCreateInvoiceNumberMutation,
-  useUpdateInvoiceNumberMutation,
-  useDeleteInvoiceNumberMutation,
-
-  // Organisations
-  useGetOrganisationsQuery,
-  useGetOrganisationByIdQuery,
-  useCreateOrganisationMutation,
-  useUpdateOrganisationMutation,
-  useDeleteOrganisationMutation,
-
-  // Branches
-  useGetBranchesQuery,
-  useGetBranchByIdQuery,
-  useCreateBranchMutation,
-  useUpdateBranchMutation,
-  useDeleteBranchMutation,
-
-  // Roles
-  useGetRolesQuery,
-  useGetRoleByIdQuery,
-  useCreateRoleMutation,
-  useUpdateRoleMutation,
-  useDeleteRoleMutation,
-
-  // Tenant
-  useGetTenantAccountsQuery,
-  useGetTenantAccountByIdQuery,
-  useCreateTenantAccountMutation,
-  useUpdateTenantAccountMutation,
-  useDeleteTenantAccountMutation,
-
-  // Stock Storage
-  useGetStockStorageQuery,
-  useGetStockStorageByIdQuery,
-  useCreateStockStorageMutation,
-  useUpdateStockStorageMutation,
-  useDeleteStockStorageMutation,
-
-  // Settings
-  useGetSettingsQuery,
-  useGetSettingByIdQuery,
-  useCreateSettingMutation,
-  useUpdateSettingMutation,
-  useDeleteSettingMutation,
-
-  // Field Metadata
-  useGetFieldMetadataQuery,
-  useGetFieldMetadataByIdQuery,
-  useCreateFieldMetadataMutation,
-  useUpdateFieldMetadataMutation,
-  useDeleteFieldMetadataMutation,
-
-  // Entity Definition
-  useGetEntityDefinitionQuery,
-  useGetEntityDefinitionByIdQuery,
-  useCreateEntityDefinitionMutation,
-  useUpdateEntityDefinitionMutation,
-  useDeleteEntityDefinitionMutation,
+  // All CRUD hooks are automatically generated by RTK Query based on createCrudRoutes
+  // No need to hardcode them - they are dynamically available as:
+  // useGet{EntityName}Query, useGet{EntityName}ByIdQuery, useCreate{EntityName}Mutation, etc.
 } = apiSlice;
 
-// Helper function to get RTK hooks for any entity
+// Helper function to get RTK hooks for any entity dynamically
 export const getEntityHooks = (entityName: string) => {
   // Capitalize first letter
-  const capitalizedEntity =
-    entityName.charAt(0).toUpperCase() + entityName.slice(1);
+  const capitalizedEntity = entityName.charAt(0).toUpperCase() + entityName.slice(1);
 
-  // Handle compound words and pluralization
-  const isCompoundWord =
-    capitalizedEntity.includes('Stock') ||
-    capitalizedEntity.includes('Storage') ||
-    capitalizedEntity.includes('Account') ||
-    capitalizedEntity.includes('History') ||
-    capitalizedEntity.includes('Number') ||
-    capitalizedEntity.includes('Definition') ||
-    capitalizedEntity.includes('Metadata') ||
-    capitalizedEntity.includes('Record');
-
-  // For singular entity names, pluralize them for the hook names
-  // e.g., "Product" -> "Products", "Customer" -> "Customers"
-  const pluralEntity = isCompoundWord
-    ? capitalizedEntity
-    : capitalizedEntity.endsWith('s')
-      ? capitalizedEntity
-      : `${capitalizedEntity}s`;
-
-  // Check if hooks exist, if not, try singular form
-  const getQueryHook =
-    (apiSlice as any)[`useGet${pluralEntity}Query`] ||
-    (apiSlice as any)[`useGet${capitalizedEntity}Query`];
-
-  const getByIdQueryHook =
-    (apiSlice as any)[`useGet${pluralEntity}ByIdQuery`] ||
-    (apiSlice as any)[`useGet${capitalizedEntity}ByIdQuery`];
-
-  const createMutationHook =
-    (apiSlice as any)[`useCreate${pluralEntity}Mutation`] ||
-    (apiSlice as any)[`useCreate${capitalizedEntity}Mutation`];
-
-  const updateMutationHook =
-    (apiSlice as any)[`useUpdate${pluralEntity}Mutation`] ||
-    (apiSlice as any)[`useUpdate${capitalizedEntity}Mutation`];
-
-  const deleteMutationHook =
-    (apiSlice as any)[`useDelete${pluralEntity}Mutation`] ||
-    (apiSlice as any)[`useDelete${capitalizedEntity}Mutation`];
+  // Get the hooks directly from the apiSlice
+  const getQueryHook = (apiSlice as any)[`useGet${capitalizedEntity}Query`];
+  const getByIdQueryHook = (apiSlice as any)[`useGet${capitalizedEntity}ByIdQuery`];
+  const createMutationHook = (apiSlice as any)[`useCreate${capitalizedEntity}Mutation`];
+  const updateMutationHook = (apiSlice as any)[`useUpdate${capitalizedEntity}Mutation`];
+  const deleteMutationHook = (apiSlice as any)[`useDelete${capitalizedEntity}Mutation`];
 
   return {
     useGetQuery: getQueryHook,
@@ -573,4 +311,15 @@ export const getEntityHooks = (entityName: string) => {
     useUpdateMutation: updateMutationHook,
     useDeleteMutation: deleteMutationHook,
   };
+};
+
+// Helper function to get all available entity names
+export const getAvailableEntities = () => {
+  return getCrudEntities().map(entity => entity.name);
+};
+
+// Helper function to check if an entity has RTK Query hooks
+export const hasEntityHooks = (entityName: string) => {
+  const capitalizedEntity = entityName.charAt(0).toUpperCase() + entityName.slice(1);
+  return !!(apiSlice as any)[`useGet${capitalizedEntity}Query`];
 };

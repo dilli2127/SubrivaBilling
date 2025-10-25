@@ -10,16 +10,7 @@ import StockOutDrawer from './StockOutDrawer';
 import StorageAllocateDrawer from './StorageAllocateDrawer';
 import { useHandleApiResponse } from '../../components/common/useHandleApiResponse';
 import { useDynamicSelector } from '../../services/redux';
-import { 
-  useGetProductsQuery, 
-  useGetVendorsQuery, 
-  useGetWarehousesQuery, 
-  useGetBranchesQuery, 
-  useGetRacksQuery,
-  useCreateBranchStockMutation,
-  useCreateStockOutMutation,
-  useCreateStockStorageMutation
-} from '../../services/redux/api/apiSlice';
+import { apiSlice } from '../../services/redux/api/apiSlice';
 
 const StockAuditCrud: React.FC = () => {
   const [form] = Form.useForm();
@@ -33,11 +24,11 @@ const StockAuditCrud: React.FC = () => {
   const [storageAllocateRecord, setStorageAllocateRecord] = useState<any>(null);
 
   // Use RTK Query for fetching related data (read operations)
-  const { data: productData, isLoading: loading } = useGetProductsQuery({});
-  const { data: vendorData, isLoading: vendorloading } = useGetVendorsQuery({});
-  const { data: wareHouseData, isLoading: wareHouseLoading } = useGetWarehousesQuery({});
-  const { data: branchData, isLoading: branchLoading } = useGetBranchesQuery({});
-  const { data: rackData, isLoading: rackLoading } = useGetRacksQuery({});
+  const { data: productData, isLoading: loading } = apiSlice.useGetProductQuery({});
+  const { data: vendorData, isLoading: vendorloading } = apiSlice.useGetVendorQuery({});
+  const { data: wareHouseData, isLoading: wareHouseLoading } = apiSlice.useGetWarehouseQuery({});
+  const { data: branchData, isLoading: branchLoading } = apiSlice.useGetBranchQuery({});
+  const { data: rackData, isLoading: rackLoading } = apiSlice.useGetRackQuery({});
 
   const productList = (productData as any)?.result || [];
   const vendorList = (vendorData as any)?.result || [];
@@ -46,9 +37,9 @@ const StockAuditCrud: React.FC = () => {
   const rackList = (rackData as any)?.result || [];
 
   // Use RTK Query mutations
-  const [createBranchStock, { isLoading: createLoading }] = useCreateBranchStockMutation();
-  const [createStockOut, { isLoading: stockoutLoading }] = useCreateStockOutMutation();
-  const [createStockStorage, { isLoading: storageLoading }] = useCreateStockStorageMutation();
+  const [createBranchStock, { isLoading: createLoading }] = apiSlice.useCreateBranchStockMutation();
+  const [createStockOut, { isLoading: stockoutLoading }] = apiSlice.useCreateStockOutMutation();
+  const [createStockStorage, { isLoading: storageLoading }] = apiSlice.useCreateStockStorageMutation();
 
   // Keep old Redux methods only for StockRevertFromBranch (special case)
   const { StockRevertFromBranch } = useApiActions();

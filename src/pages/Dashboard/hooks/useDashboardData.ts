@@ -1,10 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { 
-  useGetDashboardStatsQuery,
-  useGetSalesChartQuery,
-  useGetPurchaseChartQuery,
-  useGetStockAlertsQuery,
-} from '../../../services/redux/api/apiSlice';
+import { apiSlice } from '../../../services/redux/api/apiSlice';
 
 interface DashboardFilters {
   tenant_id?: string;
@@ -21,7 +16,7 @@ export const useDashboardData = (activeTab: string, filters: DashboardFilters = 
     isLoading: statsLoading, 
     error: statsError,
     refetch: refetchStats 
-  } = useGetDashboardStatsQuery(filters, {
+  } = apiSlice.useGetDashboardStatsQuery(filters, {
     skip: !loadedTabs.has('1')
   });
 
@@ -30,7 +25,7 @@ export const useDashboardData = (activeTab: string, filters: DashboardFilters = 
     isLoading: salesChartLoading, 
     error: salesChartError,
     refetch: refetchSalesChart 
-  } = useGetSalesChartQuery(filters, {
+  } = apiSlice.useGetSalesChartQuery(filters, {
     skip: !loadedTabs.has('1')
   });
 
@@ -39,7 +34,7 @@ export const useDashboardData = (activeTab: string, filters: DashboardFilters = 
     isLoading: purchaseChartLoading, 
     error: purchaseChartError,
     refetch: refetchPurchaseChart 
-  } = useGetPurchaseChartQuery(filters, {
+  } = apiSlice.useGetPurchaseChartQuery(filters, {
     skip: !loadedTabs.has('1')
   });
 
@@ -48,7 +43,7 @@ export const useDashboardData = (activeTab: string, filters: DashboardFilters = 
     isLoading: stockAlertsLoading, 
     error: stockAlertsError,
     refetch: refetchStockAlerts 
-  } = useGetStockAlertsQuery(filters, {
+  } = apiSlice.useGetStockAlertsQuery(filters, {
     skip: !loadedTabs.has('1')
   });
 

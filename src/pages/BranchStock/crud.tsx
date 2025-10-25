@@ -7,19 +7,19 @@ import {
 } from '@ant-design/icons';
 import GlobalTable from '../../components/antd/GlobalTable';
 import StorageAllocateDrawer from '../StockAudit/StorageAllocateDrawer';
-import { useGetBranchStockQuery, useGetRacksQuery, useCreateStockStorageMutation } from '../../services/redux/api/apiSlice';
+import { apiSlice } from '../../services/redux/api/apiSlice';
 const { Text } = Typography;
 
 const BranchStock: React.FC = () => {
-  // Use RTK Query for fetching data
-  const { data: branchStockData, isLoading: stockAuditLoading } = useGetBranchStockQuery({});
-  const { data: rackData, isLoading: rackLoading } = useGetRacksQuery({});
+  // Use RTK Query for fetching data - using dynamic hooks
+  const { data: branchStockData, isLoading: stockAuditLoading } = apiSlice.useGetBranchStockQuery({});
+  const { data: rackData, isLoading: rackLoading } = apiSlice.useGetRackQuery({});
   
   const BranchStockList = (branchStockData as any)?.result || [];
   const rackList = (rackData as any)?.result || [];
 
-  // Use RTK Query mutations
-  const [createStockStorage, { isLoading: createLoading }] = useCreateStockStorageMutation();
+  // Use RTK Query mutations - using dynamic hooks
+  const [createStockStorage, { isLoading: createLoading }] = apiSlice.useCreateStockStorageMutation();
 
   const [pagination, setPagination] = useState({
     current: 1,

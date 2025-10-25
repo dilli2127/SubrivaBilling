@@ -2,7 +2,7 @@ import React from "react";
 import { DatePicker, Input, InputNumber, Select } from "antd";
 import { GenericCrudPage } from "../../components/common/GenericCrudPage";
 import type { StockOut } from "../../types/entities";
-import { useGetStockAuditQuery } from "../../services/redux/api/apiSlice";
+import { apiSlice } from '../../services/redux/api/apiSlice';
 const { Option } = Select;
 type StockAudit = {
   _id: string;
@@ -17,7 +17,7 @@ type StockAudit = {
 };
 const StockOutCrud: React.FC = () => {
   // Use RTK Query for fetching stock audit data
-  const { data: stockAuditData, isLoading: stockAuditLoading } = useGetStockAuditQuery({});
+  const { data: stockAuditData, isLoading: stockAuditLoading } = apiSlice.useGetStockAuditQuery({});
   const StockAuditList = (stockAuditData as any)?.result || [];
 
   type StockOutRecord = {

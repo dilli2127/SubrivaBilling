@@ -1,4 +1,4 @@
-import { useGetCustomersQuery } from '../api/apiSlice';
+import { apiSlice } from '../api/apiSlice';
 
 export const useCustomersRTK = (params: { page?: number; limit?: number; [key: string]: any } = {}) => {
   const {
@@ -7,7 +7,7 @@ export const useCustomersRTK = (params: { page?: number; limit?: number; [key: s
     isLoading,
     isFetching,
     refetch,
-  } = useGetCustomersQuery(params);
+  } = apiSlice.useGetCustomerQuery(params);
 
   return {
     customers: (data as any)?.result || [],

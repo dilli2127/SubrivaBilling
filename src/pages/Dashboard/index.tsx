@@ -22,11 +22,7 @@ import {
 } from './tabs';
 import { useDashboardData } from './hooks/useDashboardData';
 import { useApiActions } from '../../services/api/useApiActions';
-import { 
-  useGetTenantAccountsQuery,
-  useGetOrganisationsQuery,
-  useGetBranchesQuery,
-} from '../../services/redux/api/apiSlice';
+import { apiSlice } from '../../services/redux/api/apiSlice';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -57,9 +53,9 @@ const Dashboard: React.FC = () => {
   const BranchesApi = getEntityApi('Braches');
 
   // RTK Query for dropdowns
-  const { data: tenantsData, isLoading: tenantsLoading } = useGetTenantAccountsQuery({});
-  const { data: organisationsData, isLoading: organisationsLoading } = useGetOrganisationsQuery({});
-  const { data: branchesData, isLoading: branchesLoading } = useGetBranchesQuery({});
+  const { data: tenantsData, isLoading: tenantsLoading } = apiSlice.useGetTenantAccountQuery({});
+  const { data: organisationsData, isLoading: organisationsLoading } = apiSlice.useGetOrganisationQuery({});
+  const { data: branchesData, isLoading: branchesLoading } = apiSlice.useGetBranchQuery({});
 
   const tenantsItems = (tenantsData as any)?.result || [];
   const organisationsItems = (organisationsData as any)?.result || [];

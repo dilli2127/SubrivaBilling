@@ -6,15 +6,15 @@ import { getCurrentUserRole } from '../../helpers/auth';
 import { RESOURCES } from '../../helpers/permissionHelper';
 import { productsColumns } from './columns';
 import { productsFormItems } from './formItems';
-import { useGetVariantsQuery, useGetCategoriesQuery } from '../../services/redux/api/apiSlice';
+import { apiSlice } from '../../services/redux/api/apiSlice';
 
 const ProductCrud: React.FC = () => {
   const currentUserRole = getCurrentUserRole();
   const isSuperAdmin = currentUserRole?.toLowerCase() === 'superadmin';
 
-  // Use RTK Query for fetching related data
-  const { data: variantData, isLoading: variantLoading } = useGetVariantsQuery({});
-  const { data: categoryData, isLoading: categoryLoading } = useGetCategoriesQuery({});
+  // Use RTK Query for fetching related data - using dynamic hooks
+  const { data: variantData, isLoading: variantLoading } = apiSlice.useGetVariantQuery({});
+  const { data: categoryData, isLoading: categoryLoading } = apiSlice.useGetCategoryQuery({});
 
   const variantItems = (variantData as any)?.result || [];
   const categoryItems = (categoryData as any)?.result || [];

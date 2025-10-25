@@ -40,6 +40,36 @@ export const createCrudRoutes = (baseEndpoint: string, name: string) => ({
   },
 });
 
+/**
+ * Get all CRUD entities from API_ROUTES
+ * Returns an array of entity configurations for dynamic RTK Query generation
+ */
+export const getCrudEntities = () => {
+  return Object.keys(API_ROUTES)
+    .filter(entityName => {
+      const entity = API_ROUTES[entityName as keyof typeof API_ROUTES];
+      return entity && typeof entity === 'object' && 'GetAll' in entity;
+    })
+    .map(entityName => {
+      const entityRoutes = API_ROUTES[entityName as keyof typeof API_ROUTES] as any;
+      const actualEntityName = entityRoutes.GetAll?.identifier?.replace('GetAll', '') || entityName;
+      
+      return {
+        key: entityName,
+        name: actualEntityName,
+        routes: entityRoutes,
+        endpoint: entityRoutes.GetAll?.endpoint || '',
+      };
+    });
+};
+
+/**
+ * Generate RTK Query tag types dynamically from CRUD entities
+ */
+export const getDynamicTagTypes = () => {
+  return getCrudEntities().map(entity => entity.name);
+};
+
 
 export const API_ROUTES = {
   Signup: {
