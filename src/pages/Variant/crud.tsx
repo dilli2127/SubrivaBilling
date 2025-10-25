@@ -8,8 +8,8 @@ import { getCurrentUserRole } from "../../helpers/auth";
 import { apiSlice } from '../../services/redux/api/apiSlice';
 
 const VariantCrud: React.FC = () => {
-  // Use RTK Query for fetching units
-  const { data: unitData, isLoading: unit_get_loading } = apiSlice.useGetUnitsQuery({});
+  // Use RTK Query for fetching units - Unit is singular in API_ROUTES
+  const { data: unitData, isLoading: unit_get_loading } = apiSlice.useGetUnitQuery({});
   const unitItems = (unitData as any)?.result || [];
   
   const currentUserRole = getCurrentUserRole();
