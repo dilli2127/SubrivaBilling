@@ -184,8 +184,8 @@ const routerData: RouteConfig[] = [
         children: [],
       },
       {
-        key: "prduct_crud",
-        path: "prduct_crud",
+        key: "product_crud",
+        path: "product_crud",
         element: (
           <Suspense fallback={<Loader />}>
             <ProductCrud />

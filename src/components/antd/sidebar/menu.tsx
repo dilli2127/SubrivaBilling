@@ -220,7 +220,7 @@ export const menuItems = [
         key: 'add-product',
         label: 'Product',
         icon: <AppstoreAddOutlined />,
-        path: '/prduct_crud',
+        path: '/product_crud',
       },
       {
         key: 'unit',
