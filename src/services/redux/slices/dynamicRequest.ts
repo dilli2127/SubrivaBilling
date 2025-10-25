@@ -70,6 +70,7 @@ export function dynamic_request(variables: ApiRequest, key: any) {
         dispatch(_initiateDynamicRequest({ key }));
         try {
             const response = await requestBackServer(variables);
+            
             if (response.statusCode !== API_ERROR_CODES.OK) {
                 dispatch(_dynamicRequestFailure({ key, error: response }));
             } else {

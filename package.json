@@ -21,6 +21,7 @@
     "@types/node": "^22.15.27",
     "@types/react": "^19.1.6",
     "@types/react-dom": "^19.1.5",
+    "@types/react-window": "^1.8.8",
     "antd": "^5.26.0",
     "axios": "^1.9.0",
     "crypto-js": "^4.2.0",
@@ -38,6 +39,8 @@
     "react-redux": "^9.2.0",
     "react-router-dom": "^7.6.1",
     "react-scripts": "5.0.1",
+    "react-window": "^2.2.1",
+    "react-window-infinite-loader": "^2.0.0",
     "recharts": "^2.15.3",
     "redux": "^5.0.1",
     "swiper": "^11.2.8",
@@ -70,9 +73,9 @@
     "version:patch": "node scripts/update-version.js patch",
     "version:minor": "node scripts/update-version.js minor",
     "version:major": "node scripts/update-version.js major",
-    "version:patch:publish": "node scripts/update-version.js patch --publish",
-    "version:minor:publish": "node scripts/update-version.js minor --publish",
-    "version:major:publish": "node scripts/update-version.js major --publish"
+      "version:patch:publish": "node scripts/update-version.js patch --publish",
+      "version:minor:publish": "node scripts/update-version.js minor --publish",
+      "version:major:publish": "node scripts/update-version.js major --publish"
   },
   "eslintConfig": {
     "extends": [

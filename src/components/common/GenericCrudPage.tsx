@@ -134,7 +134,7 @@ function getActionsColumn(
   };
 }
 
-export const GenericCrudPage = <T extends BaseEntity>({
+const GenericCrudPageComponent = <T extends BaseEntity>({
   config,
   filters = [],
   onFilterChange,
@@ -513,3 +513,6 @@ export const GenericCrudPage = <T extends BaseEntity>({
     </div>
   );
 };
+
+// Memoize the component to prevent unnecessary re-renders
+export const GenericCrudPage = React.memo(GenericCrudPageComponent) as typeof GenericCrudPageComponent;

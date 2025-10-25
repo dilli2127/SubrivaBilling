@@ -1,7 +1,7 @@
-import {combineReducers} from 'redux';
-import { dynamicRequestReducer } from './slices';
-export const rootReducers = 
-    combineReducers({
-        dynamic_request: dynamicRequestReducer
-    })
+import { combineReducers } from 'redux';
+
+// Export empty reducers map - using only RTK Query now
+export const rootReducersMap = {};
+
+export const rootReducers = combineReducers(rootReducersMap);
 

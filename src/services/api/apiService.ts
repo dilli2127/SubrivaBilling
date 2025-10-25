@@ -16,6 +16,7 @@ export interface ApiRequest {
     method: string;
     endpoint: string;
     data?: any; // Optional, only present on success
+    signal?: AbortSignal; // For request cancellation
 }
 
 class APIService {
@@ -178,9 +179,19 @@ class APIService {
                 method: request.method,
                 url: request.endpoint,
                 data: request.data,
+                signal: request.signal, // Add abort signal for cancellation
             });
             return this.handleResponse(data);
         } catch (error) {
+            // Check if request was cancelled
+            if (axios.isAxiosError(error) && error.name === 'CanceledError') {
+                return {
+                    statusCode: 0,
+                    message: 'Request cancelled',
+                    result: null,
+                    pagination: {}
+                };
+            }
             return this.handleError<T>(error);
         }
     }

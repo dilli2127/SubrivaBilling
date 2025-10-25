@@ -22,7 +22,11 @@ import {
 } from './tabs';
 import { useDashboardData } from './hooks/useDashboardData';
 import { useApiActions } from '../../services/api/useApiActions';
-import { useDynamicSelector } from '../../services/redux/selector';
+import { 
+  useGetTenantsQuery,
+  useGetOrganisationssQuery,
+  useGetBrachessQuery,
+} from '../../services/redux/api/apiSlice';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -52,10 +56,14 @@ const Dashboard: React.FC = () => {
   const OrganisationsApi = getEntityApi('Organisations');
   const BranchesApi = getEntityApi('Braches');
 
-  // Selectors for dropdowns data
-  const { items: tenantsItems } = useDynamicSelector(TenantsApi.getIdentifier('GetAll'));
-  const { items: organisationsItems } = useDynamicSelector(OrganisationsApi.getIdentifier('GetAll'));
-  const { items: branchesItems } = useDynamicSelector(BranchesApi.getIdentifier('GetAll'));
+  // RTK Query for dropdowns
+  const { data: tenantsData, isLoading: tenantsLoading } = useGetTenantsQuery({});
+  const { data: organisationsData, isLoading: organisationsLoading } = useGetOrganisationssQuery({});
+  const { data: branchesData, isLoading: branchesLoading } = useGetBrachessQuery({});
+
+  const tenantsItems = (tenantsData as any)?.result || [];
+  const organisationsItems = (organisationsData as any)?.result || [];
+  const branchesItems = (branchesData as any)?.result || [];
 
   // Fetch data on mount based on user role
   useEffect(() => {
@@ -303,7 +311,7 @@ const Dashboard: React.FC = () => {
             ),
             children: (
               <OverviewTab
-                DashBoardItems={DashBoardItems}
+                DashBoardItems={DashBoardItems as any}
                 SalesChartDataItems={SalesChartDataItems}
                 stockAlerts={stockAlerts}
               />
@@ -351,7 +359,7 @@ const Dashboard: React.FC = () => {
               <SalesAnalysisTab
                 topProducts={topProducts}
                 topCustomers={topCustomers}
-                SalesAnalyticsItems={SalesAnalyticsItems}
+                SalesAnalyticsItems={SalesAnalyticsItems as any}
               />
             ),
           },
@@ -378,7 +386,7 @@ const Dashboard: React.FC = () => {
               </Tooltip>
             ),
             children: (
-              <PerformanceTab SalesAnalyticsItems={SalesAnalyticsItems} />
+              <PerformanceTab SalesAnalyticsItems={SalesAnalyticsItems as any} />
             ),
           },
         ]}

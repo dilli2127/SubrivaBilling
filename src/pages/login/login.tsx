@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from "react";
+import React from "react";
 import {
   Form,
   Input,
@@ -9,15 +9,7 @@ import {
 import { UserOutlined, LockOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import "./Login.css";
-import { ApiRequest } from "../../services/api/apiService";
-import {
-  dynamic_clear,
-  dynamic_request,
-  useDynamicSelector,
-} from "../../services/redux";
-import { useDispatch } from "react-redux";
-import { Dispatch } from "redux";
-import { API_ROUTES } from "../../services/api/utils";
+import { useLoginMutation } from "../../services/redux/api/apiSlice";
 import { setUserData, setAuthToken, setTokens } from "../../helpers/auth";
 import { setPermissions, setMenuKeys, setUserData as setUserDataHelper } from "../../helpers/permissionHelper";
 
@@ -25,77 +17,60 @@ const { Title, Text } = Typography;
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
-  const dispatch: Dispatch<any> = useDispatch();
-  const callBackServer = useCallback(
-    (variables: ApiRequest, key: string) => {
-      dispatch(dynamic_request(variables, key));
-    },
-    [dispatch]
-  );
-  const { loading, items } = useDynamicSelector(
-    API_ROUTES.Login.Create.identifier
-  );
-  const onFinish = (values: {
+  const [login, { isLoading, error }] = useLoginMutation();
+
+  const onFinish = async (values: {
     username: string;
     password: string;
   }) => {
-    callBackServer(
-      {
-        method: API_ROUTES.Login.Create.method,
-        endpoint: API_ROUTES.Login.Create.endpoint,
-        data: values,
-      },
-      API_ROUTES.Login.Create.identifier
-    );
-  };
-  useEffect(() => {
-    if (items?.statusCode === 200) {
-      message.success("Login successful! Welcome back.");
+    try {
+      const result = await login(values).unwrap();
       
-      const result = items.result;
-      
-      // Store tokens - support both old and new formats
-      if (result?.accessToken && result?.refreshToken) {
-        // New format with refresh tokens
-        setTokens(result.accessToken, result.refreshToken);
-        console.log('Stored access token (expires in:', result.accessTokenExpiresIn, ')');
-        console.log('Stored refresh token (expires in:', result.refreshTokenExpiresIn, ')');
-      } else if (result?.token) {
-        // Fallback to old format for backward compatibility
-        setAuthToken(result.token);
-      }
-      
-      // Store user data
-      if (result?.UserItem) {
-        setUserData(result.UserItem);
-      }
-      
-      // Store permissions for role-based access control
-      if (result?.permissions) {
-        setPermissions(result.permissions);
-      }
-      
-      // Store allowedMenuKeys for menu filtering (NOT menuKeys - that was removed)
-      if (result?.allowedMenuKeys) {
-        setMenuKeys(result.allowedMenuKeys);
-      }
-      
-      // Store complete user data for new API structure
-      if (result) {
-        setUserDataHelper(result);
-      }
-      
-      dispatch(dynamic_clear(API_ROUTES.Login.Create.identifier));
-      
-      if (result?.UserItem?.usertype === "admin") {
-        navigate("/admin/einvite_crud");
+      if ((result as any).statusCode === 200) {
+        message.success("Login successful! Welcome back.");
+
+        const data = (result as any).result || result;
+        
+        // Store tokens - support both old and new formats
+        if (data?.accessToken && data?.refreshToken) {
+          setTokens(data.accessToken, data.refreshToken);
+        } else if (data?.token) {
+          setAuthToken(data.token);
+        }
+        
+        // Store user data
+        if (data?.UserItem) {
+          setUserData(data.UserItem);
+        }
+        
+        // Store permissions for role-based access control
+        if (data?.permissions) {
+          setPermissions(data.permissions);
+        }
+        
+        // Store allowedMenuKeys for menu filtering
+        if (data?.allowedMenuKeys) {
+          setMenuKeys(data.allowedMenuKeys);
+        }
+        
+        // Store complete user data for new API structure
+        if (data) {
+          setUserDataHelper(data);
+        }
+        
+        if (data?.UserItem?.usertype === "admin") {
+          navigate("/admin/einvite_crud");
+        } else {
+          navigate("/dashboard");
+        }
       } else {
-        navigate("/dashboard");
+        message.error((result as any).message || 'Login failed, please try again');
       }
-    } else if (items?.statusCode && items.statusCode !== 200) {
-        message.error(items?.message || "Login failed, please try again");
+    } catch (error: any) {
+      message.error(error?.data?.message || error?.message || 'Login failed, please try again');
     }
-  }, [items, dispatch, navigate]);
+  };
+
   return (
     <div className="login-background">
       <div className="login-form-container">
@@ -137,7 +112,7 @@ const Login: React.FC = () => {
               type="primary"
               htmlType="submit"
               className="login-button"
-              loading={loading}
+              loading={isLoading}
             >
               Log in
             </Button>

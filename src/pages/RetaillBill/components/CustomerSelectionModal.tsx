@@ -62,7 +62,7 @@ interface CustomerSelectionModalProps {
   onCancel: () => void;
 }
 
-const CustomerSelectionModal: React.FC<CustomerSelectionModalProps> = ({
+const CustomerSelectionModalComponent: React.FC<CustomerSelectionModalProps> = ({
   visible,
   onSelect,
   onCancel,
@@ -1137,4 +1137,6 @@ const CustomerSelectionModal: React.FC<CustomerSelectionModalProps> = ({
   );
 };
 
+// Memoize the component to prevent unnecessary re-renders
+const CustomerSelectionModal = React.memo(CustomerSelectionModalComponent);
 export default CustomerSelectionModal;

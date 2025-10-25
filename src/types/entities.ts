@@ -174,6 +174,7 @@ export interface StockAuditList<T>{
 // Bill Item entity
 export interface BillItem {
   _id?: string;
+  key?: string;
   product_id: string;
   product_name: string;
   variant_name: string;
@@ -185,6 +186,20 @@ export interface BillItem {
   mrp: number;
   amount: number;
   tax_percentage: number;
+  // Legacy fields for compatibility
+  quantity?: number;
+  rate?: number;
+}
+
+// Bill Settings entity
+export interface BillSettings {
+  isPaid: boolean;
+  isPartiallyPaid: boolean;
+  isRetail: boolean;
+  isGstIncluded: boolean;
+  discount: number;
+  discountType: 'percentage' | 'amount';
+  paidAmount: number;
 }
 
 // Bill Form Data entity

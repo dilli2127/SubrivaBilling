@@ -3,17 +3,9 @@ import { Form, Input, Button, message, Typography, Tabs } from 'antd';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import styles from './Login.module.css';
-import { ApiRequest } from '../../services/api/apiService';
 import { setUserData, setAuthToken, setTokens } from '../../helpers/auth';
 import { setPermissions, setMenuKeys, setUserData as setUserDataHelper } from '../../helpers/permissionHelper';
-import {
-  dynamic_clear,
-  dynamic_request,
-  useDynamicSelector,
-} from '../../services/redux';
-import { useDispatch } from 'react-redux';
-import { Dispatch } from 'redux';
-import { API_ROUTES } from '../../services/api/utils';
+import { useBillingLoginMutation, useTenantLoginMutation } from '../../services/redux/api/apiSlice';
 import LandingPageHeader from '../../components/common/LandingPageHeader';
 
 const { Text } = Typography;
@@ -21,91 +13,58 @@ const { TabPane } = Tabs;
 
 const BillingLogin: React.FC = () => {
   const navigate = useNavigate();
-  const dispatch: Dispatch<any> = useDispatch();
   const [loginType, setLoginType] = useState<'tenant' | 'user'>('user');
   
-  const callBackServer = useCallback(
-    (variables: ApiRequest, key: string) => {
-      dispatch(dynamic_request(variables, key));
-    },
-    [dispatch]
-  );
+  // RTK Query mutations
+  const [billingLogin, { isLoading: billingLoading, error: billingError }] = useBillingLoginMutation();
+  const [tenantLogin, { isLoading: tenantLoading, error: tenantError }] = useTenantLoginMutation();
 
-  const {
-    loading,
-    items,
-    error: BillingLoginError,
-  } = useDynamicSelector(API_ROUTES.BillingLogin.Create.identifier);
-  
-  const {
-    loading: TenantLoading,
-    items: TenantItems,
-    error: TenantError,
-  } = useDynamicSelector(API_ROUTES.TenantLogin.Create.identifier);
+  const onFinish = async (values: { username: string; password: string }) => {
+    try {
+      const result = loginType === 'tenant' 
+        ? await tenantLogin({ ...values, loginType }).unwrap()
+        : await billingLogin({ ...values, loginType }).unwrap();
 
-  const onFinish = (values: { username: string; password: string }) => {
-    const isTenant = loginType === 'tenant';
-    const route = isTenant ? API_ROUTES.TenantLogin.Create : API_ROUTES.BillingLogin.Create;
-    
-    callBackServer(
-      {
-        method: route.method,
-        endpoint: route.endpoint,
-        data: { ...values, loginType },
-      },
-      route.identifier
-    );
-  };
+      if ((result as any).statusCode === 200) {
+        message.success('Login successful! Welcome back.');
 
-  // Consolidated login success/error handling
-  useEffect(() => {
-    const currentItems = loginType === 'tenant' ? TenantItems : items;
-    const currentError = loginType === 'tenant' ? TenantError : BillingLoginError;
-    const currentRoute = loginType === 'tenant' ? API_ROUTES.TenantLogin.Create : API_ROUTES.BillingLogin.Create;
-
-    if (currentItems?.statusCode === 200) {
-      message.success('Login successful! Welcome back.');
-      
-      const result = currentItems.result;
-      
-      // Store tokens - support both old and new formats
-      if (result?.accessToken && result?.refreshToken) {
-        // New format with refresh tokens
-        setTokens(result.accessToken, result.refreshToken);
-        console.log('Stored access token (expires in:', result.accessTokenExpiresIn, ')');
-        console.log('Stored refresh token (expires in:', result.refreshTokenExpiresIn, ')');
-      } else if (result?.token) {
-        // Fallback to old format for backward compatibility
-        setAuthToken(result.token);
+        const data = (result as any).result || result;
+        
+        // Store tokens - support both old and new formats
+        if (data?.accessToken && data?.refreshToken) {
+          setTokens(data.accessToken, data.refreshToken);
+        } else if (data?.token) {
+          setAuthToken(data.token);
+        }
+        
+        // Store user data
+        if (data?.UserItem) {
+          setUserData(data.UserItem);
+        }
+        
+        // Store permissions for role-based access control
+        if (data?.permissions) {
+          setPermissions(data.permissions);
+        }
+        
+        // Store allowedMenuKeys for menu filtering
+        if (data?.allowedMenuKeys) {
+          setMenuKeys(data.allowedMenuKeys);
+        }
+        
+        // Store complete user data for new API structure
+        if (data) {
+          setUserDataHelper(data);
+        }
+        
+        navigate('/dashboard');
+      } else {
+        message.error((result as any).message || 'Login failed, please try again');
       }
-      
-      // Store user data
-      if (result?.UserItem) {
-        setUserData(result.UserItem);
-      }
-      
-      // Store permissions for role-based access control
-      if (result?.permissions) {
-        setPermissions(result.permissions);
-      }
-      
-      // Store allowedMenuKeys for menu filtering (NOT menuKeys - that was removed)
-      if (result?.allowedMenuKeys) {
-        setMenuKeys(result.allowedMenuKeys);
-      }
-      
-      // Store complete user data for new API structure
-      if (result) {
-        setUserDataHelper(result);
-      }
-      
-      dispatch(dynamic_clear(currentRoute.identifier));
-      navigate('/dashboard');
-    } else if (currentError) {
-      message.error(currentError?.message || 'Login failed, please try again');
-      dispatch(dynamic_clear(currentRoute.identifier));
+    } catch (error: any) {
+      message.error(error?.data?.message || error?.message || 'Login failed, please try again');
     }
-  }, [items, TenantItems, BillingLoginError, TenantError, loginType, dispatch, navigate]);
+  };
   return (
     <>
       <LandingPageHeader showBackButton={true} />
@@ -168,16 +127,16 @@ const BillingLogin: React.FC = () => {
           </Form.Item>
           
           <Form.Item>
-            <Button
-              type="primary"
-              htmlType="submit"
-              className={styles.loginButtonRich}
-              loading={loginType === 'tenant' ? TenantLoading : loading}
-              size="large"
-              block
-            >
-              Log in
-            </Button>
+              <Button
+                type="primary"
+                htmlType="submit"
+                className={styles.loginButtonRich}
+                loading={loginType === 'tenant' ? tenantLoading : billingLoading}
+                size="large"
+                block
+              >
+                Log in
+              </Button>
           </Form.Item>
           
           <Form.Item className={styles.signupLinkRich}>
