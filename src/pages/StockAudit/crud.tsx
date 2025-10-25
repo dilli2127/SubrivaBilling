@@ -8,7 +8,6 @@ import AllocateDrawer from './AllocateDrawer';
 import RevertDrawer from './RevertDrawer';
 import StockOutDrawer from './StockOutDrawer';
 import StorageAllocateDrawer from './StorageAllocateDrawer';
-import { useHandleApiResponse } from '../../components/common/useHandleApiResponse';
 import { useDynamicSelector } from '../../services/redux';
 import { apiSlice } from '../../services/redux/api/apiSlice';
 

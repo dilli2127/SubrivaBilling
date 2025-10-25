@@ -13,8 +13,6 @@ export const useDashboardData = (activeTab: string, filters: DashboardFilters = 
   // RTK Query hooks
   const { 
     data: statsData, 
-    isLoading: statsLoading, 
-    error: statsError,
     refetch: refetchStats 
   } = apiSlice.useGetDashboardStatsQuery(filters, {
     skip: !loadedTabs.has('1')
@@ -22,17 +20,12 @@ export const useDashboardData = (activeTab: string, filters: DashboardFilters = 
 
   const { 
     data: salesChartData, 
-    isLoading: salesChartLoading, 
-    error: salesChartError,
     refetch: refetchSalesChart 
   } = apiSlice.useGetSalesChartQuery(filters, {
     skip: !loadedTabs.has('1')
   });
 
   const { 
-    data: purchaseChartData, 
-    isLoading: purchaseChartLoading, 
-    error: purchaseChartError,
     refetch: refetchPurchaseChart 
   } = apiSlice.useGetPurchaseChartQuery(filters, {
     skip: !loadedTabs.has('1')
@@ -40,8 +33,6 @@ export const useDashboardData = (activeTab: string, filters: DashboardFilters = 
 
   const { 
     data: stockAlertsData, 
-    isLoading: stockAlertsLoading, 
-    error: stockAlertsError,
     refetch: refetchStockAlerts 
   } = apiSlice.useGetStockAlertsQuery(filters, {
     skip: !loadedTabs.has('1')
@@ -56,7 +47,7 @@ export const useDashboardData = (activeTab: string, filters: DashboardFilters = 
         return newSet;
       });
     }
-  }, [activeTab]);
+  }, [activeTab, loadedTabs]);
 
   // Refetch data when filters change
   useEffect(() => {

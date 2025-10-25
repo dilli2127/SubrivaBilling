@@ -78,19 +78,18 @@ export const useGenericCrud = <T extends BaseEntity>(config: CrudConfig<T>): Cru
     page: pagination.current,
     limit: pagination.pageSize,
     ...filterValues,
-  }), [pagination.current, pagination.pageSize, filterValues]);
+  }), [pagination, filterValues]);
 
   // RTK Query hooks
   const {
     data: queryData,
     isLoading: loading,
-    error: queryError,
     refetch: refetchQuery
   } = entityHooks.useGetQuery(queryParams);
 
-  const [createMutation, { isLoading: createLoading, error: createError }] = entityHooks.useCreateMutation();
-  const [updateMutation, { isLoading: updateLoading, error: updateError }] = entityHooks.useUpdateMutation();
-  const [deleteMutation, { isLoading: deleteLoading, error: deleteError }] = entityHooks.useDeleteMutation();
+  const [createMutation, { isLoading: createLoading }] = entityHooks.useCreateMutation();
+  const [updateMutation, { isLoading: updateLoading }] = entityHooks.useUpdateMutation();
+  const [deleteMutation, { isLoading: deleteLoading }] = entityHooks.useDeleteMutation();
 
   // Memoize data extraction to prevent unnecessary re-renders
   const items = useMemo(() => queryData?.result || [], [queryData?.result]);
@@ -280,7 +279,7 @@ export const useGenericCrud = <T extends BaseEntity>(config: CrudConfig<T>): Cru
   // Trigger initial data load on mount
   useEffect(() => {
     getAll();
-  }, []); // Empty dependency array - only run on mount
+  }, [getAll]);
 
   return {
     // State

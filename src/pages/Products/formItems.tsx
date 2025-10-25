@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { Input, Select, Switch, Button } from 'antd';
 import { ScanOutlined } from '@ant-design/icons';
 
@@ -35,10 +35,6 @@ const HSNCodeInput = React.memo(() => (
 
 const BrandNameInput = React.memo(() => (
   <Input placeholder="e.g., HP" />
-));
-
-const BusinessTypeInput = React.memo(() => (
-  <Input placeholder="e.g., Technology" />
 ));
 
 // Memoized Select components

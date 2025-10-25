@@ -63,19 +63,6 @@
     <div id="root"></div>
     
     <!-- Electron API integration -->
-    <script>
-      // Make Electron APIs available to React app
-      if (window.electronAPI) {
-        window.isElectron = true;
-        
-        // Listen for menu events
-        window.electronAPI.onMenuEvent((event, data) => {
-          // Dispatch custom events that React can listen to
-          window.dispatchEvent(new CustomEvent('electron-menu', { detail: { type: event.replace('menu-', ''), data } }));
-        });
-      } else {
-        window.isElectron = false;
-      }
-    </script>
+    <script src="%PUBLIC_URL%/electron-integration.js"></script>
   </body>
 </html>

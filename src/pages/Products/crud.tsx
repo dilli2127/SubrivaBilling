@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState, useMemo } from 'react';
+import React, { useCallback, useState, useMemo } from 'react';
 import BarcodeScanner from '../../components/common/BarcodeScanner';
 import { PermissionAwareCrudPage } from '../../components/common/PermissionAwareCrudPage';
 import { Product } from '../../types/entities';

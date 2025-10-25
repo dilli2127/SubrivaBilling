@@ -1,4 +1,4 @@
-import React, { memo, useEffect, useMemo, useState } from 'react';
+import React, { memo, useMemo, useState } from 'react';
 import { GenericCrudPage } from '../../components/common/GenericCrudPage';
 import { usersAccountColumns } from './columns';
 import { usersAccountFormItems } from './formItems';

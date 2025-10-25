@@ -151,7 +151,6 @@ const GenericCrudPageComponent = <T extends BaseEntity>({
   // Dynamic fields hook - fetch first to get field names
   const {
     formItems: mergedFormItems,
-    loading: metadataLoading,
     refresh: refreshMetadata,
     dynamicFields,
   } = useFieldMetadata({
@@ -249,10 +248,8 @@ const GenericCrudPageComponent = <T extends BaseEntity>({
     if (!enableSuperAdminFilters) return {};
     return superAdminFilters.getApiFilters();
   }, [
-    superAdminFilters.selectedTenant,
-    superAdminFilters.selectedOrganisation,
-    superAdminFilters.selectedBranch,
     enableSuperAdminFilters,
+    superAdminFilters,
   ]);
 
   // Apply superadmin filters whenever they change

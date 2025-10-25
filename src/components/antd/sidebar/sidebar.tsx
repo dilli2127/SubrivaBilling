@@ -181,7 +181,7 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
     // Use the new permission-based filtering directly
     const items = getFilteredMenuItems();
     return items;
-  }, [userItem]); // Re-compute when user changes
+  }, []); // Remove userItem dependency since getFilteredMenuItems doesn't use it
 
   // Memoize renderMenuItems
   const renderMenuItems = useCallback(
