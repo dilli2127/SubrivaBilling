@@ -72,9 +72,9 @@ export interface DynamicApiRoutes {
 // Configuration for GenericCrudPage
 export interface DynamicEntityConfig {
   title: string;
+  entityName: string;
   columns: any[];
   formItems: any[];
-  apiRoutes: DynamicApiRoutes;
   formColumns: number;
   drawerWidth: number;
   skipMetadataWrapping: boolean;

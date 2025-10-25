@@ -1,7 +1,6 @@
 import React from 'react';
 import { Input, Switch } from 'antd';
 import { GenericCrudPage } from '../../components/common/GenericCrudPage';
-import { getEntityApiRoutes } from '../../helpers/CrudFactory';
 
 const warehouseConfig = {
   title: 'Warehouse',
@@ -115,7 +114,7 @@ const warehouseConfig = {
       ),
     },
   ],
-  apiRoutes: getEntityApiRoutes('Warehouse'),
+  entityName: 'Warehouse',
   formColumns: 2,
 };
 

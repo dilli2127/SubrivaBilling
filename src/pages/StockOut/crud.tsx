@@ -4,7 +4,6 @@ import { useApiActions } from "../../services/api/useApiActions";
 import { useDynamicSelector } from "../../services/redux";
 import { GenericCrudPage } from "../../components/common/GenericCrudPage";
 import type { StockOut } from "../../types/entities";
-import { getEntityApiRoutes } from "../../helpers/CrudFactory";
 const { Option } = Select;
 type StockAudit = {
   _id: string;
@@ -137,7 +136,7 @@ const StockOutCrud: React.FC = () => {
         component: <Input.TextArea rows={3} placeholder="Optional note" />,
       },
     ],
-    apiRoutes: getEntityApiRoutes("StockOut"),
+    entityName: "StockOut",
     formColumns: 2,
   };
 

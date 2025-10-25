@@ -6,7 +6,6 @@ import { useApiActions } from "../../services/api/useApiActions";
 import { useDynamicSelector } from "../../services/redux";
 import { GenericCrudPage } from "../../components/common/GenericCrudPage";
 import { Variant } from "../../types/entities";
-import { getEntityApiRoutes } from "../../helpers/CrudFactory";
 import { getCurrentUserRole } from "../../helpers/auth";
 
 const VariantCrud: React.FC = () => {
@@ -178,7 +177,7 @@ const VariantCrud: React.FC = () => {
         ),
       }] : []),
     ],
-    apiRoutes: getEntityApiRoutes("Variant"),
+    entityName: "Variant",
     formColumns: 2,
     canEdit: (record: Variant) => {
       // If global_variant is true, only superadmin can edit

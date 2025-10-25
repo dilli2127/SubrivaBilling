@@ -2,7 +2,6 @@ import React, { useMemo } from 'react';
 import { Input, Switch, Tag, Tooltip } from 'antd';
 import { CheckCircleTwoTone, AppstoreAddOutlined } from '@ant-design/icons';
 import { GenericCrudPage } from '../../components/common/GenericCrudPage';
-import { getEntityApiRoutes } from '../../helpers/CrudFactory';
 import { getCurrentUserRole } from '../../helpers/auth';
 
 const { TextArea } = Input;
@@ -160,7 +159,7 @@ const EntityDefinitionsCrud: React.FC = () => {
             ]
           : []),
       ],
-      apiRoutes: getEntityApiRoutes('EntityDefinition'),
+      entityName: 'EntityDefinition',
       formColumns: 2,
       drawerWidth: 600,
     }),

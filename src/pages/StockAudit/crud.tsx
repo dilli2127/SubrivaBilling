@@ -3,7 +3,6 @@ import { Form, message } from 'antd';
 import { useApiActions } from '../../services/api/useApiActions';
 import { useDynamicSelector } from '../../services/redux';
 import { GenericCrudPage } from '../../components/common/GenericCrudPage';
-import { getEntityApiRoutes } from '../../helpers/CrudFactory';
 import { stockAuditColumns } from './columns';
 import { getStockAuditFormItems } from './formItems';
 import AllocateDrawer from './AllocateDrawer';
@@ -187,7 +186,7 @@ const StockAuditCrud: React.FC = () => {
       vendorloading,
       wareHouseLoading
     ),
-    apiRoutes: getEntityApiRoutes('StockAudit'),
+    entityName: 'StockAudit',
     formColumns: 3,
     drawerWidth: 1200,
   };

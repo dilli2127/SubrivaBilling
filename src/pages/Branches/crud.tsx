@@ -1,6 +1,5 @@
 import React, { useEffect } from 'react';
 import { GenericCrudPage } from '../../components/common/GenericCrudPage';
-import { getEntityApiRoutes } from '../../helpers/CrudFactory';
 import { branchesFormItems } from './formItems';
 import { brancheColumns } from './columns';
 import { useApiActions } from '../../services/api/useApiActions';
@@ -34,14 +33,13 @@ const BranchesCrud: React.FC = () => {
     <GenericCrudPage
       config={{
         title: 'Branches',
+        entityName: 'Branches',
         columns: brancheColumns,
         formItems: branchesFormItems(organisationItems?.result, userRole || ''),
-        apiRoutes: getEntityApiRoutes('Braches'),
         formColumns: 2,
       }}
       customButtons={customButtons}
       enableDynamicFields={true}
-      entityName="branches"
     />
   );
 };

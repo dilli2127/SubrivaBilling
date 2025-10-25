@@ -1,27 +1,16 @@
 import { useCallback, useEffect, useState } from 'react';
-import { useDispatch } from 'react-redux';
 import { Form } from 'antd';
-import {
-  dynamic_request,
-  useDynamicSelector,
-  dynamic_clear,
-} from '../services/redux';
+import { getEntityHooks } from '../services/redux/api/apiSlice';
 import { CrudColumn, CrudFormItem } from '../components/common/GenericCrudPage';
 import { showToast } from '../helpers/Common_functions';
 import { BaseEntity } from '../types/entities';
-import { Dispatch } from 'redux';
 import dayjs from 'dayjs';
 
 export interface CrudConfig<T extends BaseEntity> {
   title: string;
+  entityName: string; // Entity name for RTK Query (e.g., 'Product', 'Customer')
   columns: CrudColumn[];
   formItems: CrudFormItem[];
-  apiRoutes: {
-    get: { method: string; endpoint: string; identifier: string };
-    create: { method: string; endpoint: string; identifier: string };
-    update: { method: string; endpoint: string; identifier: string };
-    delete: { method: string; endpoint: string; identifier: string };
-  };
   formColumns?: number;
   drawerWidth?: number;
   canEdit?: (record: T) => boolean;
@@ -32,7 +21,6 @@ export interface CrudConfig<T extends BaseEntity> {
 }
 
 export const useGenericCrud = <T extends BaseEntity>(config: CrudConfig<T>) => {
-  const dispatch: Dispatch<any> = useDispatch();
   const [form] = Form.useForm();
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [initialValues, setInitialValues] = useState<Partial<T>>({});
@@ -42,77 +30,85 @@ export const useGenericCrud = <T extends BaseEntity>(config: CrudConfig<T>) => {
     pageSize: 10,
   });
 
-  // Selectors
-  const { loading, items } = useDynamicSelector(
-    config.apiRoutes.get.identifier
-  );
-  const { loading: createLoading, items: createItems, error: createError } = useDynamicSelector(
-    config.apiRoutes.create.identifier
-  );
-  const { loading: updateLoading, items: updateItems, error: updateError } = useDynamicSelector(
-    config.apiRoutes.update.identifier
-  );
-  const { loading: deleteLoading, items: deleteItems, error: deleteError } = useDynamicSelector(
-    config.apiRoutes.delete.identifier
-  );
+  // Get RTK Query hooks for this entity
+  const entityHooks = getEntityHooks(config.entityName);
+  
+  // Query parameters
+  const queryParams = {
+    page: pagination.current,
+    limit: pagination.pageSize,
+    ...filterValues,
+  };
 
-  // API call function
-  const callApi = useCallback(
-    (method: string, endpoint: string, data: any, identifier: string) => {
-      dispatch(dynamic_request({ method, endpoint, data }, identifier) as any);
-    },
-    [dispatch]
-  );
+  // RTK Query hooks
+  const {
+    data: queryData,
+    isLoading: loading,
+    error: queryError,
+    refetch: refetchQuery
+  } = entityHooks.useGetQuery(queryParams);
 
-  // CRUD operations
+  const [createMutation, { isLoading: createLoading, error: createError }] = entityHooks.useCreateMutation();
+  const [updateMutation, { isLoading: updateLoading, error: updateError }] = entityHooks.useUpdateMutation();
+  const [deleteMutation, { isLoading: deleteLoading, error: deleteError }] = entityHooks.useDeleteMutation();
+
+  // Extract data from RTK Query response
+  const items = queryData?.result || [];
+  const paginationData = queryData?.pagination;
+
+  console.log("RTK Query data:", queryData);
+  console.log("items:", items);
+  // CRUD operations using RTK Query
   const getAll = useCallback(() => {
-    const apiData = {
-      ...filterValues,
-      pageNumber: pagination.current,
-      pageLimit: pagination.pageSize,
-    };
-    callApi(
-      config.apiRoutes.get.method,
-      config.apiRoutes.get.endpoint,
-      apiData,
-      config.apiRoutes.get.identifier
-    );
-  }, [callApi, config.apiRoutes.get, filterValues, pagination]);
+    refetchQuery();
+  }, [refetchQuery]);
 
   const create = useCallback(
-    (data: Partial<T>) => {
-      callApi(
-        config.apiRoutes.create.method,
-        config.apiRoutes.create.endpoint,
-        data,
-        config.apiRoutes.create.identifier
-      );
+    async (data: Partial<T>) => {
+      try {
+        const result = await createMutation(data).unwrap();
+        showToast('success', `${config.title} created successfully`);
+        refetchQuery();
+        return result;
+      } catch (error: any) {
+        const errorMessage = error?.data?.message || `Failed to create ${config.title}`;
+        showToast('error', errorMessage);
+        throw error;
+      }
     },
-    [callApi, config.apiRoutes.create]
+    [createMutation, config.title, refetchQuery]
   );
 
   const update = useCallback(
-    (id: string, data: Partial<T>) => {
-      callApi(
-        config.apiRoutes.update.method,
-        `${config.apiRoutes.update.endpoint}/${id}`,
-        data,
-        config.apiRoutes.update.identifier
-      );
+    async (id: string, data: Partial<T>) => {
+      try {
+        const result = await updateMutation({ id, data }).unwrap();
+        showToast('success', `${config.title} updated successfully`);
+        refetchQuery();
+        return result;
+      } catch (error: any) {
+        const errorMessage = error?.data?.message || `Failed to update ${config.title}`;
+        showToast('error', errorMessage);
+        throw error;
+      }
     },
-    [callApi, config.apiRoutes.update]
+    [updateMutation, config.title, refetchQuery]
   );
 
   const remove = useCallback(
-    (id: string) => {
-      callApi(
-        config.apiRoutes.delete.method,
-        `${config.apiRoutes.delete.endpoint}/${id}`,
-        { _id: id },
-        config.apiRoutes.delete.identifier
-      );
+    async (id: string) => {
+      try {
+        const result = await deleteMutation(id).unwrap();
+        showToast('success', `${config.title} deleted successfully`);
+        refetchQuery();
+        return result;
+      } catch (error: any) {
+        const errorMessage = error?.data?.message || `Failed to delete ${config.title}`;
+        showToast('error', errorMessage);
+        throw error;
+      }
     },
-    [callApi, config.apiRoutes.delete]
+    [deleteMutation, config.title, refetchQuery]
   );
 
   const handlePaginationChange = useCallback((pageNumber: number, pageLimit: number) => {
@@ -200,7 +196,7 @@ export const useGenericCrud = <T extends BaseEntity>(config: CrudConfig<T>) => {
   }, [form]);
 
   const handleSubmit = useCallback(
-    (values: Partial<T>) => {
+    async (values: Partial<T>) => {
       let payload: any = { ...values };
 
       // Handle metadata wrapping based on configuration
@@ -244,77 +240,20 @@ export const useGenericCrud = <T extends BaseEntity>(config: CrudConfig<T>) => {
         }
       }
 
-      if (initialValues._id) {
-        update(initialValues._id, payload);
-      } else {
-        create(payload);
+      try {
+        if (initialValues._id) {
+          await update(initialValues._id, payload);
+        } else {
+          await create(payload);
+        }
+        resetForm();
+      } catch (error) {
+        // Error handling is done in the mutation functions
+        console.error('Submit error:', error);
       }
     },
-    [initialValues._id, create, update, config.dynamicFieldNames, config.metadataFieldName, config.skipMetadataWrapping]
+    [initialValues._id, create, update, resetForm, config.dynamicFieldNames, config.metadataFieldName, config.skipMetadataWrapping]
   );
-
-  // No local filtering; all filtering is server-side
-  // API response handlers
-  useEffect(() => {
-    if (createItems?.statusCode === 200) {
-      showToast('success', `${config.title} created successfully`);
-      getAll();
-      resetForm();
-      dispatch(dynamic_clear(config.apiRoutes.create.identifier));
-    } else if (createError) {
-      const errorMessage =
-        createError.message || `Failed to create ${config.title}`;
-      showToast('error', errorMessage);
-    }
-  }, [
-    createItems,
-    createError,
-    config.title,
-    getAll,
-    resetForm,
-    dispatch,
-    config.apiRoutes.create.identifier,
-  ]);
-
-  useEffect(() => {
-    if (updateItems?.statusCode === 200) {
-      showToast('success', `${config.title} updated successfully`);
-      getAll();
-      resetForm();
-      dispatch(dynamic_clear(config.apiRoutes.update.identifier));
-    } else if (updateError) {
-      const errorMessage =
-        updateError.message || `Failed to update ${config.title}`;
-      showToast('error', errorMessage);
-    }
-  }, [
-    updateItems,
-    updateError,
-    config.title,
-    getAll,
-    resetForm,
-    dispatch,
-    config.apiRoutes.update.identifier,
-  ]);
-
-  useEffect(() => {
-    if (deleteItems?.statusCode === 200) {
-      showToast('success', `${config.title} deleted successfully`);
-      getAll();
-      dispatch(dynamic_clear(config.apiRoutes.delete.identifier));
-    } else if (deleteError) {
-      const errorMessage =
-        deleteError.message || `Failed to delete ${config.title}`;
-      showToast('error', errorMessage);
-    }
-  }, [
-    deleteItems,
-    deleteError,
-    config.title,
-    getAll,
-    dispatch,
-    config.apiRoutes.delete.identifier,
-  ]);
 
   // Load data on mount and when filters change
   useEffect(() => {
@@ -327,8 +266,8 @@ export const useGenericCrud = <T extends BaseEntity>(config: CrudConfig<T>) => {
     createLoading,
     updateLoading,
     deleteLoading,
-    items: items?.result,
-    pagination: items?.pagination,
+    items,
+    pagination: paginationData,
     drawerVisible,
     initialValues,
     form,

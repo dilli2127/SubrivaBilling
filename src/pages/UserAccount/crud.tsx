@@ -1,6 +1,5 @@
 import React, { memo, useEffect, useMemo, useState } from 'react';
 import { GenericCrudPage } from '../../components/common/GenericCrudPage';
-import { getEntityApiRoutes } from '../../helpers/CrudFactory';
 import { usersAccountColumns } from './columns';
 import { usersAccountFormItems } from './formItems';
 import { useApiActions } from '../../services/api/useApiActions';
@@ -86,7 +85,7 @@ const UserAccountCrud: React.FC = () => {
           selectedOrganisationId,
           userItemRole,
         }),
-        apiRoutes: getEntityApiRoutes('BillingUsers'),
+        entityName: 'BillingUsers',
         formColumns: 2,
       }}
       onValuesChange={handleValuesChange}

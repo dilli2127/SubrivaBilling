@@ -8,7 +8,6 @@ import {
   FileTextOutlined,
   TagsOutlined,
 } from "@ant-design/icons";
-import { getEntityApiRoutes } from "../../helpers/CrudFactory";
 import dayjs from "dayjs";
 
 const ExpensesCrud = () => {
@@ -129,13 +128,11 @@ const ExpensesCrud = () => {
       ),
     },
   ];
-  const apiRoutes = getEntityApiRoutes("Expenses");
-
   const config = {
     title: "Expenses",
+    entityName: "Expenses",
     columns,
     formItems,
-    apiRoutes,
     formColumns: 2,
   };
   return (

@@ -8,7 +8,6 @@ import {
 } from '@ant-design/icons';
 import { PermissionAwareCrudPage } from '../../components/common/PermissionAwareCrudPage';
 import { Customer } from '../../types/entities';
-import { getEntityApiRoutes } from '../../helpers/CrudFactory';
 import { RESOURCES } from '../../helpers/permissionHelper';
 
 const { Option } = Select;
@@ -112,7 +111,7 @@ const customerConfig = {
       ),
     },
   ],
-  apiRoutes: getEntityApiRoutes('Customer'),
+  entityName: 'Customer',
   formColumns: 2,
   drawerWidth: 600,
 };

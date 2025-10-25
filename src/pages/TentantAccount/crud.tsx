@@ -1,6 +1,5 @@
 import React, { memo, useEffect, useState } from 'react';
 import { GenericCrudPage } from '../../components/common/GenericCrudPage';
-import { getEntityApiRoutes } from '../../helpers/CrudFactory';
 import { tenantAccountColumns } from './columns';
 import { tenantAccountFormItems } from './formItems';
 
@@ -11,7 +10,7 @@ const TenantAccount: React.FC = () => {
         title: 'Tenant Accounts',
         columns: tenantAccountColumns,
         formItems: tenantAccountFormItems,
-        apiRoutes: getEntityApiRoutes('Tenant'),
+        entityName: 'Tenant',
         formColumns: 2,
       }}
       enableDynamicFields={true}

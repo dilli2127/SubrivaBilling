@@ -2,7 +2,6 @@ import React from "react";
 import { GenericCrudPage } from "../../components/common/GenericCrudPage";
 import { DatePicker, Input, Select } from "antd";
 import { Option } from "antd/es/mentions";
-import { getEntityApiRoutes } from "../../helpers/CrudFactory";
 
 const VariantCrud = () => {
   const formItems = [
@@ -58,13 +57,11 @@ const VariantCrud = () => {
     { title: "Note", dataIndex: "note", key: "note" },
   ];
 
-  const apiRoutes = getEntityApiRoutes("PaymentHistory");
-
   const config = {
     title: "Payment History",
+    entityName: "PaymentHistory",
     columns,
     formItems,
-    apiRoutes,
     formColumns: 2,
   };
   return <GenericCrudPage config={config} />;

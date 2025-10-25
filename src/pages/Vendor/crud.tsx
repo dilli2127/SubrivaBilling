@@ -2,7 +2,6 @@ import React from 'react';
 import { Input, Switch } from 'antd';
 import { GenericCrudPage } from '../../components/common/GenericCrudPage';
 import { Vendor } from '../../types/entities';
-import { getEntityApiRoutes } from '../../helpers/CrudFactory';
 
 const vendorConfig = {
   title: 'Vendor',
@@ -131,7 +130,7 @@ const vendorConfig = {
       ),
     },
   ],
-  apiRoutes: getEntityApiRoutes('Vendor'),
+  entityName: 'Vendor',
   formColumns: 2,
 };
 

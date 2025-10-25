@@ -2,7 +2,6 @@ import React from 'react';
 import { Input, Select, InputNumber } from 'antd';
 import { GenericCrudPage } from '../../components/common/GenericCrudPage';
 import { Rack } from '../../types/entities';
-import { getEntityApiRoutes } from '../../helpers/CrudFactory';
 
 const { TextArea } = Input;
 
@@ -31,7 +30,7 @@ const rackConfig = {
       component: <TextArea placeholder="Enter notes" rows={3} />,
     },
   ],
-  apiRoutes: getEntityApiRoutes('Rack'),
+  entityName: 'Rack',
   formColumns: 2,
 };
 

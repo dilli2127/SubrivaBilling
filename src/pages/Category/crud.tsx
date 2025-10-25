@@ -3,7 +3,6 @@ import { Input, InputNumber, Select, Switch, Tag } from 'antd';
 import { CheckCircleTwoTone } from '@ant-design/icons';
 import { GenericCrudPage } from '../../components/common/GenericCrudPage';
 import { Category } from '../../types/entities';
-import { getEntityApiRoutes } from '../../helpers/CrudFactory';
 import { getCurrentUserRole } from '../../helpers/auth';
 
 const CategoryCrud: React.FC = () => {
@@ -185,7 +184,7 @@ const CategoryCrud: React.FC = () => {
             ]
           : []),
       ],
-      apiRoutes: getEntityApiRoutes('Category'),
+      entityName: 'Category',
       formColumns: 2,
       canEdit: (record: Category) => {
         // If global_category is true, only superadmin can edit

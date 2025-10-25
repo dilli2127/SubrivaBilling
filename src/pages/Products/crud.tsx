@@ -6,7 +6,6 @@ import { Dispatch } from 'redux';
 import BarcodeScanner from '../../components/common/BarcodeScanner';
 import { PermissionAwareCrudPage } from '../../components/common/PermissionAwareCrudPage';
 import { Product } from '../../types/entities';
-import { getEntityApiRoutes } from '../../helpers/CrudFactory';
 import { getCurrentUserRole } from '../../helpers/auth';
 import { RESOURCES } from '../../helpers/permissionHelper';
 import { productsColumns } from './columns';
@@ -72,7 +71,7 @@ const ProductCrud: React.FC = () => {
       onScanClick: () => setScannerVisible(true),
       onBarcodeInputFocus: () => setCurrentForm('barcode'),
     }),
-    apiRoutes: getEntityApiRoutes('Product'),
+    entityName: 'Product',
     formColumns: 2,
     // Custom business logic for global products
     // Note: PermissionAwareCrudPage will combine these with user permissions

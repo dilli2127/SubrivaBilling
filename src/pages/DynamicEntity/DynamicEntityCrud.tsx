@@ -21,13 +21,13 @@ const DynamicEntityCrud: React.FC = () => {
   } = useDynamicEntity();
 
   const config = useMemo((): DynamicEntityConfig | null => {
-    if (!entityDef || !dynamicApiRoutes) return null;
+    if (!entityDef || !entityName) return null;
 
     return {
       title: entityDef.plural_name,
+      entityName: entityName,
       columns: defaultColumns,
       formItems: [],
-      apiRoutes: dynamicApiRoutes,
       formColumns: 2,
       drawerWidth: 700,
       skipMetadataWrapping: true,
@@ -35,7 +35,7 @@ const DynamicEntityCrud: React.FC = () => {
       enableDynamicFields: true,
       enableSuperAdminFilters: true,
     };
-  }, [entityDef, dynamicApiRoutes, defaultColumns]);
+  }, [entityDef, entityName, defaultColumns]);
 
   const handleValuesChange = useCallback<FormValuesChangeHandler>((_changed, all) => {
     if (entityDef && !all.entity_name) {
