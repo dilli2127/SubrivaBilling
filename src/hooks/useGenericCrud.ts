@@ -60,7 +60,9 @@ export interface CrudReturn<T extends BaseEntity> {
   skipMetadataWrapping?: boolean;
 }
 
-export const useGenericCrud = <T extends BaseEntity>(config: CrudConfig<T>): CrudReturn<T> => {
+export const useGenericCrud = <T extends BaseEntity>(
+  config: CrudConfig<T>
+): CrudReturn<T> => {
   const [form] = Form.useForm();
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [initialValues, setInitialValues] = useState<Partial<T>>({});
@@ -72,28 +74,37 @@ export const useGenericCrud = <T extends BaseEntity>(config: CrudConfig<T>): Cru
 
   // Get RTK Query hooks for this entity
   const entityHooks = getEntityHooks(config.entityName);
-  
+
   // Memoize query parameters to prevent unnecessary re-renders
-  const queryParams = useMemo(() => ({
-    page: pagination.current,
-    limit: pagination.pageSize,
-    ...filterValues,
-  }), [pagination, filterValues]);
+  const queryParams = useMemo(
+    () => ({
+      page: pagination.current,
+      limit: pagination.pageSize,
+      ...filterValues,
+    }),
+    [pagination, filterValues]
+  );
 
   // RTK Query hooks
   const {
     data: queryData,
     isLoading: loading,
-    refetch: refetchQuery
+    refetch: refetchQuery,
   } = entityHooks.useGetQuery(queryParams);
 
-  const [createMutation, { isLoading: createLoading }] = entityHooks.useCreateMutation();
-  const [updateMutation, { isLoading: updateLoading }] = entityHooks.useUpdateMutation();
-  const [deleteMutation, { isLoading: deleteLoading }] = entityHooks.useDeleteMutation();
+  const [createMutation, { isLoading: createLoading }] =
+    entityHooks.useCreateMutation();
+  const [updateMutation, { isLoading: updateLoading }] =
+    entityHooks.useUpdateMutation();
+  const [deleteMutation, { isLoading: deleteLoading }] =
+    entityHooks.useDeleteMutation();
 
   // Memoize data extraction to prevent unnecessary re-renders
   const items = useMemo(() => queryData?.result || [], [queryData?.result]);
-  const paginationData = useMemo(() => queryData?.pagination, [queryData?.pagination]);
+  const paginationData = useMemo(
+    () => queryData?.pagination,
+    [queryData?.pagination]
+  );
   const getAll = useCallback(() => {
     refetchQuery();
   }, [refetchQuery]);
@@ -106,8 +117,8 @@ export const useGenericCrud = <T extends BaseEntity>(config: CrudConfig<T>): Cru
         refetchQuery();
         return result;
       } catch (error: unknown) {
-        const errorMessage = 
-          (error as { data?: { message?: string } })?.data?.message || 
+        const errorMessage =
+          (error as { data?: { message?: string } })?.data?.message ||
           `Failed to create ${config.title}`;
         showToast('error', errorMessage);
         throw error;
@@ -124,8 +135,8 @@ export const useGenericCrud = <T extends BaseEntity>(config: CrudConfig<T>): Cru
         refetchQuery();
         return result;
       } catch (error: unknown) {
-        const errorMessage = 
-          (error as { data?: { message?: string } })?.data?.message || 
+        const errorMessage =
+          (error as { data?: { message?: string } })?.data?.message ||
           `Failed to update ${config.title}`;
         showToast('error', errorMessage);
         throw error;
@@ -142,8 +153,8 @@ export const useGenericCrud = <T extends BaseEntity>(config: CrudConfig<T>): Cru
         refetchQuery();
         return result;
       } catch (error: unknown) {
-        const errorMessage = 
-          (error as { data?: { message?: string } })?.data?.message || 
+        const errorMessage =
+          (error as { data?: { message?: string } })?.data?.message ||
           `Failed to delete ${config.title}`;
         showToast('error', errorMessage);
         throw error;
@@ -152,60 +163,83 @@ export const useGenericCrud = <T extends BaseEntity>(config: CrudConfig<T>): Cru
     [deleteMutation, config.title, refetchQuery]
   );
 
-  const handlePaginationChange = useCallback((pageNumber: number, pageLimit: number) => {
-    setPagination({ current: pageNumber, pageSize: pageLimit });
-  }, []);
-
-  // Memoize date validation regex to prevent recreation
-  const dateRegex = useMemo(() => 
-    /^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|[+-]\d{2}:\d{2})?)?$/,
+  const handlePaginationChange = useCallback(
+    (pageNumber: number, pageLimit: number) => {
+      setPagination({ current: pageNumber, pageSize: pageLimit });
+    },
     []
   );
 
-  const isStrictDate = useCallback((value: string): boolean => {
-    return dateRegex.test(value);
-  }, [dateRegex]);
+  // Memoize date validation regex to prevent recreation
+  const dateRegex = useMemo(
+    () =>
+      /^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|[+-]\d{2}:\d{2})?)?$/,
+    []
+  );
+
+  const isStrictDate = useCallback(
+    (value: string): boolean => {
+      return dateRegex.test(value);
+    },
+    [dateRegex]
+  );
 
   // Optimized date parsing function
-  const parseDateValue = useCallback((value: unknown): unknown => {
-    if (typeof value === 'string' && isStrictDate(value)) {
-      const parsedDate = dayjs(value, undefined, true);
-      return parsedDate.isValid() ? parsedDate : value;
-    }
-    return value;
-  }, [isStrictDate]);
+  const parseDateValue = useCallback(
+    (value: unknown): unknown => {
+      if (typeof value === 'string' && isStrictDate(value)) {
+        const parsedDate = dayjs(value, undefined, true);
+        return parsedDate.isValid() ? parsedDate : value;
+      }
+      return value;
+    },
+    [isStrictDate]
+  );
 
   // Event handlers
-  const handleEdit = useCallback((record: T) => {
-    const newRecord: Record<string, unknown> = {};
-    const metadataFieldName = config.metadataFieldName || 'meta_data_values';
+  const handleEdit = useCallback(
+    (record: T) => {
+      const newRecord: Record<string, unknown> = {};
+      const metadataFieldName = config.metadataFieldName || 'meta_data_values';
 
-    // Process main record fields
-    Object.entries(record).forEach(([key, value]) => {
-      // Skip metadata field - we'll handle it separately
-      if (key === metadataFieldName || key === 'meta_data_values' || key === 'custom_data') {
-        return;
-      }
-
-      newRecord[key] = parseDateValue(value);
-    });
-
-    // If metadata field exists, flatten it into the record
-    const metaDataValues = (record as Record<string, unknown>)[metadataFieldName];
-    if (metaDataValues && typeof metaDataValues === 'object' && metaDataValues !== null) {
-      Object.entries(metaDataValues).forEach(([key, value]) => {
-        // Skip if value is null or undefined
-        if (value === null || value === undefined) {
+      // Process main record fields
+      Object.entries(record).forEach(([key, value]) => {
+        // Skip metadata field - we'll handle it separately
+        if (
+          key === metadataFieldName ||
+          key === 'meta_data_values' ||
+          key === 'custom_data'
+        ) {
           return;
         }
-        
+
         newRecord[key] = parseDateValue(value);
       });
-    }
 
-    setInitialValues(newRecord as Partial<T>);
-    setDrawerVisible(true);
-  }, [config.metadataFieldName, parseDateValue]);
+      // If metadata field exists, flatten it into the record
+      const metaDataValues = (record as Record<string, unknown>)[
+        metadataFieldName
+      ];
+      if (
+        metaDataValues &&
+        typeof metaDataValues === 'object' &&
+        metaDataValues !== null
+      ) {
+        Object.entries(metaDataValues).forEach(([key, value]) => {
+          // Skip if value is null or undefined
+          if (value === null || value === undefined) {
+            return;
+          }
+
+          newRecord[key] = parseDateValue(value);
+        });
+      }
+
+      setInitialValues(newRecord as Partial<T>);
+      setDrawerVisible(true);
+    },
+    [config.metadataFieldName, parseDateValue]
+  );
 
   const handleDelete = useCallback(
     (record: T) => {
@@ -225,37 +259,40 @@ export const useGenericCrud = <T extends BaseEntity>(config: CrudConfig<T>): Cru
   }, [form]);
 
   // Optimized payload processing function
-  const processPayload = useCallback((values: Partial<T>): Record<string, unknown> => {
-    if (!config.dynamicFieldNames || config.dynamicFieldNames.length === 0) {
-      return values as Record<string, unknown>;
-    }
-
-    const staticFields: Record<string, unknown> = {};
-    const metaDataValues: Record<string, unknown> = {};
-    const metadataFieldName = config.metadataFieldName || 'meta_data_values';
-
-    Object.entries(values).forEach(([key, value]) => {
-      if (config.dynamicFieldNames?.includes(key)) {
-        // This is a dynamic metadata field
-        if (value !== undefined) {
-          metaDataValues[key] = value;
-        }
-      } else {
-        // This is a static field
-        staticFields[key] = value;
+  const processPayload = useCallback(
+    (values: Partial<T>): Record<string, unknown> => {
+      if (!config.dynamicFieldNames || config.dynamicFieldNames.length === 0) {
+        return values as Record<string, unknown>;
       }
-    });
 
-    // Return payload based on configuration
-    if (Object.keys(metaDataValues).length > 0) {
-      return {
-        ...staticFields,
-        [metadataFieldName]: metaDataValues,
-      };
-    }
-    
-    return staticFields;
-  }, [config.dynamicFieldNames, config.metadataFieldName]);
+      const staticFields: Record<string, unknown> = {};
+      const metaDataValues: Record<string, unknown> = {};
+      const metadataFieldName = config.metadataFieldName || 'meta_data_values';
+
+      Object.entries(values).forEach(([key, value]) => {
+        if (config.dynamicFieldNames?.includes(key)) {
+          // This is a dynamic metadata field
+          if (value !== undefined) {
+            metaDataValues[key] = value;
+          }
+        } else {
+          // This is a static field
+          staticFields[key] = value;
+        }
+      });
+
+      // Return payload based on configuration
+      if (Object.keys(metaDataValues).length > 0) {
+        return {
+          ...staticFields,
+          [metadataFieldName]: metaDataValues,
+        };
+      }
+
+      return staticFields;
+    },
+    [config.dynamicFieldNames, config.metadataFieldName]
+  );
 
   const handleSubmit = useCallback(
     async (values: Partial<T>) => {
@@ -275,7 +312,6 @@ export const useGenericCrud = <T extends BaseEntity>(config: CrudConfig<T>): Cru
     },
     [initialValues._id, create, update, resetForm, processPayload]
   );
-
   // Trigger initial data load on mount
   useEffect(() => {
     getAll();

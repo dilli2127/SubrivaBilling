@@ -26,6 +26,20 @@ const PerformanceMonitor: React.FC<PerformanceMonitorProps> = ({
     userInteractions: 0,
   });
 
+  // Memory cleanup utility
+  const triggerMemoryCleanup = useCallback(() => {
+    if ('memory' in performance) {
+      const memory = (performance as any).memory;
+      if (memory && memory.usedJSHeapSize > 100 * 1024 * 1024) { // 100MB
+        // Force garbage collection if available (Chrome DevTools)
+        if (window.gc) {
+          window.gc();
+        }
+        console.info('Memory cleanup triggered');
+      }
+    }
+  }, []);
+
   // Track page load performance
   useEffect(() => {
     if (enablePerformanceTracking) {
@@ -45,20 +59,31 @@ const PerformanceMonitor: React.FC<PerformanceMonitorProps> = ({
     }
   }, [enablePerformanceTracking]);
 
-  // Track memory usage
+  // Track memory usage with optimized interval
   useEffect(() => {
     if (enablePerformanceTracking && 'memory' in performance) {
       const updateMemoryUsage = () => {
         const memory = (performance as any).memory;
         if (memory) {
-          setMetrics(prev => ({ 
-            ...prev, 
-            memoryUsage: memory.usedJSHeapSize / 1024 / 1024 // Convert to MB
-          }));
+          const currentMemory = memory.usedJSHeapSize / 1024 / 1024; // Convert to MB
+          setMetrics(prev => {
+            // Only update if memory usage changed significantly (avoid unnecessary re-renders)
+            if (Math.abs(prev.memoryUsage - currentMemory) > 1) {
+              return { 
+                ...prev, 
+                memoryUsage: currentMemory
+              };
+            }
+            return prev;
+          });
         }
       };
 
-      const interval = setInterval(updateMemoryUsage, 5000); // Update every 5 seconds
+      // Initial check
+      updateMemoryUsage();
+      
+      // Check every 10 seconds instead of 5 to reduce overhead
+      const interval = setInterval(updateMemoryUsage, 10000);
       return () => clearInterval(interval);
     }
   }, [enablePerformanceTracking]);
@@ -103,17 +128,25 @@ const PerformanceMonitor: React.FC<PerformanceMonitorProps> = ({
     setMetrics(prev => ({ ...prev, userInteractions: prev.userInteractions + 1 }));
   }, []);
 
-  // Track user interactions
+  // Track user interactions with optimized cleanup
   useEffect(() => {
     if (enablePerformanceTracking) {
       const events = ['click', 'keydown', 'scroll', 'input'];
+      const eventHandlers = new Map();
+      
       events.forEach(event => {
-        document.addEventListener(event, handleUserInteraction, { passive: true });
+        const handler = () => handleUserInteraction();
+        eventHandlers.set(event, handler);
+        document.addEventListener(event, handler, { passive: true });
       });
 
       return () => {
         events.forEach(event => {
-          document.removeEventListener(event, handleUserInteraction);
+          const handler = eventHandlers.get(event);
+          if (handler) {
+            document.removeEventListener(event, handler);
+            eventHandlers.delete(event);
+          }
         });
       };
     }
@@ -122,22 +155,31 @@ const PerformanceMonitor: React.FC<PerformanceMonitorProps> = ({
   // Notify parent component of metrics updates
   useEffect(() => {
     onMetricsUpdate?.(metrics);
-  }, [metrics, onMetricsUpdate]);
+  }, [metrics]); // Remove onMetricsUpdate from dependencies to prevent unnecessary re-renders
 
-  // Log performance warnings
+  // Log performance warnings with improved thresholds
   useEffect(() => {
     if (metrics.pageLoadTime > 3000) {
       console.warn(`Slow page load detected: ${metrics.pageLoadTime}ms`);
     }
     
-    if (metrics.memoryUsage > 100) {
-      console.warn(`High memory usage detected: ${metrics.memoryUsage}MB`);
+    // More granular memory warnings
+    if (metrics.memoryUsage > 150) {
+      console.error(`Critical memory usage detected: ${metrics.memoryUsage}MB - Consider refreshing the page`);
+      triggerMemoryCleanup();
+    } else if (metrics.memoryUsage > 100) {
+      console.warn(`High memory usage detected: ${metrics.memoryUsage}MB - Monitor for memory leaks`);
+      triggerMemoryCleanup();
+    } else if (metrics.memoryUsage > 80) {
+      console.info(`Memory usage is elevated: ${metrics.memoryUsage}MB`);
     }
     
-    if (metrics.errorCount > 5) {
+    if (metrics.errorCount > 10) {
+      console.error(`Critical error count detected: ${metrics.errorCount} errors`);
+    } else if (metrics.errorCount > 5) {
       console.warn(`High error count detected: ${metrics.errorCount} errors`);
     }
-  }, [metrics]);
+  }, [metrics, triggerMemoryCleanup]);
 
   // This component doesn't render anything visible
   return null;
