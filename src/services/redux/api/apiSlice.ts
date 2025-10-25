@@ -14,13 +14,13 @@ const baseQuery = fetchBaseQuery({
       headers.set('Token', token);
       headers.set('authorization', `Bearer ${token}`);
     }
-    
+
     // Add CSRF token using existing helper
     const csrfToken = getCSRFToken();
     if (csrfToken) {
       headers.set('X-CSRF-Token', csrfToken);
     }
-    
+
     return headers;
   },
 });
@@ -28,7 +28,7 @@ const baseQuery = fetchBaseQuery({
 // Enhanced base query with error handling using existing auth system
 const baseQueryWithReauth = async (args: any, api: any, extraOptions: any) => {
   let result = await baseQuery(args, api, extraOptions);
-  
+
   if (result.error && result.error.status === 401) {
     // Try to refresh token using existing auth system
     const refreshToken = localStorage.getItem('refreshToken');
@@ -42,14 +42,16 @@ const baseQueryWithReauth = async (args: any, api: any, extraOptions: any) => {
         api,
         extraOptions
       );
-      
+
       if (refreshResult.data) {
-        const { accessToken, refreshToken: newRefreshToken } = (refreshResult.data as any).result;
+        const { accessToken, refreshToken: newRefreshToken } = (
+          refreshResult.data as any
+        ).result;
         localStorage.setItem('accessToken', accessToken);
         if (newRefreshToken) {
           localStorage.setItem('refreshToken', newRefreshToken);
         }
-        
+
         // Retry original request
         result = await baseQuery(args, api, extraOptions);
       } else {
@@ -60,7 +62,7 @@ const baseQueryWithReauth = async (args: any, api: any, extraOptions: any) => {
       }
     }
   }
-  
+
   return result;
 };
 
@@ -76,26 +78,39 @@ const createDynamicEndpoints = (builder: any) => {
 
   // Create endpoints for each CRUD entity
   crudEntities.forEach(entityName => {
-    const entityRoutes = API_ROUTES[entityName as keyof typeof API_ROUTES] as any;
-    
+    const entityRoutes = API_ROUTES[
+      entityName as keyof typeof API_ROUTES
+    ] as any;
+
     // Get the actual entity name from the createCrudRoutes call
     // For entities like "Tenant" that use "TenantAccounts", we need to use the actual entity name
-    const actualEntityName = entityRoutes.GetAll?.identifier?.replace('GetAll', '') || entityName;
-    
+    const actualEntityName =
+      entityRoutes.GetAll?.identifier?.replace('GetAll', '') || entityName;
+
     // Handle pluralization for RTK Query endpoints
     // For simple entities that don't already end with 's', add 's' to make them plural
     // For compound words like "BranchStock", "StockStorage", etc., keep them as is
-    const isCompoundWord = actualEntityName.includes('Stock') || actualEntityName.includes('Storage') || 
-                          actualEntityName.includes('Account') || actualEntityName.includes('History') ||
-                          actualEntityName.includes('Number') || actualEntityName.includes('Definition') ||
-                          actualEntityName.includes('Metadata') || actualEntityName.includes('Record');
-    
-    const endpointName = isCompoundWord ? actualEntityName : 
-                        (actualEntityName.endsWith('s') ? actualEntityName : `${actualEntityName}s`);
-    
+    const isCompoundWord =
+      actualEntityName.includes('Stock') ||
+      actualEntityName.includes('Storage') ||
+      actualEntityName.includes('Account') ||
+      actualEntityName.includes('History') ||
+      actualEntityName.includes('Number') ||
+      actualEntityName.includes('Definition') ||
+      actualEntityName.includes('Metadata') ||
+      actualEntityName.includes('Record');
+
+    const endpointName = isCompoundWord
+      ? actualEntityName
+      : actualEntityName.endsWith('s')
+        ? actualEntityName
+        : `${actualEntityName}s`;
+
     // Get All endpoint
     endpoints[`get${endpointName}`] = builder.query({
-      query: (params: { page?: number; limit?: number; [key: string]: any } = {}) => {
+      query: (
+        params: { page?: number; limit?: number; [key: string]: any } = {}
+      ) => {
         const route = entityRoutes.GetAll;
         return {
           url: route.endpoint,
@@ -117,7 +132,7 @@ const createDynamicEndpoints = (builder: any) => {
         };
       },
       providesTags: (result: any, error: any, { id }: { id: string }) => [
-        { type: entityName, id }
+        { type: entityName, id },
       ],
     });
 
@@ -146,7 +161,7 @@ const createDynamicEndpoints = (builder: any) => {
       },
       invalidatesTags: (result: any, error: any, { id }: { id: string }) => [
         { type: entityName, id },
-        entityName
+        entityName,
       ],
     });
 
@@ -161,7 +176,7 @@ const createDynamicEndpoints = (builder: any) => {
       },
       invalidatesTags: (result: any, error: any, id: string) => [
         { type: entityName, id },
-        entityName
+        entityName,
       ],
     });
   });
@@ -174,115 +189,140 @@ export const apiSlice = createApi({
   reducerPath: 'api',
   baseQuery: baseQueryWithReauth,
   tagTypes: [
-    'Product', 'Customer', 'Sale', 'Inventory', 'User', 'Invoice', 'Dashboard', 
-    'Category', 'Unit', 'Variant', 'Vendor', 'Rack', 'Warehouse', 'StockAudit',
-    'SalesRecord', 'PaymentHistory', 'Expenses', 'StockOut', 'InvoiceNumber',
-    'Organisations', 'Braches', 'Roles', 'BillingUsers', 'Tenant', 'BranchStock',
-    'StockStorage', 'Settings', 'FieldMetadata', 'EntityDefinition', 'PlanLimits'
+    'Product',
+    'Customer',
+    'Sale',
+    'Inventory',
+    'User',
+    'Invoice',
+    'Dashboard',
+    'Category',
+    'Unit',
+    'Variant',
+    'Vendor',
+    'Rack',
+    'Warehouse',
+    'StockAudit',
+    'SalesRecord',
+    'PaymentHistory',
+    'Expenses',
+    'StockOut',
+    'InvoiceNumber',
+    'Organisations',
+    'Braches',
+    'Roles',
+    'BillingUsers',
+    'Tenant',
+    'BranchStock',
+    'StockStorage',
+    'Settings',
+    'FieldMetadata',
+    'EntityDefinition',
+    'PlanLimits',
   ],
-  endpoints: (builder) => {
+  endpoints: builder => {
     // Get dynamic endpoints
     const dynamicEndpoints = createDynamicEndpoints(builder);
-    
+
     return {
       // Dynamic CRUD endpoints for all entities
       ...dynamicEndpoints,
 
       // Special endpoints that don't follow CRUD pattern
-    login: builder.mutation({
-      query: (credentials) => {
-        const route = API_ROUTES.Login.Create;
-        return {
-          url: route.endpoint,
-          method: route.method,
-          body: credentials,
-        };
-      },
-    }),
+      login: builder.mutation({
+        query: credentials => {
+          const route = API_ROUTES.Login.Create;
+          return {
+            url: route.endpoint,
+            method: route.method,
+            body: credentials,
+          };
+        },
+      }),
 
-    tenantLogin: builder.mutation({
-      query: (credentials) => {
-        const route = API_ROUTES.TenantLogin.Create;
-        return {
-          url: route.endpoint,
-          method: route.method,
-          body: credentials,
-        };
-      },
-    }),
+      tenantLogin: builder.mutation({
+        query: credentials => {
+          const route = API_ROUTES.TenantLogin.Create;
+          return {
+            url: route.endpoint,
+            method: route.method,
+            body: credentials,
+          };
+        },
+      }),
 
-    billingLogin: builder.mutation({
-      query: (credentials) => {
-        const route = API_ROUTES.BillingLogin.Create;
-        return {
-          url: route.endpoint,
-          method: route.method,
-          body: credentials,
-        };
-      },
-    }),
+      billingLogin: builder.mutation({
+        query: credentials => {
+          const route = API_ROUTES.BillingLogin.Create;
+          return {
+            url: route.endpoint,
+            method: route.method,
+            body: credentials,
+          };
+        },
+      }),
 
-    // Dashboard endpoints
-    getDashboardStats: builder.query({
-      query: (params: { [key: string]: any } = {}) => {
-        const route = API_ROUTES.DashBoard.GetCount;
-        return {
-          url: route.endpoint,
-          method: route.method,
-          body: params,
-        };
-      },
-      providesTags: ['Dashboard'],
-    }),
+      // Dashboard endpoints
+      getDashboardStats: builder.query({
+        query: (params: { [key: string]: any } = {}) => {
+          const route = API_ROUTES.DashBoard.GetCount;
+          return {
+            url: route.endpoint,
+            method: route.method,
+            body: params,
+          };
+        },
+        providesTags: ['Dashboard'],
+      }),
 
-    getSalesChart: builder.query({
-      query: (params: { [key: string]: any } = {}) => {
-        const route = API_ROUTES.DashBoard.SalesChartData;
-        return {
-          url: route.endpoint,
-          method: route.method,
-          body: params,
-        };
-      },
-      providesTags: ['Dashboard'],
-    }),
+      getSalesChart: builder.query({
+        query: (params: { [key: string]: any } = {}) => {
+          const route = API_ROUTES.DashBoard.SalesChartData;
+          return {
+            url: route.endpoint,
+            method: route.method,
+            body: params,
+          };
+        },
+        providesTags: ['Dashboard'],
+      }),
 
-    getPurchaseChart: builder.query({
-      query: (params: { [key: string]: any } = {}) => {
-        const route = API_ROUTES.DashBoard.PurchaseChartData;
-        return {
-          url: route.endpoint,
-          method: route.method,
-          body: params,
-        };
-      },
-      providesTags: ['Dashboard'],
-    }),
+      getPurchaseChart: builder.query({
+        query: (params: { [key: string]: any } = {}) => {
+          const route = API_ROUTES.DashBoard.PurchaseChartData;
+          return {
+            url: route.endpoint,
+            method: route.method,
+            body: params,
+          };
+        },
+        providesTags: ['Dashboard'],
+      }),
 
-    getStockAlerts: builder.query({
-      query: (params: { [key: string]: any } = {}) => {
-        const route = API_ROUTES.DashBoard.StockAlert;
-        return {
-          url: route.endpoint,
-          method: route.method,
-          body: params,
-        };
-      },
-      providesTags: ['Dashboard'],
-    }),
+      getStockAlerts: builder.query({
+        query: (params: { [key: string]: any } = {}) => {
+          const route = API_ROUTES.DashBoard.StockAlert;
+          return {
+            url: route.endpoint,
+            method: route.method,
+            body: params,
+          };
+        },
+        providesTags: ['Dashboard'],
+      }),
 
-    // Plan Limits
-    getPlanLimits: builder.query({
-      query: (params: { [key: string]: any } = {}) => {
-        const route = API_ROUTES.PlanLimits.Get;
-        return {
-          url: route.endpoint,
-          method: route.method,
-          body: params,
-        };
-      },
-      providesTags: ['PlanLimits'],
-    }),
+      // Plan Limits
+      getPlanLimits: builder.query({
+        query: (params: { [key: string]: any } = {}) => {
+          const route = API_ROUTES.PlanLimits.Get;
+          return {
+            url: route.endpoint,
+            method: route.method,
+            body: params,
+          };
+        },
+        providesTags: ['PlanLimits'],
+      }),
     };
   },
 });
@@ -293,16 +333,16 @@ export const {
   useLoginMutation,
   useTenantLoginMutation,
   useBillingLoginMutation,
-  
+
   // Dashboard
   useGetDashboardStatsQuery,
   useGetSalesChartQuery,
   useGetPurchaseChartQuery,
   useGetStockAlertsQuery,
-  
+
   // Plan Limits
   useGetPlanLimitsQuery,
-  
+
   // Dynamic CRUD hooks - these are generated automatically by RTK Query
   // Products
   useGetProductsQuery,
@@ -310,169 +350,168 @@ export const {
   useCreateProductMutation,
   useUpdateProductMutation,
   useDeleteProductMutation,
-  
+
   // Customers
   useGetCustomersQuery,
   useGetCustomerByIdQuery,
   useCreateCustomerMutation,
   useUpdateCustomerMutation,
   useDeleteCustomerMutation,
-  
+
   // Users
   useGetUsersQuery,
   useGetUserByIdQuery,
   useCreateUserMutation,
   useUpdateUserMutation,
   useDeleteUserMutation,
-  
+
   // Billing Users
   useGetBillingUsersQuery,
   useGetBillingUserByIdQuery,
   useCreateBillingUserMutation,
   useUpdateBillingUserMutation,
   useDeleteBillingUserMutation,
-  
+
   // Branch Stock
   useGetBranchStockQuery,
   useGetBranchStockByIdQuery,
   useCreateBranchStockMutation,
   useUpdateBranchStockMutation,
   useDeleteBranchStockMutation,
-  
-  
+
   // Categories
   useGetCategoriesQuery,
   useGetCategoryByIdQuery,
   useCreateCategoryMutation,
   useUpdateCategoryMutation,
   useDeleteCategoryMutation,
-  
+
   // Units
   useGetUnitsQuery,
   useGetUnitByIdQuery,
   useCreateUnitMutation,
   useUpdateUnitMutation,
   useDeleteUnitMutation,
-  
+
   // Variants
   useGetVariantsQuery,
   useGetVariantByIdQuery,
   useCreateVariantMutation,
   useUpdateVariantMutation,
   useDeleteVariantMutation,
-  
+
   // Vendors
   useGetVendorsQuery,
   useGetVendorByIdQuery,
   useCreateVendorMutation,
   useUpdateVendorMutation,
   useDeleteVendorMutation,
-  
+
   // Racks
   useGetRacksQuery,
   useGetRackByIdQuery,
   useCreateRackMutation,
   useUpdateRackMutation,
   useDeleteRackMutation,
-  
+
   // Warehouses
   useGetWarehousesQuery,
   useGetWarehouseByIdQuery,
   useCreateWarehouseMutation,
   useUpdateWarehouseMutation,
   useDeleteWarehouseMutation,
-  
+
   // Stock Audit
   useGetStockAuditQuery,
   useGetStockAuditByIdQuery,
   useCreateStockAuditMutation,
   useUpdateStockAuditMutation,
   useDeleteStockAuditMutation,
-  
+
   // Sales Record
   useGetSalesRecordQuery,
   useGetSalesRecordByIdQuery,
   useCreateSalesRecordMutation,
   useUpdateSalesRecordMutation,
   useDeleteSalesRecordMutation,
-  
+
   // Payment History
   useGetPaymentHistoryQuery,
   useGetPaymentHistoryByIdQuery,
   useCreatePaymentHistoryMutation,
   useUpdatePaymentHistoryMutation,
   useDeletePaymentHistoryMutation,
-  
+
   // Expenses
   useGetExpensesQuery,
   useGetExpenseByIdQuery,
   useCreateExpenseMutation,
   useUpdateExpenseMutation,
   useDeleteExpenseMutation,
-  
+
   // Stock Out
   useGetStockOutQuery,
   useGetStockOutByIdQuery,
   useCreateStockOutMutation,
   useUpdateStockOutMutation,
   useDeleteStockOutMutation,
-  
+
   // Invoice Number
   useGetInvoiceNumberQuery,
   useGetInvoiceNumberByIdQuery,
   useCreateInvoiceNumberMutation,
   useUpdateInvoiceNumberMutation,
   useDeleteInvoiceNumberMutation,
-  
+
   // Organisations
   useGetOrganisationsQuery,
   useGetOrganisationByIdQuery,
   useCreateOrganisationMutation,
   useUpdateOrganisationMutation,
   useDeleteOrganisationMutation,
-  
+
   // Branches
   useGetBranchesQuery,
   useGetBranchByIdQuery,
   useCreateBranchMutation,
   useUpdateBranchMutation,
   useDeleteBranchMutation,
-  
+
   // Roles
   useGetRolesQuery,
   useGetRoleByIdQuery,
   useCreateRoleMutation,
   useUpdateRoleMutation,
   useDeleteRoleMutation,
-  
+
   // Tenant
   useGetTenantAccountsQuery,
   useGetTenantAccountByIdQuery,
   useCreateTenantAccountMutation,
   useUpdateTenantAccountMutation,
   useDeleteTenantAccountMutation,
-  
+
   // Stock Storage
   useGetStockStorageQuery,
   useGetStockStorageByIdQuery,
   useCreateStockStorageMutation,
   useUpdateStockStorageMutation,
   useDeleteStockStorageMutation,
-  
+
   // Settings
   useGetSettingsQuery,
   useGetSettingByIdQuery,
   useCreateSettingMutation,
   useUpdateSettingMutation,
   useDeleteSettingMutation,
-  
+
   // Field Metadata
   useGetFieldMetadataQuery,
   useGetFieldMetadataByIdQuery,
   useCreateFieldMetadataMutation,
   useUpdateFieldMetadataMutation,
   useDeleteFieldMetadataMutation,
-  
+
   // Entity Definition
   useGetEntityDefinitionQuery,
   useGetEntityDefinitionByIdQuery,
@@ -484,35 +523,49 @@ export const {
 // Helper function to get RTK hooks for any entity
 export const getEntityHooks = (entityName: string) => {
   // Capitalize first letter
-  const capitalizedEntity = entityName.charAt(0).toUpperCase() + entityName.slice(1);
-  
+  const capitalizedEntity =
+    entityName.charAt(0).toUpperCase() + entityName.slice(1);
+
   // Handle compound words and pluralization
-  const isCompoundWord = capitalizedEntity.includes('Stock') || capitalizedEntity.includes('Storage') || 
-                        capitalizedEntity.includes('Account') || capitalizedEntity.includes('History') ||
-                        capitalizedEntity.includes('Number') || capitalizedEntity.includes('Definition') ||
-                        capitalizedEntity.includes('Metadata') || capitalizedEntity.includes('Record');
-  
+  const isCompoundWord =
+    capitalizedEntity.includes('Stock') ||
+    capitalizedEntity.includes('Storage') ||
+    capitalizedEntity.includes('Account') ||
+    capitalizedEntity.includes('History') ||
+    capitalizedEntity.includes('Number') ||
+    capitalizedEntity.includes('Definition') ||
+    capitalizedEntity.includes('Metadata') ||
+    capitalizedEntity.includes('Record');
+
   // For singular entity names, pluralize them for the hook names
   // e.g., "Product" -> "Products", "Customer" -> "Customers"
-  const pluralEntity = isCompoundWord ? capitalizedEntity : 
-                      (capitalizedEntity.endsWith('s') ? capitalizedEntity : `${capitalizedEntity}s`);
-  
+  const pluralEntity = isCompoundWord
+    ? capitalizedEntity
+    : capitalizedEntity.endsWith('s')
+      ? capitalizedEntity
+      : `${capitalizedEntity}s`;
+
   // Check if hooks exist, if not, try singular form
-  const getQueryHook = (apiSlice as any)[`useGet${pluralEntity}Query`] || 
-                       (apiSlice as any)[`useGet${capitalizedEntity}Query`];
-  
-  const getByIdQueryHook = (apiSlice as any)[`useGet${pluralEntity}ByIdQuery`] || 
-                           (apiSlice as any)[`useGet${capitalizedEntity}ByIdQuery`];
-  
-  const createMutationHook = (apiSlice as any)[`useCreate${pluralEntity}Mutation`] || 
-                            (apiSlice as any)[`useCreate${capitalizedEntity}Mutation`];
-  
-  const updateMutationHook = (apiSlice as any)[`useUpdate${pluralEntity}Mutation`] || 
-                            (apiSlice as any)[`useUpdate${capitalizedEntity}Mutation`];
-  
-  const deleteMutationHook = (apiSlice as any)[`useDelete${pluralEntity}Mutation`] || 
-                            (apiSlice as any)[`useDelete${capitalizedEntity}Mutation`];
-  
+  const getQueryHook =
+    (apiSlice as any)[`useGet${pluralEntity}Query`] ||
+    (apiSlice as any)[`useGet${capitalizedEntity}Query`];
+
+  const getByIdQueryHook =
+    (apiSlice as any)[`useGet${pluralEntity}ByIdQuery`] ||
+    (apiSlice as any)[`useGet${capitalizedEntity}ByIdQuery`];
+
+  const createMutationHook =
+    (apiSlice as any)[`useCreate${pluralEntity}Mutation`] ||
+    (apiSlice as any)[`useCreate${capitalizedEntity}Mutation`];
+
+  const updateMutationHook =
+    (apiSlice as any)[`useUpdate${pluralEntity}Mutation`] ||
+    (apiSlice as any)[`useUpdate${capitalizedEntity}Mutation`];
+
+  const deleteMutationHook =
+    (apiSlice as any)[`useDelete${pluralEntity}Mutation`] ||
+    (apiSlice as any)[`useDelete${capitalizedEntity}Mutation`];
+
   return {
     useGetQuery: getQueryHook,
     useGetByIdQuery: getByIdQueryHook,

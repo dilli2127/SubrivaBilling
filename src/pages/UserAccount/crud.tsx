@@ -2,24 +2,19 @@ import React, { memo, useEffect, useMemo, useState } from 'react';
 import { GenericCrudPage } from '../../components/common/GenericCrudPage';
 import { usersAccountColumns } from './columns';
 import { usersAccountFormItems } from './formItems';
-import { useApiActions } from '../../services/api/useApiActions';
-import { useDynamicSelector } from '../../services/redux/selector';
 import { Form } from 'antd';
 import { getCurrentUser } from '../../helpers/auth';
+import { useGetRolesQuery, useGetOrganisationsQuery, useGetBranchesQuery } from '../../services/redux/api/apiSlice';
 
 const UserAccountCrud: React.FC = () => {
-  const { getEntityApi } = useApiActions();
-  const apis = ['Roles', 'Organisations', 'Braches'].map(getEntityApi);
-  const [RolesApi, OrganisationsApi, BrachesApi] = apis;
-  const { items: rolesItems } = useDynamicSelector(
-    RolesApi.getIdentifier('GetAll')
-  );
-  const { items: orgaisationItems } = useDynamicSelector(
-    OrganisationsApi.getIdentifier('GetAll')
-  );
-  const { items: branchesItems } = useDynamicSelector(
-    BrachesApi.getIdentifier('GetAll')
-  );
+  // Use RTK Query for fetching related data
+  const { data: rolesData } = useGetRolesQuery({});
+  const { data: organisationData } = useGetOrganisationsQuery({});
+  const { data: branchesData } = useGetBranchesQuery({});
+
+  const rolesItems = (rolesData as any)?.result || [];
+  const orgaisationItems = (organisationData as any)?.result || [];
+  const branchesItems = (branchesData as any)?.result || [];
   const userItem = useMemo(() => {
     return getCurrentUser();
   }, []);
@@ -29,12 +24,6 @@ const UserAccountCrud: React.FC = () => {
     userItem?.usertype ||
     userItem?.user_role ||
     '';
-  useEffect(() => {
-    [RolesApi, OrganisationsApi].forEach(api => api('GetAll'));
-    if (userItemRole !== 'tenant' || userItemRole !== 'superadmin') {
-      BrachesApi('GetAll');
-    }
-  }, [RolesApi, OrganisationsApi]);
 
   // Prepare roles for the select
   const roles =
@@ -61,7 +50,7 @@ const UserAccountCrud: React.FC = () => {
   >(null);
 
   const handleOrganisationChange = (value: string | number | undefined) => {
-    BrachesApi('GetAll', { organisation_id: value }); // Fetch branches for the selected organisation
+    // RTK Query automatically handles data fetching, no need for manual API calls
     const safeValue = value === undefined || value === '' ? null : value;
     setSelectedOrganisationId(safeValue);
     form.setFieldsValue({ branch_id: undefined }); // reset branch when org changes

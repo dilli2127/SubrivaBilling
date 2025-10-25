@@ -1,25 +1,19 @@
-import React, { useEffect, useMemo } from "react";
+import React, { useMemo } from "react";
 import { Input, Select, Switch, Tag } from "antd";
 import { CheckCircleTwoTone } from '@ant-design/icons';
 import { Option } from "antd/es/mentions";
-import { useApiActions } from "../../services/api/useApiActions";
-import { useDynamicSelector } from "../../services/redux";
 import { GenericCrudPage } from "../../components/common/GenericCrudPage";
 import { Variant } from "../../types/entities";
 import { getCurrentUserRole } from "../../helpers/auth";
+import { useGetUnitsQuery } from "../../services/redux/api/apiSlice";
 
 const VariantCrud: React.FC = () => {
-  const { getEntityApi } = useApiActions();
-  const UnitsApi = getEntityApi("Unit");
-  const { items: unitItems, loading: unit_get_loading } = useDynamicSelector(
-    UnitsApi.getIdentifier("GetAll")
-  );
+  // Use RTK Query for fetching units
+  const { data: unitData, isLoading: unit_get_loading } = useGetUnitsQuery({});
+  const unitItems = (unitData as any)?.result || [];
+  
   const currentUserRole = getCurrentUserRole();
   const isSuperAdmin = currentUserRole?.toLowerCase() === 'superadmin';
-
-  useEffect(() => {
-    UnitsApi("GetAll");
-  }, [UnitsApi]);
 
   const variantConfig = useMemo(() => ({
     title: "Variants",

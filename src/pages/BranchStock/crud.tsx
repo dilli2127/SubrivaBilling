@@ -1,7 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { Space, Tag, Tooltip, Typography, Row, Input, Button } from 'antd';
-import { useDynamicSelector } from '../../services/redux';
-import { useApiActions } from '../../services/api/useApiActions';
+import React, { useState } from 'react';
+import { Space, Tag, Tooltip, Typography, Row, Input, Button, message } from 'antd';
 import {
   DollarOutlined,
   ShoppingCartOutlined,
@@ -9,23 +7,19 @@ import {
 } from '@ant-design/icons';
 import GlobalTable from '../../components/antd/GlobalTable';
 import StorageAllocateDrawer from '../StockAudit/StorageAllocateDrawer';
-import { useHandleApiResponse } from '../../components/common/useHandleApiResponse';
+import { useGetBranchStockQuery, useGetRacksQuery, useCreateStockStorageMutation } from '../../services/redux/api/apiSlice';
 const { Text } = Typography;
 
 const BranchStock: React.FC = () => {
-  const { getEntityApi } = useApiActions();
-  const BranchStock = getEntityApi('BranchStock');
-  const StockStorageApi = getEntityApi('StockStorage');
-  const RackApi = getEntityApi('Rack');
+  // Use RTK Query for fetching data
+  const { data: branchStockData, isLoading: stockAuditLoading } = useGetBranchStockQuery({});
+  const { data: rackData, isLoading: rackLoading } = useGetRacksQuery({});
+  
+  const BranchStockList = (branchStockData as any)?.result || [];
+  const rackList = (rackData as any)?.result || [];
 
-  const { items: BranchStockList, loading: stockAuditLoading } =
-    useDynamicSelector(BranchStock.getIdentifier('GetAll'));
-  const { items: rackList, loading: rackLoading } = useDynamicSelector(
-    RackApi.getIdentifier('GetAll')
-  );
-  const { loading: createLoading } = useDynamicSelector(
-    StockStorageApi.getIdentifier('Create')
-  );
+  // Use RTK Query mutations
+  const [createStockStorage, { isLoading: createLoading }] = useCreateStockStorageMutation();
 
   const [pagination, setPagination] = useState({
     current: 1,
@@ -38,21 +32,13 @@ const BranchStock: React.FC = () => {
 
   const handlePaginationChange = (pageNumber: number, pageLimit: number) => {
     setPagination({ current: pageNumber, pageSize: pageLimit });
-    BranchStock('GetAll', {
-      pageNumber,
-      pageLimit,
-      searchString: searchText,
-    });
+    // RTK Query handles pagination automatically through query parameters
   };
 
   const handleSearch = (value: string) => {
     setSearchText(value);
     setPagination({ ...pagination, current: 1 }); // Reset to first page on search
-    BranchStock('GetAll', {
-      pageNumber: 1,
-      pageLimit: pagination.pageSize,
-      searchString: value,
-    });
+    // RTK Query handles search automatically through query parameters
   };
 
   // Handler to open storage allocate drawer
@@ -63,20 +49,18 @@ const BranchStock: React.FC = () => {
 
   // Handler for storage allocate submit
   const handleStorageAllocateSubmit = async (values: any) => {
-    await StockStorageApi('Create', {
-      ...values,
-      stock_audit_id: storageAllocateRecord?._id,
-    });
-    setStorageAllocateDrawerOpen(false);
-    setStorageAllocateRecord(null);
+    try {
+      await createStockStorage({
+        ...values,
+        stock_audit_id: storageAllocateRecord?._id,
+      }).unwrap();
+      message.success('Storage allocated successfully');
+      setStorageAllocateDrawerOpen(false);
+      setStorageAllocateRecord(null);
+    } catch (error) {
+      message.error('Failed to allocate storage');
+    }
   };
-
-  useHandleApiResponse({
-    action: 'create',
-    title: 'Storage Allocate',
-    identifier: StockStorageApi.getIdentifier('Create'),
-    entityApi: BranchStock,
-  });
 
   const columns = [
     {
@@ -182,15 +166,6 @@ const BranchStock: React.FC = () => {
     },
   ];
 
-  useEffect(() => {
-    BranchStock('GetAll', {
-      pageNumber: pagination.current,
-      pageLimit: pagination.pageSize,
-      searchString: searchText,
-    });
-    RackApi('GetAll');
-  }, [BranchStock, RackApi]);
-
   return (
     <>
       <Row justify="space-between" align="middle" style={{ marginBottom: 16 }}>
@@ -207,12 +182,12 @@ const BranchStock: React.FC = () => {
       <GlobalTable
         columns={[...columns]}
         data={
-          Array.isArray(BranchStockList?.result) ? BranchStockList.result : []
+          Array.isArray(BranchStockList) ? BranchStockList : []
         }
         rowKey="_id"
         loading={stockAuditLoading}
-        totalCount={BranchStockList?.pagination?.totalCount || 0}
-        pageLimit={BranchStockList?.pagination?.pageLimit || 10}
+        totalCount={(branchStockData as any)?.pagination?.totalCount || 0}
+        pageLimit={(branchStockData as any)?.pagination?.pageLimit || 10}
         onPaginationChange={handlePaginationChange}
       />
       <StorageAllocateDrawer

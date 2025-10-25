@@ -1,21 +1,14 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { GenericCrudPage } from '../../components/common/GenericCrudPage';
 import { branchesFormItems } from './formItems';
 import { brancheColumns } from './columns';
-import { useApiActions } from '../../services/api/useApiActions';
-import { useDynamicSelector } from '../../services/redux/selector';
 import { getCurrentUserRole } from '../../helpers/auth';
+import { useGetOrganisationsQuery } from '../../services/redux/api/apiSlice';
 
 const BranchesCrud: React.FC = () => {
-  const { getEntityApi } = useApiActions();
-  const OrganisationsApi = getEntityApi('Organisations');
-  const { items: organisationItems } = useDynamicSelector(
-    OrganisationsApi.getIdentifier('GetAll')
-  );
-
-  useEffect(() => {
-    OrganisationsApi('GetAll');
-  }, [OrganisationsApi]);
+  // Use RTK Query for fetching organizations
+  const { data: organisationData } = useGetOrganisationsQuery({});
+  const organisationItems = (organisationData as any)?.result || [];
 
   const customButtons = [
     {

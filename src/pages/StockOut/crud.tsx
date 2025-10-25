@@ -1,9 +1,8 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { DatePicker, Input, InputNumber, Select } from "antd";
-import { useApiActions } from "../../services/api/useApiActions";
-import { useDynamicSelector } from "../../services/redux";
 import { GenericCrudPage } from "../../components/common/GenericCrudPage";
 import type { StockOut } from "../../types/entities";
+import { useGetStockAuditQuery } from "../../services/redux/api/apiSlice";
 const { Option } = Select;
 type StockAudit = {
   _id: string;
@@ -17,14 +16,9 @@ type StockAudit = {
   };
 };
 const StockOutCrud: React.FC = () => {
-  const { getEntityApi } = useApiActions();
-  const StockAuditApi = getEntityApi("StockAudit");
-  const { items: StockAuditList, loading: stockAuditLoading } =
-    useDynamicSelector(StockAuditApi.getIdentifier("GetAll"));
-
-  useEffect(() => {
-    StockAuditApi("GetAll");
-  }, [StockAuditApi]);
+  // Use RTK Query for fetching stock audit data
+  const { data: stockAuditData, isLoading: stockAuditLoading } = useGetStockAuditQuery({});
+  const StockAuditList = (stockAuditData as any)?.result || [];
 
   type StockOutRecord = {
     stock_audit_items?: {

@@ -1,8 +1,4 @@
 import React, { useCallback, useEffect, useState, useMemo } from 'react';
-import { createApiRouteGetter } from '../../helpers/Common_functions';
-import { dynamic_request, useDynamicSelector } from '../../services/redux';
-import { useDispatch } from 'react-redux';
-import { Dispatch } from 'redux';
 import BarcodeScanner from '../../components/common/BarcodeScanner';
 import { PermissionAwareCrudPage } from '../../components/common/PermissionAwareCrudPage';
 import { Product } from '../../types/entities';
@@ -10,44 +6,23 @@ import { getCurrentUserRole } from '../../helpers/auth';
 import { RESOURCES } from '../../helpers/permissionHelper';
 import { productsColumns } from './columns';
 import { productsFormItems } from './formItems';
+import { useGetVariantsQuery, useGetCategoriesQuery } from '../../services/redux/api/apiSlice';
 
 const ProductCrud: React.FC = () => {
-  const dispatch: Dispatch<any> = useDispatch();
   const currentUserRole = getCurrentUserRole();
   const isSuperAdmin = currentUserRole?.toLowerCase() === 'superadmin';
 
-  const getApiRouteVariant = createApiRouteGetter('Variant');
-  const getApiRouteCategory = createApiRouteGetter('Category');
+  // Use RTK Query for fetching related data
+  const { data: variantData, isLoading: variantLoading } = useGetVariantsQuery({});
+  const { data: categoryData, isLoading: categoryLoading } = useGetCategoriesQuery({});
 
-  const variantRoute = getApiRouteVariant('Get');
-  const categoryRoute = getApiRouteCategory('Get');
-
-  const { loading: variantLoading, items: variantItems } = useDynamicSelector(
-    variantRoute.identifier
-  );
-  const { loading: categoryLoading, items: categoryItems } = useDynamicSelector(
-    categoryRoute.identifier
-  );
+  const variantItems = (variantData as any)?.result || [];
+  const categoryItems = (categoryData as any)?.result || [];
 
   const [scannerVisible, setScannerVisible] = useState(false);
   const [currentForm, setCurrentForm] = useState<any>(null);
 
   const [variantMap, setVariantMap] = useState<Record<string, string>>({});
-
-  const fetchData = useCallback(() => {
-    [variantRoute, categoryRoute].forEach(route => {
-      dispatch(
-        dynamic_request(
-          { method: route.method, endpoint: route.endpoint, data: {} },
-          route.identifier
-        )
-      );
-    });
-  }, [dispatch, variantRoute, categoryRoute]);
-
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
 
   const createMap = (items: any[], labelKey: string) =>
     items.reduce((acc: Record<string, string>, item) => {
