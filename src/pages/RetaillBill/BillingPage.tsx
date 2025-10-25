@@ -3,8 +3,8 @@ import { Typography, Spin } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import './BillingPage.css';
 
-// Lazy load the RTK Query BillDataGrid component
-const BillDataGrid = lazy(() => import('./components/BillDataGridRTK'));
+// Lazy load the BillDataGrid component
+const BillDataGrid = lazy(() => import('./components/BillDataGrid'));
 
 const { Title } = Typography;
 

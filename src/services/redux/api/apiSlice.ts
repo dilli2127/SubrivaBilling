@@ -78,8 +78,23 @@ const createDynamicEndpoints = (builder: any) => {
   crudEntities.forEach(entityName => {
     const entityRoutes = API_ROUTES[entityName as keyof typeof API_ROUTES] as any;
     
+    // Get the actual entity name from the createCrudRoutes call
+    // For entities like "Tenant" that use "TenantAccounts", we need to use the actual entity name
+    const actualEntityName = entityRoutes.GetAll?.identifier?.replace('GetAll', '') || entityName;
+    
+    // Handle pluralization for RTK Query endpoints
+    // For simple entities that don't already end with 's', add 's' to make them plural
+    // For compound words like "BranchStock", "StockStorage", etc., keep them as is
+    const isCompoundWord = actualEntityName.includes('Stock') || actualEntityName.includes('Storage') || 
+                          actualEntityName.includes('Account') || actualEntityName.includes('History') ||
+                          actualEntityName.includes('Number') || actualEntityName.includes('Definition') ||
+                          actualEntityName.includes('Metadata') || actualEntityName.includes('Record');
+    
+    const endpointName = isCompoundWord ? actualEntityName : 
+                        (actualEntityName.endsWith('s') ? actualEntityName : `${actualEntityName}s`);
+    
     // Get All endpoint
-    endpoints[`get${entityName}s`] = builder.query({
+    endpoints[`get${endpointName}`] = builder.query({
       query: (params: { page?: number; limit?: number; [key: string]: any } = {}) => {
         const route = entityRoutes.GetAll;
         return {
@@ -92,7 +107,7 @@ const createDynamicEndpoints = (builder: any) => {
     });
 
     // Get by ID endpoint
-    endpoints[`get${entityName}ById`] = builder.query({
+    endpoints[`get${endpointName}ById`] = builder.query({
       query: ({ id, ...params }: { id: string; [key: string]: any }) => {
         const route = entityRoutes.Get;
         return {
@@ -107,7 +122,7 @@ const createDynamicEndpoints = (builder: any) => {
     });
 
     // Create endpoint
-    endpoints[`create${entityName}`] = builder.mutation({
+    endpoints[`create${endpointName}`] = builder.mutation({
       query: (data: any) => {
         const route = entityRoutes.Create;
         return {
@@ -120,7 +135,7 @@ const createDynamicEndpoints = (builder: any) => {
     });
 
     // Update endpoint
-    endpoints[`update${entityName}`] = builder.mutation({
+    endpoints[`update${endpointName}`] = builder.mutation({
       query: ({ id, data }: { id: string; data: any }) => {
         const route = entityRoutes.Update;
         return {
@@ -136,7 +151,7 @@ const createDynamicEndpoints = (builder: any) => {
     });
 
     // Delete endpoint
-    endpoints[`delete${entityName}`] = builder.mutation({
+    endpoints[`delete${endpointName}`] = builder.mutation({
       query: (id: string) => {
         const route = entityRoutes.Delete;
         return {
@@ -324,12 +339,6 @@ export const {
   useUpdateBranchStockMutation,
   useDeleteBranchStockMutation,
   
-  // Sales
-  useGetSalesQuery,
-  useGetSaleByIdQuery,
-  useCreateSaleMutation,
-  useUpdateSaleMutation,
-  useDeleteSaleMutation,
   
   // Categories
   useGetCategoriesQuery,
@@ -416,14 +425,14 @@ export const {
   useDeleteInvoiceNumberMutation,
   
   // Organisations
-  useGetOrganisationssQuery,
+  useGetOrganisationsQuery,
   useGetOrganisationByIdQuery,
   useCreateOrganisationMutation,
   useUpdateOrganisationMutation,
   useDeleteOrganisationMutation,
   
   // Branches
-  useGetBrachessQuery,
+  useGetBranchesQuery,
   useGetBranchByIdQuery,
   useCreateBranchMutation,
   useUpdateBranchMutation,
@@ -437,11 +446,11 @@ export const {
   useDeleteRoleMutation,
   
   // Tenant
-  useGetTenantsQuery,
-  useGetTenantByIdQuery,
-  useCreateTenantMutation,
-  useUpdateTenantMutation,
-  useDeleteTenantMutation,
+  useGetTenantAccountsQuery,
+  useGetTenantAccountByIdQuery,
+  useCreateTenantAccountMutation,
+  useUpdateTenantAccountMutation,
+  useDeleteTenantAccountMutation,
   
   // Stock Storage
   useGetStockStorageQuery,
@@ -474,13 +483,41 @@ export const {
 
 // Helper function to get RTK hooks for any entity
 export const getEntityHooks = (entityName: string) => {
+  // Capitalize first letter
   const capitalizedEntity = entityName.charAt(0).toUpperCase() + entityName.slice(1);
   
+  // Handle compound words and pluralization
+  const isCompoundWord = capitalizedEntity.includes('Stock') || capitalizedEntity.includes('Storage') || 
+                        capitalizedEntity.includes('Account') || capitalizedEntity.includes('History') ||
+                        capitalizedEntity.includes('Number') || capitalizedEntity.includes('Definition') ||
+                        capitalizedEntity.includes('Metadata') || capitalizedEntity.includes('Record');
+  
+  // For singular entity names, pluralize them for the hook names
+  // e.g., "Product" -> "Products", "Customer" -> "Customers"
+  const pluralEntity = isCompoundWord ? capitalizedEntity : 
+                      (capitalizedEntity.endsWith('s') ? capitalizedEntity : `${capitalizedEntity}s`);
+  
+  // Check if hooks exist, if not, try singular form
+  const getQueryHook = (apiSlice as any)[`useGet${pluralEntity}Query`] || 
+                       (apiSlice as any)[`useGet${capitalizedEntity}Query`];
+  
+  const getByIdQueryHook = (apiSlice as any)[`useGet${pluralEntity}ByIdQuery`] || 
+                           (apiSlice as any)[`useGet${capitalizedEntity}ByIdQuery`];
+  
+  const createMutationHook = (apiSlice as any)[`useCreate${pluralEntity}Mutation`] || 
+                            (apiSlice as any)[`useCreate${capitalizedEntity}Mutation`];
+  
+  const updateMutationHook = (apiSlice as any)[`useUpdate${pluralEntity}Mutation`] || 
+                            (apiSlice as any)[`useUpdate${capitalizedEntity}Mutation`];
+  
+  const deleteMutationHook = (apiSlice as any)[`useDelete${pluralEntity}Mutation`] || 
+                            (apiSlice as any)[`useDelete${capitalizedEntity}Mutation`];
+  
   return {
-    useGetQuery: (apiSlice as any)[`useGet${capitalizedEntity}sQuery`],
-    useGetByIdQuery: (apiSlice as any)[`useGet${capitalizedEntity}ByIdQuery`],
-    useCreateMutation: (apiSlice as any)[`useCreate${capitalizedEntity}Mutation`],
-    useUpdateMutation: (apiSlice as any)[`useUpdate${capitalizedEntity}Mutation`],
-    useDeleteMutation: (apiSlice as any)[`useDelete${capitalizedEntity}Mutation`],
+    useGetQuery: getQueryHook,
+    useGetByIdQuery: getByIdQueryHook,
+    useCreateMutation: createMutationHook,
+    useUpdateMutation: updateMutationHook,
+    useDeleteMutation: deleteMutationHook,
   };
 };
