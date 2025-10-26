@@ -1,5 +1,15 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { Typography, Tabs, Tooltip, Card, Row, Col, Select, Space, Button } from 'antd';
+import {
+  Typography,
+  Tabs,
+  Tooltip,
+  Card,
+  Row,
+  Col,
+  Select,
+  Space,
+  Button,
+} from 'antd';
 import { getCurrentUser } from '../../helpers/auth';
 import SessionStorageEncryption from '../../helpers/encryption';
 import {
@@ -23,6 +33,7 @@ import {
 import { useDashboardData } from './hooks/useDashboardData';
 import { useApiActions } from '../../services/api/useApiActions';
 import { apiSlice } from '../../services/redux/api/apiSlice';
+import { FinancialDataResponse, InventoryDataResponse, SalesAnalyticsResponse } from './types';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -30,7 +41,8 @@ const { Option } = Select;
 const Dashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState('1');
   const [selectedTenant, setSelectedTenant] = useState<string>('all');
-  const [selectedOrganisation, setSelectedOrganisation] = useState<string>('all');
+  const [selectedOrganisation, setSelectedOrganisation] =
+    useState<string>('all');
   const [selectedBranch, setSelectedBranch] = useState<string>('all');
 
   // Get user role
@@ -40,7 +52,12 @@ const Dashboard: React.FC = () => {
 
   // Get user type from scope first (preferred), fallback to user_type
   const scopeData = SessionStorageEncryption.getItem('scope');
-  const userRole = scopeData?.userType || userItem?.user_type || userItem?.usertype || userItem?.user_role || '';
+  const userRole =
+    scopeData?.userType ||
+    userItem?.user_type ||
+    userItem?.usertype ||
+    userItem?.user_role ||
+    '';
   const isSuperAdmin = userRole.toLowerCase() === 'superadmin';
   const isTenant = userRole.toLowerCase() === 'tenant';
   const isOrganisationUser = userRole.toLowerCase() === 'organisationuser';
@@ -52,10 +69,25 @@ const Dashboard: React.FC = () => {
   const OrganisationsApi = getEntityApi('Organisations');
   const BranchesApi = getEntityApi('Braches');
 
-  // RTK Query for dropdowns
-  const { data: tenantsData, isLoading: tenantsLoading } = apiSlice.useGetTenantAccountsQuery({});
-  const { data: organisationsData, isLoading: organisationsLoading } = apiSlice.useGetOrganisationsQuery({});
-  const { data: branchesData, isLoading: branchesLoading } = apiSlice.useGetBranchesQuery({});
+  // RTK Query for dropdowns - only fetch based on user role
+  const { data: tenantsData, isLoading: tenantsLoading } =
+    apiSlice.useGetTenantAccountsQuery(
+      {},
+      { skip: !isSuperAdmin || isBranchUser }
+    );
+  const { data: organisationsData, isLoading: organisationsLoading } =
+    apiSlice.useGetOrganisationsQuery(
+      {},
+      { skip: (!isSuperAdmin && !isTenant) || isBranchUser }
+    );
+  const { data: branchesData, isLoading: branchesLoading } =
+    apiSlice.useGetBranchesQuery(
+      {},
+      {
+        skip:
+          (!isSuperAdmin && !isTenant && !isOrganisationUser) || isBranchUser,
+      }
+    );
 
   const tenantsItems = (tenantsData as any)?.result || [];
   const organisationsItems = (organisationsData as any)?.result || [];
@@ -76,10 +108,13 @@ const Dashboard: React.FC = () => {
 
   // Prepare dropdown options
   const tenantOptions = useMemo(() => {
-    return tenantsItems?.result?.map((tenant: any) => ({
-      label: tenant.organization_name || tenant.contact_name || tenant.username,
-      value: tenant._id,
-    })) || [];
+    return (
+      tenantsItems?.result?.map((tenant: any) => ({
+        label:
+          tenant.organization_name || tenant.contact_name || tenant.username,
+        value: tenant._id,
+      })) || []
+    );
   }, [tenantsItems]);
 
   const organisationOptions = useMemo(() => {
@@ -96,8 +131,10 @@ const Dashboard: React.FC = () => {
   const branchOptions = useMemo(() => {
     let branches = branchesItems?.result || [];
     if (selectedOrganisation !== 'all') {
-      branches = branches.filter((branch: any) => 
-        branch.organisation_id === selectedOrganisation || branch.org_id === selectedOrganisation
+      branches = branches.filter(
+        (branch: any) =>
+          branch.organisation_id === selectedOrganisation ||
+          branch.org_id === selectedOrganisation
       );
     }
     return branches.map((branch: any) => ({
@@ -126,11 +163,15 @@ const Dashboard: React.FC = () => {
   };
 
   // Memoize filters to prevent unnecessary re-renders
-  const filters = useMemo(() => ({
-    tenant_id: selectedTenant !== 'all' ? selectedTenant : undefined,
-    organisation_id: selectedOrganisation !== 'all' ? selectedOrganisation : undefined,
-    branch_id: selectedBranch !== 'all' ? selectedBranch : undefined,
-  }), [selectedTenant, selectedOrganisation, selectedBranch]);
+  const filters = useMemo(
+    () => ({
+      tenant_id: selectedTenant !== 'all' ? selectedTenant : undefined,
+      organisation_id:
+        selectedOrganisation !== 'all' ? selectedOrganisation : undefined,
+      branch_id: selectedBranch !== 'all' ? selectedBranch : undefined,
+    }),
+    [selectedTenant, selectedOrganisation, selectedBranch]
+  );
 
   // Get all dashboard data from custom hook with filters
   const {
@@ -192,7 +233,9 @@ const Dashboard: React.FC = () => {
                   showSearch
                   optionFilterProp="children"
                   filterOption={(input, option: any) =>
-                    String(option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+                    String(option?.label ?? '')
+                      .toLowerCase()
+                      .includes(input.toLowerCase())
                   }
                 >
                   <Option value="all">All Tenants</Option>
@@ -207,60 +250,79 @@ const Dashboard: React.FC = () => {
           )}
 
           {/* Organisation Dropdown - For SuperAdmin and Tenant only (not OrganisationUser or BranchUser) */}
-          {(isSuperAdmin || isTenant) && !isOrganisationUser && !isBranchUser && (
-            <Col xs={24} sm={12} md={6}>
-              <Space direction="vertical" size={2} style={{ width: '100%' }}>
-                <Text strong>Organisation:</Text>
-                <Select
-                  value={selectedOrganisation}
-                  onChange={handleOrganisationChange}
-                  style={{ width: '100%' }}
-                  showSearch
-                  optionFilterProp="children"
-                  filterOption={(input, option: any) =>
-                    String(option?.label ?? '').toLowerCase().includes(input.toLowerCase())
-                  }
-                  disabled={isSuperAdmin && selectedTenant === 'all'}
-                  placeholder={isSuperAdmin && selectedTenant === 'all' ? 'Select tenant first' : 'Select organisation'}
-                >
-                  <Option value="all">All Organisations</Option>
-                  {organisationOptions.map((option: any) => (
-                    <Option key={option.value} value={option.value}>
-                      {option.label}
-                    </Option>
-                  ))}
-                </Select>
-              </Space>
-            </Col>
-          )}
+          {(isSuperAdmin || isTenant) &&
+            !isOrganisationUser &&
+            !isBranchUser && (
+              <Col xs={24} sm={12} md={6}>
+                <Space direction="vertical" size={2} style={{ width: '100%' }}>
+                  <Text strong>Organisation:</Text>
+                  <Select
+                    value={selectedOrganisation}
+                    onChange={handleOrganisationChange}
+                    style={{ width: '100%' }}
+                    showSearch
+                    optionFilterProp="children"
+                    filterOption={(input, option: any) =>
+                      String(option?.label ?? '')
+                        .toLowerCase()
+                        .includes(input.toLowerCase())
+                    }
+                    disabled={isSuperAdmin && selectedTenant === 'all'}
+                    placeholder={
+                      isSuperAdmin && selectedTenant === 'all'
+                        ? 'Select tenant first'
+                        : 'Select organisation'
+                    }
+                  >
+                    <Option value="all">All Organisations</Option>
+                    {organisationOptions.map((option: any) => (
+                      <Option key={option.value} value={option.value}>
+                        {option.label}
+                      </Option>
+                    ))}
+                  </Select>
+                </Space>
+              </Col>
+            )}
 
           {/* Branch Dropdown - For SuperAdmin, Tenant, and OrganisationUser (not BranchUser) */}
-          {(isSuperAdmin || isTenant || isOrganisationUser) && !isBranchUser && (
-            <Col xs={24} sm={12} md={6}>
-              <Space direction="vertical" size={2} style={{ width: '100%' }}>
-                <Text strong>Branch:</Text>
-                <Select
-                  value={selectedBranch}
-                  onChange={setSelectedBranch}
-                  style={{ width: '100%' }}
-                  showSearch
-                  optionFilterProp="children"
-                  filterOption={(input, option: any) =>
-                    String(option?.label ?? '').toLowerCase().includes(input.toLowerCase())
-                  }
-                  disabled={(isSuperAdmin || isTenant) && selectedOrganisation === 'all'}
-                  placeholder={(isSuperAdmin || isTenant) && selectedOrganisation === 'all' ? 'Select organisation first' : 'Select branch'}
-                >
-                  <Option value="all">All Branches</Option>
-                  {branchOptions.map((option: any) => (
-                    <Option key={option.value} value={option.value}>
-                      {option.label}
-                    </Option>
-                  ))}
-                </Select>
-              </Space>
-            </Col>
-          )}
+          {(isSuperAdmin || isTenant || isOrganisationUser) &&
+            !isBranchUser && (
+              <Col xs={24} sm={12} md={6}>
+                <Space direction="vertical" size={2} style={{ width: '100%' }}>
+                  <Text strong>Branch:</Text>
+                  <Select
+                    value={selectedBranch}
+                    onChange={setSelectedBranch}
+                    style={{ width: '100%' }}
+                    showSearch
+                    optionFilterProp="children"
+                    filterOption={(input, option: any) =>
+                      String(option?.label ?? '')
+                        .toLowerCase()
+                        .includes(input.toLowerCase())
+                    }
+                    disabled={
+                      (isSuperAdmin || isTenant) &&
+                      selectedOrganisation === 'all'
+                    }
+                    placeholder={
+                      (isSuperAdmin || isTenant) &&
+                      selectedOrganisation === 'all'
+                        ? 'Select organisation first'
+                        : 'Select branch'
+                    }
+                  >
+                    <Option value="all">All Branches</Option>
+                    {branchOptions.map((option: any) => (
+                      <Option key={option.value} value={option.value}>
+                        {option.label}
+                      </Option>
+                    ))}
+                  </Select>
+                </Space>
+              </Col>
+            )}
 
           {/* Apply Filters Button */}
           <Col xs={24} sm={24} md={6}>
@@ -324,7 +386,7 @@ const Dashboard: React.FC = () => {
             ),
             children: (
               <FinanceTab
-                FinancialDataItems={FinancialDataItems}
+                FinancialDataItems={FinancialDataItems as FinancialDataResponse}
                 recentInvoices={recentInvoices}
               />
             ),
@@ -339,7 +401,7 @@ const Dashboard: React.FC = () => {
               </Tooltip>
             ),
             children: (
-              <InventoryTab InventoryMetricsItems={InventoryMetricsItems} />
+              <InventoryTab InventoryMetricsItems={InventoryMetricsItems as InventoryDataResponse} />
             ),
           },
           {
@@ -355,7 +417,7 @@ const Dashboard: React.FC = () => {
               <SalesAnalysisTab
                 topProducts={topProducts}
                 topCustomers={topCustomers}
-                SalesAnalyticsItems={SalesAnalyticsItems as any}
+                SalesAnalyticsItems={SalesAnalyticsItems as SalesAnalyticsResponse}
               />
             ),
           },
@@ -382,7 +444,9 @@ const Dashboard: React.FC = () => {
               </Tooltip>
             ),
             children: (
-              <PerformanceTab SalesAnalyticsItems={SalesAnalyticsItems as any} />
+              <PerformanceTab
+                SalesAnalyticsItems={SalesAnalyticsItems as SalesAnalyticsResponse}
+              />
             ),
           },
         ]}

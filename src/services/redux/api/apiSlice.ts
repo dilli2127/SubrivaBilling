@@ -255,6 +255,42 @@ export const apiSlice = createApi({
         providesTags: ['Dashboard'],
       }),
 
+      getFinancialData: builder.query({
+        query: (params: { [key: string]: any } = {}) => {
+          const route = API_ROUTES.DashBoard.FinancialData;
+          return {
+            url: route.endpoint,
+            method: route.method,
+            body: params,
+          };
+        },
+        providesTags: ['Dashboard'],
+      }),
+
+      getSalesAnalytics: builder.query({
+        query: (params: { [key: string]: any } = {}) => {
+          const route = API_ROUTES.DashBoard.SalesAnalytics;
+          return {
+            url: route.endpoint,
+            method: route.method,
+            body: params,
+          };
+        },
+        providesTags: ['Dashboard'],
+      }),
+
+      getInventoryMetrics: builder.query({
+        query: (params: { [key: string]: any } = {}) => {
+          const route = API_ROUTES.DashBoard.InventoryMetrics;
+          return {
+            url: route.endpoint,
+            method: route.method,
+            body: params,
+          };
+        },
+        providesTags: ['Dashboard'],
+      }),
+
       // Plan Limits
       getPlanLimits: builder.query({
         query: (params: { [key: string]: any } = {}) => {
@@ -283,6 +319,9 @@ export const {
   useGetSalesChartQuery,
   useGetPurchaseChartQuery,
   useGetStockAlertsQuery,
+  useGetFinancialDataQuery,
+  useGetSalesAnalyticsQuery,
+  useGetInventoryMetricsQuery,
 
   // Plan Limits
   useGetPlanLimitsQuery,

@@ -38,6 +38,27 @@ export const useDashboardData = (activeTab: string, filters: DashboardFilters = 
     skip: !loadedTabs.has('1')
   });
 
+  const { 
+    data: financialData, 
+    refetch: refetchFinancialData 
+  } = apiSlice.useGetFinancialDataQuery(filters, {
+    skip: !loadedTabs.has('2')
+  });
+
+  const { 
+    data: salesAnalyticsData, 
+    refetch: refetchSalesAnalytics 
+  } = apiSlice.useGetSalesAnalyticsQuery(filters, {
+    skip: !loadedTabs.has('4') && !loadedTabs.has('6')
+  });
+
+  const { 
+    data: inventoryMetricsData, 
+    refetch: refetchInventoryMetrics 
+  } = apiSlice.useGetInventoryMetricsQuery(filters, {
+    skip: !loadedTabs.has('3')
+  });
+
   // Load data for active tab only once
   useEffect(() => {
     if (!loadedTabs.has(activeTab)) {
@@ -62,15 +83,18 @@ export const useDashboardData = (activeTab: string, filters: DashboardFilters = 
     refetchSalesChart();
     refetchPurchaseChart();
     refetchStockAlerts();
-  }, [refetchStats, refetchSalesChart, refetchPurchaseChart, refetchStockAlerts]);
+    refetchFinancialData();
+    refetchSalesAnalytics();
+    refetchInventoryMetrics();
+  }, [refetchStats, refetchSalesChart, refetchPurchaseChart, refetchStockAlerts, refetchFinancialData, refetchSalesAnalytics, refetchInventoryMetrics]);
 
   // Memoize return object to prevent unnecessary re-renders
   const returnData = useMemo(() => ({
     DashBoardItems: statsData,
     SalesChartDataItems: salesChartData,
-    FinancialDataItems: undefined, // Will be implemented when needed
-    InventoryMetricsItems: undefined, // Will be implemented when needed
-    SalesAnalyticsItems: salesChartData,
+    FinancialDataItems: financialData,
+    InventoryMetricsItems: inventoryMetricsData,
+    SalesAnalyticsItems: salesAnalyticsData,
     OperationsDataItems: undefined, // Will be implemented when needed
     recentInvoices: [],
     stockAlerts: (stockAlertsData as any)?.result || [],
@@ -80,6 +104,9 @@ export const useDashboardData = (activeTab: string, filters: DashboardFilters = 
   }), [
     statsData,
     salesChartData,
+    financialData,
+    inventoryMetricsData,
+    salesAnalyticsData,
     stockAlertsData,
     refetch
   ]);
