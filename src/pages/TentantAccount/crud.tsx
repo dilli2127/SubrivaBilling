@@ -10,11 +10,11 @@ const TenantAccount: React.FC = () => {
         title: 'Tenant Accounts',
         columns: tenantAccountColumns,
         formItems: tenantAccountFormItems,
-        entityName: 'Tenant',
+        entityName: 'TenantAccounts',
         formColumns: 2,
       }}
       enableDynamicFields={true}
-      entityName="tenant"
+      entityName="tenantaccounts"
     />
   );
 };
