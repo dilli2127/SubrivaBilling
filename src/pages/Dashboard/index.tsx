@@ -109,7 +109,7 @@ const Dashboard: React.FC = () => {
   // Prepare dropdown options
   const tenantOptions = useMemo(() => {
     return (
-      tenantsItems?.result?.map((tenant: any) => ({
+      tenantsItems?.map((tenant: any) => ({
         label:
           tenant.organization_name || tenant.contact_name || tenant.username,
         value: tenant._id,
@@ -118,7 +118,7 @@ const Dashboard: React.FC = () => {
   }, [tenantsItems]);
 
   const organisationOptions = useMemo(() => {
-    let orgs = organisationsItems?.result || [];
+    let orgs = organisationsItems || [];
     if (isSuperAdmin && selectedTenant !== 'all') {
       orgs = orgs.filter((org: any) => org.tenant_id === selectedTenant);
     }
@@ -129,7 +129,7 @@ const Dashboard: React.FC = () => {
   }, [organisationsItems, selectedTenant, isSuperAdmin]);
 
   const branchOptions = useMemo(() => {
-    let branches = branchesItems?.result || [];
+    let branches = branchesItems || [];
     if (selectedOrganisation !== 'all') {
       branches = branches.filter(
         (branch: any) =>
