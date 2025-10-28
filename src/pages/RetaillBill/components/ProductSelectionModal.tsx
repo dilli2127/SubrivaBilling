@@ -41,7 +41,7 @@ const ProductSelectionModal: FC<ProductSelectionModalProps> = ({
   const searchInputRef = useRef<InputRef>(null);
 
   const filteredProducts: Product[] =
-    products?.result?.filter((p: Product) => {
+    products?.filter((p: Product) => {
       const searchLower = searchTerm.toLowerCase();
       return (
         (p.name?.toLowerCase() || '').includes(searchLower) ||
