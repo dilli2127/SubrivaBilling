@@ -1,10 +1,8 @@
 import { combineReducers } from 'redux';
-import { dynamicRequestReducer } from './slices/dynamicRequest';
 
-// Export reducers map - keeping dynamicRequest for backward compatibility during migration
-export const rootReducersMap = {
-  dynamic_request: dynamicRequestReducer,
-};
+// All reducers are now managed by RTK Query's apiSlice
+// The old dynamic_request reducer has been removed as it's no longer used
+export const rootReducersMap = {};
 
 export const rootReducers = combineReducers(rootReducersMap);
 

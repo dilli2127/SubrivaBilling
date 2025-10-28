@@ -1,3 +1,3 @@
 export * from './reducer';
 export * from './store';
-export * from './slices/index';
+// All slices are now managed by RTK Query's apiSlice

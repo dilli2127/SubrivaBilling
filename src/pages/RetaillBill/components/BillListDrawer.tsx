@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { 
   Drawer, 
   List, 
@@ -46,7 +46,11 @@ const BillListDrawer: React.FC<BillListDrawerProps> = ({
 }) => {
   // Use RTK Query for sales records
   const { data: billListData, isLoading: loading } = apiSlice.useGetSalesRecordQuery({});
-  const billList = (billListData as any)?.result || [];
+  
+  // Memoize billList to prevent infinite re-renders
+  const billList = useMemo(() => {
+    return (billListData as any)?.result || [];
+  }, [billListData]);
 
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredBills, setFilteredBills] = useState<any[]>([]);
