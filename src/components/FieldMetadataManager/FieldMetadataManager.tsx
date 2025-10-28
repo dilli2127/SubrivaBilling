@@ -21,7 +21,7 @@ const FieldMetadataManager: React.FC<FieldMetadataManagerProps> = ({
   const [optionsText, setOptionsText] = useState('');
   const [hasChanges, setHasChanges] = useState(false);
 
-  // Use custom hook for operations
+  // Use custom hook for operations - only fetch when modal is visible
   const {
     fieldsData,
     fieldsLoading,
@@ -37,14 +37,8 @@ const FieldMetadataManager: React.FC<FieldMetadataManagerProps> = ({
     tenantId,
     organisationId,
     onFieldsUpdated,
+    enabled: modalVisible, // Only fetch when modal is visible
   });
-
-  // Fetch on modal open
-  useEffect(() => {
-    if (modalVisible) {
-      fetchFields();
-    }
-  }, [modalVisible, fetchFields]);
 
   const handleOpenFieldModal = useCallback(
     (field?: FieldMetadata) => {

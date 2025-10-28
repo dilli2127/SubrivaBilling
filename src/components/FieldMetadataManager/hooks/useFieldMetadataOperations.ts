@@ -14,12 +14,25 @@ export const useFieldMetadataOperations = ({
   tenantId,
   organisationId,
   onFieldsUpdated,
-}: UseFieldMetadataOperationsProps): UseFieldMetadataOperationsReturn => {
-  // Use RTK Query for fetching fields
-  const { data: fieldsResponse, isLoading: fieldsLoading, refetch: refetchFields } = apiSlice.useGetFieldMetadataQuery({
-    entity_name: entityName,
-    is_active: undefined, // Get all fields (active and inactive)
-  });
+  enabled = true, // Add enabled parameter to control when query should run
+}: UseFieldMetadataOperationsProps & { enabled?: boolean }): UseFieldMetadataOperationsReturn => {
+  // Prepare query params - exclude undefined values for proper caching
+  const queryParams = useMemo(() => {
+    const params: any = {
+      entity_name: entityName,
+      // Omit is_active to get all fields (active and inactive)
+      // Only include it if we want to filter by active status
+    };
+    return params;
+  }, [entityName]);
+
+  // Use RTK Query for fetching fields - skip query when not enabled
+  const { data: fieldsResponse, isLoading: fieldsLoading, refetch: refetchFields } = apiSlice.useGetFieldMetadataQuery(
+    queryParams,
+    {
+      skip: !enabled, // Skip query when modal is not visible
+    }
+  );
 
   // Use RTK Query mutations
   const [createField, { isLoading: createLoading }] = apiSlice.useCreateFieldMetadataMutation();
