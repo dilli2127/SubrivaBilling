@@ -81,7 +81,7 @@ export const RESOURCES = {
   RACK: 'rack',
   USER: 'user',
   ROLE: 'role',
-  
+  ROLE_TYPE: 'role_type',
   // Stock related
   BRANCH_STOCK: 'branch_stock',
   ORGANISATION_STOCK: 'organisation_stock',

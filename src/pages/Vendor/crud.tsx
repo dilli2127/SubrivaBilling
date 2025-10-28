@@ -2,6 +2,8 @@ import React from 'react';
 import { Input, Switch } from 'antd';
 import { GenericCrudPage } from '../../components/common/GenericCrudPage';
 import { Vendor } from '../../types/entities';
+import PermissionAwareCrudPage from '../../components/common/PermissionAwareCrudPage';
+import { RESOURCES } from '../../helpers/permissionHelper';
 
 const vendorConfig = {
   title: 'Vendor',
@@ -136,7 +138,8 @@ const vendorConfig = {
 
 const VendorCrud: React.FC = () => {
   return (
-    <GenericCrudPage 
+    <PermissionAwareCrudPage 
+      resource={RESOURCES.VENDOR}
       config={vendorConfig}
       enableDynamicFields={true}
       entityName="vendor"
