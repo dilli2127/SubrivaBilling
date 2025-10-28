@@ -118,6 +118,37 @@ const createDynamicEndpoints = (builder: any) => {
         };
       },
       invalidatesTags: [name],
+      async onQueryStarted(arg: any, { dispatch, getState, queryFulfilled }: any) {
+        try {
+          const { data } = await queryFulfilled;
+          const createdItem = (data as any)?.result ?? data;
+
+          const apiState = (getState() as any)[apiSlice.reducerPath];
+          const queries = apiState?.queries || {};
+
+          Object.values(queries).forEach((entry: any) => {
+            if (entry?.endpointName === `get${name}`) {
+              const originalArgs = entry.originalArgs ?? {};
+              dispatch(
+                apiSlice.util.updateQueryData(`get${name}`, originalArgs, (draft: any) => {
+                  if (!draft) return;
+                  const list = Array.isArray(draft.result) ? draft.result : [];
+                  draft.result = [createdItem, ...list];
+                  if (draft.pagination && typeof draft.pagination.total === 'number') {
+                    draft.pagination.total += 1;
+                  }
+                  const limit = originalArgs?.limit ?? 10;
+                  if (Array.isArray(draft.result) && draft.result.length > limit) {
+                    draft.result = draft.result.slice(0, limit);
+                  }
+                })
+              );
+            }
+          });
+        } catch (err) {
+          // No-op: rely on tag invalidation to reconcile
+        }
+      },
     });
 
     // Update endpoint
@@ -134,6 +165,79 @@ const createDynamicEndpoints = (builder: any) => {
         { type: name, id },
         name,
       ],
+      async onQueryStarted(
+        { id, data }: { id: string; data: any },
+        { dispatch, getState, queryFulfilled }: any
+      ) {
+        const apiState = (getState() as any)[apiSlice.reducerPath];
+        const queries = apiState?.queries || {};
+        const patches: Array<{ undo: () => void }> = [];
+
+        try {
+          // Optimistically update list caches
+          Object.values(queries).forEach((entry: any) => {
+            if (entry?.endpointName === `get${name}`) {
+              const originalArgs = entry.originalArgs ?? {};
+              const patch = dispatch(
+                apiSlice.util.updateQueryData(`get${name}`, originalArgs, (draft: any) => {
+                  if (!draft || !Array.isArray(draft.result)) return;
+                  const idx = draft.result.findIndex((item: any) => item?._id === id);
+                  if (idx !== -1) {
+                    draft.result[idx] = { ...draft.result[idx], ...data };
+                  }
+                })
+              );
+              patches.push(patch);
+            }
+            if (entry?.endpointName === `get${name}ById`) {
+              const originalArgs = entry.originalArgs ?? {};
+              if (originalArgs?.id === id) {
+                const patch = dispatch(
+                  apiSlice.util.updateQueryData(`get${name}ById`, originalArgs, (draft: any) => {
+                    if (!draft) return;
+                    if (draft.result && typeof draft.result === 'object') {
+                      draft.result = { ...draft.result, ...data };
+                    }
+                  })
+                );
+                patches.push(patch);
+              }
+            }
+          });
+
+          // Reconcile with server response
+          const { data: serverData } = await queryFulfilled;
+          const updated = (serverData as any)?.result ?? serverData;
+          Object.values(queries).forEach((entry: any) => {
+            if (entry?.endpointName === `get${name}`) {
+              const originalArgs = entry.originalArgs ?? {};
+              dispatch(
+                apiSlice.util.updateQueryData(`get${name}`, originalArgs, (draft: any) => {
+                  if (!draft || !Array.isArray(draft.result)) return;
+                  const idx = draft.result.findIndex((item: any) => item?._id === id);
+                  if (idx !== -1) {
+                    draft.result[idx] = updated;
+                  }
+                })
+              );
+            }
+            if (entry?.endpointName === `get${name}ById`) {
+              const originalArgs = entry.originalArgs ?? {};
+              if (originalArgs?.id === id) {
+                dispatch(
+                  apiSlice.util.updateQueryData(`get${name}ById`, originalArgs, (draft: any) => {
+                    if (!draft) return;
+                    draft.result = updated;
+                  })
+                );
+              }
+            }
+          });
+        } catch (err) {
+          // Undo all optimistic patches on failure
+          patches.forEach(p => p.undo && p.undo());
+        }
+      },
     });
 
     // Delete endpoint
@@ -149,6 +253,51 @@ const createDynamicEndpoints = (builder: any) => {
         { type: name, id },
         name,
       ],
+      async onQueryStarted(id: string, { dispatch, getState, queryFulfilled }: any) {
+        const apiState = (getState() as any)[apiSlice.reducerPath];
+        const queries = apiState?.queries || {};
+        const patches: Array<{ undo: () => void }> = [];
+
+        try {
+          // Optimistically remove from list caches
+          Object.values(queries).forEach((entry: any) => {
+            if (entry?.endpointName === `get${name}`) {
+              const originalArgs = entry.originalArgs ?? {};
+              const patch = dispatch(
+                apiSlice.util.updateQueryData(`get${name}`, originalArgs, (draft: any) => {
+                  if (!draft || !Array.isArray(draft.result)) return;
+                  const before = draft.result.length;
+                  draft.result = draft.result.filter((item: any) => item?._id !== id);
+                  if (draft.pagination && typeof draft.pagination.total === 'number') {
+                    const after = draft.result.length;
+                    if (after < before) {
+                      draft.pagination.total -= 1;
+                    }
+                  }
+                })
+              );
+              patches.push(patch);
+            }
+            if (entry?.endpointName === `get${name}ById`) {
+              const originalArgs = entry.originalArgs ?? {};
+              if (originalArgs?.id === id) {
+                const patch = dispatch(
+                  apiSlice.util.updateQueryData(`get${name}ById`, originalArgs, (draft: any) => {
+                    if (!draft) return;
+                    draft.result = undefined;
+                  })
+                );
+                patches.push(patch);
+              }
+            }
+          });
+
+          await queryFulfilled;
+        } catch (err) {
+          // Undo optimistic patches on failure
+          patches.forEach(p => p.undo && p.undo());
+        }
+      },
     });
   });
 
@@ -159,6 +308,11 @@ const createDynamicEndpoints = (builder: any) => {
 export const apiSlice = createApi({
   reducerPath: 'api',
   baseQuery: baseQueryWithReauth,
+  // Performance defaults
+  refetchOnFocus: false,
+  refetchOnReconnect: false,
+  refetchOnMountOrArgChange: false,
+  keepUnusedDataFor: 60,
   tagTypes: [
     'Dashboard',
     'PlanLimits',

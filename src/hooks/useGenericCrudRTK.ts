@@ -1,5 +1,4 @@
 import { useCallback, useMemo } from 'react';
-import { useDispatch } from 'react-redux';
 import { getEntityHooks } from '../services/redux/api/apiSlice';
 import { API_ROUTES } from '../services/api/utils';
 // Define EntityName type locally
@@ -36,7 +35,6 @@ export interface RTKQueryResult<T = any> {
  * Works with the existing createCrudRoutes system
  */
 export const useGenericCrudRTK = <T extends EntityName>(entityName: T) => {
-  const dispatch = useDispatch();
   
   // Get the RTK hooks for this entity
   const entityHooks = useMemo(() => getEntityHooks(entityName), [entityName]);

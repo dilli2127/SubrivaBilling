@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, useMemo } from 'react';
+import { useCallback, useState, useMemo, useRef, useEffect } from 'react';
 import { Form } from 'antd';
 import { getEntityHooks } from '../services/redux/api/apiSlice';
 import { CrudColumn, CrudFormItem } from '../components/common/GenericCrudPage';
@@ -67,6 +67,26 @@ export const useGenericCrud = <T extends BaseEntity>(
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [initialValues, setInitialValues] = useState<Partial<T>>({});
   const [filterValues, setFilterValues] = useState<Record<string, unknown>>({});
+  const [debouncedFilters, setDebouncedFilters] = useState<Record<string, unknown>>({});
+  const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const setFilterValuesDebounced = useCallback((values: Record<string, unknown>) => {
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+    debounceTimerRef.current = setTimeout(() => {
+      setDebouncedFilters(values);
+    }, 300);
+    setFilterValues(values);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+    };
+  }, []);
   const [pagination, setPagination] = useState({
     current: 1,
     pageSize: 10,
@@ -80,16 +100,15 @@ export const useGenericCrud = <T extends BaseEntity>(
     () => ({
       page: pagination.current,
       limit: pagination.pageSize,
-      ...filterValues,
+      ...debouncedFilters,
     }),
-    [pagination, filterValues]
+    [pagination, debouncedFilters]
   );
 
   // RTK Query hooks
   const {
     data: queryData,
     isLoading: loading,
-    refetch: refetchQuery,
   } = entityHooks.useGetQuery(queryParams);
 
   const [createMutation, { isLoading: createLoading }] =
@@ -105,16 +124,13 @@ export const useGenericCrud = <T extends BaseEntity>(
     () => queryData?.pagination,
     [queryData?.pagination]
   );
-  const getAll = useCallback(() => {
-    refetchQuery();
-  }, [refetchQuery]);
+  // Data refetching is managed by RTK Query via tag invalidation
 
   const create = useCallback(
     async (data: Partial<T>) => {
       try {
         const result = await createMutation(data).unwrap();
         showToast('success', `${config.title} created successfully`);
-        refetchQuery();
         return result;
       } catch (error: unknown) {
         const errorMessage =
@@ -124,7 +140,7 @@ export const useGenericCrud = <T extends BaseEntity>(
         throw error;
       }
     },
-    [createMutation, config.title, refetchQuery]
+    [createMutation, config.title]
   );
 
   const update = useCallback(
@@ -132,7 +148,6 @@ export const useGenericCrud = <T extends BaseEntity>(
       try {
         const result = await updateMutation({ id, data }).unwrap();
         showToast('success', `${config.title} updated successfully`);
-        refetchQuery();
         return result;
       } catch (error: unknown) {
         const errorMessage =
@@ -142,7 +157,7 @@ export const useGenericCrud = <T extends BaseEntity>(
         throw error;
       }
     },
-    [updateMutation, config.title, refetchQuery]
+    [updateMutation, config.title]
   );
 
   const remove = useCallback(
@@ -150,7 +165,6 @@ export const useGenericCrud = <T extends BaseEntity>(
       try {
         const result = await deleteMutation(id).unwrap();
         showToast('success', `${config.title} deleted successfully`);
-        refetchQuery();
         return result;
       } catch (error: unknown) {
         const errorMessage =
@@ -160,7 +174,7 @@ export const useGenericCrud = <T extends BaseEntity>(
         throw error;
       }
     },
-    [deleteMutation, config.title, refetchQuery]
+    [deleteMutation, config.title]
   );
 
   const handlePaginationChange = useCallback(
@@ -312,10 +326,7 @@ export const useGenericCrud = <T extends BaseEntity>(
     },
     [initialValues._id, create, update, resetForm, processPayload]
   );
-  // Trigger initial data load on mount
-  useEffect(() => {
-    getAll();
-  }, [getAll]);
+  // Initial data load is handled by RTK Query automatically
 
   return {
     // State
@@ -329,7 +340,7 @@ export const useGenericCrud = <T extends BaseEntity>(
     initialValues,
     form,
     filterValues,
-    setFilterValues,
+    setFilterValues: setFilterValuesDebounced,
 
     // Actions
     handleEdit,
