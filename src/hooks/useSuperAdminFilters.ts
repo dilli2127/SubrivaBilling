@@ -1,6 +1,5 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
-import { useApiActions } from '../services/api/useApiActions';
-import { useDynamicSelector } from '../services/redux';
+import { useState, useMemo, useCallback } from 'react';
+import { apiSlice } from '../services/redux/api/apiSlice';
 import { getCurrentUser } from '../helpers/auth';
 import SessionStorageEncryption from '../helpers/encryption';
 
@@ -39,62 +38,57 @@ export const useSuperAdminFilters = (): SuperAdminFiltersReturn => {
   const [selectedOrganisation, setSelectedOrganisation] = useState<string>('all');
   const [selectedBranch, setSelectedBranch] = useState<string>('all');
 
-  // Get user role
+  // Get user role - memoized to prevent infinite loops
   const userItem = useMemo(() => {
     return getCurrentUser();
   }, []);
 
   // Get user type from scope first (preferred), fallback to user_type
-  const scopeData = SessionStorageEncryption.getItem('scope');
-  const userRole = scopeData?.userType || userItem?.user_type || userItem?.usertype || userItem?.user_role || '';
-  const isSuperAdmin = userRole.toLowerCase() === 'superadmin';
-  const isTenant = userRole.toLowerCase() === 'tenant';
-  const isOrganisationUser = userRole.toLowerCase() === 'organisationuser';
-  const isBranchUser = userRole.toLowerCase() === 'branchuser';
+  const scopeData = useMemo(() => {
+    return SessionStorageEncryption.getItem('scope');
+  }, []);
 
-  // API hooks
-  const { getEntityApi } = useApiActions();
-  const TenantsApi = getEntityApi('Tenant');
-  const OrganisationsApi = getEntityApi('Organisations');
-  const BranchesApi = getEntityApi('Braches');
+  const userRole = useMemo(() => {
+    return scopeData?.userType || userItem?.user_type || userItem?.usertype || userItem?.user_role || '';
+  }, [scopeData, userItem]);
 
-  // Selectors for dropdowns data
-  const { items: tenantsItems, loading: tenantsLoading } = useDynamicSelector(
-    TenantsApi.getIdentifier('GetAll')
-  );
-  const { items: organisationsItems, loading: organisationsLoading } = useDynamicSelector(
-    OrganisationsApi.getIdentifier('GetAll')
-  );
-  const { items: branchesItems, loading: branchesLoading } = useDynamicSelector(
-    BranchesApi.getIdentifier('GetAll')
-  );
+  const isSuperAdmin = useMemo(() => userRole.toLowerCase() === 'superadmin', [userRole]);
+  const isTenant = useMemo(() => userRole.toLowerCase() === 'tenant', [userRole]);
+  const isOrganisationUser = useMemo(() => userRole.toLowerCase() === 'organisationuser', [userRole]);
+  const isBranchUser = useMemo(() => userRole.toLowerCase() === 'branchuser', [userRole]);
 
-  // Fetch data on mount
-  useEffect(() => {
-    if (isSuperAdmin) {
-      // SuperAdmin: Only fetch tenants initially
-      TenantsApi('GetAll');
-    } else if (isTenant) {
-      // Tenant: Fetch organisations on mount
-      OrganisationsApi('GetAll');
-    } else if (isOrganisationUser) {
-      // OrganisationUser: Fetch branches on mount
-      BranchesApi('GetAll');
-    }
-    // BranchUser: Don't fetch anything (no dropdowns needed)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isSuperAdmin, isTenant, isOrganisationUser, isBranchUser]);
+  // RTK Query hooks for dropdowns data
+  const { data: tenantsData, isLoading: tenantsLoading, refetch: refetchTenants } =
+    apiSlice.useGetTenantAccountsQuery(
+      {},
+      { skip: !isSuperAdmin }
+    );
+  const { data: organisationsData, isLoading: organisationsLoading, refetch: refetchOrganisations } =
+    apiSlice.useGetOrganisationsQuery(
+      {},
+      { skip: !isSuperAdmin && !isTenant }
+    );
+  const { data: branchesData, isLoading: branchesLoading, refetch: refetchBranches } =
+    apiSlice.useGetBranchesQuery(
+      {},
+      { skip: !isSuperAdmin && !isTenant && !isOrganisationUser }
+    );
+
+  // Extract items from RTK Query data
+  const tenantsItems = (tenantsData as any)?.result || [];
+  const organisationsItems = (organisationsData as any)?.result || [];
+  const branchesItems = (branchesData as any)?.result || [];
 
   // Prepare dropdown options
   const tenantOptions = useMemo(() => {
-    return tenantsItems?.result?.map((tenant: any) => ({
+    return tenantsItems?.map((tenant: any) => ({
       label: tenant.organization_name || tenant.contact_name || tenant.username,
       value: tenant._id,
     })) || [];
   }, [tenantsItems]);
 
   const organisationOptions = useMemo(() => {
-    let orgs = organisationsItems?.result || [];
+    let orgs = organisationsItems || [];
     // Filter by selected tenant if applicable
     if (isSuperAdmin && selectedTenant !== 'all') {
       orgs = orgs.filter((org: any) => org.tenant_id === selectedTenant);
@@ -106,7 +100,7 @@ export const useSuperAdminFilters = (): SuperAdminFiltersReturn => {
   }, [organisationsItems, selectedTenant, isSuperAdmin]);
 
   const branchOptions = useMemo(() => {
-    let branches = branchesItems?.result || [];
+    let branches = branchesItems || [];
     // Filter by selected organisation if applicable
     if (selectedOrganisation !== 'all') {
       branches = branches.filter(
@@ -126,22 +120,16 @@ export const useSuperAdminFilters = (): SuperAdminFiltersReturn => {
     setSelectedTenant(value);
     setSelectedOrganisation('all');
     setSelectedBranch('all');
-    // Fetch organisations for selected tenant (with tenant_id filter)
-    if (value !== 'all') {
-      OrganisationsApi('GetAll', { tenant_id: value });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // RTK Query automatically refetches when skip conditions change
+    // The filtering is done client-side in organisationOptions useMemo
   }, []);
 
   // Handle organisation change - reset branch filter
   const handleOrganisationChange = useCallback((value: string) => {
     setSelectedOrganisation(value);
     setSelectedBranch('all');
-    // Fetch branches for selected organisation (with organisation_id filter)
-    if (value !== 'all') {
-      BranchesApi('GetAll', { organisation_id: value });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // RTK Query automatically refetches when skip conditions change
+    // The filtering is done client-side in branchOptions useMemo
   }, []);
 
   // Handle branch change

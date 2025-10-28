@@ -144,9 +144,21 @@ const GenericCrudPageComponent = <T extends BaseEntity>({
   showDynamicColumnsInTable = false, // Disabled by default for static CRUDs
   entityName,
 }: GenericCrudPageProps<T>) => {
+  // Simple shallow equality to prevent redundant state updates
+  const shallowEqual = (a: Record<string, any> = {}, b: Record<string, any> = {}) => {
+    const aKeys = Object.keys(a);
+    const bKeys = Object.keys(b);
+    if (aKeys.length !== bKeys.length) return false;
+    for (const key of aKeys) {
+      if (a[key] !== b[key]) return false;
+    }
+    return true;
+  };
+
   // SuperAdmin filters hook
   const superAdminFilters = useSuperAdminFilters();
   const isInitialMount = useRef(true);
+  const prevSuperAdminFilters = useRef<Record<string, any>>({});
   
   // Dynamic fields hook - fetch first to get field names
   const {
@@ -233,38 +245,67 @@ const GenericCrudPageComponent = <T extends BaseEntity>({
     }
   }, [columns, showDynamicColumnsInTable, enableDynamicFields, dynamicFields]);
 
-  const handleFilterChange = useCallback((key: string, value: any) => {
-    const newValues = { ...filterValues, [key]: value };
-    // Include superadmin filters if enabled
-    const allFilters = enableSuperAdminFilters 
-      ? { ...newValues, ...superAdminFilters.getApiFilters() }
-      : newValues;
-    setFilterValues(allFilters);
-    if (onFilterChange) onFilterChange(allFilters);
-  }, [filterValues, setFilterValues, onFilterChange, enableSuperAdminFilters, superAdminFilters]);
-
   // Memoize superadmin filters to prevent unnecessary re-renders
   const superAdminApiFilters = useMemo(() => {
     if (!enableSuperAdminFilters) return {};
     return superAdminFilters.getApiFilters();
   }, [
     enableSuperAdminFilters,
-    superAdminFilters,
+    superAdminFilters.isSuperAdmin,
+    superAdminFilters.isTenant,
+    superAdminFilters.isOrganisationUser,
+    superAdminFilters.selectedTenant,
+    superAdminFilters.selectedOrganisation,
+    superAdminFilters.selectedBranch,
   ]);
 
-  // Apply superadmin filters whenever they change
+  const handleFilterChange = useCallback((key: string, value: any) => {
+    // Get current filters and update with new value
+    const newValues = { ...filterValues, [key]: value };
+    // Include superadmin filters if enabled
+    const allFilters = enableSuperAdminFilters 
+      ? { ...newValues, ...superAdminApiFilters }
+      : newValues;
+    setFilterValues(allFilters);
+    if (onFilterChange) onFilterChange(allFilters);
+  }, [filterValues, setFilterValues, onFilterChange, enableSuperAdminFilters, superAdminApiFilters]);
+
+  // Apply superadmin filters whenever they change (without causing loops)
   useEffect(() => {
-    // Skip the initial mount to avoid duplicate API call
     if (isInitialMount.current) {
       isInitialMount.current = false;
+      prevSuperAdminFilters.current = superAdminApiFilters;
       return;
     }
-    
-    if (Object.keys(superAdminApiFilters).length > 0) {
-      const newFilters = { ...filterValues, ...superAdminApiFilters };
-      setFilterValues(newFilters);
+
+    if (!enableSuperAdminFilters) return;
+
+    // Start from current filters
+    const nextFilters: Record<string, any> = { ...filterValues };
+    let changed = false;
+
+    // Remove any previously applied superadmin keys that are no longer present
+    Object.keys(prevSuperAdminFilters.current).forEach((key) => {
+      if (!(key in superAdminApiFilters) && key in nextFilters) {
+        delete nextFilters[key];
+        changed = true;
+      }
+    });
+
+    // Add/update current superadmin filters
+    Object.entries(superAdminApiFilters).forEach(([key, value]) => {
+      if (nextFilters[key] !== value) {
+        nextFilters[key] = value as any;
+        changed = true;
+      }
+    });
+
+    prevSuperAdminFilters.current = superAdminApiFilters;
+
+    if (changed && !shallowEqual(filterValues, nextFilters)) {
+      setFilterValues(nextFilters);
     }
-  }, [superAdminApiFilters, filterValues, setFilterValues]);
+  }, [superAdminApiFilters, filterValues, setFilterValues, enableSuperAdminFilters]);
 
   const tableColumns = useMemo(() => [
     ...enhancedColumns,
