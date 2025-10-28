@@ -28,19 +28,19 @@ const UserAccountCrud: React.FC = () => {
 
   // Memoize select options to prevent recreation
   const roles = useMemo(() =>
-    rolesItems?.result?.map((role: any) => ({
+    rolesItems?.map((role: any) => ({
       label: role.name,
       value: role._id,
     })) || [], [rolesItems]);
     
   const organisation = useMemo(() =>
-    orgaisationItems?.result?.map((organisation: any) => ({
+    orgaisationItems?.map((organisation: any) => ({
       label: organisation.org_name || organisation.name,
       value: organisation._id,
     })) || [], [orgaisationItems]);
     
   const branches = useMemo(() =>
-    branchesItems?.result?.map((branch: any) => ({
+    branchesItems?.map((branch: any) => ({
       label: branch.branch_name || branch.name,
       value: branch._id,
       organisation_id: branch.organisation_id || branch.org_id, // ensure this property exists for filtering

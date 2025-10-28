@@ -36,7 +36,7 @@ export const getStockAuditFormItems = (
             .includes(input.toLowerCase())
         }
       >
-        {productList?.result?.map((product: any) => (
+        {productList?.map((product: any) => (
           <Select.Option key={product?._id} value={product?._id}>
             {`${product.name} ${product?.VariantItem?.variant_name}`}
           </Select.Option>
@@ -134,7 +134,10 @@ export const getStockAuditFormItems = (
   {
     label: "Vendor",
     name: "vendor",
-    rules: [],
+    rules: [ {
+      required: true,
+      message: "Select vendor!",
+    },],
     component: (
       <Select
         placeholder="Select Vendor"
@@ -149,7 +152,7 @@ export const getStockAuditFormItems = (
             .includes(input.toLowerCase())
         }
       >
-        {vendorList?.result?.map((vendor: any) => (
+        {vendorList?.map((vendor: any) => (
           <Select.Option key={vendor?._id} value={vendor?._id}>
             {`${vendor.vendor_name} ${vendor?.company_name}`}
           </Select.Option>
