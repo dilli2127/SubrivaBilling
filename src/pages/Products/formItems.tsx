@@ -45,7 +45,7 @@ const CategorySelect = React.memo(({ categoryItems, categoryLoading }: { categor
     showSearch
     allowClear
   >
-    {(categoryItems?.result || []).map((cat: Category) => (
+    {(categoryItems || []).map((cat: Category) => (
       <Option key={cat._id} value={cat._id}>
         {cat.category_name}
       </Option>
@@ -60,7 +60,7 @@ const VariantSelect = React.memo(({ variantItems, variantLoading }: { variantIte
     showSearch
     allowClear
   >
-    {(variantItems?.result || []).map((variant: Variant) => (
+    {(variantItems || []).map((variant: Variant) => (
       <Option key={variant._id} value={variant._id}>
         {variant.variant_name} ({variant.unit})
       </Option>
