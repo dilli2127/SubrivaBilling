@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { message } from 'antd';
 import dayjs from 'dayjs';
 import { useSpecialApiFetchers } from '../../../services/api/specialApiFetchers';
@@ -33,6 +33,7 @@ export const useReportData = (props: UseReportDataProps) => {
   const { activeTab, selectedTenant, selectedOrganisation, selectedBranch, dateRange } = props;
   const [loading, setLoading] = useState(false);
   const [reportCache, setReportCache] = useState<{[key: string]: any}>({});
+  const loadingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   
   const { Reports } = useSpecialApiFetchers();
   
@@ -139,6 +140,10 @@ export const useReportData = (props: UseReportDataProps) => {
     }
     
     setLoading(true);
+    if (loadingTimeoutRef.current) {
+      clearTimeout(loadingTimeoutRef.current);
+      loadingTimeoutRef.current = null;
+    }
     
     // Prepare API filters
     const apiFilters = {
@@ -182,8 +187,9 @@ export const useReportData = (props: UseReportDataProps) => {
       }
       
       // Set loading to false after a short delay to allow API calls to start
-      setTimeout(() => {
+      loadingTimeoutRef.current = setTimeout(() => {
         setLoading(false);
+        loadingTimeoutRef.current = null;
       }, 500);
     } catch (error) {
       setLoading(false);
@@ -191,6 +197,16 @@ export const useReportData = (props: UseReportDataProps) => {
       console.error('Report fetch error:', error);
     }
   }, [activeTab, selectedTenant, selectedOrganisation, selectedBranch, dateRange, reportCache, Reports]);
+
+  // Cleanup any pending loading timers on unmount
+  useEffect(() => {
+    return () => {
+      if (loadingTimeoutRef.current) {
+        clearTimeout(loadingTimeoutRef.current);
+        loadingTimeoutRef.current = null;
+      }
+    };
+  }, []);
 
   return {
     loading,

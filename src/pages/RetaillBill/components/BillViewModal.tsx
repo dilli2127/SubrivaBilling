@@ -225,12 +225,22 @@ const BillViewModal: React.FC<BillViewModalProps> = ({
     iframe!.contentWindow!.document.write(content);
     iframe!.contentWindow!.document.close();
 
-    window.addEventListener("message", (event) => {
+    const handleMessage = (event: MessageEvent) => {
       if (event.data === "printComplete") {
+        window.removeEventListener("message", handleMessage);
+        clearTimeout(cleanupTimer);
         onClose();
       }
-    });
+    };
+    window.addEventListener("message", handleMessage);
+
+    // Cleanup listener after a timeout in case print doesn't respond
+    const cleanupTimer = setTimeout(() => {
+      window.removeEventListener("message", handleMessage);
+    }, 10000);
   };
+
+  
 
   return (
     <>
