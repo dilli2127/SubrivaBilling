@@ -1,57 +1,131 @@
-import { useDispatch } from 'react-redux';
-import { useDynamicSelector, dynamic_clear } from '../../services/redux';
 import { handleApiResponse } from './handleApiResponse';
-import { Dispatch } from 'redux';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
+
+// RTK Query mutation result type
+interface RTKMutationResult {
+  isLoading?: boolean;
+  isSuccess?: boolean;
+  isError?: boolean;
+  data?: any;
+  error?: any;
+  reset?: () => void;
+}
 
 export const useHandleApiResponse = ({
   action,
   title,
-  identifier,
+  mutationResult,
+  refetch,
   entityApi,
-  dispatch: customDispatch,
 }: {
   action: 'create' | 'update' | 'delete';
   title: string;
-  identifier: string;
+  mutationResult: RTKMutationResult;
+  refetch?: () => void;
   entityApi?: any;
-  dispatch?: Dispatch<any>;
 }) => {
-  const reduxDispatch = useDispatch();
-  const { items: result, error, loading } = useDynamicSelector(identifier);
-  const resolvedDispatch = customDispatch || reduxDispatch;
+  const {
+    isLoading,
+    isSuccess,
+    isError,
+    data,
+    error,
+    reset,
+  } = mutationResult;
+
+  // Track previous loading state to detect transitions
+  const prevLoadingRef = useRef<boolean>(false);
+  // Track if we've already handled this result to prevent duplicate notifications
+  const handledRef = useRef<string>('');
 
   useEffect(() => {
-    if (!loading && (result || error)) {
-      const success = !!(result && result.statusCode === 200);
+    // Track transition from loading to not-loading
+    const wasLoading = prevLoadingRef.current;
+    prevLoadingRef.current = isLoading || false;
 
-      // Pass error or result to handleApiResponse for custom error message
+    // Skip if still loading
+    if (isLoading) {
+      return;
+    }
+
+    // Only process if we just transitioned from loading to not-loading
+    if (!wasLoading) {
+      return;
+    }
+
+    // Create a unique key for this result to prevent duplicate handling
+    const resultKey = `${isSuccess}-${isError}-${data?.statusCode || ''}-${error?.status || ''}`;
+    
+    // Skip if we've already handled this exact result
+    // Since we're tracking loading transitions, this should only trigger once per mutation
+    if (handledRef.current === resultKey) {
+      return;
+    }
+
+    // Handle success case
+    if (isSuccess && data) {
+      const success = data?.statusCode === 200 || data?.status === 'success' || isSuccess;
+
+      // Prepare refetch function for handleApiResponse
+      const refetchFn = refetch || (entityApi ? () => entityApi('GetAll') : undefined);
+
       handleApiResponse({
         action,
         title,
-        identifier,
-        success,
-        dispatch: resolvedDispatch,
-        shouldClear: false,
-        // Add errorMessage prop for custom error message
-        errorMessage: (!success && (result?.message || error?.message)) || undefined,
+        success: true,
+        getAllItems: refetchFn,
       });
 
-      // Automatically call GetAll after success
-      if (success && entityApi) {
-        entityApi('GetAll');
-      }
+      handledRef.current = resultKey;
 
-      resolvedDispatch(dynamic_clear(identifier) as any);
+      // Reset mutation state if reset function is available
+      if (reset) {
+        // Delay reset slightly to ensure state updates are processed
+        setTimeout(() => {
+          reset();
+          // Clear handled ref to allow handling new mutations
+          handledRef.current = '';
+        }, 100);
+      }
+    }
+
+    // Handle error case
+    if (isError && error) {
+      const errorMessage = 
+        error?.data?.message || 
+        error?.message || 
+        error?.error || 
+        `Failed to ${action} ${title}`;
+
+      handleApiResponse({
+        action,
+        title,
+        success: false,
+        errorMessage,
+      });
+
+      handledRef.current = resultKey;
+
+      // Reset mutation state if reset function is available
+      if (reset) {
+        // Delay reset slightly to ensure state updates are processed
+        setTimeout(() => {
+          reset();
+          // Clear handled ref to allow handling new mutations
+          handledRef.current = '';
+        }, 100);
+      }
     }
   }, [
-    loading,
-    result,
+    isLoading,
+    isSuccess,
+    isError,
+    data,
     error,
-    resolvedDispatch,
     action,
     title,
-    identifier,
+    refetch,
     entityApi,
+    reset,
   ]);
 };

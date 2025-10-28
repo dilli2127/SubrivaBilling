@@ -35,6 +35,7 @@ import {
 import { useApiActions } from '../../../services/api/useApiActions';
 import { useDynamicSelector } from '../../../services/redux';
 import { useHandleApiResponse } from '../../../components/common/useHandleApiResponse';
+import { useGenericCrudRTK } from '../../../hooks/useGenericCrudRTK';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -70,12 +71,15 @@ const CustomerSelectionModalComponent: React.FC<CustomerSelectionModalProps> = (
   const { getEntityApi } = useApiActions();
   const CustomerApi = getEntityApi('Customer');
 
+  // RTK Query hooks for Customer
+  const customerRTK = useGenericCrudRTK('Customer');
+  const { create: createCustomer, ...createResult } = customerRTK.useCreate();
+  const { refetch: refetchCustomerList } = customerRTK.useGetAll({});
+
   const { items: customerList, loading: customerLoading } = useDynamicSelector(
     CustomerApi.getIdentifier('GetAll')
   );
-  const { loading: createLoading } = useDynamicSelector(
-    CustomerApi.getIdentifier('Create')
-  );
+  const createLoading = createResult.isLoading;
 
   // Extract items from customerList if it exists
   const customers = customerList?.items || customerList?.result || [];
@@ -206,6 +210,18 @@ const CustomerSelectionModalComponent: React.FC<CustomerSelectionModalProps> = (
     [onSelect, onCancel]
   );
 
+  // Function to clear form data
+  const clearFormData = useCallback(() => {
+    setNewCustomerData({
+      full_name: '',
+      email: '',
+      mobile: '',
+      address: '',
+      customer_type: 'regular',
+    });
+    form.resetFields();
+  }, [form]);
+
   // Handle new customer creation from unified form
   const handleCreateCustomerFromForm = useCallback(async () => {
     try {
@@ -219,28 +235,32 @@ const CustomerSelectionModalComponent: React.FC<CustomerSelectionModalProps> = (
         return;
       }
 
-      // Call the API - the response will be handled by the useEffect watching createResult
-      await CustomerApi('Create', newCustomerData);
-
-      // Note: The modal will be automatically closed by the useEffect when the API response comes back
+      // Call RTK mutation - the response will be handled by useHandleApiResponse
+      const result = await createCustomer(newCustomerData);
+      if (!result.error && result.data) {
+        // Customer created successfully, get the new customer data
+        const newCustomer = result.data?.data || result.data?.result || result.data;
+        if (newCustomer) {
+          // Clear form and hide form UI
+          clearFormData();
+          setShowAddForm(false);
+          setShowCreateGrid(false);
+          
+          // Refresh customer list
+          refetchCustomerList();
+          
+          // Select the newly created customer
+          setTimeout(() => {
+            handleCustomerSelect(newCustomer);
+          }, 100);
+        }
+      }
     } catch (error) {
       message.error('Failed to create customer');
       // Clear form data on error
       clearFormData();
     }
-  }, [newCustomerData, CustomerApi]);
-
-  // Function to clear form data
-  const clearFormData = useCallback(() => {
-    setNewCustomerData({
-      full_name: '',
-      email: '',
-      mobile: '',
-      address: '',
-      customer_type: 'regular',
-    });
-    form.resetFields();
-  }, [form]);
+  }, [newCustomerData, createCustomer, handleCustomerSelect, clearFormData, refetchCustomerList]);
 
   // Handle form field changes
   const handleFormFieldChange = useCallback(
@@ -557,18 +577,14 @@ const CustomerSelectionModalComponent: React.FC<CustomerSelectionModalProps> = (
     }
   }, [visible, handleGlobalKeyDown]);
 
-  // Handle API responses using the standard pattern
+  // Handle API responses using RTK mutations
   useHandleApiResponse({
     action: 'create',
     title: 'Customer',
-    identifier: CustomerApi.getIdentifier('Create'),
+    mutationResult: createResult,
+    refetch: refetchCustomerList,
     entityApi: CustomerApi,
   });
-
-  // Watch for successful customer creation and select the new customer
-  const { items: createResult } = useDynamicSelector(
-    CustomerApi.getIdentifier('Create')
-  );
 
   // Watch createLoading state to show/hide loading message
   useEffect(() => {
@@ -585,39 +601,9 @@ const CustomerSelectionModalComponent: React.FC<CustomerSelectionModalProps> = (
     }
   }, [createLoading]);
 
-  useEffect(() => {
-    if (createResult) {
-      if (createResult.statusCode === 200) {
-        // Customer created successfully, get the new customer data
-        const newCustomer = createResult.data || createResult.result;
-
-        if (newCustomer) {
-          // message.success(
-          //   `Customer "${newCustomer.full_name}" created and selected successfully!`
-          // );
-
-          // Clear form data on success
-          clearFormData();
-          setShowAddForm(false);
-          setShowCreateGrid(false);
-
-          // Refresh the customer list to include the new customer
-          CustomerApi('GetAll');
-
-          // Auto-select the newly created customer
-          setTimeout(() => {
-            onSelect(newCustomer);
-            onCancel();
-          }, 100);
-        }
-      } else if (createResult.statusCode && createResult.statusCode !== 200) {
-        // Handle error case
-        message.error(createResult.message || 'Failed to create customer');
-        // Clear form data on error
-        clearFormData();
-      }
-    }
-  }, [createResult, onSelect, onCancel, CustomerApi, clearFormData]);
+  // Note: Customer creation success is handled in handleCreateCustomerFromForm
+  // The useHandleApiResponse hook handles notifications automatically
+  // No need for additional useEffect watching createResult
 
   // Handle search input focus
   const handleSearchFocus = useCallback(() => {

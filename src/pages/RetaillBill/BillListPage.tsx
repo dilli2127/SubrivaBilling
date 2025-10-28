@@ -33,6 +33,7 @@ import GlobalTable from "../../components/antd/GlobalTable";
 import { useHandleApiResponse } from "../../components/common/useHandleApiResponse";
 import { useDispatch } from "react-redux";
 import { dynamic_clear } from "../../services/redux";
+import { useGenericCrudRTK } from "../../hooks/useGenericCrudRTK";
 import EmailSendModal from "../../components/common/EmailSendModal";
 import { billingTemplates } from './templates/registry';
 
@@ -60,16 +61,26 @@ const BillListPage = () => {
 
   const dispatch = useDispatch();
 
+  // RTK Query hooks for SalesRecord
+  const salesRecordRTK = useGenericCrudRTK("SalesRecord");
+  const { delete: deleteSale, ...deleteResult } = salesRecordRTK.useDelete();
+  const { refetch: refetchSalesList } = salesRecordRTK.useGetAll({
+    pageNumber: pagination.current,
+    pageLimit: pagination.pageSize,
+    searchString: searchText,
+  });
+
   useHandleApiResponse({
     action: "delete",
     title: "Sale",
-    identifier: SalesRecord.getIdentifier("Delete"),
+    mutationResult: deleteResult,
+    refetch: refetchSalesList,
     entityApi: SalesRecord,
   });
 
   const handleDelete = async (id: string) => {
     try {
-      await SalesRecord("Delete", {}, id);
+      await deleteSale(id);
       // You can add extra logic here if needed (e.g., refresh list, close modal)
     } catch (error) {
       // Optionally handle error here if needed, but notification is handled by the hook
