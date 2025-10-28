@@ -1,6 +1,5 @@
-import React, { useEffect, useState, useMemo, useCallback, memo } from "react";
-import { useApiActions } from "../../services/api/useApiActions";
-import { useDynamicSelector } from "../../services/redux";
+import React, { useState, useMemo, useCallback, memo } from "react";
+import { apiSlice } from "../../services/redux/api/apiSlice";
 import GlobalTable from "../../components/antd/GlobalTable";
 import { Input, Row, Space, Tag, Typography } from "antd";
 const { Text } = Typography;
@@ -10,29 +9,29 @@ const BranchStockAvailable = () => {
     current: 1,
     pageSize: 10,
   });
-  const { BranchStockAvailable } = useApiActions();
-  const { items: StockItems, loading: stock_get_loading } = useDynamicSelector(
-    BranchStockAvailable.getIdentifier("GetBranchStockCount")
-  );
+
+  // Use RTK Query for branch stock data
+  const { data: stockData, isLoading: stock_get_loading, refetch } = apiSlice.useGetBranchStockCountQuery({
+    searchString: searchText.length > 2 || searchText.length === 0 ? searchText : undefined,
+    pageNumber: pagination.current,
+    pageLimit: pagination.pageSize,
+  });
+
+  const StockItems = useMemo(() => stockData || {}, [stockData]);
 
   const handleSearch = useCallback((value: string) => {
     setSearchText(value);
     setPagination({ ...pagination, current: 1 }); // Reset to first page on search
-    if(value.length > 2 || value.length === 0)
-      BranchStockAvailable("GetBranchStockCount", { 
-        searchString: value,
-        pageNumber: 1,
-        pageLimit: pagination.pageSize,
-      });
-  }, [BranchStockAvailable, pagination]);
+    if(value.length > 2 || value.length === 0) {
+      // RTK Query will automatically refetch when parameters change
+      refetch();
+    }
+  }, [pagination, refetch]);
 
   const handlePaginationChange = (pageNumber: number, pageLimit: number) => {
     setPagination({ current: pageNumber, pageSize: pageLimit });
-    BranchStockAvailable("GetBranchStockCount", {
-      searchString: searchText,
-      pageNumber,
-      pageLimit,
-    });
+    // RTK Query will automatically refetch when parameters change
+    refetch();
   };
 
   const columns = [
@@ -87,13 +86,7 @@ const BranchStockAvailable = () => {
     },
   ];
 
-  useEffect(() => {
-    BranchStockAvailable("GetBranchStockCount", { 
-      searchString: searchText,
-      pageNumber: pagination.current,
-      pageLimit: pagination.pageSize,
-    });
-  }, [BranchStockAvailable]);
+  // RTK Query automatically fetches on mount and when params change
 
   return (
     <>
@@ -110,11 +103,11 @@ const BranchStockAvailable = () => {
       </Row>
       <GlobalTable
         columns={[...columns]}
-        data={Array.isArray(StockItems?.result) ? StockItems.result : []}
+        data={Array.isArray((StockItems as any)?.result) ? (StockItems as any).result : []}
         rowKey="_id"
         loading={stock_get_loading}
-        totalCount={StockItems?.pagination?.totalCount || 0}
-        pageLimit={StockItems?.pagination?.pageLimit || 10}
+        totalCount={(StockItems as any)?.pagination?.totalCount || 0}
+        pageLimit={(StockItems as any)?.pagination?.pageLimit || 10}
         onPaginationChange={handlePaginationChange}
       />
     </>

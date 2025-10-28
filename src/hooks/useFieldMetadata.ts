@@ -1,9 +1,7 @@
 import { useCallback, useEffect, useMemo } from 'react';
-import { useDispatch } from 'react-redux';
-import { dynamic_request, useDynamicSelector } from '../services/redux';
+import { apiSlice } from '../services/redux/api/apiSlice';
 import { CrudFormItem } from '../components/common/GenericCrudPage';
 import { generateFormItemFromMetadata } from '../helpers/fieldMetadataUtils';
-import { getEntityApiRoutes } from '../helpers/CrudFactory';
 
 export interface FieldMetadata {
   _id: string;
@@ -48,61 +46,39 @@ export const useFieldMetadata = ({
   enabled = true,
   businessType,
 }: UseFieldMetadataOptions) => {
-  const dispatch = useDispatch();
-
-  // Use generic API routes instead of hardcoded endpoint
-  const apiRoutes = useMemo(() => getEntityApiRoutes('FieldMetadata'), []);
-
-  // Create a unique identifier for this entity's metadata
-  const identifier = useMemo(
-    () => `${apiRoutes.get.identifier}_${entityName}`,
-    [apiRoutes.get.identifier, entityName]
-  );
-
-  // Fetch field metadata from Redux
-  const { items: metadataResponse, loading } = useDynamicSelector(identifier);
-
-  /**
-   * Fetch field metadata for the given entity
-   */
-  const fetchFieldMetadata = useCallback(() => {
-    if (!enabled) return;
-
-    const requestData: any = {
+  // Prepare query parameters
+  const queryParams = useMemo(() => {
+    const params: any = {
       entity_name: entityName,
       is_active: true, // Only fetch active fields
     };
 
     // Add business_type filter if provided
     if (businessType) {
-      requestData.business_type = businessType;
+      params.business_type = businessType;
     }
 
-    dispatch(
-      dynamic_request(
-        {
-          method: apiRoutes.get.method,
-          endpoint: apiRoutes.get.endpoint,
-          data: requestData,
-        },
-        identifier
-      ) as any
-    );
-  }, [dispatch, entityName, businessType, enabled, apiRoutes.get, identifier]);
+    return params;
+  }, [entityName, businessType]);
+
+  // Use RTK Query to fetch field metadata
+  const { data: metadataResponse, isLoading: loading, refetch: refetchFieldMetadata } = apiSlice.useGetFieldMetadataQuery(
+    queryParams,
+    { skip: !enabled }
+  );
 
   /**
    * Memoized dynamic fields - sorted and filtered
    */
   const dynamicFields = useMemo<FieldMetadata[]>(() => {
-    if (!metadataResponse?.result) return [];
-
-    const fields: FieldMetadata[] = metadataResponse.result;
+    const fieldsData = (metadataResponse as any)?.result || metadataResponse || [];
+    const fields: FieldMetadata[] = Array.isArray(fieldsData) ? fieldsData : [];
 
     // Filter active fields and sort by display_order
     return fields
       .filter((field) => field.is_active)
       .sort((a, b) => a.display_order - b.display_order);
-  }, [metadataResponse?.result]);
+  }, [metadataResponse]);
 
   /**
    * Convert dynamic fields to form items
@@ -126,14 +102,8 @@ export const useFieldMetadata = ({
     return [...staticFormItems, ...dynamicFormItems];
   }, [staticFormItems, dynamicFormItems]);
 
-  /**
-   * Fetch metadata on mount and when dependencies change
-   */
-  useEffect(() => {
-    if (enabled) {
-      fetchFieldMetadata();
-    }
-  }, [enabled, fetchFieldMetadata]);
+  // RTK Query automatically fetches when enabled changes
+  // No manual useEffect needed
 
   return {
     /** Merged form items (static + dynamic) */
@@ -143,7 +113,7 @@ export const useFieldMetadata = ({
     loading,
     
     /** Refresh/refetch function */
-    refresh: fetchFieldMetadata,
+    refresh: refetchFieldMetadata,
     
     /** Raw dynamic fields metadata */
     dynamicFields,
@@ -161,43 +131,20 @@ export const useFieldMetadata = ({
  * Useful for standalone field metadata management
  */
 export const useFieldMetadataOnly = (entityName: string, enabled = true) => {
-  const dispatch = useDispatch();
-  const apiRoutes = useMemo(() => getEntityApiRoutes('FieldMetadata'), []);
-  const identifier = useMemo(
-    () => `${apiRoutes.get.identifier}_${entityName}`,
-    [apiRoutes.get.identifier, entityName]
+  // Use RTK Query to fetch field metadata
+  const { data: metadataResponse, isLoading: loading, refetch: refetchFieldMetadata } = apiSlice.useGetFieldMetadataQuery(
+    { entity_name: entityName },
+    { skip: !enabled }
   );
 
-  const { items: metadataResponse, loading } = useDynamicSelector(identifier);
-
-  const fetchFieldMetadata = useCallback(() => {
-    if (!enabled) return;
-
-    dispatch(
-      dynamic_request(
-        {
-          method: apiRoutes.get.method,
-          endpoint: apiRoutes.get.endpoint,
-          data: { entity_name: entityName },
-        },
-        identifier
-      ) as any
-    );
-  }, [dispatch, entityName, enabled, apiRoutes.get, identifier]);
-
   const fields = useMemo<FieldMetadata[]>(() => {
-    return metadataResponse?.result || [];
-  }, [metadataResponse?.result]);
-
-  useEffect(() => {
-    if (enabled) {
-      fetchFieldMetadata();
-    }
-  }, [enabled, fetchFieldMetadata]);
+    const fieldsData = (metadataResponse as any)?.result || metadataResponse || [];
+    return Array.isArray(fieldsData) ? fieldsData : [];
+  }, [metadataResponse]);
 
   return {
     fields,
     loading,
-    refresh: fetchFieldMetadata,
+    refresh: refetchFieldMetadata,
   };
 };

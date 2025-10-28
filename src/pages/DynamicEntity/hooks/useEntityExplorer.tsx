@@ -1,9 +1,6 @@
-import { useCallback, useMemo, useEffect } from 'react';
-import { useDispatch } from 'react-redux';
+import { useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Dispatch } from 'redux';
-import { dynamic_request, useDynamicSelector } from '../../../services/redux';
-import { createApiRouteGetter } from '../../../helpers/Common_functions';
+import { apiSlice } from '../../../services/redux/api/apiSlice';
 import { getCurrentUserRole } from '../../../helpers/auth';
 import { EntityDefinition, UseEntityExplorerReturn } from '../types';
 
@@ -13,7 +10,6 @@ import { EntityDefinition, UseEntityExplorerReturn } from '../types';
  */
 export const useEntityExplorer = (): UseEntityExplorerReturn => {
   const navigate = useNavigate();
-  const dispatch: Dispatch<any> = useDispatch();
 
   // Get current user role for permission checks
   const currentUserRole = getCurrentUserRole();
@@ -22,35 +18,17 @@ export const useEntityExplorer = (): UseEntityExplorerReturn => {
     return role === 'superadmin' || role === 'tenant' || role === 'admin';
   }, [currentUserRole]);
 
-  // Memoized API route getter
-  const getApiRoute = useMemo(() => createApiRouteGetter('EntityDefinition'), []);
-  const entityRoute = useMemo(() => getApiRoute('Get'), [getApiRoute]);
-
-  // Fetch entity definitions
-  const { loading, items } = useDynamicSelector(entityRoute.identifier);
+  // Use RTK Query to fetch entity definitions
+  const { data: entityDefData, isLoading: loading, refetch: fetchEntities } = apiSlice.useGetEntityDefinitionQuery(
+    { is_active: true },
+    {}
+  );
 
   // Memoized entities list
   const entities = useMemo<EntityDefinition[]>(() => {
-    return items?.result || [];
-  }, [items?.result]);
-
-  // Fetch entity definitions on mount
-  const fetchEntities = useCallback(() => {
-    dispatch(
-      dynamic_request(
-        {
-          method: entityRoute.method,
-          endpoint: entityRoute.endpoint,
-          data: { is_active: true },
-        },
-        entityRoute.identifier
-      )
-    );
-  }, [dispatch, entityRoute]);
-
-  useEffect(() => {
-    fetchEntities();
-  }, [fetchEntities]);
+    const data = (entityDefData as any)?.result || entityDefData || [];
+    return Array.isArray(data) ? data : [];
+  }, [entityDefData]);
 
   // Navigation handlers
   const navigateToEntity = useCallback((entityName: string) => {
@@ -64,6 +42,13 @@ export const useEntityExplorer = (): UseEntityExplorerReturn => {
   // Computed values
   const hasEntities = useMemo(() => entities.length > 0, [entities.length]);
   const isLoading = loading;
+
+  // Entity route (for backward compatibility, using RTK Query identifier)
+  const entityRoute = useMemo(() => ({
+    identifier: 'GetEntityDefinition',
+    method: 'POST',
+    endpoint: '/entity_definition',
+  }), []);
 
   return {
     // State

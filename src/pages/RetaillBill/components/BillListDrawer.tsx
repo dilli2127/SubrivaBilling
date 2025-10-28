@@ -26,8 +26,7 @@ import {
   CloseOutlined
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
-import { useApiActions } from '../../../services/api/useApiActions';
-import { useDynamicSelector } from '../../../services/redux';
+import { apiSlice } from '../../../services/redux/api/apiSlice';
 
 const { Title, Text } = Typography;
 const { Search } = Input;
@@ -45,27 +44,20 @@ const BillListDrawer: React.FC<BillListDrawerProps> = ({
   onViewBill,
   onNewBill
 }) => {
-  const { getEntityApi } = useApiActions();
-  const SalesRecord = getEntityApi('SalesRecord');
-  
-  const { items: billList, loading } = useDynamicSelector(
-    SalesRecord.getIdentifier('GetAll')
-  );
+  // Use RTK Query for sales records
+  const { data: billListData, isLoading: loading } = apiSlice.useGetSalesRecordQuery({});
+  const billList = (billListData as any)?.result || [];
 
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredBills, setFilteredBills] = useState<any[]>([]);
 
-  // Load bills when drawer opens
-  useEffect(() => {
-    if (visible) {
-      SalesRecord('GetAll');
-    }
-  }, [visible]);
+  // RTK Query automatically loads bills on mount
+  // No manual fetch needed when drawer opens
 
   // Filter bills based on search term
   useEffect(() => {
-    if (billList?.result) {
-      const filtered = billList.result.filter((bill: any) => {
+    if (billList && Array.isArray(billList)) {
+      const filtered = billList.filter((bill: any) => {
         if (!searchTerm) return true;
         const searchLower = searchTerm.toLowerCase();
         

@@ -1,9 +1,6 @@
 import { useCallback, useMemo, useState, useEffect } from 'react';
-import { useDispatch } from 'react-redux';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Dispatch } from 'redux';
-import { dynamic_request, useDynamicSelector } from '../../../services/redux';
-import { createApiRouteGetter } from '../../../helpers/Common_functions';
+import { apiSlice } from '../../../services/redux/api/apiSlice';
 import { 
   EntityDefinition, 
   DynamicApiRoutes, 
@@ -17,37 +14,29 @@ import {
 export const useDynamicEntity = (): UseDynamicEntityReturn => {
   const { entityName } = useParams<{ entityName: string }>();
   const navigate = useNavigate();
-  const dispatch: Dispatch<any> = useDispatch();
   const [entityDef, setEntityDef] = useState<EntityDefinition | null>(null);
 
-  // Memoized API route getter to prevent recreation
-  const getApiRoute = useMemo(() => createApiRouteGetter('EntityDefinition'), []);
-  const entityDefRoute = useMemo(() => getApiRoute('GetAll'), [getApiRoute]);
+  // Use RTK Query to fetch entity definitions
+  const { data: entityDefData, isLoading: loading, error: queryError, refetch: fetchEntityDefinition } = apiSlice.useGetEntityDefinitionQuery(
+    { entity_name: entityName },
+    { skip: !entityName }
+  );
 
-  // Fetch entity definition data
-  const { loading, items, error } = useDynamicSelector(entityDefRoute.identifier);
+  // Extract items from response
+  const items = useMemo(() => {
+    if (!entityDefData) return null;
+    const data = (entityDefData as any)?.result || entityDefData;
+    return data;
+  }, [entityDefData]);
 
-  // Fetch entity definition when entityName changes
-  const fetchEntityDefinition = useCallback(() => {
-    if (entityName) {
-      dispatch(
-        dynamic_request(
-          {
-            method: entityDefRoute.method,
-            endpoint: entityDefRoute.endpoint,
-            data: { entity_name: entityName },
-          },
-          entityDefRoute.identifier
-        )
-      );
-    }
-  }, [entityName, dispatch, entityDefRoute]);
+  const error = queryError ? (queryError as any) : null;
 
   // Update entity definition when data changes
   useEffect(() => {
-    if (items?.result && Array.isArray(items.result) && items.result.length > 0 && entityName) {
+    const itemsResult = Array.isArray(items) ? items : (items?.result || []);
+    if (itemsResult && Array.isArray(itemsResult) && itemsResult.length > 0 && entityName) {
       // Find the specific entity definition that matches the entityName
-      const definition = items.result.find((item: EntityDefinition) => item.entity_name === entityName);
+      const definition = itemsResult.find((item: EntityDefinition) => item.entity_name === entityName);
       if (definition) {
         setEntityDef(definition);
       } else {
@@ -57,10 +46,15 @@ export const useDynamicEntity = (): UseDynamicEntityReturn => {
     }
   }, [items, entityName]);
 
-  // Fetch on mount and when entityName changes
-  useEffect(() => {
-    fetchEntityDefinition();
-  }, [fetchEntityDefinition]);
+  // RTK Query automatically fetches when entityName changes
+  // No manual fetch needed
+
+  // Entity definition route (for backward compatibility, using RTK Query identifier)
+  const entityDefRoute = useMemo(() => ({
+    identifier: 'GetEntityDefinition',
+    method: 'POST',
+    endpoint: '/entity_definition',
+  }), []);
 
   // Generate optimized API routes for dynamic entity
   const dynamicApiRoutes = useMemo<DynamicApiRoutes | null>(() => {

@@ -360,6 +360,28 @@ export const apiSlice = createApi({
         },
       }),
 
+      // Signup endpoints
+      signup: builder.mutation({
+        query: credentials => {
+          const route = API_ROUTES.Signup.Create;
+          return {
+            url: route.endpoint,
+            method: route.method,
+            body: credentials,
+          };
+        },
+      }),
+
+      tenantSignup: builder.mutation({
+        query: data => {
+          return {
+            url: '/tenant_accounts_signup',
+            method: 'POST',
+            body: data,
+          };
+        },
+      }),
+
       // Dashboard endpoints
       getDashboardStats: builder.query({
         query: (params: { [key: string]: any } = {}) => {
@@ -457,6 +479,162 @@ export const apiSlice = createApi({
         },
         providesTags: ['PlanLimits'],
       }),
+
+      // Reports
+      getSalesReport: builder.query({
+        query: (params: { [key: string]: any } = {}) => {
+          const route = API_ROUTES.Reports.GetSalesReport;
+          return {
+            url: route.endpoint,
+            method: route.method,
+            body: params,
+          };
+        },
+      }),
+      getProductSalesReport: builder.query({
+        query: (params: { [key: string]: any } = {}) => {
+          const route = API_ROUTES.Reports.GetProductSalesReport;
+          return {
+            url: route.endpoint,
+            method: route.method,
+            body: params,
+          };
+        },
+      }),
+      getCustomerSalesReport: builder.query({
+        query: (params: { [key: string]: any } = {}) => {
+          const route = API_ROUTES.Reports.GetCustomerSalesReport;
+          return {
+            url: route.endpoint,
+            method: route.method,
+            body: params,
+          };
+        },
+      }),
+      getStockReport: builder.query({
+        query: (params: { [key: string]: any } = {}) => {
+          const route = API_ROUTES.Reports.GetStockReport;
+          return {
+            url: route.endpoint,
+            method: route.method,
+            body: params,
+          };
+        },
+      }),
+      getProfitLossReport: builder.query({
+        query: (params: { [key: string]: any } = {}) => {
+          const route = API_ROUTES.Reports.GetProfitLossReport;
+          return {
+            url: route.endpoint,
+            method: route.method,
+            body: params,
+          };
+        },
+      }),
+      getOutstandingPaymentsReport: builder.query({
+        query: (params: { [key: string]: any } = {}) => {
+          const route = API_ROUTES.Reports.GetOutstandingPaymentsReport;
+          return {
+            url: route.endpoint,
+            method: route.method,
+            body: params,
+          };
+        },
+      }),
+      getPaymentCollectionReport: builder.query({
+        query: (params: { [key: string]: any } = {}) => {
+          const route = API_ROUTES.Reports.GetPaymentCollectionReport;
+          return {
+            url: route.endpoint,
+            method: route.method,
+            body: params,
+          };
+        },
+      }),
+      getExpenseReport: builder.query({
+        query: (params: { [key: string]: any } = {}) => {
+          const route = API_ROUTES.Reports.GetExpenseReport;
+          return {
+            url: route.endpoint,
+            method: route.method,
+            body: params,
+          };
+        },
+      }),
+      getGSTReport: builder.query({
+        query: (params: { [key: string]: any } = {}) => {
+          const route = API_ROUTES.Reports.GetGSTReport;
+          return {
+            url: route.endpoint,
+            method: route.method,
+            body: params,
+          };
+        },
+      }),
+      getTopProductsReport: builder.query({
+        query: (params: { [key: string]: any } = {}) => {
+          const route = API_ROUTES.Reports.GetTopProductsReport;
+          return {
+            url: route.endpoint,
+            method: route.method,
+            body: params,
+          };
+        },
+      }),
+      getTopCustomersReport: builder.query({
+        query: (params: { [key: string]: any } = {}) => {
+          const route = API_ROUTES.Reports.GetTopCustomersReport;
+          return {
+            url: route.endpoint,
+            method: route.method,
+            body: params,
+          };
+        },
+      }),
+      getStockExpiryReport: builder.query({
+        query: (params: { [key: string]: any } = {}) => {
+          const route = API_ROUTES.Reports.GetStockExpiryReport;
+          return {
+            url: route.endpoint,
+            method: route.method,
+            body: params,
+          };
+        },
+      }),
+
+      // Stock Operations
+      revertStockFromBranch: builder.mutation({
+        query: (data: { [key: string]: any }) => {
+          const route = API_ROUTES.StockRevertFromBranch.RevertStock;
+          return {
+            url: route.endpoint,
+            method: route.method,
+            body: data,
+          };
+        },
+      }),
+
+      // Stock Available endpoints
+      getProductStockCount: builder.query({
+        query: (params: { [key: string]: any } = {}) => {
+          const route = API_ROUTES.StockAvailable.GetProductStockCount;
+          return {
+            url: route.endpoint,
+            method: route.method,
+            body: params,
+          };
+        },
+      }),
+      getBranchStockCount: builder.query({
+        query: (params: { [key: string]: any } = {}) => {
+          const route = API_ROUTES.BranchStockAvailable.GetBranchStockCount;
+          return {
+            url: route.endpoint,
+            method: route.method,
+            body: params,
+          };
+        },
+      }),
     };
   },
 });
@@ -467,6 +645,8 @@ export const {
   useLoginMutation,
   useTenantLoginMutation,
   useBillingLoginMutation,
+  useSignupMutation,
+  useTenantSignupMutation,
 
   // Dashboard
   useGetDashboardStatsQuery,
@@ -479,6 +659,25 @@ export const {
 
   // Plan Limits
   useGetPlanLimitsQuery,
+
+  // Reports
+  useGetSalesReportQuery,
+  useGetProductSalesReportQuery,
+  useGetCustomerSalesReportQuery,
+  useGetStockReportQuery,
+  useGetProfitLossReportQuery,
+  useGetOutstandingPaymentsReportQuery,
+  useGetPaymentCollectionReportQuery,
+  useGetExpenseReportQuery,
+  useGetGSTReportQuery,
+  useGetTopProductsReportQuery,
+  useGetTopCustomersReportQuery,
+  useGetStockExpiryReportQuery,
+
+  // Stock Operations
+  useRevertStockFromBranchMutation,
+  useGetProductStockCountQuery,
+  useGetBranchStockCountQuery,
 
   // All CRUD hooks are automatically generated by RTK Query based on createCrudRoutes
   // No need to hardcode them - they are dynamically available as:

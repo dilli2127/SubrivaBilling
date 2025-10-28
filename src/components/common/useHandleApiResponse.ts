@@ -16,13 +16,11 @@ export const useHandleApiResponse = ({
   title,
   mutationResult,
   refetch,
-  entityApi,
 }: {
   action: 'create' | 'update' | 'delete';
   title: string;
   mutationResult: RTKMutationResult;
   refetch?: () => void;
-  entityApi?: any;
 }) => {
   const {
     isLoading,
@@ -67,7 +65,8 @@ export const useHandleApiResponse = ({
       const success = data?.statusCode === 200 || data?.status === 'success' || isSuccess;
 
       // Prepare refetch function for handleApiResponse
-      const refetchFn = refetch || (entityApi ? () => entityApi('GetAll') : undefined);
+      // RTK Query provides refetch function, entityApi parameter is deprecated
+      const refetchFn = refetch;
 
       handleApiResponse({
         action,
@@ -125,7 +124,6 @@ export const useHandleApiResponse = ({
     action,
     title,
     refetch,
-    entityApi,
     reset,
   ]);
 };

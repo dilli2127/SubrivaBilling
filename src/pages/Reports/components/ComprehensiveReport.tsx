@@ -25,31 +25,36 @@ import {
   Cell,
   ComposedChart,
 } from 'recharts';
-import { useSpecialApiFetchers } from '../../../services/api/specialApiFetchers';
-import { useDynamicSelector } from '../../../services/redux/selector';
+import { apiSlice } from '../../../services/redux/api/apiSlice';
 
 const { Text } = Typography;
 const COLORS = ['#1890ff', '#52c41a', '#722ed1', '#fa8c16', '#13c2c2', '#eb2f96'];
 
 const ComprehensiveReport: React.FC = () => {
-  const { Reports } = useSpecialApiFetchers();
+  // Use RTK Query for data fetching
+  const { data: salesReportResponse } = apiSlice.useGetSalesReportQuery({});
+  const { data: profitLossResponse } = apiSlice.useGetProfitLossReportQuery({});
+  const { data: customerSalesResponse } = apiSlice.useGetCustomerSalesReportQuery({});
+  const { data: stockReportResponse } = apiSlice.useGetStockReportQuery({});
+  const { data: paymentCollectionResponse } = apiSlice.useGetPaymentCollectionReportQuery({});
+  const { data: productSalesResponse } = apiSlice.useGetProductSalesReportQuery({});
   
-  // Get data from Redux store
-  const salesReportData = useDynamicSelector(Reports.getIdentifier('GetSalesReport'));
-  const profitLossData = useDynamicSelector(Reports.getIdentifier('GetProfitLossReport'));
-  const customerSalesData = useDynamicSelector(Reports.getIdentifier('GetCustomerSalesReport'));
-  const stockReportData = useDynamicSelector(Reports.getIdentifier('GetStockReport'));
-  const paymentCollectionData = useDynamicSelector(Reports.getIdentifier('GetPaymentCollectionReport'));
-  const productSalesData = useDynamicSelector(Reports.getIdentifier('GetProductSalesReport'));
+  // Extract data from responses
+  const salesReportData = (salesReportResponse as any)?.result || salesReportResponse || {};
+  const profitLossData = (profitLossResponse as any)?.result || profitLossResponse || {};
+  const customerSalesData = (customerSalesResponse as any)?.result || customerSalesResponse || {};
+  const stockReportData = (stockReportResponse as any)?.result || stockReportResponse || {};
+  const paymentCollectionData = (paymentCollectionResponse as any)?.result || paymentCollectionResponse || {};
+  const productSalesData = (productSalesResponse as any)?.result || productSalesResponse || {};
   
   // Extract data
-  const salesSummary = salesReportData?.result?.summary || {};
-  const profitLoss = profitLossData?.result || {};
-  const customers = customerSalesData?.result?.customers || [];
-  const stockSummary = stockReportData?.result?.summary || {};
-  const collectionSummary = paymentCollectionData?.result?.summary || {};
-  const productSales = productSalesData?.result?.products || [];
-  const salesData = salesReportData?.result?.sales || [];
+  const salesSummary = salesReportData?.summary || {};
+  const profitLoss = profitLossData || {};
+  const customers = customerSalesData?.customers || [];
+  const stockSummary = stockReportData?.summary || {};
+  const collectionSummary = paymentCollectionData?.summary || {};
+  const productSales = productSalesData?.products || [];
+  const salesData = salesReportData?.sales || [];
   
   // Calculate metrics
   const totalRevenue = parseFloat(salesSummary.total_revenue) || 0;

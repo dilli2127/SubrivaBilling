@@ -31,7 +31,6 @@ import {
   PerformanceTab,
 } from './tabs';
 import { useDashboardData } from './hooks/useDashboardData';
-import { useApiActions } from '../../services/api/useApiActions';
 import { apiSlice } from '../../services/redux/api/apiSlice';
 import { FinancialDataResponse, InventoryDataResponse, SalesAnalyticsResponse } from './types';
 
@@ -63,12 +62,6 @@ const Dashboard: React.FC = () => {
   const isOrganisationUser = userRole.toLowerCase() === 'organisationuser';
   const isBranchUser = userRole.toLowerCase() === 'branchuser';
 
-  // API hooks for dropdowns
-  const { getEntityApi } = useApiActions();
-  const TenantsApi = getEntityApi('Tenant');
-  const OrganisationsApi = getEntityApi('Organisations');
-  const BranchesApi = getEntityApi('Braches');
-
   // RTK Query for dropdowns - only fetch based on user role
   const { data: tenantsData, isLoading: tenantsLoading } =
     apiSlice.useGetTenantAccountsQuery(
@@ -93,18 +86,8 @@ const Dashboard: React.FC = () => {
   const organisationsItems = (organisationsData as any)?.result || [];
   const branchesItems = (branchesData as any)?.result || [];
 
-  // Fetch data on mount based on user role
-  useEffect(() => {
-    if (isSuperAdmin) {
-      TenantsApi('GetAll');
-    } else if (isTenant) {
-      OrganisationsApi('GetAll');
-    } else if (isOrganisationUser) {
-      BranchesApi('GetAll');
-    }
-    // BranchUser: Don't fetch anything (no dropdowns needed)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isSuperAdmin, isTenant, isOrganisationUser, isBranchUser]);
+  // RTK Query automatically fetches data on mount based on skip conditions
+  // No manual fetch needed
 
   // Prepare dropdown options
   const tenantOptions = useMemo(() => {
@@ -148,18 +131,16 @@ const Dashboard: React.FC = () => {
     setSelectedTenant(value);
     setSelectedOrganisation('all');
     setSelectedBranch('all');
-    if (value !== 'all') {
-      OrganisationsApi('GetAll', { tenant_id: value });
-    }
+    // RTK Query handles filtering client-side via useMemo hooks
+    // Backend filtering happens automatically based on user permissions
   };
 
   // Handle organisation change
   const handleOrganisationChange = (value: string) => {
     setSelectedOrganisation(value);
     setSelectedBranch('all');
-    if (value !== 'all') {
-      BranchesApi('GetAll', { organisation_id: value });
-    }
+    // RTK Query handles filtering client-side via useMemo hooks
+    // Backend filtering happens automatically based on user permissions
   };
 
   // Memoize filters to prevent unnecessary re-renders

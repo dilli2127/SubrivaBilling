@@ -27,15 +27,7 @@ import {
 } from '@ant-design/icons';
 import { useUser } from '../../components/antd/UserContext';
 import { setUserData, User } from '../../helpers/auth';
-import { useDispatch } from 'react-redux';
-import { Dispatch } from 'redux';
-import { ApiRequest } from '../../services/api/apiService';
-import {
-  dynamic_clear,
-  dynamic_request,
-  useDynamicSelector,
-} from '../../services/redux';
-import { API_ROUTES } from '../../services/api/utils';
+import { apiSlice } from '../../services/redux/api/apiSlice';
 import styles from './UserProfile.module.css';
 
 const { Title, Text } = Typography;
@@ -46,11 +38,8 @@ const UserProfile: React.FC = () => {
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [form] = Form.useForm();
   const [passwordForm] = Form.useForm();
-  const dispatch: Dispatch<any> = useDispatch();
-
-  const { loading: updateLoading, items: updateItems } = useDynamicSelector(
-    API_ROUTES.BillingUsers.Update.identifier
-  );
+  // Use RTK Query mutation for updating user
+  const [updateBillingUser, { isLoading: updateLoading }] = apiSlice.useUpdateBillingUsersMutation();
 
   useEffect(() => {
     if (user) {
@@ -63,77 +52,58 @@ const UserProfile: React.FC = () => {
     }
   }, [user, form]);
 
-  useEffect(() => {
-    if (updateItems?.statusCode === 200) {
-      message.success('Profile updated successfully!');
-      
-      // Update user data in sessionStorage
-      const updatedUser: User = {
-        ...user,
-        name: form.getFieldValue('name') || user?.name || '',
-        email: form.getFieldValue('email') || user?.email || '',
-        mobile: form.getFieldValue('mobile') || user?.mobile || '',
-        clientcode: user?.clientcode || '',
-        usertype: user?.usertype || '',
-        active: user?.active ?? true,
-      };
-      setUserData(updatedUser);
-      
-      setIsEditing(false);
-      setIsChangingPassword(false);
-      passwordForm.resetFields();
-      dispatch(dynamic_clear(API_ROUTES.BillingUsers.Update.identifier));
-      
-      // Reload to update context
-      window.location.reload();
-    } else if (updateItems?.statusCode && updateItems.statusCode !== 200) {
-      message.error(updateItems?.message || 'Failed to update profile');
-      dispatch(dynamic_clear(API_ROUTES.BillingUsers.Update.identifier));
-    }
-  }, [updateItems, dispatch, user, form, passwordForm]);
+  // Success/error handling is done in mutation handlers (handleUpdate and handlePasswordChange)
+  // RTK Query provides isLoading state automatically via updateLoading
 
-  const handleUpdate = (values: any) => {
+  const handleUpdate = async (values: any) => {
     if (!user?._id) {
       message.error('User ID not found');
       return;
     }
 
-    const updateData: any = {
-      name: values.name,
-      email: values.email,
-      mobile: values.mobile,
-    };
+    try {
+      const updateData: any = {
+        name: values.name,
+        email: values.email,
+        mobile: values.mobile,
+      };
 
-    dispatch(
-      dynamic_request(
-        {
-          method: API_ROUTES.BillingUsers.Update.method,
-          endpoint: `${API_ROUTES.BillingUsers.Update.endpoint}${user._id}`,
-          data: updateData,
-        },
-        API_ROUTES.BillingUsers.Update.identifier
-      )
-    );
+      const result = await updateBillingUser({ id: user._id, ...updateData }).unwrap();
+      message.success('Profile updated successfully');
+      setIsEditing(false);
+      
+      // Update user context if user data changed (RTK Query returns data directly)
+      const userResult = (result as any)?.result || result;
+      if (userResult) {
+        setUserData(userResult);
+      }
+      
+      // Reload page to reflect changes
+      window.location.reload();
+    } catch (error: any) {
+      message.error(error?.data?.message || 'Failed to update profile');
+    }
   };
 
-  const handlePasswordChange = (values: any) => {
+  const handlePasswordChange = async (values: any) => {
     if (!user?._id) {
       message.error('User ID not found');
       return;
     }
 
-    dispatch(
-      dynamic_request(
-        {
-          method: API_ROUTES.BillingUsers.Update.method,
-          endpoint: `${API_ROUTES.BillingUsers.Update.endpoint}${user._id}`,
-          data: {
-            password: values.new_password,
-          },
-        },
-        API_ROUTES.BillingUsers.Update.identifier
-      )
-    );
+    try {
+      await updateBillingUser({
+        id: user._id,
+        password: values.new_password,
+      }).unwrap();
+      message.success('Password changed successfully');
+      setIsChangingPassword(false);
+      passwordForm.resetFields();
+      // Reload page to reflect changes
+      window.location.reload();
+    } catch (error: any) {
+      message.error(error?.data?.message || 'Failed to change password');
+    }
   };
 
   const handleCancel = () => {

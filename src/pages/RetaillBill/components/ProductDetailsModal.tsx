@@ -1,7 +1,6 @@
 import React, { FC, useEffect, useState } from 'react';
 import { Modal, Descriptions, Typography, Tag, Divider } from 'antd';
-import { useApiActions } from '../../../services/api/useApiActions';
-import { useDynamicSelector } from '../../../services/redux';
+import { apiSlice } from '../../../services/redux/api/apiSlice';
 
 const { Title, Text } = Typography;
 
@@ -37,30 +36,23 @@ const ProductDetailsModal: FC<ProductDetailsModalProps> = ({
   onCancel,
   productId,
 }) => {
-  const { getEntityApi } = useApiActions();
-  const ProductsApi = getEntityApi('Product');
-  
-  const { items: products, loading } = useDynamicSelector(
-    ProductsApi.getIdentifier('GetAll')
-  );
+  // Use RTK Query for products
+  const { data: productsData, isLoading: loading } = apiSlice.useGetProductQuery({});
+  const products = (productsData as any)?.result || [];
 
   const [productDetails, setProductDetails] = useState<ProductDetails | null>(null);
 
   useEffect(() => {
-    if (visible && productId && products?.result) {
-      const product = products.result.find((p: any) => p._id === productId);
+    if (visible && productId && products && Array.isArray(products)) {
+      const product = products.find((p: any) => p._id === productId);
       if (product) {
         setProductDetails(product);
       }
     }
   }, [visible, productId, products]);
 
-  useEffect(() => {
-    if (visible && productId && !products?.result) {
-      // Load products if not already loaded
-      ProductsApi('GetAll');
-    }
-  }, [visible, productId, products, ProductsApi]);
+  // RTK Query automatically loads products on mount
+  // No manual fetch needed
 
   const handleCancel = () => {
     setProductDetails(null);

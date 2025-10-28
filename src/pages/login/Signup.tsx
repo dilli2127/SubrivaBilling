@@ -3,46 +3,29 @@ import { Form, Input, Button, Checkbox, message, Row, Col, Card } from "antd";
 import { UserOutlined, LockOutlined, MailOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import "./Signup.css";
-import { ApiRequest } from "../../services/api/apiService";
-import { dynamic_clear, dynamic_request, useDynamicSelector } from "../../services/redux";
-import { useDispatch } from "react-redux";
-import { Dispatch } from "redux";
-import { API_ROUTES } from "../../services/api/utils";
+import { apiSlice } from "../../services/redux/api/apiSlice";
 
 const Signup: React.FC = () => {
   const navigate = useNavigate();
-  const dispatch: Dispatch<any> = useDispatch();
-  const { loading, items } = useDynamicSelector(
-    API_ROUTES.Signup.Create.identifier
-  );
-  const callBackServer = useCallback(
-    (variables: ApiRequest, key: string) => {
-      dispatch(dynamic_request(variables, key));
-    },
-    [dispatch]
-  );
-  const onFinish = (values: {
+  const [signup, { isLoading: loading }] = apiSlice.useSignupMutation();
+  
+  const onFinish = async (values: {
     username: string;
     email: string;
     password: string;
     confirm: string;
   }) => {
-    callBackServer(
-      {
-        method: API_ROUTES.Signup.Create.method,
-        endpoint: API_ROUTES.Signup.Create.endpoint,
-        data: values,
-      },
-      API_ROUTES.Signup.Create.identifier
-    );
-  };
-  useEffect(() => {
-    if (items?.statusCode === 200) {
-      message.success("Signup successful! Please log in.");
-      dispatch(dynamic_clear(API_ROUTES.Signup.Create.identifier));
-      navigate("/login");
+    try {
+      const result = await signup(values).unwrap();
+      // Check for success in response (RTK Query returns data directly, no statusCode needed)
+      if (result) {
+        message.success("Signup successful! Please log in.");
+        navigate("/login");
+      }
+    } catch (error: any) {
+      message.error(error?.data?.message || "Signup failed. Please try again.");
     }
-  }, [items]);
+  };
   return (
     <Row className="signup-container">
       <Col xs={24} sm={12} className="signup-background" />

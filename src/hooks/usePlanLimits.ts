@@ -22,11 +22,8 @@
  * ```
  */
 
-import { useState, useEffect, useCallback } from 'react';
-import { useDispatch } from 'react-redux';
-import { Dispatch } from 'redux';
-import { dynamic_request, dynamic_clear, useDynamicSelector } from '../services/redux';
-import { API_ROUTES } from '../services/api/utils';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { apiSlice } from '../services/redux/api/apiSlice';
 
 export interface PlanLimits {
   plan: {
@@ -74,46 +71,30 @@ export interface UsePlanLimitsResult {
  * @param autoFetch - Whether to automatically fetch on mount (default: true)
  */
 export function usePlanLimits(autoFetch: boolean = true): UsePlanLimitsResult {
-  const dispatch: Dispatch<any> = useDispatch();
   const [error, setError] = useState<string | null>(null);
 
-  const { loading, items } = useDynamicSelector(API_ROUTES.PlanLimits.Get.identifier);
+  // Use RTK Query to fetch plan limits
+  const { data: planLimitsResponse, isLoading: loading, error: queryError, refetch: fetchPlanLimits } = apiSlice.useGetPlanLimitsQuery(
+    {},
+    { skip: !autoFetch }
+  );
 
-  const fetchPlanLimits = useCallback(() => {
-    setError(null);
-    dispatch(
-      dynamic_request(
-        {
-          method: API_ROUTES.PlanLimits.Get.method,
-          endpoint: API_ROUTES.PlanLimits.Get.endpoint,
-        },
-        API_ROUTES.PlanLimits.Get.identifier
-      )
-    );
-  }, [dispatch]);
+  // Extract plan limits from response
+  const planLimits: PlanLimits | null = useMemo(() => {
+    if (!planLimitsResponse) return null;
+    const data = (planLimitsResponse as any)?.result || planLimitsResponse;
+    return data?.statusCode === 200 ? data.result : data || null;
+  }, [planLimitsResponse]);
 
-  // Auto-fetch on mount if enabled
+  // Handle errors from RTK Query
   useEffect(() => {
-    if (autoFetch) {
-      fetchPlanLimits();
-    }
-    
-    // Cleanup on unmount
-    return () => {
-      dispatch(dynamic_clear(API_ROUTES.PlanLimits.Get.identifier));
-    };
-  }, [autoFetch, fetchPlanLimits, dispatch]);
-
-  // Handle errors from API
-  useEffect(() => {
-    if (items?.statusCode && items.statusCode !== 200) {
-      setError(items.exception || items.message || 'Failed to fetch plan limits');
-    } else if (items?.statusCode === 200) {
+    if (queryError) {
+      const errorData = (queryError as any)?.data || queryError;
+      setError(errorData?.exception || errorData?.message || 'Failed to fetch plan limits');
+    } else {
       setError(null);
     }
-  }, [items]);
-
-  const planLimits: PlanLimits | null = items?.statusCode === 200 ? items.result : null;
+  }, [queryError]);
 
   /**
    * Check if user can create more of a resource

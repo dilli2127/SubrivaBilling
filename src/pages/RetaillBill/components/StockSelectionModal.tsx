@@ -1,9 +1,8 @@
 import React, { useEffect, useState, FC, KeyboardEvent, useRef } from 'react';
 import { Modal, Table, Input, Tag, Tooltip, message } from 'antd';
 import type { InputRef } from 'antd/es/input';
-import { useApiActions } from '../../../services/api/useApiActions';
 import type { ColumnType } from 'antd/es/table';
-import { useDynamicSelector } from '../../../services/redux';
+import { apiSlice } from '../../../services/redux/api/apiSlice';
 import dayjs from 'dayjs';
 import {
   ExclamationCircleOutlined,
@@ -34,11 +33,9 @@ const StockSelectionModal: FC<StockSelectionModalProps> = ({
   onCancel,
   productId, // <-- Destructure
 }) => {
-  const { getEntityApi } = useApiActions();
-  const StockApi = getEntityApi('StockAudit');
-  const { items: stocks, loading } = useDynamicSelector(
-    StockApi.getIdentifier('GetAll')
-  );
+  // Use RTK Query for stock audit
+  const { data: stocksData, isLoading: loading } = apiSlice.useGetStockAuditQuery({});
+  const stocks = (stocksData as any)?.result || [];
 
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedRowKey, setSelectedRowKey] = useState<React.Key | null>(null);
@@ -142,11 +139,9 @@ const StockSelectionModal: FC<StockSelectionModalProps> = ({
     }
   }, [highlightedIndex, allStocks]);
 
-  useEffect(() => {
-    if (visible && productId) {
-      StockApi('GetAll', { product: productId });
-    }
-  }, [visible, productId, StockApi]);
+  // RTK Query automatically loads stocks on mount
+  // For product filtering, it's handled client-side from cached data
+  // TODO: Implement server-side product filtering with RTK Query if needed
 
   const columns: ColumnType<Stock>[] = [
     {

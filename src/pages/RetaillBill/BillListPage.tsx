@@ -25,14 +25,10 @@ import {
 } from "@ant-design/icons";
 import dayjs from "dayjs";
 import GlobalDrawer from "../../components/antd/GlobalDrawer";
-import { useApiActions } from "../../services/api/useApiActions";
-import { useDynamicSelector } from "../../services/redux";
 import BillDataGrid from "./components/BillDataGrid";
 import BillViewModal from "./components/BillViewModal";
 import GlobalTable from "../../components/antd/GlobalTable";
 import { useHandleApiResponse } from "../../components/common/useHandleApiResponse";
-import { useDispatch } from "react-redux";
-import { dynamic_clear } from "../../services/redux";
 import { useGenericCrudRTK } from "../../hooks/useGenericCrudRTK";
 import EmailSendModal from "../../components/common/EmailSendModal";
 import { billingTemplates } from './templates/registry';
@@ -40,11 +36,6 @@ import { billingTemplates } from './templates/registry';
 const { Title } = Typography;
 
 const BillListPage = () => {
-  const { getEntityApi } = useApiActions();
-  const SalesRecord = getEntityApi("SalesRecord");
-  const { items: SalesRecordList, loading } = useDynamicSelector(
-    SalesRecord.getIdentifier("GetAll")
-  );
   const [selectedBill, setSelectedBill] = useState<any>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [billViewVisible, setBillViewVisible] = useState(false);
@@ -59,23 +50,21 @@ const BillListPage = () => {
   const [emailModalVisible, setEmailModalVisible] = useState(false);
   const [selectedBillForEmail, setSelectedBillForEmail] = useState<any>(null);
 
-  const dispatch = useDispatch();
-
   // RTK Query hooks for SalesRecord
   const salesRecordRTK = useGenericCrudRTK("SalesRecord");
-  const { delete: deleteSale, ...deleteResult } = salesRecordRTK.useDelete();
-  const { refetch: refetchSalesList } = salesRecordRTK.useGetAll({
+  const { data: SalesRecordData, isLoading: loading, refetch: refetchSalesList } = salesRecordRTK.useGetAll({
     pageNumber: pagination.current,
     pageLimit: pagination.pageSize,
     searchString: searchText,
   });
+  const SalesRecordList = SalesRecordData || { result: [], pagination: null };
+  const { delete: deleteSale, ...deleteResult } = salesRecordRTK.useDelete();
 
   useHandleApiResponse({
     action: "delete",
     title: "Sale",
     mutationResult: deleteResult,
     refetch: refetchSalesList,
-    entityApi: SalesRecord,
   });
 
   const handleDelete = async (id: string) => {
@@ -131,20 +120,12 @@ const BillListPage = () => {
   const handleSearch = (value: string) => {
     setSearchText(value);
     setPagination({ ...pagination, current: 1 }); // Reset to first page on search
-    SalesRecord("GetAll", {
-      pageNumber: 1,
-      pageLimit: pagination.pageSize,
-      searchString: value,
-    });
+    // RTK Query will automatically refetch with new params
   };
 
   const handlePaginationChange = (pageNumber: number, pageLimit: number) => {
     setPagination({ current: pageNumber, pageSize: pageLimit });
-    SalesRecord("GetAll", {
-      pageNumber,
-      pageLimit,
-      searchString: searchText,
-    });
+    // RTK Query will automatically refetch with new params
   };
 
   const columns = [
@@ -250,13 +231,7 @@ const BillListPage = () => {
     },
   ];
 
-  useEffect(() => {
-    SalesRecord("GetAll", {
-      pageNumber: pagination.current,
-      pageLimit: pagination.pageSize,
-      searchString: searchText,
-    });
-  }, [SalesRecord]);
+  // RTK Query handles fetching automatically with params, no useEffect needed
 
   return (
     <div style={{ padding: 24 }}>
@@ -313,7 +288,7 @@ const BillListPage = () => {
           billdata={selectedBill}
           onSuccess={() => {
             setIsDrawerOpen(false);
-            SalesRecord("GetAll");
+            refetchSalesList();
           }}
         />
       </GlobalDrawer>

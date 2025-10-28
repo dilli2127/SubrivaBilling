@@ -7,25 +7,25 @@ import {
   Tooltip as RechartsTooltip,
   ResponsiveContainer,
 } from 'recharts';
-import { useSpecialApiFetchers } from '../../../services/api/specialApiFetchers';
-import { useDynamicSelector } from '../../../services/redux/selector';
+import { apiSlice } from '../../../services/redux/api/apiSlice';
 import dayjs from 'dayjs';
 
 const { Text } = Typography;
 const COLORS = ['#1890ff', '#52c41a', '#722ed1', '#fa8c16', '#13c2c2', '#eb2f96'];
 
 const PaymentReport: React.FC = () => {
-  const { Reports } = useSpecialApiFetchers();
+  // Use RTK Query for data fetching
+  const { data: paymentCollectionResponse } = apiSlice.useGetPaymentCollectionReportQuery({});
+  const { data: outstandingPaymentsResponse } = apiSlice.useGetOutstandingPaymentsReportQuery({});
   
-  // Get data from Redux store
-  const paymentCollectionData = useDynamicSelector(Reports.getIdentifier('GetPaymentCollectionReport'));
-  const outstandingPaymentsData = useDynamicSelector(Reports.getIdentifier('GetOutstandingPaymentsReport'));
+  // Extract data from responses
+  const paymentCollectionData = (paymentCollectionResponse as any)?.result || paymentCollectionResponse || {};
+  const outstandingPaymentsData = (outstandingPaymentsResponse as any)?.result || outstandingPaymentsResponse || {};
   
-  // Extract data
-  const collectionSummary = paymentCollectionData?.result?.summary || {};
+  const collectionSummary = paymentCollectionData?.summary || {};
   const paymentModeBreakdown = collectionSummary.payment_mode_breakdown || [];
-  const outstandingBills = outstandingPaymentsData?.result?.outstanding_bills || [];
-  const outstandingSummary = outstandingPaymentsData?.result?.summary || {};
+  const outstandingBills = outstandingPaymentsData?.outstanding_bills || [];
+  const outstandingSummary = outstandingPaymentsData?.summary || {};
   
   // Calculate metrics
   const totalCollected = parseFloat(collectionSummary.total_collected) || 0;

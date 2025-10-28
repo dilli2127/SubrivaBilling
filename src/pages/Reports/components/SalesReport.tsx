@@ -15,22 +15,23 @@ import {
   LineChart,
   Line,
 } from 'recharts';
-import { useSpecialApiFetchers } from '../../../services/api/specialApiFetchers';
-import { useDynamicSelector } from '../../../services/redux/selector';
+import { apiSlice } from '../../../services/redux/api/apiSlice';
 
 const SalesReport: React.FC = () => {
-  const { Reports } = useSpecialApiFetchers();
+  // Use RTK Query for data fetching
+  const { data: salesReportResponse } = apiSlice.useGetSalesReportQuery({});
+  const { data: productSalesResponse } = apiSlice.useGetProductSalesReportQuery({});
+  const { data: topProductsResponse } = apiSlice.useGetTopProductsReportQuery({ limit: 10 });
   
-  // Get data from Redux store
-  const salesReportData = useDynamicSelector(Reports.getIdentifier('GetSalesReport'));
-  const productSalesData = useDynamicSelector(Reports.getIdentifier('GetProductSalesReport'));
-  const topProductsData = useDynamicSelector(Reports.getIdentifier('GetTopProductsReport'));
+  // Extract data from responses
+  const salesReportData = (salesReportResponse as any)?.result || salesReportResponse || {};
+  const productSalesData = (productSalesResponse as any)?.result || productSalesResponse || {};
+  const topProductsData = (topProductsResponse as any)?.result || topProductsResponse || {};
   
-  // Extract data
-  const salesSummary = salesReportData?.result?.summary || {};
-  const productSales = productSalesData?.result?.products || [];
-  const topProducts = topProductsData?.result?.top_products || [];
-  const salesData = salesReportData?.result?.sales || [];
+  const salesSummary = salesReportData?.summary || {};
+  const productSales = productSalesData?.products || [];
+  const topProducts = topProductsData?.top_products || [];
+  const salesData = salesReportData?.sales || [];
   
   // Calculate average bill value and prepare chart data
   const avgBillValue = salesSummary.average_bill_value || 0;

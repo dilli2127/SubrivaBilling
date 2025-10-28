@@ -19,25 +19,25 @@ import {
   Pie,
   Cell,
 } from 'recharts';
-import { useSpecialApiFetchers } from '../../../services/api/specialApiFetchers';
-import { useDynamicSelector } from '../../../services/redux/selector';
+import { apiSlice } from '../../../services/redux/api/apiSlice';
 import dayjs from 'dayjs';
 
 const COLORS = ['#1890ff', '#52c41a', '#722ed1', '#fa8c16', '#13c2c2', '#eb2f96'];
 
 const InventoryReport: React.FC = () => {
-  const { Reports } = useSpecialApiFetchers();
+  // Use RTK Query for data fetching
+  const { data: stockReportResponse } = apiSlice.useGetStockReportQuery({});
+  const { data: stockExpiryResponse } = apiSlice.useGetStockExpiryReportQuery({ days_threshold: 30 });
   
-  // Get data from Redux store
-  const stockReportData = useDynamicSelector(Reports.getIdentifier('GetStockReport'));
-  const stockExpiryData = useDynamicSelector(Reports.getIdentifier('GetStockExpiryReport'));
+  // Extract data from responses
+  const stockReportData = (stockReportResponse as any)?.result || stockReportResponse || {};
+  const stockExpiryData = (stockExpiryResponse as any)?.result || stockExpiryResponse || {};
   
-  // Extract data
-  const stockDetails = stockReportData?.result?.stock_details || [];
-  const stockSummary = stockReportData?.result?.summary || {};
-  const lowStockItems = stockReportData?.result?.low_stock_items || [];
-  const expiringStock = stockExpiryData?.result?.expiring_stock || [];
-  const expirySummary = stockExpiryData?.result?.summary || {};
+  const stockDetails = stockReportData?.stock_details || [];
+  const stockSummary = stockReportData?.summary || {};
+  const lowStockItems = stockReportData?.low_stock_items || [];
+  const expiringStock = stockExpiryData?.expiring_stock || [];
+  const expirySummary = stockExpiryData?.summary || {};
   const expiryBreakdown = stockExpiryData?.result?.expiry_breakdown || {};
   
   // Calculate metrics

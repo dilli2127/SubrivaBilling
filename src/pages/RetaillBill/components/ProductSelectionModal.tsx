@@ -2,9 +2,8 @@ import React, { useEffect, useState, FC, KeyboardEvent, useRef } from 'react';
 import { Modal, Table, Input, Button, Space, message } from 'antd';
 import type { InputRef } from 'antd/es/input';
 import { BarcodeOutlined, ScanOutlined } from '@ant-design/icons';
-import { useApiActions } from '../../../services/api/useApiActions';
 import type { ColumnType } from 'antd/es/table';
-import { useDynamicSelector } from '../../../services/redux';
+import { apiSlice } from '../../../services/redux/api/apiSlice';
 import BarcodeScanner from '../../../components/common/BarcodeScanner';
 
 const { Search } = Input;
@@ -31,11 +30,9 @@ const ProductSelectionModal: FC<ProductSelectionModalProps> = ({
   onSelect,
   onCancel,
 }) => {
-  const { getEntityApi } = useApiActions();
-  const ProductsApi = getEntityApi('Product');
-  const { items: products, loading } = useDynamicSelector(
-    ProductsApi.getIdentifier('GetAll')
-  );
+  // Use RTK Query for products
+  const { data: productsData, isLoading: loading } = apiSlice.useGetProductQuery({});
+  const products = (productsData as any)?.result || [];
 
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedRowKey, setSelectedRowKey] = useState<React.Key | null>(null);

@@ -20,8 +20,7 @@ import {
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import styles from './Settings.module.css';
-import { useApiActions } from '../../services/api/useApiActions';
-import { useDynamicSelector } from '../../services/redux';
+import { apiSlice } from '../../services/redux/api/apiSlice';
 import { getCurrentUser } from '../../helpers/auth';
 import { useFileUpload } from '../../helpers/useFileUpload';
 import SessionStorageEncryption from '../../helpers/encryption';
@@ -60,39 +59,35 @@ const Settings: React.FC = () => {
     };
   }, [userItem]);
 
-  // API hooks
-  const { getEntityApi } = useApiActions();
-  const SettingsApi = getEntityApi('Settings');
-  const OrganisationsApi = getEntityApi('Organisations');
-  const TenantsApi = getEntityApi('Tenant');
+  // Use RTK Query for data fetching
+  const { data: tenantsData } = apiSlice.useGetTenantQuery({}, { skip: !isSuperAdmin });
+  const { data: organisationsData } = apiSlice.useGetOrganisationsQuery({}, { skip: !isTenant && !isSuperAdmin });
+  
+  // For Settings and Organisation by ID, we'll use RTK Query with skip option
+  const [selectedSettingsId, setSelectedSettingsId] = useState<string | null>(null);
+  const [selectedOrgId, setSelectedOrgId] = useState<string | null>(null);
+  
+  const { data: settingsData, refetch: refetchSettings } = apiSlice.useGetSettingsByIdQuery(
+    { id: selectedSettingsId || '' },
+    { skip: !selectedSettingsId }
+  );
+  const { data: organisationData, refetch: refetchOrganisation } = apiSlice.useGetOrganisationsByIdQuery(
+    { id: selectedOrgId || '' },
+    { skip: !selectedOrgId }
+  );
+  
+  // Use RTK Query mutations
+  const [updateSettings] = apiSlice.useUpdateSettingsMutation();
+  const [createSettings] = apiSlice.useCreateSettingsMutation();
+  const [updateOrganisations] = apiSlice.useUpdateOrganisationsMutation();
 
-  // Selectors
-  const { items: settingsData } = useDynamicSelector(
-    SettingsApi.getIdentifier('Get')
-  );
-  const { items: organisationData } = useDynamicSelector(
-    OrganisationsApi.getIdentifier('Get')
-  );
-  const { items: tenantsItems } = useDynamicSelector(
-    TenantsApi.getIdentifier('GetAll')
-  );
-  const { items: organisationsItems } = useDynamicSelector(
-    OrganisationsApi.getIdentifier('GetAll')
-  );
+  const tenantsItems = (tenantsData as any)?.result || [];
+  const organisationsItems = (organisationsData as any)?.result || [];
 
   // Load settings on mount
   useEffect(() => {
     loadSettings();
-    
-    // Fetch data based on user role
-    if (isSuperAdmin) {
-      TenantsApi('GetAll');
-      // Don't fetch all organisations initially for superadmin
-    } else if (isTenant) {
-      // Fetch organisations for logged-in tenant
-      // Backend will automatically filter based on tenant authentication
-      OrganisationsApi('GetAll');
-    }
+    // RTK Query automatically fetches data based on skip conditions
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -102,11 +97,11 @@ const Settings: React.FC = () => {
     setSelectedOrganisation('all'); // Clear organisation selection
     
     if (tenantId && tenantId !== 'all') {
-      // Fetch organisations for the selected tenant
-      OrganisationsApi('GetAll', { tenant_id: tenantId });
+      // RTK Query will refetch with new filters when tenant changes
+      // Organisations are filtered by tenant_id on backend
     }
     // If "all" or cleared, don't fetch organisations (keep dropdown disabled)
-  }, [OrganisationsApi]);
+  }, []);
 
   const loadSettings = useCallback(async () => {
     try {
@@ -116,17 +111,18 @@ const Settings: React.FC = () => {
         organisationId = userItem?.organisation_id || userItem?.organisationItems?._id;
       }
       
-      // Load organization data
+      // Set IDs to trigger RTK Query fetches
       if (organisationId) {
-        await OrganisationsApi('Get', {}, organisationId);
+        setSelectedOrgId(organisationId);
+        const settingsId = organisationId || userItem?._id || null;
+        if (settingsId) {
+          setSelectedSettingsId(settingsId);
+        }
       }
-      
-      // Load settings (assuming your backend has a settings endpoint)
-      await SettingsApi('Get', {}, organisationId || userItem?._id);
     } catch (error) {
       console.error('Error loading settings:', error);
     }
-  }, [selectedOrganisation, userItem, OrganisationsApi, SettingsApi]);
+  }, [selectedOrganisation, userItem]);
 
   // Reload settings when selected organisation changes
   useEffect(() => {
@@ -137,9 +133,12 @@ const Settings: React.FC = () => {
 
   // Populate form when data loads
   useEffect(() => {
-    if (settingsData?.result || organisationData?.result) {
-      const settings = settingsData?.result || {};
-      const org = organisationData?.result || {};
+    const settingsResult = (settingsData as any)?.result || settingsData || {};
+    const orgResult = (organisationData as any)?.result || organisationData || {};
+    
+    if (settingsResult || orgResult) {
+      const settings = settingsResult;
+      const org = orgResult;
       
       form.setFieldsValue({
         // Company Settings - Map API fields to form fields
@@ -213,7 +212,8 @@ const Settings: React.FC = () => {
 
       // Only update organization data if we're on the company tab
       if (activeTab === 'company' && organisationId) {
-        await OrganisationsApi('Update', {
+        await updateOrganisations({
+          id: organisationId,
           org_name: values.company_name,
           address: values.company_address,
           city: values.company_city,
@@ -225,7 +225,7 @@ const Settings: React.FC = () => {
           website: values.company_website,
           logo_url: uploadedLogoUrl || values.company_logo,
           business_type: values.business_type,
-        }, organisationId);
+        }).unwrap();
       }
 
       // Save settings - Send only relevant data based on active tab
@@ -279,7 +279,8 @@ const Settings: React.FC = () => {
         }
 
         // Check if settings exist, if not create new settings
-        const existingSettings = settingsData?.result;
+        const settingsResult = (settingsData as any)?.result || settingsData;
+        const existingSettings = settingsResult && typeof settingsResult === 'object' ? settingsResult : null;
         const hasExistingSettings = existingSettings && (
           existingSettings._id || 
           existingSettings.id || 
@@ -292,20 +293,24 @@ const Settings: React.FC = () => {
         if (hasExistingSettings) {
           // Update existing settings - use the settings ID or target ID
           const settingsId = existingSettings._id || existingSettings.id || targetId;
-          await SettingsApi('Update', {
+          await updateSettings({
+            id: settingsId,
             ...newSettingsData,
             organisation_id: targetId, // Include organisation_id for updates too
-          }, settingsId);
+          }).unwrap();
         } else {
           // Create new settings for the first time
-          await SettingsApi('Create', {
+          await createSettings({
             ...newSettingsData,
             organisation_id: targetId, // Include organisation_id for new settings
-          }, targetId);
+          }).unwrap();
         }
 
         // Reload settings after save to get updated data
-        await SettingsApi('Get', {}, targetId);
+        if (targetId) {
+          setSelectedSettingsId(targetId);
+          refetchSettings();
+        }
       }
 
       const tabLabels = {
@@ -329,10 +334,13 @@ const Settings: React.FC = () => {
     selectedOrganisation, 
     userItem, 
     activeTab, 
-    OrganisationsApi, 
-    SettingsApi,
+    updateOrganisations,
+    updateSettings,
+    createSettings,
+    refetchSettings,
     uploadedLogoUrl,
-    settingsData
+    settingsData,
+    form
   ]);
 
   const handleReset = useCallback(() => {

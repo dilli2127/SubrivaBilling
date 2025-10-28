@@ -19,8 +19,7 @@ import {
   PhoneOutlined,
   MailOutlined,
 } from '@ant-design/icons';
-import { useApiActions } from '../../../services/api/useApiActions';
-import { useDynamicSelector } from '../../../services/redux';
+import { apiSlice } from '../../../services/redux/api/apiSlice';
 
 const { Title, Text } = Typography;
 
@@ -52,15 +51,10 @@ const UserSelectionModal: React.FC<UserSelectionModalProps> = ({
   onSelect,
   onCancel,
 }) => {
-  const { getEntityApi } = useApiActions();
-  const BillingUsersApi = getEntityApi('BillingUsers');
-
-  const { items: userList, loading: userLoading } = useDynamicSelector(
-    BillingUsersApi.getIdentifier('GetAll')
-  );
-
-  // Extract items from userList if it exists
-  const users = userList?.items || userList?.result || [];
+  // Use RTK Query for billing users
+  const { data: userData, isLoading: userLoading } = apiSlice.useGetBillingUsersQuery({});
+  const userList = (userData as any)?.result || userData || {};
+  const users = userList?.items || userList?.result || Array.isArray(userList) ? userList : [];
 
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
@@ -154,15 +148,11 @@ const UserSelectionModal: React.FC<UserSelectionModalProps> = ({
         clearTimeout(searchTimeoutRef.current);
       }
 
-      searchTimeoutRef.current = setTimeout(() => {
-        if (value.trim()) {
-          BillingUsersApi('GetAll', { searchString: value.trim() });
-        } else {
-          BillingUsersApi('GetAll');
-        }
-      }, 300);
+      // Search will be handled client-side from cached RTK Query data
+      // For server-side search, use refetch with query parameters
+      // TODO: Implement server-side search with RTK Query if needed
     },
-    [BillingUsersApi]
+    []
   );
 
   // Handle user selection
@@ -388,10 +378,9 @@ const UserSelectionModal: React.FC<UserSelectionModalProps> = ({
     [selectedUser]
   );
 
-  // Load users on mount and handle modal close
+  // Handle modal close (RTK Query automatically loads on mount)
   useEffect(() => {
     if (visible) {
-      BillingUsersApi('GetAll');
       setSelectedUser(null);
       setSelectedRowIndex(-1);
     } else {
@@ -409,7 +398,7 @@ const UserSelectionModal: React.FC<UserSelectionModalProps> = ({
         clearTimeout(searchTimeoutRef.current);
       }
     };
-  }, [visible, BillingUsersApi]);
+  }, [visible]);
 
   // Auto-select current user when users are loaded
   useEffect(() => {

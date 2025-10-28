@@ -25,14 +25,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import LandingPageHeader from '../../components/common/LandingPageHeader';
 import styles from './TenantSignup.module.css';
-import { ApiRequest } from '../../services/api/apiService';
-import {
-  dynamic_clear,
-  dynamic_request,
-  useDynamicSelector,
-} from '../../services/redux';
-import { useDispatch } from 'react-redux';
-import { Dispatch } from 'redux';
+import { apiSlice } from '../../services/redux/api/apiSlice';
 import { API_ROUTES } from '../../services/api/utils';
 
 const REQUIRED_FIELDS = [
@@ -147,32 +140,13 @@ const sanitizeInput = (value: string): string => {
 
 const TenantSignup: React.FC = () => {
   const navigate = useNavigate();
-  const dispatch: Dispatch<any> = useDispatch();
   const [form] = Form.useForm();
   const [currentStep, setCurrentStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [lastError, setLastError] = useState<string | null>(null);
 
-  const { loading, items, error } = useDynamicSelector('tenant_account_signup');
-
-  // Memoized callback for server requests
-  const callBackServer = useCallback(
-    (variables: ApiRequest, key: string) => {
-      try {
-        dispatch(dynamic_request(variables, key));
-      } catch (err) {
-        console.error('Error dispatching request:', err);
-        showNotification(
-          'error',
-          'Request Failed',
-          'Failed to send request to server. Please try again.',
-          5
-        );
-        setIsSubmitting(false);
-      }
-    },
-    [dispatch]
-  );
+  // Use RTK Query mutation for tenant signup
+  const [tenantSignup, { isLoading: loading, error: queryError }] = apiSlice.useTenantSignupMutation();
 
   // Memoize steps configuration to prevent unnecessary re-renders
   const steps = useMemo(
@@ -261,17 +235,33 @@ const TenantSignup: React.FC = () => {
         return;
       }
 
-      // Call the API
-      callBackServer(
-        {
-          method: API_ROUTES.Tenant?.Create?.method || 'POST',
-          endpoint: '/tenant_accounts_signup',
-          data: processedValues,
-        },
-        'tenant_account_signup'
-      );
+      // Call the API using RTK Query mutation
+      const result = await tenantSignup(processedValues).unwrap();
+      
+      // Handle success (RTK Query returns data directly, no statusCode needed)
+      if (result) {
+        message.destroy(loadingKey);
+        setIsSubmitting(false);
+        
+        showNotification(
+          'success',
+          'Account Created Successfully!',
+          'Your tenant account has been created. You will be redirected to the login page.',
+          5
+        );
 
-      message.destroy(loadingKey);
+        // Clear form
+        form.resetFields();
+        
+        // Delay navigation to show success message
+        setTimeout(() => {
+          navigate('/billing_login', { 
+            state: { 
+              message: 'Account created successfully! Please log in with your credentials.' 
+            } 
+          });
+        }, 1500);
+      }
     } catch (error: any) {
       console.error('Error in onFinish:', error);
       setIsSubmitting(false);
@@ -290,128 +280,8 @@ const TenantSignup: React.FC = () => {
     }
   };
 
-  // Enhanced useEffect with comprehensive error handling and cleanup
-  useEffect(() => {
-    let isSubscribed = true;
-
-    const handleResponse = () => {
-      if (!isSubscribed) return;
-
-      try {
-        // Success case
-        if (items?.statusCode === 200 || items?.statusCode === 201) {
-          setIsSubmitting(false);
-          
-          showNotification(
-            'success',
-            'Account Created Successfully!',
-            'Your tenant account has been created. You will be redirected to the login page.',
-            5
-          );
-
-          // Clear form
-          form.resetFields();
-          
-          // Clear Redux state
-          dispatch(dynamic_clear('tenant_account_signup'));
-
-          // Delay navigation to show success message
-          setTimeout(() => {
-            if (isSubscribed) {
-              navigate('/billing_login', { 
-                state: { 
-                  message: 'Account created successfully! Please log in with your credentials.' 
-                } 
-              });
-            }
-          }, 1500);
-        } 
-        // Error case
-        else if (error) {
-          setIsSubmitting(false);
-
-          console.error('Signup error:', error);
-          
-          const parsedError = parseError(error);
-          setLastError(parsedError.message);
-
-          // Handle different error types
-          switch (parsedError.type) {
-            case ErrorType.CONFLICT:
-              showNotification(
-                'warning',
-                'Account Already Exists',
-                parsedError.message + ' Please try with different credentials or login if you already have an account.',
-                7
-              );
-              // Navigate back to first step for conflict errors
-              setCurrentStep(0);
-              // Focus on email field
-              setTimeout(() => form.getFieldInstance('email')?.focus(), 300);
-              break;
-
-            case ErrorType.NETWORK:
-              showNotification(
-                'error',
-                'Network Error',
-                parsedError.message + ' Please check your connection and try again.',
-                6
-              );
-              break;
-
-            case ErrorType.SERVER:
-              showNotification(
-                'error',
-                'Server Error',
-                parsedError.message,
-                7
-              );
-              break;
-
-            case ErrorType.VALIDATION:
-              showNotification(
-                'warning',
-                'Validation Error',
-                parsedError.message,
-                5
-              );
-              // Go to first step to review inputs
-              setCurrentStep(0);
-              break;
-
-            default:
-              showNotification(
-                'error',
-                'Error',
-                parsedError.message,
-                5
-              );
-              break;
-          }
-
-          // Clear the error state after displaying
-          dispatch(dynamic_clear('tenant_account_signup'));
-        }
-      } catch (err) {
-        console.error('Error in useEffect handler:', err);
-        setIsSubmitting(false);
-        
-        showNotification(
-          'error',
-          'Unexpected Error',
-          'An unexpected error occurred. Please try again.',
-          5
-        );
-      }
-    };
-
-    handleResponse();
-
-    // Cleanup function
-    return () => {
-      isSubscribed = false;
-    };
-  }, [items, error, navigate, dispatch, form]);
+  // RTK Query mutation handles success/error in the onFinish handler
+  // No need for separate useEffect to watch Redux state
 
   // Enhanced keyboard navigation
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {

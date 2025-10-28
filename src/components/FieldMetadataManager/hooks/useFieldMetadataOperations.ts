@@ -1,10 +1,8 @@
 import { useCallback, useEffect, useMemo } from 'react';
-import { useDispatch } from 'react-redux';
-import { dynamic_request, useDynamicSelector, dynamic_clear } from '../../../services/redux';
+import { apiSlice } from '../../../services/redux/api/apiSlice';
 import { FieldMetadata } from '../../../hooks/useFieldMetadata';
 import { validateFieldMetadata } from '../../../helpers/fieldMetadataUtils';
 import { showToast } from '../../../helpers/Common_functions';
-import { getEntityApiRoutes } from '../../../helpers/CrudFactory';
 import {
   UseFieldMetadataOperationsProps,
   UseFieldMetadataOperationsReturn,
@@ -17,71 +15,24 @@ export const useFieldMetadataOperations = ({
   organisationId,
   onFieldsUpdated,
 }: UseFieldMetadataOperationsProps): UseFieldMetadataOperationsReturn => {
-  const dispatch = useDispatch();
+  // Use RTK Query for fetching fields
+  const { data: fieldsResponse, isLoading: fieldsLoading, refetch: refetchFields } = apiSlice.useGetFieldMetadataQuery({
+    entity_name: entityName,
+    is_active: undefined, // Get all fields (active and inactive)
+  });
 
-  // Get API routes using the generic helper (memoized)
-  const apiRoutes = useMemo(() => getEntityApiRoutes('FieldMetadata'), []);
+  // Use RTK Query mutations
+  const [createField, { isLoading: createLoading }] = apiSlice.useCreateFieldMetadataMutation();
+  const [updateField, { isLoading: updateLoading }] = apiSlice.useUpdateFieldMetadataMutation();
+  const [deleteField, { isLoading: deleteLoading }] = apiSlice.useDeleteFieldMetadataMutation();
 
-  // Redux selectors using the identifiers from API routes
-  const { items: fieldsResponse, loading: fieldsLoading } = useDynamicSelector(
-    apiRoutes.get.identifier
-  );
-  const { items: createResponse, loading: createLoading } = useDynamicSelector(
-    apiRoutes.create.identifier
-  );
-  const { items: updateResponse, loading: updateLoading } = useDynamicSelector(
-    apiRoutes.update.identifier
-  );
-  const { items: deleteResponse, loading: deleteLoading } = useDynamicSelector(
-    apiRoutes.delete.identifier
-  );
-
-  // Fetch field metadata
+  // Fetch field metadata (refetch function)
   const fetchFields = useCallback(() => {
-    dispatch(
-      dynamic_request(
-        {
-          method: apiRoutes.get.method,
-          endpoint: apiRoutes.get.endpoint,
-          data: {
-            entity_name: entityName,
-            is_active: undefined, // Get all fields (active and inactive)
-          },
-        },
-        apiRoutes.get.identifier
-      ) as any
-    );
-  }, [dispatch, entityName, apiRoutes.get]);
+    refetchFields();
+  }, [refetchFields]);
 
-  // Combined success handler for create/update/delete
-  useEffect(() => {
-    const handleSuccess = (
-      response: any,
-      action: 'created' | 'updated' | 'deleted',
-      identifier: string
-    ) => {
-      if (response?.statusCode === 200) {
-        showToast('success', `Field ${action} successfully`);
-        // Only fetch fields for the modal view
-        fetchFields();
-        // Clear the request state
-        dispatch(dynamic_clear(identifier) as any);
-      }
-    };
-
-    handleSuccess(createResponse, 'created', apiRoutes.create.identifier);
-    handleSuccess(updateResponse, 'updated', apiRoutes.update.identifier);
-    handleSuccess(deleteResponse, 'deleted', apiRoutes.delete.identifier);
-  }, [
-    createResponse,
-    updateResponse,
-    deleteResponse,
-    fetchFields,
-    dispatch,
-    apiRoutes.create.identifier,
-    apiRoutes.update.identifier,
-    apiRoutes.delete.identifier,
-  ]);
+  // Success handling is done in the mutation handlers below
+  // RTK Query provides isLoading states for each mutation
 
   // Submit field (create or update)
   const handleSubmitField = useCallback(
@@ -137,51 +88,51 @@ export const useFieldMetadataOperations = ({
         return;
       }
 
-      // Submit
-      const requestConfig = editingField
-        ? {
-            method: apiRoutes.update.method,
-            endpoint: `${apiRoutes.update.endpoint}/${editingField._id}`,
-            data: payload,
-          }
-        : {
-            method: apiRoutes.create.method,
-            endpoint: apiRoutes.create.endpoint,
-            data: payload,
-          };
-
-      dispatch(
-        dynamic_request(
-          requestConfig,
-          editingField ? apiRoutes.update.identifier : apiRoutes.create.identifier
-        ) as any
-      );
+      // Submit using RTK Query mutations
+      try {
+        if (editingField) {
+          await updateField({ id: editingField._id, ...payload }).unwrap();
+          showToast('success', 'Field updated successfully');
+        } else {
+          await createField(payload).unwrap();
+          showToast('success', 'Field created successfully');
+        }
+        
+        // Refetch fields after successful create/update
+        refetchFields();
+        if (onFieldsUpdated) {
+          onFieldsUpdated();
+        }
+      } catch (error: any) {
+        showToast('error', error?.data?.message || `Failed to ${editingField ? 'update' : 'create'} field`);
+      }
     },
-    [businessType, tenantId, organisationId, apiRoutes, dispatch]
+    [businessType, tenantId, organisationId, createField, updateField, refetchFields, onFieldsUpdated]
   );
 
   // Delete field
   const handleDeleteField = useCallback(
-    (fieldId: string) => {
-      dispatch(
-        dynamic_request(
-          {
-            method: apiRoutes.delete.method,
-            endpoint: `${apiRoutes.delete.endpoint}/${fieldId}`,
-            data: { _id: fieldId },
-          },
-          apiRoutes.delete.identifier
-        ) as any
-      );
+    async (fieldId: string) => {
+      try {
+        await deleteField(fieldId).unwrap();
+        showToast('success', 'Field deleted successfully');
+        // Refetch fields after successful delete
+        refetchFields();
+        if (onFieldsUpdated) {
+          onFieldsUpdated();
+        }
+      } catch (error: any) {
+        showToast('error', error?.data?.message || 'Failed to delete field');
+      }
     },
-    [dispatch, apiRoutes.delete]
+    [deleteField, refetchFields, onFieldsUpdated]
   );
 
   // Memoized fields data
-  const fieldsData = useMemo(
-    () => fieldsResponse?.result || [],
-    [fieldsResponse?.result]
-  );
+  const fieldsData = useMemo(() => {
+    const data = (fieldsResponse as any)?.result || fieldsResponse || [];
+    return Array.isArray(data) ? data : [];
+  }, [fieldsResponse]);
 
   return {
     fieldsData,

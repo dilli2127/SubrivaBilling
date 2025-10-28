@@ -1,20 +1,16 @@
-import React, { useEffect } from 'react';
+import React, { useMemo } from 'react';
 import { Spin } from 'antd';
-import { useApiActions } from '../../services/api/useApiActions';
-import { useDynamicSelector } from '../../services/redux';
+import { apiSlice } from '../../services/redux/api/apiSlice';
 import GlobalTable from '../../components/antd/GlobalTable';
 
 const StorageStockList: React.FC = () => {
-  const { getEntityApi } = useApiActions();
-  const StockStorageApi = getEntityApi('StockStorage');
+  const { data: storageData, isLoading: loading } = apiSlice.useGetStockStorageQuery({});
 
-  const { items: storageList = [], loading } = useDynamicSelector(
-    StockStorageApi.getIdentifier('GetAll')
-  );
-
-  useEffect(() => {
-    StockStorageApi('GetAll');
-  }, [StockStorageApi]);
+  // Extract result array from response
+  const storageList = useMemo(() => {
+    if (!storageData) return [];
+    return (storageData as any)?.result || [];
+  }, [storageData]);
 
   const columns = [
     {
@@ -72,11 +68,9 @@ const StorageStockList: React.FC = () => {
   ];
 
   // Ensure dataSource is always an array of objects
-  const dataSource = Array.isArray(storageList.result)
-    ? storageList.result.filter((item: any) => typeof item === 'object' && item !== null)
-    : Array.isArray(storageList)
-      ? storageList.filter((item: any) => typeof item === 'object' && item !== null)
-      : [];
+  const dataSource = Array.isArray(storageList)
+    ? storageList.filter((item: any) => typeof item === 'object' && item !== null)
+    : [];
 
   return (
     <div style={{ padding: 24 }}>

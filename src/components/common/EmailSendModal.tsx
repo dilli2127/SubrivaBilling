@@ -8,7 +8,6 @@ import {
   CheckCircleOutlined,
   ExclamationCircleOutlined
 } from '@ant-design/icons';
-import { useApiActions } from '../../services/api/useApiActions';
 import { sanitizeRichText } from '../../helpers/sanitize';
 import styles from './EmailSendModal.module.css';
 
@@ -42,8 +41,6 @@ const EmailSendModal: React.FC<EmailSendModalProps> = ({
   const [emailPreview, setEmailPreview] = useState<EmailPreview | null>(null);
   const [sending, setSending] = useState(false);
   const [sendSuccess, setSendSuccess] = useState(false);
-  
-  const { getEntityApi } = useApiActions();
 
   // Initialize form with customer email
   useEffect(() => {

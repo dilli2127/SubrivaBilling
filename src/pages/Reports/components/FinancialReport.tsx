@@ -12,24 +12,24 @@ import {
   BarChart,
   Bar,
 } from 'recharts';
-import { useSpecialApiFetchers } from '../../../services/api/specialApiFetchers';
-import { useDynamicSelector } from '../../../services/redux/selector';
+import { apiSlice } from '../../../services/redux/api/apiSlice';
 
 const { Text } = Typography;
 
 const FinancialReport: React.FC = () => {
-  const { Reports } = useSpecialApiFetchers();
+  // Use RTK Query for data fetching
+  const { data: profitLossResponse } = apiSlice.useGetProfitLossReportQuery({});
+  const { data: expenseResponse } = apiSlice.useGetExpenseReportQuery({});
+  const { data: gstResponse } = apiSlice.useGetGSTReportQuery({});
   
-  // Get data from Redux store
-  const profitLossData = useDynamicSelector(Reports.getIdentifier('GetProfitLossReport'));
-  const expenseData = useDynamicSelector(Reports.getIdentifier('GetExpenseReport'));
-  const gstData = useDynamicSelector(Reports.getIdentifier('GetGSTReport'));
+  // Extract data from responses
+  const profitLoss = (profitLossResponse as any)?.result || profitLossResponse || {};
+  const expenseData = (expenseResponse as any)?.result || expenseResponse || {};
+  const gstData = (gstResponse as any)?.result || gstResponse || {};
   
-  // Extract data
-  const profitLoss = profitLossData?.result || {};
-  const expenses = expenseData?.result?.expenses || [];
-  const expenseSummary = expenseData?.result?.summary || {};
-  const gstSummary = gstData?.result?.summary || {};
+  const expenses = expenseData?.expenses || [];
+  const expenseSummary = expenseData?.summary || {};
+  const gstSummary = gstData?.summary || {};
   
   // Calculate metrics
   const totalRevenue = parseFloat(profitLoss.revenue?.total_sales_revenue) || 0;

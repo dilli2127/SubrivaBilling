@@ -19,19 +19,19 @@ import {
   CartesianGrid,
   Legend,
 } from 'recharts';
-import { useSpecialApiFetchers } from '../../../services/api/specialApiFetchers';
-import { useDynamicSelector } from '../../../services/redux/selector';
+import { apiSlice } from '../../../services/redux/api/apiSlice';
 
 const CustomerReport: React.FC = () => {
-  const { Reports } = useSpecialApiFetchers();
+  // Use RTK Query for data fetching
+  const { data: customerSalesResponse } = apiSlice.useGetCustomerSalesReportQuery({});
+  const { data: topCustomersResponse } = apiSlice.useGetTopCustomersReportQuery({ limit: 10 });
   
-  // Get data from Redux store
-  const customerSalesData = useDynamicSelector(Reports.getIdentifier('GetCustomerSalesReport'));
-  const topCustomersData = useDynamicSelector(Reports.getIdentifier('GetTopCustomersReport'));
+  // Extract data from responses
+  const customerSalesData = (customerSalesResponse as any)?.result || customerSalesResponse || {};
+  const topCustomersData = (topCustomersResponse as any)?.result || topCustomersResponse || {};
   
-  // Extract data
-  const customers = customerSalesData?.result?.customers || [];
-  const topCustomers = topCustomersData?.result?.top_customers || [];
+  const customers = customerSalesData?.customers || [];
+  const topCustomers = topCustomersData?.top_customers || [];
   
   // Calculate metrics
   const totalCustomers = customers.length;

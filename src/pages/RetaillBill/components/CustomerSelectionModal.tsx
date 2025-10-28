@@ -32,8 +32,6 @@ import {
   SaveOutlined,
   CloseOutlined,
 } from '@ant-design/icons';
-import { useApiActions } from '../../../services/api/useApiActions';
-import { useDynamicSelector } from '../../../services/redux';
 import { useHandleApiResponse } from '../../../components/common/useHandleApiResponse';
 import { useGenericCrudRTK } from '../../../hooks/useGenericCrudRTK';
 
@@ -68,23 +66,8 @@ const CustomerSelectionModalComponent: React.FC<CustomerSelectionModalProps> = (
   onSelect,
   onCancel,
 }) => {
-  const { getEntityApi } = useApiActions();
-  const CustomerApi = getEntityApi('Customer');
-
-  // RTK Query hooks for Customer
-  const customerRTK = useGenericCrudRTK('Customer');
-  const { create: createCustomer, ...createResult } = customerRTK.useCreate();
-  const { refetch: refetchCustomerList } = customerRTK.useGetAll({});
-
-  const { items: customerList, loading: customerLoading } = useDynamicSelector(
-    CustomerApi.getIdentifier('GetAll')
-  );
-  const createLoading = createResult.isLoading;
-
-  // Extract items from customerList if it exists
-  const customers = customerList?.items || customerList?.result || [];
-
   const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
   const [showAddForm, setShowAddForm] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(
     null
@@ -106,8 +89,30 @@ const CustomerSelectionModalComponent: React.FC<CustomerSelectionModalProps> = (
   const createGridRef = useRef<HTMLDivElement>(null);
   const firstFormInputRef = useRef<any>(null);
 
-  // Memoized filtered customers
-  const filteredCustomers = useMemo(() => customers, [customers]);
+  // RTK Query hooks for Customer - use debouncedSearchTerm for API calls
+  const customerRTK = useGenericCrudRTK('Customer');
+  const { data: customerData, isLoading: customerLoading, refetch: refetchCustomerList } = customerRTK.useGetAll({
+    searchString: debouncedSearchTerm,
+  });
+  const { create: createCustomer, ...createResult } = customerRTK.useCreate();
+  const createLoading = createResult.isLoading;
+
+  // Extract items from customerData
+  const customers = useMemo(() => {
+    if (!customerData) return [];
+    return (customerData as any)?.result || [];
+  }, [customerData]);
+
+  // Memoized filtered customers - filter locally for instant UI feedback
+  const filteredCustomers = useMemo(() => {
+    if (!searchTerm.trim()) return customers;
+    const term = searchTerm.toLowerCase();
+    return customers.filter((customer: Customer) =>
+      customer.full_name?.toLowerCase().includes(term) ||
+      customer.mobile?.includes(term) ||
+      customer.email?.toLowerCase().includes(term)
+    );
+  }, [customers, searchTerm]);
 
   // Check if search has no results and should show create grid
   const shouldShowCreateGrid = useMemo(() => {
@@ -190,14 +195,10 @@ const CustomerSelectionModalComponent: React.FC<CustomerSelectionModalProps> = (
       }
 
       searchTimeoutRef.current = setTimeout(() => {
-        if (value.trim()) {
-          CustomerApi('GetAll', { searchString: value.trim() });
-        } else {
-          CustomerApi('GetAll');
-        }
+        setDebouncedSearchTerm(value.trim());
       }, 500);
     },
-    [CustomerApi]
+    []
   );
 
   // Handle customer selection
@@ -502,10 +503,9 @@ const CustomerSelectionModalComponent: React.FC<CustomerSelectionModalProps> = (
     [selectedCustomer]
   );
 
-  // Load customers on mount and handle modal close
+  // Handle modal close (RTK Query automatically loads customers)
   useEffect(() => {
     if (visible) {
-      CustomerApi('GetAll');
       setSelectedCustomer(null);
       setSelectedRowIndex(-1);
       setShowCreateGrid(false);
@@ -527,7 +527,7 @@ const CustomerSelectionModalComponent: React.FC<CustomerSelectionModalProps> = (
         clearTimeout(searchTimeoutRef.current);
       }
     };
-  }, [visible, CustomerApi, clearFormData]);
+  }, [visible, clearFormData]);
 
   // Auto-show create form when search has no results
   useEffect(() => {
@@ -583,7 +583,6 @@ const CustomerSelectionModalComponent: React.FC<CustomerSelectionModalProps> = (
     title: 'Customer',
     mutationResult: createResult,
     refetch: refetchCustomerList,
-    entityApi: CustomerApi,
   });
 
   // Watch createLoading state to show/hide loading message
@@ -784,7 +783,7 @@ const CustomerSelectionModalComponent: React.FC<CustomerSelectionModalProps> = (
                   onClick={() => {
                     setShowCreateGrid(false);
                     setShowAddForm(false);
-                    CustomerApi('GetAll');
+                    refetchCustomerList(); // Refresh customer list after cancel
                     clearFormData();
                   }}
                   style={{

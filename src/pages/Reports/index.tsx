@@ -36,8 +36,7 @@ import {
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import styles from './Reports.module.css';
-import { useApiActions } from '../../services/api/useApiActions';
-import { useDynamicSelector } from '../../services/redux/selector';
+import { apiSlice } from '../../services/redux/api/apiSlice';
 import { useReportData } from './hooks/useReportData';
 import { useReportExport } from './hooks/useReportExport';
 
@@ -78,43 +77,27 @@ const Reports: React.FC = () => {
   const isOrganisationUser = userRole.toLowerCase() === 'organisationuser';
   const isBranchUser = userRole.toLowerCase() === 'branchuser';
 
-  // API hooks
-  const { getEntityApi } = useApiActions();
-  const TenantsApi = getEntityApi('Tenant');
-  const OrganisationsApi = getEntityApi('Organisations');
-  const BranchesApi = getEntityApi('Braches');
+  // Use RTK Query for dropdowns data
+  const { data: tenantsData } = apiSlice.useGetTenantQuery({});
+  const { data: organisationsData } = apiSlice.useGetOrganisationsQuery({});
+  const { data: branchesData } = apiSlice.useGetBrachesQuery({});
 
-  // Selectors for dropdowns data
-  const { items: tenantsItems } = useDynamicSelector(TenantsApi.getIdentifier('GetAll'));
-  const { items: organisationsItems } = useDynamicSelector(OrganisationsApi.getIdentifier('GetAll'));
-  const { items: branchesItems } = useDynamicSelector(BranchesApi.getIdentifier('GetAll'));
+  const tenantsItems = (tenantsData as any)?.result || [];
+  const organisationsItems = (organisationsData as any)?.result || [];
+  const branchesItems = (branchesData as any)?.result || [];
 
-  // Fetch data on mount
-  useEffect(() => {
-    if (isSuperAdmin) {
-      // SuperAdmin: Only fetch tenants initially, not organisations
-      TenantsApi('GetAll');
-    } else if (isTenant) {
-      // Tenant: Fetch organisations on mount
-      OrganisationsApi('GetAll');
-    } else if (isOrganisationUser) {
-      // OrganisationUser: Fetch branches on mount
-      BranchesApi('GetAll');
-    }
-    // BranchUser: Don't fetch anything (no dropdowns needed)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isSuperAdmin, isTenant, isOrganisationUser, isBranchUser]);
+  // RTK Query automatically fetches data on mount, no manual fetch needed
 
   // Prepare dropdown options
   const tenantOptions = useMemo(() => {
-    return tenantsItems?.result?.map((tenant: any) => ({
+    return (Array.isArray(tenantsItems) ? tenantsItems : []).map((tenant: any) => ({
       label: tenant.organization_name || tenant.contact_name || tenant.username,
       value: tenant._id,
-    })) || [];
+    }));
   }, [tenantsItems]);
 
   const organisationOptions = useMemo(() => {
-    let orgs = organisationsItems?.result || [];
+    let orgs = Array.isArray(organisationsItems) ? organisationsItems : [];
     // Filter by selected tenant if applicable
     if (isSuperAdmin && selectedTenant !== 'all') {
       orgs = orgs.filter((org: any) => org.tenant_id === selectedTenant);
@@ -126,7 +109,7 @@ const Reports: React.FC = () => {
   }, [organisationsItems, selectedTenant, isSuperAdmin]);
 
   const branchOptions = useMemo(() => {
-    let branches = branchesItems?.result || [];
+    let branches = Array.isArray(branchesItems) ? branchesItems : [];
     // Filter by selected organisation if applicable
     if (selectedOrganisation !== 'all') {
       branches = branches.filter((branch: any) => 
@@ -144,20 +127,16 @@ const Reports: React.FC = () => {
     setSelectedTenant(value);
     setSelectedOrganisation('all');
     setSelectedBranch('all');
-    // Fetch organisations for selected tenant (with tenant_id filter)
-    if (value !== 'all') {
-      OrganisationsApi('GetAll', { tenant_id: value });
-    }
+    // RTK Query will automatically refetch organisations when filters change
+    // Filtering is handled client-side in organisationOptions useMemo
   };
 
   // Handle organisation change - reset branch filter
   const handleOrganisationChange = (value: string) => {
     setSelectedOrganisation(value);
     setSelectedBranch('all');
-    // Fetch branches for selected organisation (with organisation_id filter)
-    if (value !== 'all') {
-      BranchesApi('GetAll', { organisation_id: value });
-    }
+    // RTK Query will automatically refetch branches when filters change
+    // Filtering is handled client-side in branchOptions useMemo
   };
 
   // Use custom hooks

@@ -1,35 +1,14 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
-import { ApiRequest } from "../../services/api/apiService";
-import { dynamic_request, useDynamicSelector } from "../../services/redux";
-import { useDispatch } from "react-redux";
-import { Dispatch } from "redux";
-import { createApiRouteGetter } from "../../helpers/Common_functions";
+import React from "react";
+import { apiSlice } from "../../services/redux/api/apiSlice";
 
 const LandingBanner: React.FC = () => {
-  const getApiRouteCmsImage = createApiRouteGetter("CmsImage");
-  const getImageRoute = getApiRouteCmsImage("GetAll");
-  const { loading, items } = useDynamicSelector(getImageRoute.identifier);
-  const dispatch: Dispatch<any> = useDispatch();
-  const callBackServer = useCallback(
-    (variables: ApiRequest, key: string) => {
-      dispatch(dynamic_request(variables, key));
-    },
-    [dispatch]
-  );
+  // Use RTK Query to fetch CMS images
+  const { data: imagesData, isLoading: loading } = apiSlice.useGetCmsImageQuery({
+    pageLimit: 100,
+  });
 
-  const getAllImages = () => {
-    callBackServer(
-      {
-        method: getImageRoute.method,
-        endpoint: getImageRoute.endpoint,
-        data: { pageLimit: 100 },
-      },
-      getImageRoute.identifier
-    );
-  };
-  useEffect(() => {
-    getAllImages();
-  }, []);
+  // Images are automatically fetched on mount
+  // No manual fetch needed
 
   return <></>;
 };

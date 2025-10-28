@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { Form, message } from 'antd';
-import { useApiActions } from '../../services/api/useApiActions';
 import { GenericCrudPage } from '../../components/common/GenericCrudPage';
 import { stockAuditColumns } from './columns';
 import { getStockAuditFormItems } from './formItems';
@@ -8,7 +7,6 @@ import AllocateDrawer from './AllocateDrawer';
 import RevertDrawer from './RevertDrawer';
 import StockOutDrawer from './StockOutDrawer';
 import StorageAllocateDrawer from './StorageAllocateDrawer';
-import { useDynamicSelector } from '../../services/redux';
 import { apiSlice } from '../../services/redux/api/apiSlice';
 
 const StockAuditCrud: React.FC = () => {
@@ -41,11 +39,8 @@ const StockAuditCrud: React.FC = () => {
   const [createStockOut, { isLoading: stockoutLoading }] = apiSlice.useCreateStockOutMutation();
   const [createStockStorage, { isLoading: storageLoading }] = apiSlice.useCreateStockStorageMutation();
 
-  // Keep old Redux methods only for StockRevertFromBranch (special case)
-  const { StockRevertFromBranch } = useApiActions();
-  const { loading: revertLoading } = useDynamicSelector(
-    StockRevertFromBranch.getIdentifier('RevertStock')
-  );
+  // Use RTK Query mutation for revert stock
+  const [revertStockFromBranch, { isLoading: revertLoading }] = apiSlice.useRevertStockFromBranchMutation();
 
   // Memoize form field watchers to prevent unnecessary re-renders
   const quantity = form.getFieldValue('quantity');
@@ -92,13 +87,18 @@ const StockAuditCrud: React.FC = () => {
   }, []);
 
   const handleRevertSubmit = useCallback(async (values: any) => {
-    await StockRevertFromBranch('RevertStock', {
-      ...values,
-      stock_audit_id: revertRecord._id,
-    });
-    setRevertDrawerOpen(false);
-    setRevertRecord(null);
-  }, [revertRecord, StockRevertFromBranch]);
+    try {
+      await revertStockFromBranch({
+        ...values,
+        stock_audit_id: revertRecord._id,
+      }).unwrap();
+      message.success('Stock reverted successfully');
+      setRevertDrawerOpen(false);
+      setRevertRecord(null);
+    } catch (error) {
+      message.error('Failed to revert stock');
+    }
+  }, [revertRecord, revertStockFromBranch]);
 
   const handleStockout = useCallback((record: any) => {
     setStockoutRecord(record);
