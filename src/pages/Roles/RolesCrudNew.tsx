@@ -197,7 +197,7 @@ const RolesCrudNew: React.FC = () => {
       } else {
         // Create new role
         const response = await requestBackServer({
-          method: 'POST',
+          method: 'PUT',
           endpoint: '/roles',
           data: payload,
         });

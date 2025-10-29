@@ -328,6 +328,12 @@ export const menuItems = [
         path: '/roles',
       },
       {
+        key: 'role_type',
+        label: 'Role Type',
+        icon: <BankOutlined />,
+        path: '/role_type',
+      },
+      {
         key: 'permissions',
         label: 'Permissions',
         icon: <BankOutlined />,
