@@ -38,14 +38,16 @@
     <!-- Disable zooming for desktop app experience -->
     <style>
       body {
-        -webkit-user-select: none;
+        -webkit-user-select: text; /* Allow text selection */
+        user-select: text; /* Standard property */
         -webkit-app-region: no-drag;
         overflow: hidden; /* Prevent scrolling as per user preference */
       }
       
-      /* Enable text selection for input fields */
+      /* Ensure inputs remain selectable (redundant but explicit) */
       input, textarea, [contenteditable] {
         -webkit-user-select: text;
+        user-select: text;
       }
       
       /* Ensure full height usage */

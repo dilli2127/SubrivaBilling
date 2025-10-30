@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   Form,
   Input,
@@ -13,6 +13,7 @@ import {
   Tag,
 } from 'antd';
 import { AVAILABLE_RESOURCES, getGroupedResources } from '../../helpers/resourceConstants';
+import { apiSlice } from '../../services/redux/api/apiSlice';
 
 const { Title, Text } = Typography;
 const { TextArea } = Input;
@@ -45,6 +46,16 @@ const RolePermissionForm: React.FC<RolePermissionFormProps> = ({
 }) => {
   const [permissions, setPermissions] = useState<PermissionState>(initialPermissions);
   const groupedResources = getGroupedResources();
+  const { data: roleTypesData, isLoading: roleTypesLoading } = apiSlice.useGetRoleTypeQuery({});
+  const roleTypeOptions = useMemo(
+    () => (
+      (roleTypesData as any)?.result?.map((rt: any) => ({
+        label: rt.name,
+        value: rt.name,
+      })) || []
+    ),
+    [roleTypesData]
+  );
 
   useEffect(() => {
     if (Object.keys(initialPermissions).length > 0) {
@@ -145,11 +156,18 @@ const RolePermissionForm: React.FC<RolePermissionFormProps> = ({
         name="roles_type"
         rules={[{ required: true, message: 'Please select role type!' }]}
       >
-        <Select placeholder="Select role type" allowClear>
-          <Select.Option value="Admin">Admin</Select.Option>
-          <Select.Option value="Manager">Manager</Select.Option>
-          <Select.Option value="Employee">Employee</Select.Option>
-          <Select.Option value="Salesman">Salesman</Select.Option>
+        <Select
+          placeholder="Select role type"
+          allowClear
+          showSearch
+          optionFilterProp="children"
+          loading={roleTypesLoading}
+        >
+          {roleTypeOptions.map((opt: { label: string; value: string }) => (
+            <Select.Option key={opt.value} value={opt.value}>
+              {opt.label}
+            </Select.Option>
+          ))}
         </Select>
       </Form.Item>
 

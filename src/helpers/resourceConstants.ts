@@ -205,22 +205,6 @@ export const AVAILABLE_RESOURCES: ResourceDefinition[] = [
     description: 'Permission management',
     menus: ['permissions']
   },
-  
-  // Tenant Management
-  { 
-    resource: 'tenant_account', 
-    label: 'Tenant Accounts',
-    category: 'Tenant Management',
-    description: 'Tenant account management',
-    menus: ['tenant_account_list']
-  },
-  { 
-    resource: 'entity_definition', 
-    label: 'Entity Definitions',
-    category: 'Tenant Management',
-    description: 'Entity definition management',
-    menus: ['entity_definitions']
-  }
 ];
 
 /**

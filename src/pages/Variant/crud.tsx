@@ -90,7 +90,7 @@ const VariantCrud: React.FC = () => {
             showSearch
             allowClear
           >
-            {(unitItems?.result || []).map((unit: any) => (
+            {(unitItems || []).map((unit: any) => (
               <Option key={unit._id} value={unit.unit_code}>
                 {unit.unit_name}
               </Option>

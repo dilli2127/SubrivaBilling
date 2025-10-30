@@ -89,7 +89,7 @@ export const organisationFormItems = [
   },
   {
     label: 'Address',
-    name: 'address',
+    name: 'address1',
     component: <Input.TextArea placeholder="Enter address" rows={2} />,
   },
   {
