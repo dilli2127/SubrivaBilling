@@ -6,7 +6,12 @@ const { Option } = Select;
 export const revertDrawerFormItems = (
   branchList: any,
   branchLoading: boolean,
-  record: any
+  record: any,
+  options: {
+    onBranchChange: (branchId: string) => void;
+    availableQuantity: number;
+    maxQuantity?: number;
+  }
 ) => [
   {
     name: "branch_id",
@@ -18,6 +23,7 @@ export const revertDrawerFormItems = (
         loading={branchLoading}
         showSearch
         optionFilterProp="children"
+        onChange={options.onBranchChange}
       >
         {branchList?.map((branch: any) => (
           <Option key={branch._id} value={branch._id}>
@@ -36,7 +42,7 @@ export const revertDrawerFormItems = (
         min={1}
         style={{ width: "100%" }}
         disabled
-        value={record?.available_quantity || 0}
+        value={options.availableQuantity ?? record?.available_quantity ?? 0}
       />
     ),
   },
@@ -44,6 +50,6 @@ export const revertDrawerFormItems = (
     name: "quantity",
     label: "Quantity",
     rules: [{ required: true, message: "Please enter quantity" }],
-    component: <InputNumber min={1} style={{ width: "100%" }} />,
+    component: <InputNumber min={1} max={options.maxQuantity ?? options.availableQuantity} style={{ width: "100%" }} />,
   },
-]; 
+];
