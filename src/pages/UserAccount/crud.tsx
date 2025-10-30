@@ -5,15 +5,31 @@ import { usersAccountFormItems } from './formItems';
 import { Form } from 'antd';
 import { getCurrentUser } from '../../helpers/auth';
 import { apiSlice } from '../../services/redux/api/apiSlice';
+import { useSuperAdminFilters } from '../../hooks/useSuperAdminFilters';
 
 const UserAccountCrud: React.FC = () => {
   // Use RTK Query for fetching related data
   const { data: rolesData } = apiSlice.useGetRolesQuery({});
-  const { data: organisationData } = apiSlice.useGetOrganisationsQuery({});
-  const { data: branchesData } = apiSlice.useGetBranchesQuery({});
+  // Use centralised options for organisations to honour tenant selection and lazy load
+  const { organisationOptions } = useSuperAdminFilters();
+
+  // Branches should load only after organisation selection
+  const [form] = Form.useForm();
+  const [selectedOrganisationId, setSelectedOrganisationId] = useState<
+    string | number | null
+  >(null);
+  const { data: branchesData } = apiSlice.useGetBranchesQuery(
+    selectedOrganisationId
+      ? { organisation_id: selectedOrganisationId, org_id: selectedOrganisationId }
+      : {},
+    { skip: !selectedOrganisationId }
+  );
 
   const rolesItems = useMemo(() => (rolesData as any)?.result || [], [rolesData]);
-  const orgaisationItems = useMemo(() => (organisationData as any)?.result || [], [organisationData]);
+  const orgaisationItems = useMemo(
+    () => organisationOptions.map(o => ({ _id: o.value, org_name: o.label, name: o.label })),
+    [organisationOptions]
+  );
   const branchesItems = useMemo(() => (branchesData as any)?.result || [], [branchesData]);
   
   const userItem = useMemo(() => {
@@ -47,10 +63,7 @@ const UserAccountCrud: React.FC = () => {
     })) || [], [branchesItems]);
 
   // Dependent select logic
-  const [form] = Form.useForm();
-  const [selectedOrganisationId, setSelectedOrganisationId] = useState<
-    string | number | null
-  >(null);
+  // form is already created above for listening to changes
 
   const handleOrganisationChange = (value: string | number | undefined) => {
     // RTK Query automatically handles data fetching, no need for manual API calls

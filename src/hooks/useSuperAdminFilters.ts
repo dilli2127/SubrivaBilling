@@ -63,15 +63,40 @@ export const useSuperAdminFilters = (): SuperAdminFiltersReturn => {
       {},
       { skip: !isSuperAdmin }
     );
+
+  // Effective tenant id for querying organisations
+  const effectiveTenantId = useMemo(() => {
+    if (isSuperAdmin) {
+      return selectedTenant !== 'all' ? selectedTenant : undefined;
+    }
+    // For tenant users, backend scopes by token; no need to pass explicit tenant_id
+    return undefined;
+  }, [isSuperAdmin, selectedTenant]);
+
+  // Load organisations only when tenant is chosen for SuperAdmin (lazy load)
   const { data: organisationsData, isLoading: organisationsLoading, refetch: refetchOrganisations } =
     apiSlice.useGetOrganisationsQuery(
-      {},
-      { skip: !isSuperAdmin && !isTenant }
+      effectiveTenantId ? { tenant_id: effectiveTenantId } : {},
+      {
+        skip: (!isTenant && !isSuperAdmin) || (isSuperAdmin && !effectiveTenantId),
+      }
     );
+
+  // Load branches only when organisation is chosen (lazy load)
+  const effectiveOrganisationId = useMemo(() => {
+    return selectedOrganisation !== 'all' ? selectedOrganisation : undefined;
+  }, [selectedOrganisation]);
+
   const { data: branchesData, isLoading: branchesLoading, refetch: refetchBranches } =
     apiSlice.useGetBranchesQuery(
-      {},
-      { skip: !isSuperAdmin && !isTenant && !isOrganisationUser }
+      effectiveOrganisationId
+        ? { organisation_id: effectiveOrganisationId, org_id: effectiveOrganisationId }
+        : {},
+      {
+        skip:
+          (!isSuperAdmin && !isTenant && !isOrganisationUser) ||
+          !effectiveOrganisationId,
+      }
     );
 
   // Extract items from RTK Query data
