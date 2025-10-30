@@ -50,12 +50,33 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
   const InvoiceNumberApi = useGenericCrudRTK('InvoiceNumber');
 
   // RTK Query hooks for fetching data
-  const { data: productListData, isLoading: productLoading, refetch: refetchProducts } = ProductsApi.useGetAll();
-  const { data: customerListData, isLoading: customerLoading, refetch: refetchCustomers } = CustomerApi.useGetAll();
-  const { data: userListData, isLoading: userLoading, refetch: refetchUsers } = BillingUsersApi.useGetAll();
-  const { data: stockAuditListData, isLoading: stockLoading, refetch: refetchStockAudit } = StockAuditApi.useGetAll();
-  const { data: branchStockListData, isLoading: branchStockLoading, refetch: refetchBranchStock } = BranchStock.useGetAll();
-  const { data: invoiceNoData, refetch: refetchInvoiceNo } = InvoiceNumberApi.useGetAll();
+  const {
+    data: productListData,
+    isLoading: productLoading,
+    refetch: refetchProducts,
+  } = ProductsApi.useGetAll();
+  const {
+    data: customerListData,
+    isLoading: customerLoading,
+    refetch: refetchCustomers,
+  } = CustomerApi.useGetAll();
+  const {
+    data: userListData,
+    isLoading: userLoading,
+    refetch: refetchUsers,
+  } = BillingUsersApi.useGetAll();
+  const {
+    data: stockAuditListData,
+    isLoading: stockLoading,
+    refetch: refetchStockAudit,
+  } = StockAuditApi.useGetAll();
+  const {
+    data: branchStockListData,
+    isLoading: branchStockLoading,
+    refetch: refetchBranchStock,
+  } = BranchStock.useGetAll();
+  const { data: invoiceNoData, refetch: refetchInvoiceNo } =
+    InvoiceNumberApi.useGetAll();
 
   // Extract data with proper fallback - RTK Query returns the API response with { statusCode, result, ... }
   const productList = productListData || {};
@@ -64,21 +85,32 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
   const stockAuditList = stockAuditListData || {};
   const branchStockList = branchStockListData || {};
   const invoice_no_item = invoiceNoData || {};
-  
+
   // Access the result field from the API response
-  const productListResult = Array.isArray(productList.result) ? productList.result : [];
-  const customerListResult = Array.isArray(customerList.result) ? customerList.result : [];
+  const productListResult = Array.isArray(productList.result)
+    ? productList.result
+    : [];
+  const customerListResult = Array.isArray(customerList.result)
+    ? customerList.result
+    : [];
   const userListResult = Array.isArray(userList.result) ? userList.result : [];
-  const stockAuditListResult = Array.isArray(stockAuditList.result) ? stockAuditList.result : [];
-  const branchStockListResult = Array.isArray(branchStockList.result) ? branchStockList.result : [];
+  const stockAuditListResult = Array.isArray(stockAuditList.result)
+    ? stockAuditList.result
+    : [];
+  const branchStockListResult = Array.isArray(branchStockList.result)
+    ? branchStockList.result
+    : [];
 
   // RTK Query mutation hooks
-  const { create: createSalesRecord, isLoading: saleCreateLoading } = SalesRecord.useCreate();
-  const { update: updateSalesRecord, isLoading: saleUpdateLoading } = SalesRecord.useUpdate();
-  const { create: createInvoiceNumber, isLoading: invoice_no_create_loading } = InvoiceNumberApi.useCreate();
-  
+  const { create: createSalesRecord, isLoading: saleCreateLoading } =
+    SalesRecord.useCreate();
+  const { update: updateSalesRecord, isLoading: saleUpdateLoading } =
+    SalesRecord.useUpdate();
+  const { create: createInvoiceNumber, isLoading: invoice_no_create_loading } =
+    InvoiceNumberApi.useCreate();
+
   const invoice_no_create_item = null; // Not needed for RTK Query
-  
+
   // Track create/update responses
   const [createResponse, setCreateResponse] = useState<any>(null);
   const [updateResponse, setUpdateResponse] = useState<any>(null);
@@ -165,7 +197,9 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
     maxLooseQty: number;
     message: string;
   } => {
-    const stockListData = branchId ? branchStockListResult : stockAuditListResult;
+    const stockListData = branchId
+      ? branchStockListResult
+      : stockAuditListResult;
     const stock = stockListData.find((s: any) => s._id === stockId);
 
     if (!stock) {
@@ -384,20 +418,18 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
   );
 
   const customerOptions = useMemo(() => {
-    const options =
-      customerListResult.map((customer: any) => ({
-        label: `${customer.full_name} - ${customer.mobile}`,
-        value: customer._id,
-      }));
+    const options = customerListResult.map((customer: any) => ({
+      label: `${customer.full_name} - ${customer.mobile}`,
+      value: customer._id,
+    }));
     return options;
   }, [customerListResult]);
 
   const userOptions = useMemo(() => {
-    const options =
-      userListResult.map((user: any) => ({
-        label: `${user.name} (${user.roleItems?.name || 'No Role'})`,
-        value: user._id,
-      }));
+    const options = userListResult.map((user: any) => ({
+      label: `${user.name} (${user.roleItems?.name || 'No Role'})`,
+      value: user._id,
+    }));
     return options;
   }, [userListResult]);
 
@@ -699,7 +731,9 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
         editable: true, // allow editing to open modal
         render: (value, record, index) => {
           // Get stock info for display
-          const stockListData = branchId ? branchStockListResult : stockAuditListResult;
+          const stockListData = branchId
+            ? branchStockListResult
+            : stockAuditListResult;
           const stock = stockListData.find(
             (s: any) => s._id === record.stock_id
           );
@@ -883,7 +917,9 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
         width: 90,
         render: (value: number, record: any, index?: number) => {
           // Get stock info for validation
-          const stockListData = branchId ? branchStockListResult : stockAuditListResult;
+          const stockListData = branchId
+            ? branchStockListResult
+            : stockAuditListResult;
           const stock = stockListData.find(
             (s: any) => s._id === record.stock_id
           );
@@ -936,7 +972,9 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
         width: 90,
         render: (value: number, record: any, index?: number) => {
           // Get stock info for validation
-          const stockListData = branchId ? branchStockListResult : stockAuditListResult;
+          const stockListData = branchId
+            ? branchStockListResult
+            : stockAuditListResult;
           const stock = stockListData.find(
             (s: any) => s._id === record.stock_id
           );
@@ -1119,10 +1157,10 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
 
         // Stock validation for pack and loose quantities
         if (item.stock_id && (item.qty || item.loose_qty)) {
-          const stockListData = branchId ? branchStockListResult : stockAuditListResult;
-          const stock = stockListData.find(
-            (s: any) => s._id === item.stock_id
-          );
+          const stockListData = branchId
+            ? branchStockListResult
+            : stockAuditListResult;
+          const stock = stockListData.find((s: any) => s._id === item.stock_id);
 
           if (stock) {
             // Get pack size from stock data
@@ -1158,13 +1196,14 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
 
         // Auto-populate stock if product is selected but stock is not
         if (item.product_id && !item.stock_id) {
-          const stockListData = branchId ? branchStockListResult : stockAuditListResult;
-          const availableStocks =
-            stockListData.filter(
-              (stock: any) =>
-                stock.product === item.product_id ||
-                stock.ProductItem?._id === item.product_id
-            );
+          const stockListData = branchId
+            ? branchStockListResult
+            : stockAuditListResult;
+          const availableStocks = stockListData.filter(
+            (stock: any) =>
+              stock.product === item.product_id ||
+              stock.ProductItem?._id === item.product_id
+          );
 
           if (availableStocks.length > 0) {
             const firstStock = availableStocks[0];
@@ -1190,10 +1229,10 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
         if (!item.product_id || !item.stock_id) return item;
 
         // Get stock info
-        const stockListData = branchId ? branchStockListResult : stockAuditListResult;
-        const stock = stockListData.find(
-          (s: any) => s._id === item.stock_id
-        );
+        const stockListData = branchId
+          ? branchStockListResult
+          : stockAuditListResult;
+        const stock = stockListData.find((s: any) => s._id === item.stock_id);
 
         if (stock) {
           const sellPrice = stock.sell_price || 0;
@@ -1249,16 +1288,20 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
     (product: any, rowIndex: number) => {
       // Validate rowIndex bounds
       if (rowIndex < 0 || rowIndex >= billFormData.items.length) {
-        console.error(`Invalid rowIndex: ${rowIndex}. Items length: ${billFormData.items.length}`);
+        console.error(
+          `Invalid rowIndex: ${rowIndex}. Items length: ${billFormData.items.length}`
+        );
         message.error(`Invalid row index: ${rowIndex}. Please try again.`);
         return;
       }
 
       const newItems = [...billFormData.items];
-      
+
       // Double-check the item exists before modifying
       if (!newItems[rowIndex]) {
-        console.error(`Item at index ${rowIndex} is undefined. Items length: ${newItems.length}`);
+        console.error(
+          `Item at index ${rowIndex} is undefined. Items length: ${newItems.length}`
+        );
         message.error('Selected row is no longer valid. Please try again.');
         return;
       }
@@ -1405,18 +1448,27 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
     if (productSelectionRowIndex === null) return;
 
     // Validate productSelectionRowIndex bounds
-    if (productSelectionRowIndex < 0 || productSelectionRowIndex >= billFormData.items.length) {
-      console.error(`Invalid productSelectionRowIndex: ${productSelectionRowIndex}. Items length: ${billFormData.items.length}`);
-      message.error(`Invalid row index: ${productSelectionRowIndex}. Please try again.`);
+    if (
+      productSelectionRowIndex < 0 ||
+      productSelectionRowIndex >= billFormData.items.length
+    ) {
+      console.error(
+        `Invalid productSelectionRowIndex: ${productSelectionRowIndex}. Items length: ${billFormData.items.length}`
+      );
+      message.error(
+        `Invalid row index: ${productSelectionRowIndex}. Please try again.`
+      );
       setProductSelectionRowIndex(null);
       return;
     }
 
     const newItems = [...billFormData.items];
-    
+
     // Double-check the item exists before modifying
     if (!newItems[productSelectionRowIndex]) {
-      console.error(`Item at index ${productSelectionRowIndex} is undefined. Items length: ${newItems.length}`);
+      console.error(
+        `Item at index ${productSelectionRowIndex} is undefined. Items length: ${newItems.length}`
+      );
       message.error('Selected row is no longer valid. Please try again.');
       setProductSelectionRowIndex(null);
       return;
@@ -1442,20 +1494,29 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
 
   const handleStockSelect = (stock: any) => {
     if (stockModalRowIndex === null) return;
-    
+
     // Validate stockModalRowIndex bounds
-    if (stockModalRowIndex < 0 || stockModalRowIndex >= billFormData.items.length) {
-      console.error(`Invalid stockModalRowIndex: ${stockModalRowIndex}. Items length: ${billFormData.items.length}`);
-      message.error(`Invalid row index: ${stockModalRowIndex}. Please try again.`);
+    if (
+      stockModalRowIndex < 0 ||
+      stockModalRowIndex >= billFormData.items.length
+    ) {
+      console.error(
+        `Invalid stockModalRowIndex: ${stockModalRowIndex}. Items length: ${billFormData.items.length}`
+      );
+      message.error(
+        `Invalid row index: ${stockModalRowIndex}. Please try again.`
+      );
       setStockModalRowIndex(null);
       return;
     }
 
     const newItems = [...billFormData.items];
-    
+
     // Double-check the item exists before modifying
     if (!newItems[stockModalRowIndex]) {
-      console.error(`Item at index ${stockModalRowIndex} is undefined. Items length: ${newItems.length}`);
+      console.error(
+        `Item at index ${stockModalRowIndex} is undefined. Items length: ${newItems.length}`
+      );
       message.error('Selected row is no longer valid. Please try again.');
       setStockModalRowIndex(null);
       return;
@@ -1629,7 +1690,9 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
       refetchCustomers();
     }
 
-    const currentStockListData = branchId ? branchStockListResult : stockAuditListResult;
+    const currentStockListData = branchId
+      ? branchStockListResult
+      : stockAuditListResult;
     if (currentStockListData.length === 0) {
       if (branchId) {
         refetchBranchStock();
@@ -1845,16 +1908,16 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
     }
 
     // If stock list is already loaded, resolve batch numbers immediately
-    const stockListData = branchId ? branchStockListResult : stockAuditListResult;
+    const stockListData = branchId
+      ? branchStockListResult
+      : stockAuditListResult;
     if (stockListData.length > 0) {
       finalMappedItems = finalMappedItems.map(item => {
         if (
           item.stock_id &&
           (item.batch_no.includes('Loading...') || !item.batch_no)
         ) {
-          const stock = stockListData.find(
-            (s: any) => s._id === item.stock_id
-          );
+          const stock = stockListData.find((s: any) => s._id === item.stock_id);
           if (stock) {
             return {
               ...item,
@@ -1932,11 +1995,11 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
 
       // Resolve stock batch numbers
       if (item.stock_id) {
-        const stockListData = branchId ? branchStockListResult : stockAuditListResult;
+        const stockListData = branchId
+          ? branchStockListResult
+          : stockAuditListResult;
         if (stockListData.length > 0) {
-          const stock = stockListData.find(
-            (s: any) => s._id === item.stock_id
-          );
+          const stock = stockListData.find((s: any) => s._id === item.stock_id);
           if (
             stock &&
             (item.batch_no?.includes('Loading...') || !item.batch_no)
@@ -2145,7 +2208,14 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
       }
       setCreateResponse(null); // Clear response
     }
-  }, [createResponse, billdata, resetBill, onSuccess, autoOpenProductModal, createInvoiceNumber]);
+  }, [
+    createResponse,
+    billdata,
+    resetBill,
+    onSuccess,
+    autoOpenProductModal,
+    createInvoiceNumber,
+  ]);
 
   // Handle update success
   useEffect(() => {
@@ -2217,7 +2287,9 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
 
   // Update stock information when stock list is loaded (for bill viewing)
   useEffect(() => {
-    const stockListData = branchId ? branchStockListResult : stockAuditListResult;
+    const stockListData = branchId
+      ? branchStockListResult
+      : stockAuditListResult;
     if (stockListData.length > 0 && billFormData.items.length > 0) {
       // Check if any items have stock_id but no batch_no or have placeholder text
       const needsUpdate = billFormData.items.some(
@@ -2258,18 +2330,30 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
         }
       }
     }
-  }, [branchStockListResult, stockAuditListResult, billFormData.items, branchId]);
+  }, [
+    branchStockListResult,
+    stockAuditListResult,
+    billFormData.items,
+    branchId,
+  ]);
 
   // Force resolve stock information when stock list changes
   useEffect(() => {
-    const stockListData = branchId ? branchStockListResult : stockAuditListResult;
+    const stockListData = branchId
+      ? branchStockListResult
+      : stockAuditListResult;
     if (stockListData.length > 0 && billFormData.items.length > 0) {
       // Force resolve any remaining unresolved stock information
       setTimeout(() => {
         forceResolveProductNamesAndStock();
       }, 200);
     }
-  }, [branchStockListResult, stockAuditListResult, billFormData.items, branchId]);
+  }, [
+    branchStockListResult,
+    stockAuditListResult,
+    billFormData.items,
+    branchId,
+  ]);
 
   // Periodic check to resolve any remaining unresolved data
   useEffect(() => {
@@ -2288,7 +2372,9 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
         if (
           hasUnresolvedItems &&
           (productListResult.length > 0 ||
-            (branchId ? branchStockListResult.length > 0 : stockAuditListResult.length > 0))
+            (branchId
+              ? branchStockListResult.length > 0
+              : stockAuditListResult.length > 0))
         ) {
           forceResolveProductNamesAndStock();
         }

@@ -3,6 +3,8 @@ import { Modal, Table, Input, Tag, Tooltip, message } from 'antd';
 import type { InputRef } from 'antd/es/input';
 import type { ColumnType } from 'antd/es/table';
 import { apiSlice } from '../../../services/redux/api/apiSlice';
+import { getCurrentUser } from '../../../helpers/auth';
+import SessionStorageEncryption from '../../../helpers/encryption';
 import dayjs from 'dayjs';
 import {
   ExclamationCircleOutlined,
@@ -33,9 +35,42 @@ const StockSelectionModal: FC<StockSelectionModalProps> = ({
   onCancel,
   productId, // <-- Destructure
 }) => {
-  // Use RTK Query for stock audit
-  const { data: stocksData, isLoading: loading } = apiSlice.useGetStockAuditQuery({});
-  const stocks = (stocksData as any)?.result || [];
+  // Resolve user role to decide which stock API to call
+  const userItem = getCurrentUser();
+  const scopeData = SessionStorageEncryption.getItem('scope');
+  const userRole = (
+    scopeData?.userType ||
+    userItem?.user_type ||
+    userItem?.usertype ||
+    userItem?.user_role ||
+    ''
+  ).toLowerCase();
+  const isOrganisationUser = userRole === 'organisationuser';
+  const isBranchUser = userRole === 'branchuser';
+
+  // Only fetch after a product is selected and modal is visible
+  const shouldFetch = !!productId && !!visible;
+
+  // Organisation users -> stock_audit
+  const { data: orgStocksData, isLoading: loadingOrg } =
+    apiSlice.useGetStockAuditQuery({ product_id: productId }, {
+      skip: !shouldFetch || !isOrganisationUser,
+    });
+
+  // Branch users -> branch_stock
+  const { data: branchStocksData, isLoading: loadingBranch } =
+    apiSlice.useGetBranchStockQuery({ product_id: productId }, {
+      skip: !shouldFetch || !isBranchUser,
+    });
+
+  const stocks = (
+    (isOrganisationUser
+      ? (orgStocksData as any)?.result
+      : isBranchUser
+      ? (branchStocksData as any)?.result
+      : []) || []
+  ) as Stock[];
+  const loading = loadingOrg || loadingBranch;
 
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedRowKey, setSelectedRowKey] = useState<React.Key | null>(null);
@@ -80,7 +115,7 @@ const StockSelectionModal: FC<StockSelectionModalProps> = ({
   };
 
   const filteredStocks: Stock[] =
-    stocks?.result?.filter((s: Stock) => {
+    (Array.isArray(stocks) ? stocks : []).filter((s: Stock) => {
       const searchLower = searchTerm.toLowerCase();
       return (
         s.batch_no?.toLowerCase().includes(searchLower) ||
@@ -91,7 +126,7 @@ const StockSelectionModal: FC<StockSelectionModalProps> = ({
         s.available_quantity?.toString().includes(searchLower) ||
         s.sell_price?.toString().includes(searchLower)
       );
-    }) || [];
+    });
 
   // Show all stocks including expired ones, but disable selection of expired items
   const allStocks = filteredStocks;
