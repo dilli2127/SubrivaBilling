@@ -72,8 +72,6 @@ const StockAuditCrud: React.FC = () => {
         expiry_date: allocateRecord.expiry_date,
         invoice_id: allocateRecord.invoice_id,
         sell_price: allocateRecord.sell_price,
-        available_loose_quantity: allocateRecord.available_loose_quantity,
-        available_quantity: allocateRecord.available_quantity,
       }).unwrap();
       message.success('Stock allocated successfully');
       // Refresh StockAudit list after successful allocation
