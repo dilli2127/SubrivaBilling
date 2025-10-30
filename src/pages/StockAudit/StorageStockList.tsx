@@ -21,7 +21,7 @@ const StorageStockList: React.FC = () => {
     },
     {
       title: 'Quantity',
-      dataIndex: 'quantity',
+      dataIndex: 'storage_quantity',
       key: 'quantity',
     },
     {

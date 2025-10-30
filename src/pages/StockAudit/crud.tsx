@@ -8,8 +8,10 @@ import RevertDrawer from './RevertDrawer';
 import StockOutDrawer from './StockOutDrawer';
 import StorageAllocateDrawer from './StorageAllocateDrawer';
 import { apiSlice } from '../../services/redux/api/apiSlice';
+import { useDispatch } from 'react-redux';
 
 const StockAuditCrud: React.FC = () => {
+  const dispatch = useDispatch();
   const [form] = Form.useForm();
   const [allocateDrawerOpen, setAllocateDrawerOpen] = useState(false);
   const [allocateRecord, setAllocateRecord] = useState<any>(null);
@@ -74,6 +76,8 @@ const StockAuditCrud: React.FC = () => {
         available_quantity: allocateRecord.available_quantity,
       }).unwrap();
       message.success('Stock allocated successfully');
+      // Refresh StockAudit list after successful allocation
+      dispatch(apiSlice.util.invalidateTags(['StockAudit'] as any));
       setAllocateDrawerOpen(false);
       setAllocateRecord(null);
     } catch (error) {
@@ -93,6 +97,8 @@ const StockAuditCrud: React.FC = () => {
         stock_audit_id: revertRecord._id,
       }).unwrap();
       message.success('Stock reverted successfully');
+      // Refresh StockAudit list after successful revert
+      dispatch(apiSlice.util.invalidateTags(['StockAudit'] as any));
       setRevertDrawerOpen(false);
       setRevertRecord(null);
     } catch (error) {
@@ -112,6 +118,8 @@ const StockAuditCrud: React.FC = () => {
         stock_audit_id: stockoutRecord._id,
       }).unwrap();
       message.success('Stock out created successfully');
+      // Refresh StockAudit list after successful stock out
+      dispatch(apiSlice.util.invalidateTags(['StockAudit'] as any));
       setStockoutDrawerOpen(false);
       setStockoutRecord(null);
     } catch (error) {
@@ -134,6 +142,8 @@ const StockAuditCrud: React.FC = () => {
         throw { data: res };
       }
       message.success('Storage allocated successfully');
+      // Refresh StockAudit list after successful storage allocation
+      dispatch(apiSlice.util.invalidateTags(['StockAudit'] as any));
       setStorageAllocateDrawerOpen(false);
       setStorageAllocateRecord(null);
     } catch (error: any) {
