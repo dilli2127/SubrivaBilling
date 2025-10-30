@@ -126,15 +126,19 @@ const StockAuditCrud: React.FC = () => {
 
   const handleStorageAllocateSubmit = useCallback(async (values: any) => {
     try {
-      await createStockStorage({
+      const res: any = await createStockStorage({
         ...values,
         stock_audit_id: storageAllocateRecord?._id,
       }).unwrap();
+      if (res && typeof res === 'object' && 'statusCode' in res && res.statusCode !== 200) {
+        throw { data: res };
+      }
       message.success('Storage allocated successfully');
       setStorageAllocateDrawerOpen(false);
       setStorageAllocateRecord(null);
-    } catch (error) {
-      message.error('Failed to allocate storage');
+    } catch (error: any) {
+      const backendMessage = error?.data?.message || error?.error || 'Failed to allocate storage';
+      message.error(backendMessage);
     }
   }, [storageAllocateRecord, createStockStorage]);
 

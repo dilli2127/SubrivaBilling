@@ -50,15 +50,19 @@ const BranchStock: React.FC = () => {
   // Handler for storage allocate submit
   const handleStorageAllocateSubmit = async (values: any) => {
     try {
-      await createStockStorage({
+      const res: any = await createStockStorage({
         ...values,
         stock_audit_id: storageAllocateRecord?._id,
       }).unwrap();
+      if (res && typeof res === 'object' && 'statusCode' in res && res.statusCode !== 200) {
+        throw { data: res };
+      }
       message.success('Storage allocated successfully');
       setStorageAllocateDrawerOpen(false);
       setStorageAllocateRecord(null);
-    } catch (error) {
-      message.error('Failed to allocate storage');
+    } catch (error: any) {
+      const backendMessage = error?.data?.message || error?.error || 'Failed to allocate storage';
+      message.error(backendMessage);
     }
   };
 
@@ -142,13 +146,13 @@ const BranchStock: React.FC = () => {
 
         return (
           <Space size="small">
-            <Tooltip title="Storage Allocate">
+            <Tooltip title={(record?.rack_available_to_allocate || 0) === 0 ? 'Rack storage quantity not available' : 'Storage Allocate'}>
               <Button
                 type="primary"
                 size="small"
                 icon={<InboxOutlined />}
                 onClick={() => handleStorageAllocate(record)}
-                disabled={isOutOfStock}
+                disabled={isOutOfStock || (record?.rack_available_to_allocate || 0) === 0}
                 style={{
                   fontSize: '10px',
                   height: '24px',

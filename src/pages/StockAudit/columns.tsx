@@ -239,7 +239,9 @@ export const stockAuditColumns = ({
     width: 280,
     render: (text: any, record: any) => {
       const availableQty = record.available_quantity || 0;
+      const rackAvailable = record.rack_available_to_allocate || 0;
       const isOutOfStock = availableQty === 0;
+      const isNoRackSpace = rackAvailable === 0;
 
       return (
         <Space size="small">
@@ -260,13 +262,13 @@ export const stockAuditColumns = ({
             </Button>
           </Tooltip>
 
-          <Tooltip title="Storage Allocate">
+          <Tooltip title={isNoRackSpace ? 'Rack storage quantity not available' : 'Storage Allocate'}>
             <Button
               type="primary"
               size="small"
               icon={<InboxOutlined />}
               onClick={() => onStorageAllocate(record)}
-              disabled={isOutOfStock}
+              disabled={isOutOfStock || isNoRackSpace}
               style={{
                 fontSize: '10px',
                 height: '24px',

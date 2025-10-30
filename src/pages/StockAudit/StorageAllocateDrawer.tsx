@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Form, Button } from 'antd';
+import { Form, Button, message } from 'antd';
 import GlobalDrawer from '../../components/antd/GlobalDrawer';
 import { storageAllocateDrawerFormItems } from './StorageAllocateDrawerFormItems';
 
@@ -44,6 +44,12 @@ const StorageAllocateDrawer: React.FC<StorageAllocateDrawerProps> = ({
         layout="vertical"
         // onFinish={onSubmit}
         onFinish={(values) => {
+          const maxAlloc = Number(record?.rack_available_to_allocate) || 0;
+          const qty = Number(values?.storage_quantity) || 0;
+          if (maxAlloc > 0 && qty > maxAlloc) {
+            message.error('Not enough rack storage space to allocate this quantity.');
+            return;
+          }
           const payload = {
             ...values,
             stock_id: record?._id,
