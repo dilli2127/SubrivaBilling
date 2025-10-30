@@ -100,7 +100,7 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
   const userItem: User | null = useMemo(() => {
     return getCurrentUser();
   }, []);
-
+console.log(userItem)
   // Removed allowedKeys - now using permission-based filtering
 
   const handleOpenChange = useCallback(
