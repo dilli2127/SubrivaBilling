@@ -177,7 +177,23 @@ const StockAuditCrud: React.FC = () => {
 
   return (
     <>
-      <GenericCrudPage config={stockAuditConfig} />
+      <GenericCrudPage 
+        config={stockAuditConfig}
+        onValuesChange={(_changed: any, all: any, formInstance?: any) => {
+          const qty = Number(all?.quantity || 0);
+          const price = Number(all?.buy_price || 0);
+          const updates: any = {};
+          if (!Number.isNaN(qty)) {
+            updates.available_quantity = qty; // Available Quantity mirrors Quantity
+          }
+          if (!Number.isNaN(qty) || !Number.isNaN(price)) {
+            updates.total_cost = (qty || 0) * (price || 0);
+          }
+          if (formInstance && Object.keys(updates).length > 0) {
+            formInstance.setFieldsValue(updates);
+          }
+        }}
+      />
       <AllocateDrawer
         open={allocateDrawerOpen}
         onClose={() => setAllocateDrawerOpen(false)}

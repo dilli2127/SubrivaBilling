@@ -178,7 +178,7 @@ export const stockAuditColumns = ({
     ),
   },
   {
-    title: 'Quantity',
+    title: 'Buy Quantity',
     dataIndex: 'quantity',
     key: 'quantity',
     render: (qty: number) => (

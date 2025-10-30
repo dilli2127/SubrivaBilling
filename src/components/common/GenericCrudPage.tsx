@@ -540,14 +540,20 @@ const GenericCrudPageComponent = <T extends BaseEntity>({
         onClose={createLoading || updateLoading ? () => {} : resetForm}
         width={drawerWidth}
       >
-        <AntdForm
+          <AntdForm
           form={form}
           formItems={formItems}
           formColumns={formColumns}
           initialValues={initialValues}
           onSubmit={handleSubmit}
           onCancel={resetForm}
-          onValuesChange={onValuesChange}
+          onValuesChange={(changed: any, all: any) => {
+            // Bubble up to consumer
+            if (onValuesChange) {
+              // Pass form as third arg for advanced scenarios
+              (onValuesChange as any)(changed, all, form);
+            }
+          }}
           loading={createLoading || updateLoading}
         />
       </GlobalDrawer>
