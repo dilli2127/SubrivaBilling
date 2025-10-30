@@ -55,13 +55,13 @@ export const stockAuditColumns = ({
   },
   {
     title: 'Vendor',
-    dataIndex: 'VendorItem',
+    dataIndex: 'VendorDetails',
     key: 'vendor',
     render: (vendor: any) => (
-      <Tooltip title={vendor?.vendor_name}>
+      <Tooltip title={vendor?.company_name}>
         <span>
           <UserOutlined style={{ marginRight: 4 }} />
-          {vendor?.vendor_name || '-'}
+          {vendor?.company_name || '-'}
         </span>
       </Tooltip>
     ),
