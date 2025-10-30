@@ -26,6 +26,7 @@ export const useDashboardData = (activeTab: string, filters: DashboardFilters = 
   });
 
   const { 
+    data: purchaseChartData,
     refetch: refetchPurchaseChart 
   } = apiSlice.useGetPurchaseChartQuery(filters, {
     skip: !loadedTabs.has('1')
@@ -89,9 +90,42 @@ export const useDashboardData = (activeTab: string, filters: DashboardFilters = 
   }, [refetchStats, refetchSalesChart, refetchPurchaseChart, refetchStockAlerts, refetchFinancialData, refetchSalesAnalytics, refetchInventoryMetrics]);
 
   // Memoize return object to prevent unnecessary re-renders
+  const SalesChartDataItems = useMemo(() => {
+    const salesList = (salesChartData as any)?.result ?? salesChartData ?? [];
+    const purchaseList = (purchaseChartData as any)?.result ?? purchaseChartData ?? [];
+
+    // Merge by date so the chart can render both `sales` and `purchase` lines
+    const byDate: Record<string, { date: string; sales?: number; purchase?: number }> = {};
+
+    if (Array.isArray(salesList)) {
+      salesList.forEach((item: any) => {
+        const date = item?.date ?? item?.day ?? item?.period;
+        if (!date) return;
+        const amount = Number(item?.sales ?? item?.amount ?? item?.value ?? 0);
+        if (!byDate[date]) byDate[date] = { date } as any;
+        byDate[date].sales = amount;
+      });
+    }
+
+    if (Array.isArray(purchaseList)) {
+      purchaseList.forEach((item: any) => {
+        const date = item?.date ?? item?.day ?? item?.period;
+        if (!date) return;
+        const amount = Number(item?.purchase ?? item?.amount ?? item?.value ?? 0);
+        if (!byDate[date]) byDate[date] = { date } as any;
+        byDate[date].purchase = amount;
+      });
+    }
+
+    const merged = Object.values(byDate)
+      .sort((a, b) => (a.date > b.date ? 1 : a.date < b.date ? -1 : 0));
+
+    return { result: merged } as any;
+  }, [salesChartData, purchaseChartData]);
+
   const returnData = useMemo(() => ({
     DashBoardItems: statsData,
-    SalesChartDataItems: salesChartData,
+    SalesChartDataItems,
     FinancialDataItems: financialData,
     InventoryMetricsItems: inventoryMetricsData,
     SalesAnalyticsItems: salesAnalyticsData,
@@ -103,7 +137,7 @@ export const useDashboardData = (activeTab: string, filters: DashboardFilters = 
     refetch,
   }), [
     statsData,
-    salesChartData,
+    SalesChartDataItems,
     financialData,
     inventoryMetricsData,
     salesAnalyticsData,
