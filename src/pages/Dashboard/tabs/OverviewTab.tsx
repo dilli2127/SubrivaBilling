@@ -108,7 +108,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                 Monthly Revenue
               </Title>
               <Title level={3} style={{ color: '#fff', margin: 0 }}>
-                ₹{DashBoardItems?.result?.monthlyRevenue || '0'}
+                ₹{DashBoardItems?.result?.monthlyPayments || '0'}
               </Title>
               <Text style={{ color: '#fff', opacity: 0.8, fontSize: 12 }}>
                 Target: ₹{DashBoardItems?.result?.monthlyTarget || '500000'}
@@ -169,7 +169,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
           <Card bordered={false} style={{ borderRadius: 12 }}>
             <Statistic
               title="Today's Billed"
-              value={DashBoardItems?.result?.todaysOrders || 0}
+              value={DashBoardItems?.result?.todaysInvoices || 0}
               prefix={<FileTextOutlined />}
               valueStyle={{ color: '#1890ff' }}
             />
