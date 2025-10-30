@@ -53,15 +53,27 @@ const StockSelectionModal: FC<StockSelectionModalProps> = ({
 
   // Organisation users -> stock_audit
   const { data: orgStocksData, isLoading: loadingOrg } =
-    apiSlice.useGetStockAuditQuery({ product_id: productId }, {
-      skip: !shouldFetch || !isOrganisationUser,
-    });
+    apiSlice.useGetStockAuditQuery(
+      { product_id: productId },
+      {
+        skip: !shouldFetch || !isOrganisationUser,
+        refetchOnMountOrArgChange: true,
+        refetchOnFocus: true,
+        refetchOnReconnect: true,
+      }
+    );
 
   // Branch users -> branch_stock
   const { data: branchStocksData, isLoading: loadingBranch } =
-    apiSlice.useGetBranchStockQuery({ product_id: productId }, {
-      skip: !shouldFetch || !isBranchUser,
-    });
+    apiSlice.useGetBranchStockQuery(
+      { product_id: productId },
+      {
+        skip: !shouldFetch || !isBranchUser,
+        refetchOnMountOrArgChange: true,
+        refetchOnFocus: true,
+        refetchOnReconnect: true,
+      }
+    );
 
   const stocks = (
     (isOrganisationUser

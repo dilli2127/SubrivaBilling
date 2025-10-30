@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
+import { useDispatch } from 'react-redux';
 import { getCurrentUser } from '../../../helpers/auth';
 import {
   Button,
@@ -24,6 +25,7 @@ import {
   ClearOutlined,
 } from '@ant-design/icons';
 import StockSelectionModal from './StockSelectionModal';
+import { apiSlice } from '../../../services/redux/api/apiSlice';
 import CustomerSelectionModal from './CustomerSelectionModal';
 import UserSelectionModal from './UserSelectionModal';
 import BillSaveConfirmationModal from './BillSaveConfirmationModal';
@@ -41,6 +43,7 @@ interface BillDataGridProps {
 
 const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
   // RTK Query hooks
+  const dispatch = useDispatch();
   const ProductsApi = useGenericCrudRTK('Product');
   const CustomerApi = useGenericCrudRTK('Customer');
   const BillingUsersApi = useGenericCrudRTK('BillingUsers');
@@ -2176,6 +2179,9 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
           date: payload.date,
         };
         setSavedBillData(savedData);
+
+        // Invalidate stock caches so next bill sees updated quantities
+        dispatch(apiSlice.util.invalidateTags(['StockAudit', 'BranchStock']));
 
         // Only show confirmation modal for bill updates, not new bills (they auto-reset)
         if (billdata) {
