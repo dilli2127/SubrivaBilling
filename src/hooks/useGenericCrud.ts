@@ -3,6 +3,7 @@ import { Form } from 'antd';
 import { getEntityHooks } from '../services/redux/api/apiSlice';
 import { CrudColumn, CrudFormItem } from '../components/common/GenericCrudPage';
 import { showToast } from '../helpers/Common_functions';
+import { handleApiResponse } from '../components/common/handleApiResponse';
 import { BaseEntity } from '../types/entities';
 import dayjs from 'dayjs';
 
@@ -130,13 +131,49 @@ export const useGenericCrud = <T extends BaseEntity>(
     async (data: Partial<T>) => {
       try {
         const result = await createMutation(data).unwrap();
-        showToast('success', `${config.title} created successfully`);
+        
+        // Check if the response indicates an error (statusCode !== 200/201)
+        if (result?.statusCode && result.statusCode !== 200 && result.statusCode !== 201) {
+          // Extract error message from response (only use message field)
+          const errorMessage = result?.message || '';
+          
+          // Use handleApiResponse with proper message handling
+          handleApiResponse({
+            action: 'create',
+            title: config.title,
+            success: false,
+            errorMessage: errorMessage || 'Something went wrong. Please try again.',
+          });
+          
+          // Mark error as already shown to prevent duplicate message
+          const error = new Error(errorMessage || 'Something went wrong');
+          (error as any).alreadyShown = true;
+          throw error;
+        }
+        
+        // Success case
+        handleApiResponse({
+          action: 'create',
+          title: config.title,
+          success: true,
+        });
+        
         return result;
       } catch (error: unknown) {
-        const errorMessage =
-          (error as { data?: { message?: string } })?.data?.message ||
-          `Failed to create ${config.title}`;
-        showToast('error', errorMessage);
+        // Only show error if it hasn't been shown already
+        if (!(error as any)?.alreadyShown) {
+          const errorMessage =
+            (error as { data?: { message?: string } })?.data?.message ||
+            (error as { message?: string })?.message ||
+            '';
+          
+          handleApiResponse({
+            action: 'create',
+            title: config.title,
+            success: false,
+            errorMessage: errorMessage || 'Something went wrong. Please try again.',
+          });
+        }
         throw error;
       }
     },
@@ -147,13 +184,49 @@ export const useGenericCrud = <T extends BaseEntity>(
     async (id: string, data: Partial<T>) => {
       try {
         const result = await updateMutation({ id, data }).unwrap();
-        showToast('success', `${config.title} updated successfully`);
+        
+        // Check if the response indicates an error (statusCode !== 200)
+        if (result?.statusCode && result.statusCode !== 200) {
+          // Extract error message from response (only use message field)
+          const errorMessage = result?.message || '';
+          
+          // Use handleApiResponse with proper message handling
+          handleApiResponse({
+            action: 'update',
+            title: config.title,
+            success: false,
+            errorMessage: errorMessage || 'Something went wrong. Please try again.',
+          });
+          
+          // Mark error as already shown to prevent duplicate message
+          const error = new Error(errorMessage || 'Something went wrong');
+          (error as any).alreadyShown = true;
+          throw error;
+        }
+        
+        // Success case
+        handleApiResponse({
+          action: 'update',
+          title: config.title,
+          success: true,
+        });
+        
         return result;
       } catch (error: unknown) {
-        const errorMessage =
-          (error as { data?: { message?: string } })?.data?.message ||
-          `Failed to update ${config.title}`;
-        showToast('error', errorMessage);
+        // Only show error if it hasn't been shown already
+        if (!(error as any)?.alreadyShown) {
+          const errorMessage =
+            (error as { data?: { message?: string } })?.data?.message ||
+            (error as { message?: string })?.message ||
+            '';
+          
+          handleApiResponse({
+            action: 'update',
+            title: config.title,
+            success: false,
+            errorMessage: errorMessage || 'Something went wrong. Please try again.',
+          });
+        }
         throw error;
       }
     },
@@ -164,13 +237,49 @@ export const useGenericCrud = <T extends BaseEntity>(
     async (id: string) => {
       try {
         const result = await deleteMutation(id).unwrap();
-        showToast('success', `${config.title} deleted successfully`);
+        
+        // Check if the response indicates an error (statusCode !== 200)
+        if (result?.statusCode && result.statusCode !== 200) {
+          // Extract error message from response (only use message field)
+          const errorMessage = result?.message || '';
+          
+          // Use handleApiResponse with proper message handling
+          handleApiResponse({
+            action: 'delete',
+            title: config.title,
+            success: false,
+            errorMessage: errorMessage || 'Something went wrong. Please try again.',
+          });
+          
+          // Mark error as already shown to prevent duplicate message
+          const error = new Error(errorMessage || 'Something went wrong');
+          (error as any).alreadyShown = true;
+          throw error;
+        }
+        
+        // Success case
+        handleApiResponse({
+          action: 'delete',
+          title: config.title,
+          success: true,
+        });
+        
         return result;
       } catch (error: unknown) {
-        const errorMessage =
-          (error as { data?: { message?: string } })?.data?.message ||
-          `Failed to delete ${config.title}`;
-        showToast('error', errorMessage);
+        // Only show error if it hasn't been shown already
+        if (!(error as any)?.alreadyShown) {
+          const errorMessage =
+            (error as { data?: { message?: string } })?.data?.message ||
+            (error as { message?: string })?.message ||
+            '';
+          
+          handleApiResponse({
+            action: 'delete',
+            title: config.title,
+            success: false,
+            errorMessage: errorMessage || 'Something went wrong. Please try again.',
+          });
+        }
         throw error;
       }
     },
@@ -276,7 +385,19 @@ export const useGenericCrud = <T extends BaseEntity>(
   const processPayload = useCallback(
     (values: Partial<T>): Record<string, unknown> => {
       if (!config.dynamicFieldNames || config.dynamicFieldNames.length === 0) {
-        return values as Record<string, unknown>;
+        // Ensure date-like values (e.g., Dayjs) are serialized for transport/cache safety
+        const serialized: Record<string, unknown> = {};
+        Object.entries(values).forEach(([key, value]) => {
+          // dayjs exposes an isDayjs guard
+          const isDayjsValue = (dayjs as any).isDayjs?.(value);
+          if (isDayjsValue) {
+            // Send as YYYY-MM-DD (server typically accepts date-only here)
+            serialized[key] = (value as any).format('YYYY-MM-DD');
+          } else {
+            serialized[key] = value as unknown;
+          }
+        });
+        return serialized;
       }
 
       const staticFields: Record<string, unknown> = {};
@@ -287,11 +408,17 @@ export const useGenericCrud = <T extends BaseEntity>(
         if (config.dynamicFieldNames?.includes(key)) {
           // This is a dynamic metadata field
           if (value !== undefined) {
-            metaDataValues[key] = value;
+            const isDayjsValue = (dayjs as any).isDayjs?.(value);
+            metaDataValues[key] = isDayjsValue
+              ? (value as any).format('YYYY-MM-DD')
+              : value;
           }
         } else {
           // This is a static field
-          staticFields[key] = value;
+          const isDayjsValue = (dayjs as any).isDayjs?.(value);
+          staticFields[key] = isDayjsValue
+            ? (value as any).format('YYYY-MM-DD')
+            : value;
         }
       });
 

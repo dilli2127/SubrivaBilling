@@ -4,7 +4,7 @@ import dayjs from "dayjs";
 export const tenantAccountFormItems = [
   {
     label: "Name",
-    name: "name",
+    name: "contact_name",
     rules: [{ required: true, message: "Please input!" }],
     component: <Input />,
   },

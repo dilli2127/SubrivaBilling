@@ -8,6 +8,7 @@ import {
   CheckCircleTwoTone,
   CloseCircleTwoTone,
 } from "@ant-design/icons";
+import dayjs from "dayjs";
 
 export const tenantAccountColumns = [
   {
@@ -52,13 +53,26 @@ export const tenantAccountColumns = [
   {
     title: "License Period",
     key: "license_period",
-    render: (_: any, record: any) => (
-      <Tooltip title="License Validity">
-        <CalendarOutlined style={{ marginRight: 6 }} />
-        {record.license_start?.split("T")[0]} -{" "}
-        {record.license_expiry?.split("T")[0]}
-      </Tooltip>
-    ),
+    render: (_: any, record: any) => {
+      const safeFormat = (val: any) => {
+        if (dayjs.isDayjs(val) || (typeof val === "string" && dayjs(val).isValid())) {
+          const parsed = dayjs.isDayjs(val) ? val : dayjs(val);
+          return parsed.isValid() ? parsed.format("YYYY-MM-DD") : String(val ?? "");
+        }
+        const s = String(val ?? "");
+        return s.includes("T") ? s.split("T")[0] : s;
+      };
+
+      const start = safeFormat(record.license_start);
+      const end = safeFormat(record.license_expiry);
+
+      return (
+        <Tooltip title="License Validity">
+          <CalendarOutlined style={{ marginRight: 6 }} />
+          {start} - {end}
+        </Tooltip>
+      );
+    },
   },
   {
     title: "Max Limits",
