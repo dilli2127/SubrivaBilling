@@ -18,7 +18,7 @@ export const allocateDrawerFormItems = (
         showSearch
         optionFilterProp="children"
       >
-        {branchList?.result?.map((branch: any) => (
+        {branchList?.map((branch: any) => (
           <Option key={branch._id} value={branch._id}>
             {branch.branch_name}
           </Option>

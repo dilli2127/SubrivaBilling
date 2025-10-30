@@ -18,7 +18,7 @@ export const storageAllocateDrawerFormItems = (
         showSearch
         optionFilterProp="children"
       >
-        {rackList?.result?.map((rack: any) => (
+        {rackList?.map((rack: any) => (
           <Option key={rack._id} value={rack._id}>
             {rack.name}
           </Option>
