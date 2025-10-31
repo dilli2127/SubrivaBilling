@@ -12,7 +12,8 @@ import {
   Tooltip,
   Divider,
   Empty,
-  Spin
+  Spin,
+  Tabs
 } from 'antd';
 import { 
   SearchOutlined, 
@@ -53,34 +54,40 @@ const BillListDrawer: React.FC<BillListDrawerProps> = ({
   }, [billListData]);
 
   const [searchTerm, setSearchTerm] = useState('');
-  const [filteredBills, setFilteredBills] = useState<any[]>([]);
+  const [activeTab, setActiveTab] = useState<string>('drafts');
 
-  // RTK Query automatically loads bills on mount
-  // No manual fetch needed when drawer opens
-
-  // Filter bills based on search term
-  useEffect(() => {
-    if (billList && Array.isArray(billList)) {
-      const filtered = billList.filter((bill: any) => {
-        if (!searchTerm) return true;
-        const searchLower = searchTerm.toLowerCase();
-        
-        // Safely handle bill properties
-        const invoiceNo = bill.invoice_no || '';
-        const customerName = bill.customerDetails?.full_name || '';
-        const date = bill.date || '';
-        const totalAmount = typeof bill.total_amount === 'number' ? bill.total_amount.toString() : String(bill.total_amount || '');
-        
-        return (
-          invoiceNo.toLowerCase().includes(searchLower) ||
-          customerName.toLowerCase().includes(searchLower) ||
-          date.includes(searchTerm) ||
-          totalAmount.includes(searchTerm)
-        );
-      });
-      setFilteredBills(filtered);
+  // Filter bills based on status and search term
+  const filteredBills = useMemo(() => {
+    if (!billList || !Array.isArray(billList)) return [];
+    
+    // First filter by status
+    let statusFiltered = billList;
+    if (activeTab === 'drafts') {
+      statusFiltered = billList.filter((bill: any) => bill.status === 'draft');
+    } else {
+      statusFiltered = billList.filter((bill: any) => 
+        !bill.status || bill.status === 'completed'
+      );
     }
-  }, [billList, searchTerm]);
+    
+    // Then filter by search term
+    if (!searchTerm) return statusFiltered;
+    
+    const searchLower = searchTerm.toLowerCase();
+    return statusFiltered.filter((bill: any) => {
+      const invoiceNo = bill.invoice_no || '';
+      const customerName = bill.customerDetails?.full_name || '';
+      const date = bill.date || '';
+      const totalAmount = typeof bill.total_amount === 'number' ? bill.total_amount.toString() : String(bill.total_amount || '');
+      
+      return (
+        invoiceNo.toLowerCase().includes(searchLower) ||
+        customerName.toLowerCase().includes(searchLower) ||
+        date.includes(searchTerm) ||
+        totalAmount.includes(searchTerm)
+      );
+    });
+  }, [billList, searchTerm, activeTab]);
 
   const getPaymentStatusColor = (isPaid: boolean, isPartiallyPaid: boolean) => {
     if (isPaid && !isPartiallyPaid) return 'success';
@@ -162,6 +169,31 @@ const BillListDrawer: React.FC<BillListDrawerProps> = ({
 
       <Divider style={{ margin: '16px 0' }} />
 
+      {/* Tabs for Drafts and Completed */}
+      <Tabs
+        activeKey={activeTab}
+        onChange={setActiveTab}
+        items={[
+          {
+            key: 'drafts',
+            label: (
+              <span>
+                📝 Drafts ({billList?.filter((b: any) => b.status === 'draft').length || 0})
+              </span>
+            ),
+          },
+          {
+            key: 'completed',
+            label: (
+              <span>
+                ✅ Completed ({billList?.filter((b: any) => !b.status || b.status === 'completed').length || 0})
+              </span>
+            ),
+          },
+        ]}
+        style={{ marginBottom: 16 }}
+      />
+
       {/* Bill List */}
       <div style={{ height: 'calc(100vh - 250px)', overflow: 'auto' }}>
         {loading ? (
@@ -233,9 +265,16 @@ const BillListDrawer: React.FC<BillListDrawerProps> = ({
                         {bill.invoice_no}
                       </Text>
                     </div>
-                    <Tag color={getPaymentStatusColor(bill.is_paid, bill.is_partially_paid)}>
-                      {getPaymentStatusText(bill.is_paid, bill.is_partially_paid)}
-                    </Tag>
+                    <Space>
+                      {bill.status === 'draft' ? (
+                        <Tag color="orange">DRAFT</Tag>
+                      ) : (
+                        <Tag color="green">COMPLETED</Tag>
+                      )}
+                      <Tag color={getPaymentStatusColor(bill.is_paid, bill.is_partially_paid)}>
+                        {getPaymentStatusText(bill.is_paid, bill.is_partially_paid)}
+                      </Tag>
+                    </Space>
                   </div>
 
                   {/* Customer Info */}
@@ -290,18 +329,20 @@ const BillListDrawer: React.FC<BillListDrawerProps> = ({
                         style={{ color: '#3b82f6' }}
                       />
                     </Tooltip>
-                    <Tooltip title="Print Bill">
-                      <Button
-                        type="text"
-                        icon={<PrinterOutlined />}
-                        size="small"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          // Handle print functionality
-                        }}
-                        style={{ color: '#10b981' }}
-                      />
-                    </Tooltip>
+                    {bill.status !== 'draft' && (
+                      <Tooltip title="Print Bill">
+                        <Button
+                          type="text"
+                          icon={<PrinterOutlined />}
+                          size="small"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            // Handle print functionality
+                          }}
+                          style={{ color: '#10b981' }}
+                        />
+                      </Tooltip>
+                    )}
                   </div>
                 </div>
               </List.Item>

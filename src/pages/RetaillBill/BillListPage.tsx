@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import {
   Button,
   Space,
@@ -9,6 +9,7 @@ import {
   Input,
   Tooltip,
   Modal,
+  Tabs,
 } from "antd";
 import {
   EyeOutlined,
@@ -49,6 +50,7 @@ const BillListPage = () => {
   const [printBill, setPrintBill] = useState<any>(null);
   const [emailModalVisible, setEmailModalVisible] = useState(false);
   const [selectedBillForEmail, setSelectedBillForEmail] = useState<any>(null);
+  const [activeTab, setActiveTab] = useState<string>("completed");
 
   // RTK Query hooks for SalesRecord
   const salesRecordRTK = useGenericCrudRTK("SalesRecord");
@@ -58,6 +60,20 @@ const BillListPage = () => {
     searchString: searchText,
   });
   const SalesRecordList = SalesRecordData || { result: [], pagination: null };
+
+  // Filter bills by status
+  const filteredBills = useMemo(() => {
+    if (!SalesRecordList?.result) return [];
+    
+    if (activeTab === "drafts") {
+      return SalesRecordList.result.filter((bill: any) => bill.status === "draft");
+    } else {
+      // Show completed bills and bills without status (backward compatibility)
+      return SalesRecordList.result.filter((bill: any) => 
+        !bill.status || bill.status === "completed"
+      );
+    }
+  }, [SalesRecordList?.result, activeTab]);
   const { delete: deleteSale, ...deleteResult } = salesRecordRTK.useDelete();
 
   useHandleApiResponse({
@@ -130,6 +146,18 @@ const BillListPage = () => {
 
   const columns = [
     {
+      title: "Status",
+      dataIndex: "status",
+      key: "status",
+      width: 100,
+      render: (status: string) => {
+        if (status === "draft") {
+          return <Tag color="orange">DRAFT</Tag>;
+        }
+        return <Tag color="green">COMPLETED</Tag>;
+      },
+    },
+    {
       title: "Invoice",
       dataIndex: "invoice_no",
       key: "invoice_no",
@@ -193,41 +221,48 @@ const BillListPage = () => {
     {
       title: "Actions",
       key: "actions",
-      render: (_: any, record: any) => (
-        <Space size="middle">
-          <Tooltip title="View Bill">
-            <Button
-              type="link"
-              icon={<EyeOutlined />}
-              onClick={() => handleView(record)}
-            />
-          </Tooltip>
-          <Tooltip title="Send via Email">
-            <Button
-              type="link"
-              icon={<MailOutlined />}
-              onClick={() => handleEmail(record)}
-            />
-          </Tooltip>
-          <Tooltip title="Print">
-            <Button
-              type="link"
-              icon={<PrinterOutlined />}
-              onClick={() => handlePrint(record)}
-            />
-          </Tooltip>
-          <Popconfirm
-            title="Are you sure to delete this bill?"
-            onConfirm={() => handleDelete(record._id)}
-            okText="Yes"
-            cancelText="No"
-          >
-            <Tooltip title="Delete">
-              <Button type="link" icon={<DeleteOutlined />} danger />
+      render: (_: any, record: any) => {
+        const isDraft = record.status === "draft";
+        return (
+          <Space size="middle">
+            <Tooltip title="View Bill">
+              <Button
+                type="link"
+                icon={<EyeOutlined />}
+                onClick={() => handleView(record)}
+              />
             </Tooltip>
-          </Popconfirm>
-        </Space>
-      ),
+            {!isDraft && (
+              <>
+                <Tooltip title="Send via Email">
+                  <Button
+                    type="link"
+                    icon={<MailOutlined />}
+                    onClick={() => handleEmail(record)}
+                  />
+                </Tooltip>
+                <Tooltip title="Print">
+                  <Button
+                    type="link"
+                    icon={<PrinterOutlined />}
+                    onClick={() => handlePrint(record)}
+                  />
+                </Tooltip>
+              </>
+            )}
+            <Popconfirm
+              title="Are you sure to delete this bill?"
+              onConfirm={() => handleDelete(record._id)}
+              okText="Yes"
+              cancelText="No"
+            >
+              <Tooltip title="Delete">
+                <Button type="link" icon={<DeleteOutlined />} danger />
+              </Tooltip>
+            </Popconfirm>
+          </Space>
+        );
+      },
     },
   ];
 
@@ -267,14 +302,38 @@ const BillListPage = () => {
         </Space>
       </div>
 
+      <Tabs
+        activeKey={activeTab}
+        onChange={setActiveTab}
+        items={[
+          {
+            key: "completed",
+            label: (
+              <span>
+                ✅ Completed Bills ({SalesRecordList?.result?.filter((b: any) => !b.status || b.status === "completed").length || 0})
+              </span>
+            ),
+          },
+          {
+            key: "drafts",
+            label: (
+              <span>
+                📝 Drafts ({SalesRecordList?.result?.filter((b: any) => b.status === "draft").length || 0})
+              </span>
+            ),
+          },
+        ]}
+        style={{ marginBottom: 16 }}
+      />
+
       <GlobalTable
-        data={SalesRecordList?.result}
+        data={filteredBills}
         columns={columns}
         loading={loading}
         bordered
         rowKey="_id"
-        totalCount={SalesRecordList?.pagination?.totalCount || 0}
-        pageLimit={SalesRecordList?.pagination?.pageLimit || 10}
+        totalCount={filteredBills.length}
+        pageLimit={pagination.pageSize}
         onPaginationChange={handlePaginationChange}
       />
 

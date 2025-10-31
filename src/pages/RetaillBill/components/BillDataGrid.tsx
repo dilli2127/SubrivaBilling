@@ -2065,9 +2065,110 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
     });
   };
 
-  // Handle final save
-  const handleSaveBill = async () => {
-    // Validation
+  // Handle save draft (validation: invoice_no and at least one product/item required)
+  const handleSaveDraft = async () => {
+    // Validation for draft: invoice_no required
+    if (!billFormData.invoice_no) {
+      message.error('Please enter an invoice number');
+      return;
+    }
+
+    // Check if at least one item exists in the items array
+    if (!billFormData.items || billFormData.items.length === 0) {
+      message.error('Please add at least one product/item to save as draft');
+      return;
+    }
+
+    // Filter out empty items (items without product_id)
+    const validItems = billFormData.items.filter(item => item.product_id);
+
+    // At least one item with product_id must be present
+    if (validItems.length === 0) {
+      message.error('Please add at least one product/item to save as draft');
+      return;
+    }
+
+    const payload = {
+      invoice_no: billFormData.invoice_no,
+      date: billFormData.date || dayjs().format('YYYY-MM-DD'),
+      customer_id: billFormData.customer_id || null, // Not required for draft
+      billed_by_id: billFormData.billed_by_id || null, // Not required for draft
+      payment_mode: billFormData.payment_mode || 'cash',
+      items: billFormData.items.map(item => ({
+        product_id: item.product_id || null,
+        stock_id: item.stock_id || null,
+        ...(branchId && item.stock_id && { branch_stock_id: item.stock_id }),
+        qty: item.qty || 0,
+        loose_qty: item.loose_qty || 0,
+        price: item.price || 0,
+        mrp: item.mrp || 0,
+        amount: item.amount || 0,
+        tax_percentage: item.tax_percentage || 0,
+        _id: item._id,
+      })),
+      ...billCalculations,
+      discount: billSettings.discount,
+      discount_type: billSettings.discountType,
+      is_paid: billSettings.isPaid,
+      is_partially_paid: billSettings.isPartiallyPaid,
+      sale_type: billSettings.isRetail ? 'retail' : 'wholesale',
+      is_gst_included: billSettings.isGstIncluded,
+      paid_amount: billSettings.isPartiallyPaid
+        ? billSettings.paidAmount
+        : billSettings.isPaid
+          ? billCalculations.total_amount
+          : 0,
+      status: 'draft', // Mark as draft
+    };
+
+    try {
+      let response: any;
+      if (billdata) {
+        const result = await updateSalesRecord(billdata._id, payload);
+        if (result.data) {
+          response = result.data;
+          setUpdateResponse(response);
+        } else {
+          throw result.error;
+        }
+      } else {
+        const result = await createSalesRecord(payload);
+        if (result.data) {
+          response = result.data;
+          setCreateResponse(response);
+        } else {
+          throw result.error;
+        }
+      }
+
+      if (response?.statusCode === 200) {
+        message.success('Draft saved successfully!');
+        const savedData = {
+          ...payload,
+          customer_name: billFormData.customer_name,
+          total_amount: billCalculations.total_amount,
+          invoice_no: payload.invoice_no,
+          date: payload.date,
+        };
+        setSavedBillData(savedData);
+
+        // Don't invalidate stock for drafts - they don't affect inventory
+        // Only show confirmation modal for bill updates, not new bills
+        if (billdata) {
+          setSaveConfirmationVisible(true);
+        } else {
+          // For new drafts, don't auto-reset - allow user to continue editing
+          onSuccess?.();
+        }
+      }
+    } catch (error) {
+      message.error('Failed to save draft. Please try again.');
+    }
+  };
+
+  // Handle complete bill (full validation)
+  const handleCompleteBill = async () => {
+    // Full validation
     if (
       !billFormData.invoice_no ||
       !billFormData.customer_id ||
@@ -2152,6 +2253,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
         : billSettings.isPaid
           ? billCalculations.total_amount
           : 0,
+      status: 'completed', // Mark as completed
     };
 
     try {
@@ -2195,7 +2297,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
       }
     } catch (error) {
       // Handle error silently or show user-friendly message
-      message.error('Failed to save bill. Please try again.');
+      message.error('Failed to complete bill. Please try again.');
     }
   };
 
@@ -2203,19 +2305,25 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
   useEffect(() => {
     if (createResponse?.statusCode === 200) {
       onSuccess?.();
-      createInvoiceNumber({});
-      // Auto-reset the bill after successful creation (only for new bills, not updates)
-      if (!billdata) {
-        // Close confirmation modal first, then reset immediately
-        setSaveConfirmationVisible(false);
-        setTimeout(() => {
-          resetBill(false); // Don't show "Ready for next bill!" message
-
-          // Auto-open product selection modal for the first row after reset
+      // Only auto-reset for completed bills, not drafts
+      const isDraft = createResponse?.data?.status === 'draft' || 
+                      (billFormData as any).status === 'draft';
+      
+      if (!isDraft) {
+        createInvoiceNumber({});
+        // Auto-reset the bill after successful creation (only for new completed bills, not updates)
+        if (!billdata) {
+          // Close confirmation modal first, then reset immediately
+          setSaveConfirmationVisible(false);
           setTimeout(() => {
-            autoOpenProductModal();
-          }, 200); // Wait for reset to complete
-        }, 100); // Minimal delay just to close modal smoothly
+            resetBill(false); // Don't show "Ready for next bill!" message
+
+            // Auto-open product selection modal for the first row after reset
+            setTimeout(() => {
+              autoOpenProductModal();
+            }, 200); // Wait for reset to complete
+          }, 100); // Minimal delay just to close modal smoothly
+        }
       }
       setCreateResponse(null); // Clear response
     }
@@ -2226,6 +2334,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
     onSuccess,
     autoOpenProductModal,
     createInvoiceNumber,
+    billFormData,
   ]);
 
   // Handle update success
@@ -2415,16 +2524,15 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
           productCell?.focus();
         }, 200);
       }
-      // F2: Save bill
+      // F2: Save draft
       else if (e.key === 'F2') {
         e.preventDefault();
-        handleSaveBill();
+        handleSaveDraft();
       }
-      // F3: Print bill
+      // F3: Complete bill
       else if (e.key === 'F3') {
         e.preventDefault();
-        // TODO: Implement print functionality
-        message.info('Print functionality coming soon!');
+        handleCompleteBill();
       }
       // F4: Clear bill form
       else if (e.key === 'F4') {
@@ -2451,13 +2559,19 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
         e.preventDefault();
         handleF7StockSelection();
       }
+      // F8: Print bill
+      else if (e.key === 'F8') {
+        e.preventDefault();
+        // TODO: Implement print functionality
+        message.info('Print functionality coming soon!');
+      }
 
       // Ctrl shortcuts
       else if (e.ctrlKey) {
         switch (e.key) {
           case 's':
             e.preventDefault();
-            handleSaveBill();
+            handleSaveDraft();
             break;
           case 'n':
             e.preventDefault();
@@ -2949,11 +3063,22 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
             type="primary"
             size="large"
             icon={<SaveOutlined />}
-            onClick={handleSaveBill}
+            onClick={handleSaveDraft}
             loading={saleCreateLoading}
             className={styles.saveButton}
           >
-            🚀 {billdata ? 'UPDATE' : 'SAVE BILL'} (F2)
+            💾 SAVE DRAFT (F2)
+          </Button>
+
+          <Button
+            type="primary"
+            size="large"
+            icon={<SaveOutlined />}
+            onClick={handleCompleteBill}
+            loading={saleCreateLoading || saleUpdateLoading}
+            className={styles.saveButton}
+          >
+            🚀 {billdata ? 'UPDATE' : 'COMPLETE BILL'} (F3)
           </Button>
 
           <Button
@@ -2978,8 +3103,12 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
             size="large"
             icon={<PrinterOutlined />}
             className={styles.printButton}
+            onClick={() => {
+              // TODO: Implement print functionality
+              message.info('Print functionality coming soon!');
+            }}
           >
-            🖨️ PRINT (F3)
+            🖨️ PRINT (F8)
           </Button>
         </div>
 
