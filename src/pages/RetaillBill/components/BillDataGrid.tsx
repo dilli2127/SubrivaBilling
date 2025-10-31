@@ -617,11 +617,18 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
           const selectedProduct = productOptions.find(
             (opt: any) => opt.value === value
           );
+          // Use product name from record if available (for edit mode), otherwise use selectedProduct label
+          const displayName = value
+            ? selectedProduct?.label ||
+              (record.product_name
+                ? `${record.product_name}${record.variant_name ? ` ${record.variant_name}` : ''}`.trim()
+                : 'Unknown Product')
+            : 'Select product';
           return (
             <Tooltip
               title={
                 value
-                  ? `Product: ${selectedProduct?.label || 'Unknown'} - Click to change • F5 to reopen`
+                  ? `Product: ${displayName} - Click to change • F5 to reopen`
                   : 'Click to select product from inventory • F5 to open'
               }
               placement="top"
@@ -666,9 +673,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
                     fontWeight: value ? 600 : 400,
                   }}
                 >
-                  {value
-                    ? selectedProduct?.label || 'Unknown Product'
-                    : 'Select product'}
+                  {displayName}
                 </span>
                 {value && (
                   <div
