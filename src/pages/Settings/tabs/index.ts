@@ -1,4 +1,3 @@
-export { default as CompanyTab } from './CompanyTab';
 export { default as TaxTab } from './TaxTab';
 export { default as InvoiceTab } from './InvoiceTab';
 export { default as PrinterTab } from './PrinterTab';

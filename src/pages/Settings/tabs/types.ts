@@ -7,11 +7,6 @@ export interface SettingsTabProps {
   onReset: () => void;
 }
 
-export interface CompanyTabProps extends SettingsTabProps {
-  uploadedLogoUrl?: string | null;
-  onLogoUpload: (file: any) => Promise<boolean>;
-}
-
 export interface PrinterTabProps extends SettingsTabProps {
   onTestPrinter: () => void;
 }
@@ -21,19 +16,6 @@ export interface DefaultsTabProps extends SettingsTabProps {
 }
 
 export interface SettingsFormData {
-  // Company Settings
-  company_name: string;
-  company_address: string;
-  company_city: string;
-  company_state: string;
-  company_pincode: string;
-  company_gstin: string;
-  company_phone: string;
-  company_email: string;
-  company_website: string;
-  company_logo: string;
-  business_type: string;
-  
   // Tax Settings
   tax_enabled: boolean;
   tax_type: string;

@@ -11,7 +11,6 @@ import {
 } from 'antd';
 import {
   SettingOutlined,
-  ShopOutlined,
   PercentageOutlined,
   FileTextOutlined,
   PrinterOutlined,
@@ -22,10 +21,8 @@ import { useNavigate } from 'react-router-dom';
 import styles from './Settings.module.css';
 import { apiSlice } from '../../services/redux/api/apiSlice';
 import { getCurrentUser } from '../../helpers/auth';
-import { useFileUpload } from '../../helpers/useFileUpload';
 import SessionStorageEncryption from '../../helpers/encryption';
 import {
-  CompanyTab,
   TaxTab,
   InvoiceTab,
   PrinterTab,
@@ -39,8 +36,7 @@ const { Option } = Select;
 const Settings: React.FC = () => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState('company');
-  const { handleFileUpload, url: uploadedLogoUrl } = useFileUpload();
+  const [activeTab, setActiveTab] = useState('tax');
   const navigate = useNavigate();
   const [selectedTenant, setSelectedTenant] = useState<string>('all');
   const [selectedOrganisation, setSelectedOrganisation] = useState<string>('all');
@@ -49,45 +45,115 @@ const Settings: React.FC = () => {
   const userItem = useMemo(() => getCurrentUser(), []);
   
   // Get user role with memoization to prevent unnecessary recalculations
-  const { userRole, isSuperAdmin, isTenant } = useMemo(() => {
+  const { userRole, isSuperAdmin, isTenant, isOrganisationUser, isBranchUser } = useMemo(() => {
     const scopeData = SessionStorageEncryption.getItem('scope');
     const role = scopeData?.userType || userItem?.user_type || userItem?.usertype || userItem?.user_role || '';
     return {
       userRole: role,
       isSuperAdmin: role.toLowerCase() === 'superadmin',
-      isTenant: role.toLowerCase() === 'tenant'
+      isTenant: role.toLowerCase() === 'tenant',
+      isOrganisationUser: role.toLowerCase() === 'organisationuser',
+      isBranchUser: role.toLowerCase() === 'branchuser'
     };
   }, [userItem]);
 
   // Use RTK Query for data fetching
-  const { data: tenantsData } = apiSlice.useGetTenantQuery({}, { skip: !isSuperAdmin });
-  const { data: organisationsData } = apiSlice.useGetOrganisationsQuery({}, { skip: !isTenant && !isSuperAdmin });
+  const { data: tenantsData } = apiSlice.useGetTenantAccountsQuery({}, { skip: !isSuperAdmin });
   
-  // For Settings and Organisation by ID, we'll use RTK Query with skip option
+  // For SuperAdmin: Filter organisations by selected tenant
+  // For Tenant: Load all organisations (they will be filtered by tenant_id on backend)
+  const organisationsQueryParams = useMemo(() => {
+    if (isSuperAdmin && selectedTenant && selectedTenant !== 'all') {
+      return { tenant_id: selectedTenant };
+    }
+    return {};
+  }, [isSuperAdmin, selectedTenant]);
+  
+  const { data: organisationsData } = apiSlice.useGetOrganisationsQuery(
+    organisationsQueryParams,
+    { skip: !isTenant && !isSuperAdmin }
+  );
+  
+  // For Settings by ID, we'll use RTK Query with skip option
   const [selectedSettingsId, setSelectedSettingsId] = useState<string | null>(null);
-  const [selectedOrgId, setSelectedOrgId] = useState<string | null>(null);
   
-  const { data: settingsData, refetch: refetchSettings } = apiSlice.useGetSettingsByIdQuery(
-    { id: selectedSettingsId || '' },
-    { skip: !selectedSettingsId }
+  // For SuperAdmin: Skip settings API if tenant is not selected
+  // For Tenant: Skip settings API if organisation is not selected
+  // For Organisation/Branch users: Never skip (they directly call settings API)
+  const shouldSkipSettings = useMemo(() => {
+    // If no settings ID is selected, always skip
+    if (!selectedSettingsId || selectedSettingsId === 'all') {
+      console.log('⏭️ Skipping settings API: No settings ID');
+      return true;
+    }
+    
+    // Organisation/Branch users: Once settings ID is set, never skip
+    if (isOrganisationUser || isBranchUser) {
+      console.log('✅ Not skipping: Organisation/Branch user');
+      return false;
+    }
+    
+    // SuperAdmin: Skip if tenant not selected (organisation check is handled by selectedSettingsId)
+    if (isSuperAdmin) {
+      const shouldSkip = !selectedTenant || selectedTenant === 'all';
+      console.log('🔵 SuperAdmin skip check:', { shouldSkip, selectedTenant });
+      return shouldSkip;
+    }
+    
+    // Tenant: Once settings ID is set (which means organisation is selected), don't skip
+    if (isTenant) {
+      console.log('✅ Not skipping: Tenant user with settings ID');
+      return false;
+    }
+    
+    // Default: skip if no settings ID
+    console.log('⏭️ Skipping settings API: Default case');
+    return true;
+  }, [selectedSettingsId, isSuperAdmin, isTenant, isOrganisationUser, isBranchUser, selectedTenant]);
+
+  // Fetch settings using GetAll with organisation_id filter
+  const { data: settingsData, refetch: refetchSettings, isLoading: isLoadingSettings } = apiSlice.useGetSettingsQuery(
+    { organisation_id: selectedSettingsId, page: 1, limit: 1 },
+    { 
+      skip: shouldSkipSettings || !selectedSettingsId,
+      refetchOnMountOrArgChange: true // Enable refetch when ID changes
+    }
   );
-  const { data: organisationData, refetch: refetchOrganisation } = apiSlice.useGetOrganisationsByIdQuery(
-    { id: selectedOrgId || '' },
-    { skip: !selectedOrgId }
-  );
+
+  // Debug: Log when settings query state changes
+  useEffect(() => {
+    console.log('📊 Settings Query State:', {
+      selectedSettingsId,
+      shouldSkipSettings,
+      isLoading: isLoadingSettings,
+      hasData: !!settingsData,
+      settingsData,
+      userRole,
+      isSuperAdmin,
+      isTenant,
+      selectedTenant,
+      selectedOrganisation
+    });
+  }, [selectedSettingsId, shouldSkipSettings, isLoadingSettings, settingsData, userRole, isSuperAdmin, isTenant, selectedTenant, selectedOrganisation]);
   
   // Use RTK Query mutations
   const [updateSettings] = apiSlice.useUpdateSettingsMutation();
   const [createSettings] = apiSlice.useCreateSettingsMutation();
-  const [updateOrganisations] = apiSlice.useUpdateOrganisationsMutation();
 
   const tenantsItems = (tenantsData as any)?.result || [];
   const organisationsItems = (organisationsData as any)?.result || [];
 
-  // Load settings on mount
+  // Load settings on mount - only for organisation/branch users (directly hit settings API)
   useEffect(() => {
-    loadSettings();
-    // RTK Query automatically fetches data based on skip conditions
+    // For organisation/branch users, load settings immediately using their organisation_id
+    if ((isOrganisationUser || isBranchUser) && !selectedSettingsId) {
+      const organisationId = userItem?.organisation_id || userItem?.organisationItems?._id;
+      if (organisationId) {
+        setSelectedSettingsId(organisationId);
+      }
+    }
+    // For tenant users, don't load settings until organisation is selected
+    // For superadmin, don't load settings until tenant and organisation are selected
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -95,97 +161,146 @@ const Settings: React.FC = () => {
   const handleTenantChange = useCallback((tenantId: string) => {
     setSelectedTenant(tenantId || 'all');
     setSelectedOrganisation('all'); // Clear organisation selection
+    setSelectedSettingsId(null); // Clear settings when tenant changes
+    form.resetFields(); // Reset form when tenant changes
     
     if (tenantId && tenantId !== 'all') {
       // RTK Query will refetch with new filters when tenant changes
       // Organisations are filtered by tenant_id on backend
     }
     // If "all" or cleared, don't fetch organisations (keep dropdown disabled)
-  }, []);
+  }, [form]);
 
-  const loadSettings = useCallback(async () => {
-    try {
-      // Determine which organisation to load
-      let organisationId = selectedOrganisation !== 'all' ? selectedOrganisation : null;
-      if (!organisationId) {
-        organisationId = userItem?.organisation_id || userItem?.organisationItems?._id;
-      }
-      
-      // Set IDs to trigger RTK Query fetches
-      if (organisationId) {
-        setSelectedOrgId(organisationId);
-        const settingsId = organisationId || userItem?._id || null;
-        if (settingsId) {
-          setSelectedSettingsId(settingsId);
+  // Handle organisation selection change - fetch settings for selected organisation
+  const handleOrganisationChange = useCallback((organisationId: string) => {
+    console.log('🔵 Organisation changed:', { 
+      organisationId, 
+      isSuperAdmin, 
+      isTenant, 
+      selectedTenant,
+      userRole 
+    });
+    
+    setSelectedOrganisation(organisationId || 'all');
+    
+    if (organisationId && organisationId !== 'all') {
+      // For SuperAdmin: Only call settings API if both tenant and organisation are selected
+      if (isSuperAdmin) {
+        if (selectedTenant && selectedTenant !== 'all') {
+          // Both tenant and organisation all selected, call settings API
+          console.log('🟢 SuperAdmin: Setting selectedSettingsId to:', organisationId);
+          setSelectedSettingsId(organisationId);
+        } else {
+          // Tenant not selected yet, don't call settings API
+          console.log('🔴 SuperAdmin: Tenant not selected, clearing settings');
+          setSelectedSettingsId(null);
+          form.resetFields();
         }
+      } else {
+        // For Tenant users: Call settings API immediately when organisation is selected
+        console.log('🟢 Tenant/Other: Setting selectedSettingsId to:', organisationId);
+        setSelectedSettingsId(organisationId);
       }
-    } catch (error) {
-      console.error('Error loading settings:', error);
+    } else {
+      // Clear settings when "all" is selected
+      console.log('🔴 Clearing settings (all selected)');
+      setSelectedSettingsId(null);
+      form.resetFields();
     }
-  }, [selectedOrganisation, userItem]);
+  }, [form, isSuperAdmin, isTenant, selectedTenant, userRole]);
 
-  // Reload settings when selected organisation changes
-  useEffect(() => {
-    if (selectedOrganisation && selectedOrganisation !== 'all') {
-      loadSettings();
-    }
-  }, [selectedOrganisation, loadSettings]);
 
-  // Populate form when data loads
+
+  // Populate form when settings data loads or when organisation changes
   useEffect(() => {
     const settingsResult = (settingsData as any)?.result || settingsData || {};
-    const orgResult = (organisationData as any)?.result || organisationData || {};
     
-    if (settingsResult || orgResult) {
-      const settings = settingsResult;
-      const org = orgResult;
-      
-      form.setFieldsValue({
-        // Company Settings - Map API fields to form fields
-        company_name: org.org_name || '',
-        company_address: org.address || '',
-        company_city: org.city || '',
-        company_state: org.state || '',
-        company_pincode: org.pincode || '',
-        company_gstin: org.gst_number || '',
-        company_phone: org.phone || '',
-        company_email: org.email || '',
-        company_website: org.website || '',
-        company_logo: org.logo_url || '',
-        business_type: org.business_type || '',
-        
-        // Tax Settings
-        tax_enabled: settings.tax_enabled !== false,
-        tax_type: settings.tax_type || 'GST',
+    // Extract first item if it's an array
+    const settings = Array.isArray(settingsResult) 
+      ? settingsResult[0] 
+      : settingsResult;
+    
+    // Check if we have actual settings data with ID
+    const hasSettingsData = settings && 
+      typeof settings === 'object' && 
+      (settings._id || settings.id);
+    
+    if (selectedSettingsId) {
+      if (hasSettingsData) {
+        // Settings exist - use actual values from database
+        console.log('📝 Populating form with existing settings:', settings);
+        form.setFieldsValue({
+          // Tax Settings
+          tax_enabled: settings.tax_enabled ?? null,
+          tax_type: settings.tax_type ?? null,
 
-        // Invoice Settings
-        invoice_prefix: settings.invoice_prefix || 'INV',
-        invoice_starting_number: settings.invoice_starting_number || 1,
-        invoice_footer: settings.invoice_footer || '',
-        show_logo_on_invoice: settings.show_logo_on_invoice !== false,
-        show_terms_on_invoice: settings.show_terms_on_invoice !== false,
-        invoice_terms: settings.invoice_terms || '',
+          // Invoice Settings
+          invoice_prefix: settings.invoice_prefix ?? null,
+          invoice_starting_number: settings.invoice_starting_number ?? null,
+          invoice_footer: settings.invoice_footer ?? null,
+          show_logo_on_invoice: settings.show_logo_on_invoice ?? null,
+          show_terms_on_invoice: settings.show_terms_on_invoice ?? null,
+          invoice_terms: settings.invoice_terms ?? null,
 
-        // Printer Settings
-        thermal_printer_enabled: settings.thermal_printer_enabled || false,
-        printer_port: settings.printer_port || 'COM1',
-        printer_baud_rate: settings.printer_baud_rate || 9600,
-        paper_width: settings.paper_width || 80,
-        auto_print: settings.auto_print || false,
+          // Printer Settings
+          thermal_printer_enabled: settings.thermal_printer_enabled ?? null,
+          printer_port: settings.printer_port ?? null,
+          printer_baud_rate: settings.printer_baud_rate ?? null,
+          paper_width: settings.paper_width ?? null,
+          auto_print: settings.auto_print ?? null,
 
-        // Default Values
-        default_payment_mode: settings.default_payment_mode || 'cash',
+          // Default Values
+          default_payment_mode: settings.default_payment_mode ?? null,
 
-        // Notification Settings
-        email_notifications: settings.email_notifications !== false,
-        sms_notifications: settings.sms_notifications || false,
-        low_stock_alert: settings.low_stock_alert !== false,
-        low_stock_threshold: settings.low_stock_threshold || 10,
-        payment_reminder: settings.payment_reminder || false,
-        daily_report_email: settings.daily_report_email || false,
-      });
+          // Notification Settings
+          email_notifications: settings.email_notifications ?? null,
+          sms_notifications: settings.sms_notifications ?? null,
+          low_stock_alert: settings.low_stock_alert ?? null,
+          low_stock_threshold: settings.low_stock_threshold ?? null,
+          payment_reminder: settings.payment_reminder ?? null,
+          daily_report_email: settings.daily_report_email ?? null,
+        });
+      } else {
+        // No settings found - initialize all fields as null so user can choose
+        console.log('📝 No settings found, initializing form with null values');
+        form.setFieldsValue({
+          // Tax Settings
+          tax_enabled: null,
+          tax_type: null,
+
+          // Invoice Settings
+          invoice_prefix: null,
+          invoice_starting_number: null,
+          invoice_footer: null,
+          show_logo_on_invoice: null,
+          show_terms_on_invoice: null,
+          invoice_terms: null,
+
+          // Printer Settings
+          thermal_printer_enabled: null,
+          printer_port: null,
+          printer_baud_rate: null,
+          paper_width: null,
+          auto_print: null,
+
+          // Default Values
+          default_payment_mode: null,
+
+          // Notification Settings
+          email_notifications: null,
+          sms_notifications: null,
+          low_stock_alert: null,
+          low_stock_threshold: null,
+          payment_reminder: null,
+          daily_report_email: null,
+        });
+      }
+    } else if (selectedOrganisation === 'all' && (isSuperAdmin || isTenant)) {
+      // Reset form when no organisation is selected (only for superadmin/tenant users)
+      console.log('🔄 Resetting form - no organisation selected');
+      form.resetFields();
     }
-  }, [settingsData, organisationData, form]);
+  }, [settingsData, selectedSettingsId, selectedOrganisation, isSuperAdmin, isTenant, form]);
 
   const handleSave = useCallback(async () => {
     try {
@@ -210,121 +325,110 @@ const Settings: React.FC = () => {
         return;
       }
 
-      // Only update organization data if we're on the company tab
-      if (activeTab === 'company' && organisationId) {
-        await updateOrganisations({
-          id: organisationId,
-          org_name: values.company_name,
-          address: values.company_address,
-          city: values.company_city,
-          state: values.company_state,
-          pincode: values.company_pincode,
-          gst_number: values.company_gstin,
-          phone: values.company_phone,
-          email: values.company_email,
-          website: values.company_website,
-          logo_url: uploadedLogoUrl || values.company_logo,
-          business_type: values.business_type,
-        }).unwrap();
-      }
-
       // Save settings - Send only relevant data based on active tab
-      if (activeTab !== 'company') {
-        let newSettingsData: any = {};
+      let newSettingsData: any = {};
 
-        // Tax & GST tab - only tax settings
-        if (activeTab === 'tax') {
-          newSettingsData = {
-            tax_enabled: values.tax_enabled,
-            tax_type: values.tax_type,
-          };
-        }
-        // Invoice tab - only invoice settings
-        else if (activeTab === 'invoice') {
-          newSettingsData = {
-            invoice_prefix: values.invoice_prefix,
-            invoice_starting_number: values.invoice_starting_number,
-            invoice_footer: values.invoice_footer,
-            invoice_terms: values.invoice_terms,
-            show_logo_on_invoice: values.show_logo_on_invoice,
-            show_terms_on_invoice: values.show_terms_on_invoice,
-          };
-        }
-        // Printer tab - only printer settings
-        else if (activeTab === 'printer') {
-          newSettingsData = {
-            thermal_printer_enabled: values.thermal_printer_enabled,
-            printer_port: values.printer_port,
-            printer_baud_rate: values.printer_baud_rate,
-            paper_width: values.paper_width,
-            auto_print: values.auto_print,
-          };
-        }
-        // Defaults tab - only default values
-        else if (activeTab === 'defaults') {
-          newSettingsData = {
-            default_payment_mode: values.default_payment_mode,
-          };
-        }
-        // Notifications tab - only notification settings
-        else if (activeTab === 'notifications') {
-          newSettingsData = {
-            email_notifications: values.email_notifications,
-            sms_notifications: values.sms_notifications,
-            low_stock_alert: values.low_stock_alert,
-            low_stock_threshold: values.low_stock_threshold,
-            payment_reminder: values.payment_reminder,
-            daily_report_email: values.daily_report_email,
-          };
-        }
-
-        // Check if settings exist, if not create new settings
-        const settingsResult = (settingsData as any)?.result || settingsData;
-        const existingSettings = settingsResult && typeof settingsResult === 'object' ? settingsResult : null;
-        const hasExistingSettings = existingSettings && (
-          existingSettings._id || 
-          existingSettings.id || 
-          (typeof existingSettings === 'object' && Object.keys(existingSettings).some(key => 
-            key !== '_id' && key !== 'id' && existingSettings[key] !== null && existingSettings[key] !== undefined
-          ))
-        );
-        const targetId = organisationId || userItem?._id;
-        
-        if (hasExistingSettings) {
-          // Update existing settings - use the settings ID or target ID
-          const settingsId = existingSettings._id || existingSettings.id || targetId;
-          await updateSettings({
-            id: settingsId,
-            ...newSettingsData,
-            organisation_id: targetId, // Include organisation_id for updates too
-          }).unwrap();
-        } else {
-          // Create new settings for the first time
-          await createSettings({
-            ...newSettingsData,
-            organisation_id: targetId, // Include organisation_id for new settings
-          }).unwrap();
-        }
-
-        // Reload settings after save to get updated data
-        if (targetId) {
-          setSelectedSettingsId(targetId);
-          refetchSettings();
-        }
+      // Tax & GST tab - only tax settings
+      if (activeTab === 'tax') {
+        newSettingsData = {
+          tax_enabled: values.tax_enabled,
+          tax_type: values.tax_type,
+        };
+      }
+      // Invoice tab - only invoice settings
+      else if (activeTab === 'invoice') {
+        newSettingsData = {
+          invoice_prefix: values.invoice_prefix,
+          invoice_starting_number: values.invoice_starting_number,
+          invoice_footer: values.invoice_footer,
+          invoice_terms: values.invoice_terms,
+          show_logo_on_invoice: values.show_logo_on_invoice,
+          show_terms_on_invoice: values.show_terms_on_invoice,
+        };
+      }
+      // Printer tab - only printer settings
+      else if (activeTab === 'printer') {
+        newSettingsData = {
+          thermal_printer_enabled: values.thermal_printer_enabled,
+          printer_port: values.printer_port,
+          printer_baud_rate: values.printer_baud_rate,
+          paper_width: values.paper_width,
+          auto_print: values.auto_print,
+        };
+      }
+      // Defaults tab - only default values
+      else if (activeTab === 'defaults') {
+        newSettingsData = {
+          default_payment_mode: values.default_payment_mode,
+        };
+      }
+      // Notifications tab - only notification settings
+      else if (activeTab === 'notifications') {
+        newSettingsData = {
+          email_notifications: values.email_notifications,
+          sms_notifications: values.sms_notifications,
+          low_stock_alert: values.low_stock_alert,
+          low_stock_threshold: values.low_stock_threshold,
+          payment_reminder: values.payment_reminder,
+          daily_report_email: values.daily_report_email,
+        };
       }
 
-      const tabLabels = {
-        company: 'Company Settings',
-        tax: 'Tax & GST Settings',
-        invoice: 'Invoice Settings',
-        printer: 'Printer Settings',
-        defaults: 'Default Values',
-        notifications: 'Notification Settings'
-      };
+      // Check if settings exist, if not create new settings
+      const settingsResult = (settingsData as any)?.result || settingsData || [];
+      
+      // Extract first item from array if it's an array response
+      const existingSettings = Array.isArray(settingsResult) 
+        ? settingsResult[0] 
+        : settingsResult;
+      
+      // Check if we have valid existing settings with an ID
+      const hasExistingSettings = existingSettings && 
+        (existingSettings._id || existingSettings.id);
+      
+      const targetOrgId = organisationId || userItem?._id;
+      
+      console.log('💾 Save Settings:', {
+        hasExistingSettings,
+        existingSettings,
+        targetOrgId,
+        newSettingsData
+      });
+      
+      if (hasExistingSettings) {
+        // Update existing settings
+        const settingsId = existingSettings._id || existingSettings.id;
+        console.log('🔄 Updating existing settings with ID:', settingsId);
+        
+        await updateSettings({
+          id: settingsId,
+          data: {
+            ...newSettingsData,
+            organisation_id: targetOrgId,
+          }
+        }).unwrap();
+        
+        message.success(`Settings updated successfully! 🎉`);
+      } else {
+        // Create new settings
+        console.log('➕ Creating new settings for organisation:', targetOrgId);
+        
+        await createSettings({
+          ...newSettingsData,
+          organisation_id: targetOrgId,
+        }).unwrap();
+        
+        message.success(`Settings created successfully! 🎉`);
+      }
 
-      message.success(`${tabLabels[activeTab as keyof typeof tabLabels] || 'Settings'} saved successfully! 🎉`);
+      // Reload settings after save to get updated data
+      if (targetOrgId) {
+        await refetchSettings();
+      }
+
     } catch (error: any) {
-      message.error(error.message || 'Failed to save settings');
+      console.error('❌ Error saving settings:', error);
+      message.error(error.message || error.data?.message || 'Failed to save settings');
     } finally {
       setLoading(false);
     }
@@ -334,30 +438,19 @@ const Settings: React.FC = () => {
     selectedOrganisation, 
     userItem, 
     activeTab, 
-    updateOrganisations,
     updateSettings,
     createSettings,
     refetchSettings,
-    uploadedLogoUrl,
     settingsData,
-    form
+    form,
+    isOrganisationUser,
+    isBranchUser
   ]);
 
   const handleReset = useCallback(() => {
     form.resetFields();
     message.info('Form reset to last saved values');
   }, [form]);
-
-  const handleLogoUpload = useCallback(async (file: any) => {
-    try {
-      const url = await handleFileUpload(file);
-      form.setFieldValue('company_logo', url);
-      message.success('Logo uploaded successfully!');
-    } catch (error) {
-      message.error('Failed to upload logo');
-    }
-    return false; // Prevent default upload
-  }, [handleFileUpload, form]);
 
   const testPrinter = useCallback(() => {
     message.info('Printing test page... Check your thermal printer');
@@ -366,14 +459,14 @@ const Settings: React.FC = () => {
 
   // Prepare options for dropdowns
   const tenantOptions = useMemo(() => {
-    return tenantsItems?.result?.map((tenant: any) => ({
+    return tenantsItems?.map((tenant: any) => ({
       label: tenant.organization_name || tenant.tenant_name,
       value: tenant._id,
     })) || [];
   }, [tenantsItems]);
 
   const organisationOptions = useMemo(() => {
-    return organisationsItems?.result?.map((org: any) => ({
+    return organisationsItems?.map((org: any) => ({
       label: org.org_name || org.organization_name || org.name,
       value: org._id,
     })) || [];
@@ -429,7 +522,7 @@ const Settings: React.FC = () => {
                   style={{ width: '100%' }}
                   placeholder="Select Organisation"
                   value={selectedOrganisation}
-                  onChange={setSelectedOrganisation}
+                  onChange={handleOrganisationChange}
                   showSearch
                   optionFilterProp="children"
                   allowClear
@@ -455,24 +548,6 @@ const Settings: React.FC = () => {
           onChange={setActiveTab}
           type="card"
           items={[
-            {
-              key: 'company',
-              label: (
-                <span>
-                  <ShopOutlined /> Company
-                </span>
-              ),
-              children: (
-                <CompanyTab
-                  form={form}
-                  loading={loading}
-                  onSave={handleSave}
-                  onReset={handleReset}
-                  uploadedLogoUrl={uploadedLogoUrl}
-                  onLogoUpload={handleLogoUpload}
-                />
-              ),
-            },
             {
               key: 'tax',
               label: (
