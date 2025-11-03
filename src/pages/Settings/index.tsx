@@ -16,13 +16,14 @@ import {
   PrinterOutlined,
   CheckCircleOutlined,
   BellOutlined,
+  ShopOutlined,
 } from '@ant-design/icons';
-import { useNavigate } from 'react-router-dom';
 import styles from './Settings.module.css';
 import { apiSlice } from '../../services/redux/api/apiSlice';
 import { getCurrentUser } from '../../helpers/auth';
 import SessionStorageEncryption from '../../helpers/encryption';
 import {
+  BusinessInfoTab,
   TaxTab,
   InvoiceTab,
   PrinterTab,
@@ -33,11 +34,33 @@ import {
 const { Title, Text } = Typography;
 const { Option } = Select;
 
+// Helper function to populate organisation form data
+const populateOrganisationForm = (form: any, orgData: any) => {
+  if (!orgData) return;
+  
+  form.setFieldsValue({
+    org_name: orgData.org_name || orgData.organization_name || orgData.name,
+    business_type: orgData.business_type,
+    email: orgData.email,
+    phone: orgData.phone,
+    gst_number: orgData.gst_number,
+    pan_number: orgData.pan_number,
+    address1: orgData.address1 || orgData.address,
+    city: orgData.city,
+    state: orgData.state,
+    pincode: orgData.pincode,
+    currency: orgData.currency,
+    timezone: orgData.timezone,
+    status: orgData.status !== false,
+  });
+};
+
 const Settings: React.FC = () => {
   const [form] = Form.useForm();
+  const [businessForm] = Form.useForm();
   const [loading, setLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState('tax');
-  const navigate = useNavigate();
+  const [businessLoading, setBusinessLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState('business');
   const [selectedTenant, setSelectedTenant] = useState<string>('all');
   const [selectedOrganisation, setSelectedOrganisation] = useState<string>('all');
 
@@ -77,83 +100,48 @@ const Settings: React.FC = () => {
   // For Settings by ID, we'll use RTK Query with skip option
   const [selectedSettingsId, setSelectedSettingsId] = useState<string | null>(null);
   
-  // For SuperAdmin: Skip settings API if tenant is not selected
-  // For Tenant: Skip settings API if organisation is not selected
-  // For Organisation/Branch users: Never skip (they directly call settings API)
+  // Determine if settings API should be skipped
   const shouldSkipSettings = useMemo(() => {
-    // If no settings ID is selected, always skip
-    if (!selectedSettingsId || selectedSettingsId === 'all') {
-      console.log('⏭️ Skipping settings API: No settings ID');
-      return true;
-    }
-    
-    // Organisation/Branch users: Once settings ID is set, never skip
-    if (isOrganisationUser || isBranchUser) {
-      console.log('✅ Not skipping: Organisation/Branch user');
-      return false;
-    }
-    
-    // SuperAdmin: Skip if tenant not selected (organisation check is handled by selectedSettingsId)
-    if (isSuperAdmin) {
-      const shouldSkip = !selectedTenant || selectedTenant === 'all';
-      console.log('🔵 SuperAdmin skip check:', { shouldSkip, selectedTenant });
-      return shouldSkip;
-    }
-    
-    // Tenant: Once settings ID is set (which means organisation is selected), don't skip
-    if (isTenant) {
-      console.log('✅ Not skipping: Tenant user with settings ID');
-      return false;
-    }
-    
-    // Default: skip if no settings ID
-    console.log('⏭️ Skipping settings API: Default case');
+    if (!selectedSettingsId || selectedSettingsId === 'all') return true;
+    if (isOrganisationUser || isBranchUser) return false;
+    if (isSuperAdmin) return !selectedTenant || selectedTenant === 'all';
+    if (isTenant) return false;
     return true;
   }, [selectedSettingsId, isSuperAdmin, isTenant, isOrganisationUser, isBranchUser, selectedTenant]);
 
   // Fetch settings using GetAll with organisation_id filter
-  const { data: settingsData, refetch: refetchSettings, isLoading: isLoadingSettings } = apiSlice.useGetSettingsQuery(
+  const { data: settingsData, refetch: refetchSettings } = apiSlice.useGetSettingsQuery(
     { organisation_id: selectedSettingsId, page: 1, limit: 1 },
     { 
       skip: shouldSkipSettings || !selectedSettingsId,
-      refetchOnMountOrArgChange: true // Enable refetch when ID changes
+      refetchOnMountOrArgChange: true
     }
   );
-
-  // Debug: Log when settings query state changes
-  useEffect(() => {
-    console.log('📊 Settings Query State:', {
-      selectedSettingsId,
-      shouldSkipSettings,
-      isLoading: isLoadingSettings,
-      hasData: !!settingsData,
-      settingsData,
-      userRole,
-      isSuperAdmin,
-      isTenant,
-      selectedTenant,
-      selectedOrganisation
-    });
-  }, [selectedSettingsId, shouldSkipSettings, isLoadingSettings, settingsData, userRole, isSuperAdmin, isTenant, selectedTenant, selectedOrganisation]);
   
   // Use RTK Query mutations
   const [updateSettings] = apiSlice.useUpdateSettingsMutation();
   const [createSettings] = apiSlice.useCreateSettingsMutation();
+  const [updateOrganisation] = apiSlice.useUpdateOrganisationsMutation();
 
   const tenantsItems = (tenantsData as any)?.result || [];
   const organisationsItems = (organisationsData as any)?.result || [];
 
-  // Load settings on mount - only for organisation/branch users (directly hit settings API)
+  // Get selected organisation data from already-loaded dropdown data
+  const selectedOrganisationData = useMemo(() => {
+    if (!selectedSettingsId || selectedSettingsId === 'all') return null;
+    return organisationsItems?.find((item: any) => item._id === selectedSettingsId) || null;
+  }, [selectedSettingsId, organisationsItems]);
+
+  // Load settings on mount - only for organisation/branch users
   useEffect(() => {
-    // For organisation/branch users, load settings immediately using their organisation_id
     if ((isOrganisationUser || isBranchUser) && !selectedSettingsId) {
       const organisationId = userItem?.organisation_id || userItem?.organisationItems?._id;
       if (organisationId) {
         setSelectedSettingsId(organisationId);
+        // Populate business form with user's organisation data
+        populateOrganisationForm(businessForm, userItem?.organisationItems);
       }
     }
-    // For tenant users, don't load settings until organisation is selected
-    // For superadmin, don't load settings until tenant and organisation are selected
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -162,73 +150,53 @@ const Settings: React.FC = () => {
     setSelectedTenant(tenantId || 'all');
     setSelectedOrganisation('all'); // Clear organisation selection
     setSelectedSettingsId(null); // Clear settings when tenant changes
-    form.resetFields(); // Reset form when tenant changes
+    form.resetFields(); // Reset settings form when tenant changes
+    businessForm.resetFields(); // Reset business form when tenant changes
     
     if (tenantId && tenantId !== 'all') {
       // RTK Query will refetch with new filters when tenant changes
       // Organisations are filtered by tenant_id on backend
     }
     // If "all" or cleared, don't fetch organisations (keep dropdown disabled)
-  }, [form]);
+  }, [form, businessForm]);
 
-  // Handle organisation selection change - fetch settings for selected organisation
+  // Handle organisation selection change
   const handleOrganisationChange = useCallback((organisationId: string) => {
-    console.log('🔵 Organisation changed:', { 
-      organisationId, 
-      isSuperAdmin, 
-      isTenant, 
-      selectedTenant,
-      userRole 
-    });
-    
     setSelectedOrganisation(organisationId || 'all');
     
     if (organisationId && organisationId !== 'all') {
-      // For SuperAdmin: Only call settings API if both tenant and organisation are selected
-      if (isSuperAdmin) {
-        if (selectedTenant && selectedTenant !== 'all') {
-          // Both tenant and organisation all selected, call settings API
-          console.log('🟢 SuperAdmin: Setting selectedSettingsId to:', organisationId);
-          setSelectedSettingsId(organisationId);
-        } else {
-          // Tenant not selected yet, don't call settings API
-          console.log('🔴 SuperAdmin: Tenant not selected, clearing settings');
-          setSelectedSettingsId(null);
-          form.resetFields();
-        }
+      // For SuperAdmin: Only proceed if tenant is selected
+      if (isSuperAdmin && (!selectedTenant || selectedTenant === 'all')) {
+        setSelectedSettingsId(null);
+        form.resetFields();
       } else {
-        // For Tenant users: Call settings API immediately when organisation is selected
-        console.log('🟢 Tenant/Other: Setting selectedSettingsId to:', organisationId);
         setSelectedSettingsId(organisationId);
       }
     } else {
-      // Clear settings when "all" is selected
-      console.log('🔴 Clearing settings (all selected)');
       setSelectedSettingsId(null);
       form.resetFields();
     }
-  }, [form, isSuperAdmin, isTenant, selectedTenant, userRole]);
+  }, [form, isSuperAdmin, selectedTenant]);
 
 
 
-  // Populate form when settings data loads or when organisation changes
+  // Populate business form when organisation is selected
+  useEffect(() => {
+    if (selectedOrganisationData) {
+      populateOrganisationForm(businessForm, selectedOrganisationData);
+    } else if (selectedSettingsId && selectedSettingsId !== 'all') {
+      businessForm.resetFields();
+    }
+  }, [selectedOrganisationData, selectedSettingsId, businessForm]);
+
+  // Populate settings form when data loads
   useEffect(() => {
     const settingsResult = (settingsData as any)?.result || settingsData || {};
-    
-    // Extract first item if it's an array
-    const settings = Array.isArray(settingsResult) 
-      ? settingsResult[0] 
-      : settingsResult;
-    
-    // Check if we have actual settings data with ID
-    const hasSettingsData = settings && 
-      typeof settings === 'object' && 
-      (settings._id || settings.id);
+    const settings = Array.isArray(settingsResult) ? settingsResult[0] : settingsResult;
+    const hasSettingsData = settings && typeof settings === 'object' && (settings._id || settings.id);
     
     if (selectedSettingsId) {
       if (hasSettingsData) {
-        // Settings exist - use actual values from database
-        console.log('📝 Populating form with existing settings:', settings);
         form.setFieldsValue({
           // Tax Settings
           tax_enabled: settings.tax_enabled ?? null,
@@ -261,8 +229,7 @@ const Settings: React.FC = () => {
           daily_report_email: settings.daily_report_email ?? null,
         });
       } else {
-        // No settings found - initialize all fields as null so user can choose
-        console.log('📝 No settings found, initializing form with null values');
+        // No settings found - initialize with null values
         form.setFieldsValue({
           // Tax Settings
           tax_enabled: null,
@@ -296,12 +263,11 @@ const Settings: React.FC = () => {
         });
       }
     } else if (selectedOrganisation === 'all' && (isSuperAdmin || isTenant)) {
-      // Reset form when no organisation is selected (only for superadmin/tenant users)
-      console.log('🔄 Resetting form - no organisation selected');
       form.resetFields();
     }
   }, [settingsData, selectedSettingsId, selectedOrganisation, isSuperAdmin, isTenant, form]);
 
+  // Handle settings save
   const handleSave = useCallback(async () => {
     try {
       // Check if organization is selected for SuperAdmin and Tenant users
@@ -383,23 +349,12 @@ const Settings: React.FC = () => {
         : settingsResult;
       
       // Check if we have valid existing settings with an ID
-      const hasExistingSettings = existingSettings && 
-        (existingSettings._id || existingSettings.id);
-      
+      const hasExistingSettings = existingSettings && (existingSettings._id || existingSettings.id);
       const targetOrgId = organisationId || userItem?._id;
-      
-      console.log('💾 Save Settings:', {
-        hasExistingSettings,
-        existingSettings,
-        targetOrgId,
-        newSettingsData
-      });
       
       if (hasExistingSettings) {
         // Update existing settings
         const settingsId = existingSettings._id || existingSettings.id;
-        console.log('🔄 Updating existing settings with ID:', settingsId);
-        
         await updateSettings({
           id: settingsId,
           data: {
@@ -408,11 +363,9 @@ const Settings: React.FC = () => {
           }
         }).unwrap();
         
-        message.success(`Settings updated successfully! 🎉`);
+        message.success('Settings updated successfully! 🎉');
       } else {
         // Create new settings
-        console.log('➕ Creating new settings for organisation:', targetOrgId);
-        
         await createSettings({
           ...newSettingsData,
           organisation_id: targetOrgId,
@@ -447,10 +400,77 @@ const Settings: React.FC = () => {
     isBranchUser
   ]);
 
+  // Handle business information save
+  const handleBusinessSave = useCallback(async () => {
+    try {
+      // Check if organization is selected for SuperAdmin and Tenant users
+      if ((isSuperAdmin || isTenant) && selectedOrganisation === 'all') {
+        message.error('Please select an organisation before updating business information');
+        return;
+      }
+
+      const values = await businessForm.validateFields();
+      setBusinessLoading(true);
+
+      // Determine the organisation ID to update
+      let organisationId = selectedOrganisation !== 'all' ? selectedOrganisation : null;
+      if (!organisationId) {
+        organisationId = userItem?.organisation_id || userItem?.organisationItems?._id;
+      }
+
+      if (!organisationId) {
+        message.error('Organisation ID not found. Please select an organisation.');
+        return;
+      }
+
+      // Update organisation
+      await updateOrganisation({
+        id: organisationId,
+        data: {
+          org_name: values.org_name,
+          business_type: values.business_type,
+          email: values.email,
+          phone: values.phone,
+          gst_number: values.gst_number,
+          pan_number: values.pan_number,
+          address1: values.address1,
+          city: values.city,
+          state: values.state,
+          pincode: values.pincode,
+          currency: values.currency,
+          timezone: values.timezone,
+          status: values.status,
+        }
+      }).unwrap();
+
+      message.success('Business information updated successfully! 🎉');
+
+      // RTK Query will automatically update the organisations list cache
+
+    } catch (error: any) {
+      console.error('❌ Error saving business information:', error);
+      message.error(error.message || error.data?.message || 'Failed to save business information');
+    } finally {
+      setBusinessLoading(false);
+    }
+  }, [
+    isSuperAdmin,
+    isTenant,
+    selectedOrganisation,
+    userItem,
+    businessForm,
+    updateOrganisation,
+  ]);
+
   const handleReset = useCallback(() => {
     form.resetFields();
     message.info('Form reset to last saved values');
   }, [form]);
+
+  const handleBusinessReset = useCallback(() => {
+    businessForm.resetFields();
+    message.info('Form reset to last saved values');
+  }, [businessForm]);
 
   const testPrinter = useCallback(() => {
     message.info('Printing test page... Check your thermal printer');
@@ -548,6 +568,22 @@ const Settings: React.FC = () => {
           onChange={setActiveTab}
           type="card"
           items={[
+            {
+              key: 'business',
+              label: (
+                <span>
+                  <ShopOutlined /> Business Info
+                </span>
+              ),
+              children: (
+                <BusinessInfoTab
+                  form={businessForm}
+                  loading={businessLoading}
+                  onSave={handleBusinessSave}
+                  onReset={handleBusinessReset}
+                />
+              ),
+            },
             {
               key: 'tax',
               label: (
