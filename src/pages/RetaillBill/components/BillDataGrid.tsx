@@ -27,6 +27,7 @@ import {
 import StockSelectionModal from './StockSelectionModal';
 import { apiSlice } from '../../../services/redux/api/apiSlice';
 import CustomerSelectionModal from './CustomerSelectionModal';
+import VendorSelectionModal from './VendorSelectionModal';
 import UserSelectionModal from './UserSelectionModal';
 import BillSaveConfirmationModal from './BillSaveConfirmationModal';
 import BillListDrawer from './BillListDrawer';
@@ -48,6 +49,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
   const dispatch = useDispatch();
   const ProductsApi = useGenericCrudRTK('Product');
   const CustomerApi = useGenericCrudRTK('Customer');
+  const VendorApi = useGenericCrudRTK('Vendor');
   const BillingUsersApi = useGenericCrudRTK('BillingUsers');
   const StockAuditApi = useGenericCrudRTK('StockAudit');
   const BranchStock = useGenericCrudRTK('BranchStock');
@@ -66,10 +68,17 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
     refetch: refetchCustomers,
   } = CustomerApi.useGetAll();
   const {
+    data: vendorListData,
+    isLoading: vendorLoading,
+    refetch: refetchVendors,
+  } = VendorApi.useGetAll();
+  const {
     data: userListData,
     isLoading: userLoading,
     refetch: refetchUsers,
   } = BillingUsersApi.useGetAll();
+  // Note: Stock data (StockAudit/BranchStock) is loaded on-demand in StockSelectionModal
+  // with product_id filter for better performance
   const {
     data: stockAuditListData,
     isLoading: stockLoading,
@@ -86,6 +95,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
   // Extract data with proper fallback - RTK Query returns the API response with { statusCode, result, ... }
   const productList = productListData || {};
   const customerList = customerListData || {};
+  const vendorList = vendorListData || {};
   const userList = userListData || {};
   const stockAuditList = stockAuditListData || {};
   const branchStockList = branchStockListData || {};
@@ -97,6 +107,9 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
     : [];
   const customerListResult = Array.isArray(customerList.result)
     ? customerList.result
+    : [];
+  const vendorListResult = Array.isArray(vendorList.result)
+    ? vendorList.result
     : [];
   const userListResult = Array.isArray(userList.result) ? userList.result : [];
   const stockAuditListResult = Array.isArray(stockAuditList.result)
@@ -459,6 +472,19 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
     return options;
   }, [customerListResult]);
 
+  const vendorOptions = useMemo(() => {
+    const options = vendorListResult.map((vendor: any) => ({
+      label: `${vendor.vendor_name} - ${vendor.contact_number || 'N/A'}`,
+      value: vendor._id,
+    }));
+    return options;
+  }, [vendorListResult]);
+
+  // Conditionally use customer or vendor options based on document type
+  const customerOrVendorOptions = useMemo(() => {
+    return documentType === 'invoice' ? vendorOptions : customerOptions;
+  }, [documentType, vendorOptions, customerOptions]);
+
   const userOptions = useMemo(() => {
     const options = userListResult.map((user: any) => ({
       label: `${user.name} (${user.roleItems?.name || 'No Role'})`,
@@ -488,18 +514,24 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
       },
       {
         key: 'customer_id',
-        title: '👤 CUSTOMER',
+        title: documentType === 'bill' ? '👤 CUSTOMER' : '🏢 VENDOR',
         dataIndex: 'customer_id',
         type: 'select',
-        options: customerOptions,
+        options: customerOrVendorOptions,
         required: true,
         width: 250,
         render: (value: any, record: any) => {
-          const selectedCustomer = customerOptions.find(
+          const selectedItem = customerOrVendorOptions.find(
             (opt: any) => opt.value === value
           );
+          const isVendor = documentType === 'invoice';
+          const placeholderText = isVendor ? 'Select vendor' : 'Select customer';
+          const tooltipText = isVendor 
+            ? 'Click to open vendor selection modal (or press End key)' 
+            : 'Click to open customer selection modal (or press End key)';
+          
           return (
-            <Tooltip title="Click to open customer selection modal (or press End key)">
+            <Tooltip title={tooltipText}>
               <div
                 style={{
                   display: 'flex',
@@ -523,9 +555,9 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
                 }}
               >
                 <span>
-                  {selectedCustomer
-                    ? selectedCustomer.label
-                    : 'Select customer'}
+                  {selectedItem
+                    ? selectedItem.label
+                    : placeholderText}
                 </span>
                 <span
                   style={{
@@ -612,7 +644,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
         width: 150,
       },
     ],
-    [customerOptions, userOptions]
+    [customerOrVendorOptions, userOptions, documentType]
   );
 
   const headerData = useMemo(
@@ -1603,6 +1635,36 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
     [billFormData.customer_id]
   );
 
+  // Handle vendor selection from modal
+  const handleVendorSelect = useCallback(
+    (vendor: any) => {
+      // Prevent duplicate calls
+      if (billFormData.customer_id === vendor._id) {
+        return;
+      }
+
+      setBillFormData(prev => ({
+        ...prev,
+        customer_id: vendor._id,
+        customer_name: vendor.vendor_name,
+      }));
+
+      // Ensure modal closes
+      setTimeout(() => {
+        setCustomerModalVisible(false);
+        // Auto-open user selection modal after vendor is selected
+        setTimeout(() => {
+          setUserModalVisible(true);
+        }, 100);
+      }, 50);
+
+      message.success(
+        `Vendor "${vendor.vendor_name}" selected successfully!`
+      );
+    },
+    [billFormData.customer_id]
+  );
+
   // Handle user selection from modal
   const handleUserSelect = useCallback(
     (user: any) => {
@@ -2125,7 +2187,10 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
     const payload = {
       invoice_no: billFormData.invoice_no,
       date: billFormData.date || dayjs().format('YYYY-MM-DD'),
-      customer_id: billFormData.customer_id || null, // Not required for draft
+      ...(documentType === 'invoice' 
+        ? { vendor_id: billFormData.customer_id || null }
+        : { customer_id: billFormData.customer_id || null }
+      ),
       billed_by_id: billFormData.billed_by_id || null, // Not required for draft
       payment_mode: billFormData.payment_mode || 'cash',
       items: billFormData.items.map(item => ({
@@ -2250,7 +2315,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
       return;
     }
     if (!billFormData.customer_id) {
-      message.error('Please select a customer');
+      message.error(`Please select a ${documentType === 'invoice' ? 'vendor' : 'customer'}`);
       return;
     }
     if (!billFormData.payment_mode) {
@@ -2261,7 +2326,10 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
     const payload = {
       invoice_no: billFormData.invoice_no,
       date: billFormData.date,
-      customer_id: billFormData.customer_id,
+      ...(documentType === 'invoice' 
+        ? { vendor_id: billFormData.customer_id }
+        : { customer_id: billFormData.customer_id }
+      ),
       billed_by_id: billFormData.billed_by_id,
       payment_mode: billFormData.payment_mode,
       items: billFormData.items.map(item => ({
@@ -2696,6 +2764,14 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
 
           {/* Controls Section */}
           <div className={styles.controlsSection}>
+            {/* Document Type Toggle - Integrated */}
+            <div style={{ marginRight: '12px' }}>
+              <DocumentTypeToggle 
+                value={documentType}
+                onChange={setDocumentType}
+              />
+            </div>
+
             <div className={`${styles.controlGroup} ${styles.saleTypeControl}`}>
               <Text className={styles.controlLabel}>🏪 SALE TYPE</Text>
               <Switch
@@ -2788,7 +2864,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
           onSave={handleHeaderChange}
           allowAdd={false}
           allowDelete={false}
-          loading={customerLoading}
+          loading={customerLoading || vendorLoading}
           className="compact-header-grid"
           size="small"
           rowKey="invoice_no"
@@ -3086,14 +3162,6 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
         </div>
       </div>
 
-      {/* Document Type Toggle */}
-      <div style={{ marginBottom: 16 }}>
-        <DocumentTypeToggle 
-          value={documentType}
-          onChange={setDocumentType}
-        />
-      </div>
-
       {/* Ultra-Fast Action Hub */}
       <div className={styles.actionHub}>
         {/* Background decoration */}
@@ -3219,11 +3287,22 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
       )}
 
       {/* Customer Selection Modal */}
-      <CustomerSelectionModal
-        visible={customerModalVisible}
-        onSelect={handleCustomerSelect}
-        onCancel={() => setCustomerModalVisible(false)}
-      />
+      {documentType === 'bill' && (
+        <CustomerSelectionModal
+          visible={customerModalVisible}
+          onSelect={handleCustomerSelect}
+          onCancel={() => setCustomerModalVisible(false)}
+        />
+      )}
+
+      {/* Vendor Selection Modal */}
+      {documentType === 'invoice' && (
+        <VendorSelectionModal
+          visible={customerModalVisible}
+          onSelect={handleVendorSelect}
+          onCancel={() => setCustomerModalVisible(false)}
+        />
+      )}
 
       {/* User Selection Modal */}
       <UserSelectionModal
