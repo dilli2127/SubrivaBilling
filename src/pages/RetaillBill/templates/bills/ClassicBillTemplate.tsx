@@ -1,11 +1,15 @@
 import React from 'react';
-import { useUser } from '../../../components/antd/UserContext';
+import { useUser } from '../../../../components/antd/UserContext';
 
-interface ClassicBillingTemplateProps {
+interface ClassicBillTemplateProps {
   billData: any;
 }
 
-const ClassicBillingTemplate: React.FC<ClassicBillingTemplateProps> = ({
+/**
+ * Classic Bill Template - For Quick Retail Sales / POS
+ * Compact thermal receipt style design
+ */
+const ClassicBillTemplate: React.FC<ClassicBillTemplateProps> = ({
   billData,
 }) => {
   const userItem = useUser();
@@ -29,15 +33,14 @@ const ClassicBillingTemplate: React.FC<ClassicBillingTemplateProps> = ({
           {userItem?.organisationItems?.org_name || ''}
         </h3>
         <div style={{ fontSize: '11px', marginBottom: '4px' }}>
-          {userItem?.branchItems?.address1 ||
-            ''}
+          {userItem?.branchItems?.address1 || ''}
         </div>
         <div style={{ fontSize: '11px' }}>
-          GSTIN: {userItem?.organisationItems?.gst_number || '33XXXXXXXXXXX'}
+          GSTIN: {userItem?.organisationItems?.gst_number || '-'}
         </div>
       </div>
 
-      {/* Invoice Info */}
+      {/* Bill Info */}
       <div
         style={{
           display: 'flex',
@@ -74,18 +77,15 @@ const ClassicBillingTemplate: React.FC<ClassicBillingTemplateProps> = ({
       >
         <thead>
           <tr>
-            <th style={tableHeaderStyle}>S.No</th>
             <th style={tableHeaderStyle}>Item</th>
             <th style={tableHeaderStyle}>Qty</th>
             <th style={tableHeaderStyle}>Rate</th>
-            <th style={tableHeaderStyle}>MRP</th>
             <th style={tableHeaderStyle}>Amt</th>
           </tr>
         </thead>
         <tbody>
           {billData?.items?.map((item: any, idx: number) => (
             <tr key={idx}>
-              <td style={tableCellStyle}>{idx + 1}</td>
               <td style={tableCellStyle}>
                 {item.name.length > 15
                   ? item.name.substring(0, 15) + '...'
@@ -93,7 +93,6 @@ const ClassicBillingTemplate: React.FC<ClassicBillingTemplateProps> = ({
               </td>
               <td style={tableCellStyle}>{item.qty}</td>
               <td style={tableCellStyle}>₹{item.price}</td>
-              <td style={tableCellStyle}>₹{item.mrp || item.price}</td>
               <td style={tableCellStyle}>₹{item.amount}</td>
             </tr>
           ))}
@@ -116,9 +115,9 @@ const ClassicBillingTemplate: React.FC<ClassicBillingTemplateProps> = ({
 
       {/* Footer */}
       <div style={{ textAlign: 'center', fontSize: '11px' }}>
-        *** GET WELL SOON. THANK YOU ***
+        *** THANK YOU ***
         <br />
-        Goods Once Sold Cannot Be Taken Back
+        Visit Again!
       </div>
     </div>
   );
@@ -136,4 +135,5 @@ const tableCellStyle = {
   fontSize: '11px',
 };
 
-export default ClassicBillingTemplate;
+export default ClassicBillTemplate;
+

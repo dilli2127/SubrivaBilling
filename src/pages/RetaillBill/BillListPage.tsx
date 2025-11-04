@@ -32,11 +32,13 @@ import GlobalTable from "../../components/antd/GlobalTable";
 import { useHandleApiResponse } from "../../components/common/useHandleApiResponse";
 import { useGenericCrudRTK } from "../../hooks/useGenericCrudRTK";
 import EmailSendModal from "../../components/common/EmailSendModal";
-import { billingTemplates } from './templates/registry';
+import { useTemplateSettings } from '../../hooks/useTemplateSettings';
 
 const { Title } = Typography;
 
 const BillListPage = () => {
+  // Get template settings
+  const { InvoiceTemplateComponent } = useTemplateSettings();
   const [selectedBill, setSelectedBill] = useState<any>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [billViewVisible, setBillViewVisible] = useState(false);
@@ -376,12 +378,9 @@ const BillListPage = () => {
         title={printBill ? `Print Invoice #${printBill.invoice_no}` : 'Print Invoice'}
         centered
       >
-        {printBill && (() => {
-          const key = localStorage.getItem('billingTemplate');
-          const selectedTemplate: 'classic' | 'modern' = (key === 'modern' || key === 'classic') ? key : 'classic';
-          const TemplateComponent = billingTemplates[selectedTemplate].component;
-          return <TemplateComponent billData={printBill} />;
-        })()}
+        {printBill && (
+          <InvoiceTemplateComponent billData={printBill} />
+        )}
       </Modal>
 
       {/* Email Send Modal */}

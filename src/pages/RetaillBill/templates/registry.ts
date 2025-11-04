@@ -1,17 +1,18 @@
-import ClassicBillingTemplate from './ClassicBillingTemplate';
-import ModernBillingTemplate from './ModernBillingTemplate';
+/**
+ * Main Template Registry
+ * Central export for all bill and invoice templates
+ */
 
-export const billingTemplates = {
-  classic: {
-    label: 'Classic',
-    component: ClassicBillingTemplate,
-    previewImg: 'https://via.placeholder.com/220x120?text=Classic',
-  },
-  modern: {
-    label: 'Modern',
-    component: ModernBillingTemplate,
-    previewImg: 'https://via.placeholder.com/220x120?text=Modern',
-  },
-};
+// Re-export Bill Templates
+export { 
+  billTemplates, 
+  getBillTemplate,
+  type BillTemplateKey 
+} from './bills/billTemplates';
 
-export type BillingTemplateKey = keyof typeof billingTemplates; 
+// Re-export Invoice Templates
+export { 
+  invoiceTemplates, 
+  getInvoiceTemplate,
+  type InvoiceTemplateKey 
+} from './invoices/invoiceTemplates'; 

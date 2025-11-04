@@ -29,6 +29,7 @@ import {
   PrinterTab,
   DefaultsTab,
   NotificationsTab,
+  TemplateSettingsTab,
 } from './tabs';
 
 const { Title, Text } = Typography;
@@ -227,9 +228,13 @@ const Settings: React.FC = () => {
           low_stock_threshold: settings.low_stock_threshold ?? null,
           payment_reminder: settings.payment_reminder ?? null,
           daily_report_email: settings.daily_report_email ?? null,
+
+          // Template Settings
+          bill_template: settings.bill_template ?? 'classic',
+          invoice_template: settings.invoice_template ?? 'modern',
         });
       } else {
-        // No settings found - initialize with null values
+        // No settings found - initialize with default values
         form.setFieldsValue({
           // Tax Settings
           tax_enabled: null,
@@ -260,6 +265,10 @@ const Settings: React.FC = () => {
           low_stock_threshold: null,
           payment_reminder: null,
           daily_report_email: null,
+
+          // Template Settings
+          bill_template: 'classic',
+          invoice_template: 'modern',
         });
       }
     } else if (selectedOrganisation === 'all' && (isSuperAdmin || isTenant)) {
@@ -337,6 +346,13 @@ const Settings: React.FC = () => {
           low_stock_threshold: values.low_stock_threshold,
           payment_reminder: values.payment_reminder,
           daily_report_email: values.daily_report_email,
+        };
+      }
+      // Template tab - only template settings
+      else if (activeTab === 'templates') {
+        newSettingsData = {
+          bill_template: values.bill_template,
+          invoice_template: values.invoice_template,
         };
       }
 
@@ -658,6 +674,22 @@ const Settings: React.FC = () => {
               ),
               children: (
                 <NotificationsTab
+                  form={form}
+                  loading={loading}
+                  onSave={handleSave}
+                  onReset={handleReset}
+                />
+              ),
+            },
+            {
+              key: 'templates',
+              label: (
+                <span>
+                  <FileTextOutlined /> Templates
+                </span>
+              ),
+              children: (
+                <TemplateSettingsTab
                   form={form}
                   loading={loading}
                   onSave={handleSave}
