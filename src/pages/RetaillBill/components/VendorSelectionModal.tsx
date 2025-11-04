@@ -20,6 +20,7 @@ import {
   ShopOutlined,
 } from '@ant-design/icons';
 import { useGenericCrudRTK } from '../../../hooks/useGenericCrudRTK';
+import { apiSlice } from '../../../services/redux/api/apiSlice';
 
 const { Text } = Typography;
 
@@ -53,10 +54,12 @@ const VendorSelectionModalComponent: React.FC<VendorSelectionModalProps> = ({
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // RTK Query hooks for Vendor
-  const vendorRTK = useGenericCrudRTK('Vendor');
-  const { data: vendorData, isLoading: vendorLoading } = vendorRTK.useGetAll({
-    searchString: debouncedSearchTerm,
-  });
+  // Only fetch when modal is visible to prevent duplicate API calls
+  const { data: vendorData, isLoading: vendorLoading } = 
+    apiSlice.useGetVendorQuery(
+      { searchString: debouncedSearchTerm },
+      { skip: !visible } // Only fetch when modal is open
+    );
 
   // Extract vendors from vendorData
   const vendors = useMemo(() => {

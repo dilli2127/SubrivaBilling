@@ -23,7 +23,9 @@ interface StockSelectionModalProps {
     name: string;
     code?: string;
     available_quantity: number;
+    available_loose_quantity?: number;
     sell_price: number;
+    ProductItem?: any;
   }) => void;
   onCancel: () => void;
   productId: string;
@@ -290,7 +292,9 @@ const StockSelectionModal: FC<StockSelectionModalProps> = ({
       name: stock.ProductItem?.name || stock.name || '',
       code: stock.code,
       available_quantity: stock.available_quantity,
+      available_loose_quantity: stock.available_loose_quantity,
       sell_price: stock.sell_price,
+      ProductItem: stock.ProductItem, // Include ProductItem for pack_size
     });
   };
 

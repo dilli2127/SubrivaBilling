@@ -51,10 +51,13 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
   const CustomerApi = useGenericCrudRTK('Customer');
   const VendorApi = useGenericCrudRTK('Vendor');
   const BillingUsersApi = useGenericCrudRTK('BillingUsers');
-  const StockAuditApi = useGenericCrudRTK('StockAudit');
-  const BranchStock = useGenericCrudRTK('BranchStock');
   const SalesRecord = useGenericCrudRTK('SalesRecord');
   const InvoiceNumberApi = useGenericCrudRTK('InvoiceNumber');
+
+  // Determine user type for conditional stock API calls
+  const user = getCurrentUser();
+  const branchId = user?.branch_id;
+  const isOrganisationUser = !branchId;
 
   // RTK Query hooks for fetching data
   const {
@@ -77,18 +80,21 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
     isLoading: userLoading,
     refetch: refetchUsers,
   } = BillingUsersApi.useGetAll();
-  // Note: Stock data (StockAudit/BranchStock) is loaded on-demand in StockSelectionModal
-  // with product_id filter for better performance
+
+  // Stock APIs - Skip initial load (not needed)
+  // Stock quantities will come from the selected stock data saved in the item
   const {
     data: stockAuditListData,
     isLoading: stockLoading,
     refetch: refetchStockAudit,
-  } = StockAuditApi.useGetAll();
+  } = apiSlice.useGetStockAuditQuery({}, { skip: true });
+  
   const {
     data: branchStockListData,
     isLoading: branchStockLoading,
     refetch: refetchBranchStock,
-  } = BranchStock.useGetAll();
+  } = apiSlice.useGetBranchStockQuery({}, { skip: true });
+
   const { data: invoiceNoData, refetch: refetchInvoiceNo } =
     InvoiceNumberApi.useGetAll();
 
@@ -108,15 +114,15 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
   const customerListResult = Array.isArray(customerList.result)
     ? customerList.result
     : [];
-  const vendorListResult = Array.isArray(vendorList.result)
-    ? vendorList.result
+  const vendorListResult = Array.isArray((vendorList as any)?.result)
+    ? (vendorList as any).result
     : [];
   const userListResult = Array.isArray(userList.result) ? userList.result : [];
-  const stockAuditListResult = Array.isArray(stockAuditList.result)
-    ? stockAuditList.result
+  const stockAuditListResult = Array.isArray((stockAuditList as any)?.result)
+    ? (stockAuditList as any).result
     : [];
-  const branchStockListResult = Array.isArray(branchStockList.result)
-    ? branchStockList.result
+  const branchStockListResult = Array.isArray((branchStockList as any)?.result)
+    ? (branchStockList as any).result
     : [];
 
   // RTK Query mutation hooks
@@ -198,19 +204,14 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
   const [lastInteractedRowIndex, setLastInteractedRowIndex] =
     useState<number>(0);
 
-  // User info - memoized to prevent re-parsing on every render
-  const user = useMemo(() => {
-    return getCurrentUser();
-  }, []);
-  const branchId = user?.branch_id;
   const organisationId = user?.organisation_id || user?.organisationItems?._id;
 
   // Fetch settings to get default document type
   const { data: settingsData } = apiSlice.useGetSettingsQuery(
     { organisation_id: organisationId, page: 1, limit: 1 },
-    { 
+    {
       skip: !organisationId,
-      refetchOnMountOrArgChange: false
+      refetchOnMountOrArgChange: false,
     }
   );
 
@@ -525,11 +526,13 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
             (opt: any) => opt.value === value
           );
           const isVendor = documentType === 'invoice';
-          const placeholderText = isVendor ? 'Select vendor' : 'Select customer';
-          const tooltipText = isVendor 
-            ? 'Click to open vendor selection modal (or press End key)' 
+          const placeholderText = isVendor
+            ? 'Select vendor'
+            : 'Select customer';
+          const tooltipText = isVendor
+            ? 'Click to open vendor selection modal (or press End key)'
             : 'Click to open customer selection modal (or press End key)';
-          
+
           return (
             <Tooltip title={tooltipText}>
               <div
@@ -555,9 +558,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
                 }}
               >
                 <span>
-                  {selectedItem
-                    ? selectedItem.label
-                    : placeholderText}
+                  {selectedItem ? selectedItem.label : placeholderText}
                 </span>
                 <span
                   style={{
@@ -801,24 +802,19 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
         width: 280,
         editable: true, // allow editing to open modal
         render: (value, record, index) => {
-          // Get stock info for display
-          const stockListData = branchId
-            ? branchStockListResult
-            : stockAuditListResult;
-          const stock = stockListData.find(
-            (s: any) => s._id === record.stock_id
-          );
-
-          // Get pack size from stock data
-          const packSize = stock?.ProductItem?.VariantItem?.pack_size;
-          const packSizeNum = packSize ? parseInt(packSize) : 1;
-
-          // Calculate available quantities
-          const availablePackQty = stock?.available_quantity || 0;
-          const availableLooseQty = stock?.available_loose_quantity || 0;
+          // Use saved stock data from the item (no need to fetch from API)
+          const stockData = (record as any).stockData;
+          
+          // Calculate available quantities from saved data
+          const availablePackQty = stockData?.available_quantity || 0;
+          const availableLooseQty = stockData?.available_loose_quantity || 0;
+          const packSizeNum = stockData?.pack_size || 1;
 
           const isLowStock = availablePackQty > 0 && availablePackQty <= 10;
           const isOutOfStock = availablePackQty === 0;
+          
+          // Stock data exists if we have saved stock info
+          const hasStockData = !!stockData;
 
           return (
             <Tooltip
@@ -871,10 +867,12 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
                   style={{
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '8px',
+                    gap: '6px',
                     flex: 1,
+                    flexWrap: 'wrap',
                   }}
                 >
+                  {/* Batch Number */}
                   <span
                     style={{
                       color: value
@@ -882,17 +880,20 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
                         : record.product_id
                           ? '#1890ff'
                           : '#bfbfbf',
-                      fontWeight: value ? 600 : 400,
-                      fontSize: '13px',
+                      fontWeight: value ? 700 : 400,
+                      fontSize: '12px',
                       whiteSpace: 'nowrap',
                     }}
                   >
-                    {value || 'Select Stock'}
+                    {value ? `🏷️ ${value}` : 'Select Stock'}
                   </span>
 
-                  {/* Stock Badges (inline) */}
-                  {stock && (
+                  {/* Stock Quantities - Show inline with batch */}
+                  {hasStockData && value && (
                     <>
+                      <span style={{ color: '#d9d9d9', fontSize: '12px' }}>
+                        |
+                      </span>
                       <span
                         style={{
                           color: isOutOfStock
@@ -915,10 +916,11 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
                                 ? '#ffe58f'
                                 : '#b7eb8f'
                           }`,
-                          fontSize: '12px',
+                          fontSize: '11px',
+                          whiteSpace: 'nowrap',
                         }}
                       >
-                        📦 {availablePackQty}
+                        📦 A/Q {availablePackQty}
                       </span>
                       <span
                         style={{
@@ -928,10 +930,11 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
                           padding: '2px 6px',
                           borderRadius: '4px',
                           border: '1px solid #d3adf7',
-                          fontSize: '12px',
+                          fontSize: '11px',
+                          whiteSpace: 'nowrap',
                         }}
                       >
-                        📋 {availableLooseQty}
+                        📋 A/L {availableLooseQty}
                       </span>
                     </>
                   )}
@@ -1224,6 +1227,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
           mrp: item.mrp || 0,
           amount: item.amount || 0,
           tax_percentage: item.tax_percentage || 0,
+          stockData: item.stockData, // ✅ Preserve stockData for displaying quantities
         };
 
         // Stock validation for pack and loose quantities
@@ -1593,9 +1597,25 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
       return;
     }
 
+    // Save stock ID and batch number
     newItems[stockModalRowIndex].stock_id =
       stock.id || stock._id || stock.invoice_id || '';
     newItems[stockModalRowIndex].batch_no = stock.batch_no || '';
+    
+    // Save complete stock data for displaying quantities
+    // Stock object comes directly from StockSelectionModal with all properties
+    const savedStockData = {
+      available_quantity: stock.available_quantity || 0,
+      available_loose_quantity: stock.available_loose_quantity || 0,
+      batch_no: stock.batch_no || stock.name || '',
+      pack_size: stock.ProductItem?.VariantItem?.pack_size || 1,
+    };
+    
+    newItems[stockModalRowIndex] = {
+      ...newItems[stockModalRowIndex],
+      stockData: savedStockData,
+    };
+    
     handleItemsChange(newItems);
     setStockModalRowIndex(null); // Close stock modal
 
@@ -1658,9 +1678,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
         }, 100);
       }, 50);
 
-      message.success(
-        `Vendor "${vendor.vendor_name}" selected successfully!`
-      );
+      message.success(`Vendor "${vendor.vendor_name}" selected successfully!`);
     },
     [billFormData.customer_id]
   );
@@ -1900,12 +1918,14 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
       // If we have stock_id but no batch_no, try to find it from stock list
       if (stockId && !batchNo) {
         const stockList = branchId ? branchStockList : stockAuditList;
-        const stock = stockList?.result?.find((s: any) => s._id === stockId);
+        const stock = (stockList as any)?.result?.find(
+          (s: any) => s._id === stockId
+        );
         if (stock) {
           batchNo = stock.batch_no || '';
         } else {
           // If stock list is not loaded yet, mark for later update
-          if (!stockList?.result) {
+          if (!(stockList as any)?.result) {
             if (branchId) {
               refetchBranchStock();
             } else {
@@ -1919,8 +1939,8 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
             const currentStockList = branchId
               ? branchStockList
               : stockAuditList;
-            if (currentStockList?.result) {
-              const foundStock = currentStockList.result.find(
+            if ((currentStockList as any)?.result) {
+              const foundStock = (currentStockList as any).result.find(
                 (s: any) => s._id === stockId
               );
               if (foundStock) {
@@ -2187,10 +2207,9 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
     const payload = {
       invoice_no: billFormData.invoice_no,
       date: billFormData.date || dayjs().format('YYYY-MM-DD'),
-      ...(documentType === 'invoice' 
+      ...(documentType === 'invoice'
         ? { vendor_id: billFormData.customer_id || null }
-        : { customer_id: billFormData.customer_id || null }
-      ),
+        : { customer_id: billFormData.customer_id || null }),
       billed_by_id: billFormData.billed_by_id || null, // Not required for draft
       payment_mode: billFormData.payment_mode || 'cash',
       items: billFormData.items.map(item => ({
@@ -2315,7 +2334,9 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
       return;
     }
     if (!billFormData.customer_id) {
-      message.error(`Please select a ${documentType === 'invoice' ? 'vendor' : 'customer'}`);
+      message.error(
+        `Please select a ${documentType === 'invoice' ? 'vendor' : 'customer'}`
+      );
       return;
     }
     if (!billFormData.payment_mode) {
@@ -2326,10 +2347,9 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
     const payload = {
       invoice_no: billFormData.invoice_no,
       date: billFormData.date,
-      ...(documentType === 'invoice' 
+      ...(documentType === 'invoice'
         ? { vendor_id: billFormData.customer_id }
-        : { customer_id: billFormData.customer_id }
-      ),
+        : { customer_id: billFormData.customer_id }),
       billed_by_id: billFormData.billed_by_id,
       payment_mode: billFormData.payment_mode,
       items: billFormData.items.map(item => ({
@@ -2410,9 +2430,10 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
     if (createResponse?.statusCode === 200) {
       onSuccess?.();
       // Only auto-reset for completed bills, not drafts
-      const isDraft = createResponse?.data?.status === 'draft' || 
-                      (billFormData as any).status === 'draft';
-      
+      const isDraft =
+        createResponse?.data?.status === 'draft' ||
+        (billFormData as any).status === 'draft';
+
       if (!isDraft) {
         createInvoiceNumber({});
         // Auto-reset the bill after successful creation (only for new completed bills, not updates)
@@ -2766,7 +2787,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
           <div className={styles.controlsSection}>
             {/* Document Type Toggle - Integrated */}
             <div style={{ marginRight: '12px' }}>
-              <DocumentTypeToggle 
+              <DocumentTypeToggle
                 value={documentType}
                 onChange={setDocumentType}
               />
@@ -3220,9 +3241,11 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
                 message.warning('Please add items before printing');
                 return;
               }
-              
+
               // Format bill data for printing
-              const selectedCustomer = customerListResult.find((c: any) => c._id === billFormData.customer_id);
+              const selectedCustomer = customerListResult.find(
+                (c: any) => c._id === billFormData.customer_id
+              );
               const printData = {
                 invoice_no: billFormData.invoice_no,
                 date: billFormData.date,
@@ -3239,7 +3262,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
                 discount_type: billSettings.discountType,
                 payment_mode: billFormData.payment_mode,
               };
-              
+
               // Print with selected document type
               printDocument(printData, documentType);
             }}

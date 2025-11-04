@@ -34,6 +34,7 @@ import {
 } from '@ant-design/icons';
 import { useHandleApiResponse } from '../../../components/common/useHandleApiResponse';
 import { useGenericCrudRTK } from '../../../hooks/useGenericCrudRTK';
+import { apiSlice } from '../../../services/redux/api/apiSlice';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -90,10 +91,14 @@ const CustomerSelectionModalComponent: React.FC<CustomerSelectionModalProps> = (
   const firstFormInputRef = useRef<any>(null);
 
   // RTK Query hooks for Customer - use debouncedSearchTerm for API calls
+  // Only fetch when modal is visible to prevent duplicate API calls
+  const { data: customerData, isLoading: customerLoading, refetch: refetchCustomerList } = 
+    apiSlice.useGetCustomerQuery(
+      { searchString: debouncedSearchTerm },
+      { skip: !visible } // Only fetch when modal is open
+    );
+  
   const customerRTK = useGenericCrudRTK('Customer');
-  const { data: customerData, isLoading: customerLoading, refetch: refetchCustomerList } = customerRTK.useGetAll({
-    searchString: debouncedSearchTerm,
-  });
   const { create: createCustomer, ...createResult } = customerRTK.useCreate();
   const createLoading = createResult.isLoading;
 

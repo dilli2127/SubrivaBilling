@@ -45,8 +45,11 @@ const BillListDrawer: React.FC<BillListDrawerProps> = ({
   onViewBill,
   onNewBill
 }) => {
-  // Use RTK Query for sales records
-  const { data: billListData, isLoading: loading } = apiSlice.useGetSalesRecordQuery({});
+  // Use RTK Query for sales records - Only fetch when drawer is open
+  const { data: billListData, isLoading: loading } = apiSlice.useGetSalesRecordQuery(
+    {},
+    { skip: !visible } // ✅ Only fetch when drawer is visible
+  );
   
   // Memoize billList to prevent infinite re-renders
   const billList = useMemo(() => {

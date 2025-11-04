@@ -99,6 +99,7 @@ export interface Stock extends BaseEntity {
   warehouse_id: string;
   batch_no: string;
   available_quantity: number;
+  available_loose_quantity?: number;
   sell_price: number;
   buy_price?: number;
   mrp?: number;
@@ -112,6 +113,7 @@ export interface Stock extends BaseEntity {
     name: string;
     VariantItem?: {
       variant_name: string;
+      pack_size?: string;
     };
   };
   VendorItem?: {
@@ -186,6 +188,13 @@ export interface BillItem {
   mrp: number;
   amount: number;
   tax_percentage: number;
+  // Stock data saved from selection (avoids extra API calls)
+  stockData?: {
+    available_quantity: number;
+    available_loose_quantity: number;
+    batch_no: string;
+    pack_size: number;
+  };
   // Legacy fields for compatibility
   quantity?: number;
   rate?: number;
