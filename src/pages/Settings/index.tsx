@@ -17,6 +17,7 @@ import {
   CheckCircleOutlined,
   BellOutlined,
   ShopOutlined,
+  BankOutlined,
 } from '@ant-design/icons';
 import styles from './Settings.module.css';
 import { apiSlice } from '../../services/redux/api/apiSlice';
@@ -30,6 +31,7 @@ import {
   DefaultsTab,
   NotificationsTab,
   TemplateSettingsTab,
+  BankDetailsTab,
 } from './tabs';
 
 const { Title, Text } = Typography;
@@ -220,6 +222,7 @@ const Settings: React.FC = () => {
 
           // Default Values
           default_payment_mode: settings.default_payment_mode ?? null,
+          default_document_type: settings.default_document_type ?? null,
 
           // Notification Settings
           email_notifications: settings.email_notifications ?? null,
@@ -229,9 +232,19 @@ const Settings: React.FC = () => {
           payment_reminder: settings.payment_reminder ?? null,
           daily_report_email: settings.daily_report_email ?? null,
 
-          // Template Settings
-          bill_template: settings.bill_template ?? 'classic',
-          invoice_template: settings.invoice_template ?? 'modern',
+          // Template Settings - Use API values directly
+          bill_template: settings.bill_template,
+          invoice_template: settings.invoice_template,
+
+          // Bank Details
+          bank_name: settings.bank_name ?? null,
+          account_holder_name: settings.account_holder_name ?? null,
+          account_number: settings.account_number ?? null,
+          ifsc_code: settings.ifsc_code ?? null,
+          branch_name: settings.branch_name ?? null,
+          account_type: settings.account_type ?? null,
+          upi_id: settings.upi_id ?? null,
+          swift_code: settings.swift_code ?? null,
         });
       } else {
         // No settings found - initialize with default values
@@ -257,6 +270,7 @@ const Settings: React.FC = () => {
 
           // Default Values
           default_payment_mode: null,
+          default_document_type: null,
 
           // Notification Settings
           email_notifications: null,
@@ -266,9 +280,19 @@ const Settings: React.FC = () => {
           payment_reminder: null,
           daily_report_email: null,
 
-          // Template Settings
-          bill_template: 'classic',
-          invoice_template: 'modern',
+          // Template Settings - No defaults, let backend/initial setup handle this
+          bill_template: null,
+          invoice_template: null,
+
+          // Bank Details
+          bank_name: null,
+          account_holder_name: null,
+          account_number: null,
+          ifsc_code: null,
+          branch_name: null,
+          account_type: null,
+          upi_id: null,
+          swift_code: null,
         });
       }
     } else if (selectedOrganisation === 'all' && (isSuperAdmin || isTenant)) {
@@ -335,6 +359,7 @@ const Settings: React.FC = () => {
       else if (activeTab === 'defaults') {
         newSettingsData = {
           default_payment_mode: values.default_payment_mode,
+          default_document_type: values.default_document_type,
         };
       }
       // Notifications tab - only notification settings
@@ -353,6 +378,19 @@ const Settings: React.FC = () => {
         newSettingsData = {
           bill_template: values.bill_template,
           invoice_template: values.invoice_template,
+        };
+      }
+      // Bank Details tab - only bank details
+      else if (activeTab === 'bank') {
+        newSettingsData = {
+          bank_name: values.bank_name,
+          account_holder_name: values.account_holder_name,
+          account_number: values.account_number,
+          ifsc_code: values.ifsc_code,
+          branch_name: values.branch_name,
+          account_type: values.account_type,
+          upi_id: values.upi_id,
+          swift_code: values.swift_code,
         };
       }
 
@@ -690,6 +728,22 @@ const Settings: React.FC = () => {
               ),
               children: (
                 <TemplateSettingsTab
+                  form={form}
+                  loading={loading}
+                  onSave={handleSave}
+                  onReset={handleReset}
+                />
+              ),
+            },
+            {
+              key: 'bank',
+              label: (
+                <span>
+                  <BankOutlined /> Bank Details
+                </span>
+              ),
+              children: (
+                <BankDetailsTab
                   form={form}
                   loading={loading}
                   onSave={handleSave}

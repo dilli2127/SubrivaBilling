@@ -3,6 +3,7 @@ import { useUser } from '../../../../components/antd/UserContext';
 
 interface ClassicInvoiceTemplateProps {
   billData: any;
+  settings?: any; // Settings passed as prop to avoid Redux context issues during server-side rendering
 }
 
 /**
@@ -11,8 +12,14 @@ interface ClassicInvoiceTemplateProps {
  */
 const ClassicInvoiceTemplate: React.FC<ClassicInvoiceTemplateProps> = ({
   billData,
+  settings,
 }) => {
   const userItem = useUser();
+
+  // Ensure billData exists
+  if (!billData) {
+    return <div>No data to display</div>;
+  }
 
   return (
     <div
@@ -105,18 +112,24 @@ const ClassicInvoiceTemplate: React.FC<ClassicInvoiceTemplateProps> = ({
           </tr>
         </thead>
         <tbody>
-          {billData?.items?.map((item: any, idx: number) => (
-            <tr key={idx} style={{ borderBottom: '1px solid #ddd' }}>
-              <td style={tdStyle}>{idx + 1}</td>
-              <td style={{ ...tdStyle, textAlign: 'left' }}>{item.name}</td>
-              <td style={tdStyle}>{item.hsn_code || '-'}</td>
-              <td style={tdStyle}>{item.qty}</td>
-              <td style={tdStyle}>₹{item.price}</td>
-              <td style={tdStyle}>₹{item.mrp || item.price}</td>
-              <td style={tdStyle}>{item.tax_percentage || 0}%</td>
-              <td style={tdStyle}>₹{item.amount}</td>
+          {Array.isArray(billData?.items) && billData.items.length > 0 ? (
+            billData.items.map((item: any, idx: number) => (
+              <tr key={idx} style={{ borderBottom: '1px solid #ddd' }}>
+                <td style={tdStyle}>{idx + 1}</td>
+                <td style={{ ...tdStyle, textAlign: 'left' }}>{String(item?.name || item?.product_name || 'Item')}</td>
+                <td style={tdStyle}>{item?.hsn_code || '-'}</td>
+                <td style={tdStyle}>{item?.qty || 0}</td>
+                <td style={tdStyle}>₹{item?.price || 0}</td>
+                <td style={tdStyle}>₹{item?.mrp || item?.price || 0}</td>
+                <td style={tdStyle}>{item?.tax_percentage || 0}%</td>
+                <td style={tdStyle}>₹{item?.amount || 0}</td>
+              </tr>
+            ))
+          ) : (
+            <tr>
+              <td colSpan={8} style={{ ...tdStyle, textAlign: 'center' }}>No items</td>
             </tr>
-          ))}
+          )}
         </tbody>
       </table>
 
@@ -164,14 +177,22 @@ const ClassicInvoiceTemplate: React.FC<ClassicInvoiceTemplateProps> = ({
 
       {/* Terms & Footer */}
       <div style={{ borderTop: '2px solid #333', paddingTop: 16, marginTop: 32 }}>
-        <div style={{ marginBottom: 16 }}>
-          <h4 style={{ margin: '0 0 8px 0', fontSize: 13 }}>Terms & Conditions:</h4>
-          <ul style={{ margin: 0, paddingLeft: 20, fontSize: 12, color: '#555' }}>
-            <li>Payment is due within 30 days of invoice date</li>
-            <li>Goods once sold will not be taken back or exchanged</li>
-            <li>Subject to jurisdiction</li>
-          </ul>
-        </div>
+        {/* Terms from Settings */}
+        {settings?.show_terms_on_invoice && settings?.invoice_terms && (
+          <div style={{ marginBottom: 16 }}>
+            <h4 style={{ margin: '0 0 8px 0', fontSize: 13 }}>Terms & Conditions:</h4>
+            <div style={{ fontSize: 12, color: '#555', lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>
+              {settings.invoice_terms}
+            </div>
+          </div>
+        )}
+
+        {/* Footer from Settings */}
+        {settings?.invoice_footer && (
+          <div style={{ marginBottom: 16, padding: 12, background: '#f9f9f9', border: '1px solid #ddd', fontSize: 12, textAlign: 'center' }}>
+            {settings.invoice_footer}
+          </div>
+        )}
 
         <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 32 }}>
           <div>

@@ -3,16 +3,23 @@ import { useUser } from '../../../../components/antd/UserContext';
 
 interface ClassicBillTemplateProps {
   billData: any;
+  settings?: any; // Settings passed as prop (for consistency, may be used for future enhancements)
 }
 
 /**
  * Classic Bill Template - For Quick Retail Sales / POS
  * Compact thermal receipt style design
+ * Updated: Safe null/undefined handling
  */
 const ClassicBillTemplate: React.FC<ClassicBillTemplateProps> = ({
   billData,
 }) => {
   const userItem = useUser();
+
+  // Ensure billData has valid items array
+  if (!billData) {
+    return <div>No data to display</div>;
+  }
 
   return (
     <div
@@ -60,7 +67,7 @@ const ClassicBillTemplate: React.FC<ClassicBillTemplateProps> = ({
         <div style={{ textAlign: 'right' }}>
           <div>
             NAME:{' '}
-            {(billData?.customerName || '').substring(0, 20).toUpperCase()}
+            {(billData?.customerName || '').toString().substring(0, 20).toUpperCase()}
           </div>
         </div>
       </div>
@@ -84,18 +91,27 @@ const ClassicBillTemplate: React.FC<ClassicBillTemplateProps> = ({
           </tr>
         </thead>
         <tbody>
-          {billData?.items?.map((item: any, idx: number) => (
-            <tr key={idx}>
-              <td style={tableCellStyle}>
-                {item.name.length > 15
-                  ? item.name.substring(0, 15) + '...'
-                  : item.name}
+          {Array.isArray(billData?.items) && billData.items.length > 0 ? (
+            billData.items.map((item: any, idx: number) => {
+              const itemName = String(item?.name || item?.product_name || 'Item');
+              const displayName = itemName.length > 15 ? itemName.substring(0, 15) + '...' : itemName;
+              
+              return (
+                <tr key={idx}>
+                  <td style={tableCellStyle}>{displayName}</td>
+                  <td style={tableCellStyle}>{item?.qty || 0}</td>
+                  <td style={tableCellStyle}>₹{item?.price || 0}</td>
+                  <td style={tableCellStyle}>₹{item?.amount || 0}</td>
+                </tr>
+              );
+            })
+          ) : (
+            <tr>
+              <td colSpan={4} style={{ ...tableCellStyle, textAlign: 'center' }}>
+                No items
               </td>
-              <td style={tableCellStyle}>{item.qty}</td>
-              <td style={tableCellStyle}>₹{item.price}</td>
-              <td style={tableCellStyle}>₹{item.amount}</td>
             </tr>
-          ))}
+          )}
         </tbody>
       </table>
 

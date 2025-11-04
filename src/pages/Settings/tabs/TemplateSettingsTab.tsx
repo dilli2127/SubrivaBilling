@@ -16,18 +16,7 @@ import {
 import styles from '../Settings.module.css';
 import { SettingsTabProps } from './types';
 import { billTemplates, invoiceTemplates, BillTemplateKey, InvoiceTemplateKey } from '../../RetaillBill/templates/registry';
-
-const sampleBillData = {
-  customerName: 'John Doe',
-  customerAddress: '123 Main St, City',
-  date: '2024-06-01',
-  invoice_no: 'INV-001',
-  items: [
-    { name: 'Product A', qty: 2, price: 100, amount: 200 },
-    { name: 'Product B', qty: 1, price: 150, amount: 150 },
-  ],
-  total: 350,
-};
+import { useUser } from '../../../components/antd/UserContext';
 
 const TemplateSettingsTab: React.FC<SettingsTabProps> = ({
   form,
@@ -35,12 +24,54 @@ const TemplateSettingsTab: React.FC<SettingsTabProps> = ({
   onSave,
   onReset,
 }) => {
+  const userItem = useUser();
   const [previewKey, setPreviewKey] = useState<string | null>(null);
   const [previewType, setPreviewType] = useState<'bill' | 'invoice'>('bill');
   const [modalOpen, setModalOpen] = useState(false);
 
-  const billTemplate = Form.useWatch('bill_template', form) || 'classic';
-  const invoiceTemplate = Form.useWatch('invoice_template', form) || 'classic';
+  const billTemplate = Form.useWatch('bill_template', form);
+  const invoiceTemplate = Form.useWatch('invoice_template', form);
+
+  // Generate preview data using actual organization info
+  const getPreviewData = () => ({
+    customerName: 'Sample Customer',
+    customerAddress: 'Sample Address, City',
+    customerPhone: '+91 9999999999',
+    customerEmail: 'customer@example.com',
+    date: new Date().toISOString(),
+    invoice_no: 'PREVIEW-001',
+    payment_mode: 'Cash',
+    items: [
+      { 
+        name: 'Sample Product 1', 
+        product_name: 'Sample Product 1',
+        qty: 2, 
+        price: 100, 
+        amount: 200,
+        tax_percentage: 18,
+        hsn_code: '1234',
+        mrp: 120,
+        unit: 'Pcs'
+      },
+      { 
+        name: 'Sample Product 2', 
+        product_name: 'Sample Product 2',
+        qty: 1, 
+        price: 150, 
+        amount: 150,
+        tax_percentage: 18,
+        hsn_code: '5678',
+        mrp: 180,
+        unit: 'Pcs'
+      },
+    ],
+    total: 350,
+    total_gst: 63,
+    cgst: 31.5,
+    sgst: 31.5,
+    discount: 0,
+    discount_type: 'percentage',
+  });
 
   const handlePreview = (key: string, type: 'bill' | 'invoice') => {
     setPreviewKey(key);
@@ -120,11 +151,11 @@ const TemplateSettingsTab: React.FC<SettingsTabProps> = ({
                       justifyContent: 'center',
                       transform: 'scale(0.22)',
                       transformOrigin: 'center center',
-                      pointerEvents: 'none',
-                    }}
-                  >
-                    <tpl.component billData={sampleBillData} />
-                  </div>
+                    pointerEvents: 'none',
+                  }}
+                >
+                  <tpl.component billData={getPreviewData()} />
+                </div>
                 </div>
 
                 <div
@@ -199,7 +230,7 @@ const TemplateSettingsTab: React.FC<SettingsTabProps> = ({
           📄 <strong>Bill Template:</strong> Used for quick retail sales and POS billing
         </div>
 
-        <Form.Item name="bill_template" initialValue="classic">
+        <Form.Item name="bill_template">
           {renderTemplateSelector('bill', billTemplate, 'bill_template')}
         </Form.Item>
 
@@ -209,7 +240,7 @@ const TemplateSettingsTab: React.FC<SettingsTabProps> = ({
           📋 <strong>Invoice Template:</strong> Used for formal invoices with detailed information
         </div>
 
-        <Form.Item name="invoice_template" initialValue="modern">
+        <Form.Item name="invoice_template">
           {renderTemplateSelector('invoice', invoiceTemplate, 'invoice_template')}
         </Form.Item>
 
@@ -264,7 +295,7 @@ const TemplateSettingsTab: React.FC<SettingsTabProps> = ({
               previewType === 'bill' 
                 ? billTemplates[previewKey as BillTemplateKey].component 
                 : invoiceTemplates[previewKey as InvoiceTemplateKey].component,
-              { billData: sampleBillData }
+              { billData: getPreviewData() }
             )}
           </div>
         )}

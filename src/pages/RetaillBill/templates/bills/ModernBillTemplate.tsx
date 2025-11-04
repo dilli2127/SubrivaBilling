@@ -3,16 +3,23 @@ import { useUser } from '../../../../components/antd/UserContext';
 
 interface ModernBillTemplateProps {
   billData: any;
+  settings?: any; // Settings passed as prop (for consistency, may be used for future enhancements)
 }
 
 /**
  * Modern Bill Template - For Quick Retail Sales / POS
  * Contemporary design with enhanced visuals
+ * Updated: Safe null/undefined handling
  */
 const ModernBillTemplate: React.FC<ModernBillTemplateProps> = ({
   billData,
 }) => {
   const userItem = useUser();
+
+  // Ensure billData has valid items array
+  if (!billData) {
+    return <div>No data to display</div>;
+  }
 
   return (
     <div
@@ -51,7 +58,7 @@ const ModernBillTemplate: React.FC<ModernBillTemplateProps> = ({
         </div>
         <div style={{ textAlign: 'right' }}>
           <div><strong>Customer:</strong></div>
-          <div>{(billData?.customerName || 'Walk-in Customer').substring(0, 20)}</div>
+          <div>{(billData?.customerName || 'Walk-in Customer').toString().substring(0, 20)}</div>
         </div>
       </div>
 
@@ -68,16 +75,29 @@ const ModernBillTemplate: React.FC<ModernBillTemplateProps> = ({
           </tr>
         </thead>
         <tbody>
-          {billData?.items?.map((item: any, idx: number) => (
-            <tr key={idx} style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-              <td style={{ padding: '6px 0', fontSize: 11 }}>
-                {item.name.length > 12 ? item.name.substring(0, 12) + '...' : item.name}
+          {Array.isArray(billData?.items) && billData.items.length > 0 ? (
+            billData.items.map((item: any, idx: number) => {
+              const itemName = String(item?.name || item?.product_name || 'Item');
+              const displayName = itemName.length > 12 ? itemName.substring(0, 12) + '...' : itemName;
+              
+              return (
+                <tr key={idx} style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+                  <td style={{ padding: '6px 0', fontSize: 11 }}>
+                    {displayName}
+                  </td>
+                  <td style={{ padding: '6px 0', textAlign: 'center', fontSize: 11 }}>{item?.qty || 0}</td>
+                  <td style={{ padding: '6px 0', textAlign: 'right', fontSize: 11 }}>₹{item?.price || 0}</td>
+                  <td style={{ padding: '6px 0', textAlign: 'right', fontSize: 11 }}>₹{item?.amount || 0}</td>
+                </tr>
+              );
+            })
+          ) : (
+            <tr>
+              <td colSpan={4} style={{ padding: '12px 0', textAlign: 'center', fontSize: 11 }}>
+                No items
               </td>
-              <td style={{ padding: '6px 0', textAlign: 'center', fontSize: 11 }}>{item.qty}</td>
-              <td style={{ padding: '6px 0', textAlign: 'right', fontSize: 11 }}>₹{item.price}</td>
-              <td style={{ padding: '6px 0', textAlign: 'right', fontSize: 11 }}>₹{item.amount}</td>
             </tr>
-          ))}
+          )}
         </tbody>
       </table>
 

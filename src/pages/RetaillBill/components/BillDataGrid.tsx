@@ -32,6 +32,8 @@ import BillSaveConfirmationModal from './BillSaveConfirmationModal';
 import BillListDrawer from './BillListDrawer';
 import ProductDetailsModal from './ProductDetailsModal';
 import ProductSelectionModal from './ProductSelectionModal';
+import DocumentTypeToggle from './DocumentTypeToggle';
+import { usePrintDocument } from '../../../hooks/usePrintDocument';
 import styles from './BillDataGrid.module.css';
 
 const { Title, Text } = Typography;
@@ -188,6 +190,32 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
     return getCurrentUser();
   }, []);
   const branchId = user?.branch_id;
+  const organisationId = user?.organisation_id || user?.organisationItems?._id;
+
+  // Fetch settings to get default document type
+  const { data: settingsData } = apiSlice.useGetSettingsQuery(
+    { organisation_id: organisationId, page: 1, limit: 1 },
+    { 
+      skip: !organisationId,
+      refetchOnMountOrArgChange: false
+    }
+  );
+
+  const settings = useMemo(() => {
+    const settingsResult = (settingsData as any)?.result || settingsData || {};
+    return Array.isArray(settingsResult) ? settingsResult[0] : settingsResult;
+  }, [settingsData]);
+
+  // Document type state (bill or invoice) - Initialize with settings default or 'bill'
+  const [documentType, setDocumentType] = useState<'bill' | 'invoice'>('bill');
+  const { printDocument } = usePrintDocument();
+
+  // Update documentType when settings load (only for new bills, not when editing)
+  useEffect(() => {
+    if (!billdata && settings?.default_document_type) {
+      setDocumentType(settings.default_document_type as 'bill' | 'invoice');
+    }
+  }, [settings?.default_document_type, billdata]);
 
   // Helper function to validate stock quantities
   const validateStockQuantity = (
@@ -350,6 +378,9 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
         discountType: billdata.discount_type ?? 'percentage',
         paidAmount: billdata.paid_amount ?? 0,
       });
+
+      // Load document type from saved bill data
+      setDocumentType(billdata.document_type || 'bill');
     }
   }, [billdata]);
 
@@ -1643,6 +1674,9 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
       paidAmount: 0,
     });
 
+    // Reset document type to default
+    setDocumentType('bill');
+
     // Reset all modal states
     setStockModalRowIndex(null);
     setExternalEditingCell(null);
@@ -2119,6 +2153,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
           ? billCalculations.total_amount
           : 0,
       status: 'draft', // Mark as draft
+      document_type: documentType, // Save document type (bill or invoice)
     };
 
     try {
@@ -2254,6 +2289,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
           ? billCalculations.total_amount
           : 0,
       status: 'completed', // Mark as completed
+      document_type: documentType, // Save document type (bill or invoice)
     };
 
     try {
@@ -3050,6 +3086,14 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
         </div>
       </div>
 
+      {/* Document Type Toggle */}
+      <div style={{ marginBottom: 16 }}>
+        <DocumentTypeToggle 
+          value={documentType}
+          onChange={setDocumentType}
+        />
+      </div>
+
       {/* Ultra-Fast Action Hub */}
       <div className={styles.actionHub}>
         {/* Background decoration */}
@@ -3104,11 +3148,35 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
             icon={<PrinterOutlined />}
             className={styles.printButton}
             onClick={() => {
-              // TODO: Implement print functionality
-              message.info('Print functionality coming soon!');
+              if (!billFormData.items || billFormData.items.length === 0) {
+                message.warning('Please add items before printing');
+                return;
+              }
+              
+              // Format bill data for printing
+              const selectedCustomer = customerListResult.find((c: any) => c._id === billFormData.customer_id);
+              const printData = {
+                invoice_no: billFormData.invoice_no,
+                date: billFormData.date,
+                customerName: billFormData.customer_name,
+                customerAddress: selectedCustomer?.address || '',
+                customerPhone: selectedCustomer?.mobile || '',
+                customerEmail: selectedCustomer?.email || '',
+                items: billFormData.items,
+                total: billCalculations.total_amount,
+                total_gst: billCalculations.total_gst,
+                cgst: billCalculations.total_gst / 2,
+                sgst: billCalculations.total_gst / 2,
+                discount: billSettings.discount,
+                discount_type: billSettings.discountType,
+                payment_mode: billFormData.payment_mode,
+              };
+              
+              // Print with selected document type
+              printDocument(printData, documentType);
             }}
           >
-            🖨️ PRINT (F8)
+            🖨️ PRINT {documentType === 'bill' ? 'BILL' : 'INVOICE'} (F8)
           </Button>
         </div>
 

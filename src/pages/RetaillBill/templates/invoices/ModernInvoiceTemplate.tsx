@@ -3,6 +3,7 @@ import { useUser } from '../../../../components/antd/UserContext';
 
 interface ModernInvoiceTemplateProps {
   billData: any;
+  settings?: any; // Settings passed as prop to avoid Redux context issues during server-side rendering
 }
 
 /**
@@ -11,8 +12,14 @@ interface ModernInvoiceTemplateProps {
  */
 const ModernInvoiceTemplate: React.FC<ModernInvoiceTemplateProps> = ({
   billData,
+  settings,
 }) => {
   const userItem = useUser();
+
+  // Ensure billData exists
+  if (!billData) {
+    return <div>No data to display</div>;
+  }
 
   return (
     <div
@@ -152,20 +159,26 @@ const ModernInvoiceTemplate: React.FC<ModernInvoiceTemplateProps> = ({
             </tr>
           </thead>
           <tbody>
-            {billData?.items?.map((item: any, idx: number) => (
-              <tr key={idx} style={{ 
-                background: idx % 2 === 0 ? '#fff' : '#f8f9fa',
-                transition: 'background 0.2s'
-              }}>
-                <td style={modernTdStyle}>{idx + 1}</td>
-                <td style={{ ...modernTdStyle, textAlign: 'left', fontWeight: '500' }}>{item.name}</td>
-                <td style={modernTdStyle}>{item.hsn_code || '-'}</td>
-                <td style={modernTdStyle}>{item.qty}</td>
-                <td style={modernTdStyle}>₹{item.price}</td>
-                <td style={modernTdStyle}>{item.tax_percentage || 0}%</td>
-                <td style={{ ...modernTdStyle, fontWeight: 'bold' }}>₹{item.amount}</td>
+            {Array.isArray(billData?.items) && billData.items.length > 0 ? (
+              billData.items.map((item: any, idx: number) => (
+                <tr key={idx} style={{ 
+                  background: idx % 2 === 0 ? '#fff' : '#f8f9fa',
+                  transition: 'background 0.2s'
+                }}>
+                  <td style={modernTdStyle}>{idx + 1}</td>
+                  <td style={{ ...modernTdStyle, textAlign: 'left', fontWeight: '500' }}>{String(item?.name || item?.product_name || 'Item')}</td>
+                  <td style={modernTdStyle}>{item?.hsn_code || '-'}</td>
+                  <td style={modernTdStyle}>{item?.qty || 0}</td>
+                  <td style={modernTdStyle}>₹{item?.price || 0}</td>
+                  <td style={modernTdStyle}>{item?.tax_percentage || 0}%</td>
+                  <td style={{ ...modernTdStyle, fontWeight: 'bold' }}>₹{item?.amount || 0}</td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan={7} style={{ ...modernTdStyle, textAlign: 'center' }}>No items</td>
               </tr>
-            ))}
+            )}
           </tbody>
         </table>
 
@@ -214,16 +227,17 @@ const ModernInvoiceTemplate: React.FC<ModernInvoiceTemplateProps> = ({
 
         {/* Terms & Signature */}
         <div style={{ borderTop: '2px solid #e9ecef', paddingTop: 24 }}>
-          <div style={{ marginBottom: 24 }}>
-            <h4 style={{ margin: '0 0 12px 0', fontSize: 14, fontWeight: 'bold', color: '#667eea' }}>
-              Terms & Conditions:
-            </h4>
-            <ul style={{ margin: 0, paddingLeft: 20, fontSize: 13, color: '#666', lineHeight: 1.8 }}>
-              <li>Payment is due within 30 days from the invoice date</li>
-              <li>Please include invoice number on your check</li>
-              <li>Goods once sold will not be taken back or exchanged</li>
-            </ul>
-          </div>
+          {/* Terms from Settings */}
+          {settings?.show_terms_on_invoice && settings?.invoice_terms && (
+            <div style={{ marginBottom: 24 }}>
+              <h4 style={{ margin: '0 0 12px 0', fontSize: 14, fontWeight: 'bold', color: '#667eea' }}>
+                Terms & Conditions:
+              </h4>
+              <div style={{ fontSize: 13, color: '#666', lineHeight: 1.8, whiteSpace: 'pre-wrap' }}>
+                {settings.invoice_terms}
+              </div>
+            </div>
+          )}
 
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 32 }}>
             <div>
@@ -240,7 +254,7 @@ const ModernInvoiceTemplate: React.FC<ModernInvoiceTemplateProps> = ({
         </div>
       </div>
 
-      {/* Footer */}
+      {/* Footer from Settings */}
       <div style={{ 
         background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
         color: '#fff',
@@ -248,7 +262,7 @@ const ModernInvoiceTemplate: React.FC<ModernInvoiceTemplateProps> = ({
         textAlign: 'center',
         fontSize: 12
       }}>
-        Thank you for your business!
+        {settings?.invoice_footer || 'Thank you for your business!'}
       </div>
     </div>
   );

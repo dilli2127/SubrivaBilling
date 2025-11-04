@@ -34,12 +34,24 @@ const DefaultsTab: React.FC<DefaultsTabProps> = ({
         <Form.Item
           label="Default Payment Mode"
           name="default_payment_mode"
+          extra="Pre-selected payment method for new bills"
         >
-          <Select>
+          <Select placeholder="Select default payment mode">
             <Option value="cash">💵 Cash</Option>
             <Option value="upi">📱 UPI</Option>
             <Option value="card">💳 Card</Option>
             <Option value="credit">📝 Credit</Option>
+          </Select>
+        </Form.Item>
+
+        <Form.Item
+          label="Default Document Print Type"
+          name="default_document_type"
+          extra="Default print format when creating new bills"
+        >
+          <Select placeholder="Select default document type">
+            <Option value="bill">🧾 Bill (Retail / Quick)</Option>
+            <Option value="invoice">📋 Invoice (Formal / Detailed)</Option>
           </Select>
         </Form.Item>
       </div>

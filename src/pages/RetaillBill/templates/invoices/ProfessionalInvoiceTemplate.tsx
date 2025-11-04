@@ -3,6 +3,7 @@ import { useUser } from '../../../../components/antd/UserContext';
 
 interface ProfessionalInvoiceTemplateProps {
   billData: any;
+  settings?: any; // Settings passed as prop to avoid Redux context issues during server-side rendering
 }
 
 /**
@@ -11,18 +12,24 @@ interface ProfessionalInvoiceTemplateProps {
  */
 const ProfessionalInvoiceTemplate: React.FC<ProfessionalInvoiceTemplateProps> = ({
   billData,
+  settings,
 }) => {
   const userItem = useUser();
 
-  // Calculate totals
-  const subtotal = billData?.items?.reduce((sum: number, item: any) => sum + (item.amount || 0), 0) || 0;
-  const discount = billData?.discount || 0;
+  // Ensure billData exists
+  if (!billData) {
+    return <div>No data to display</div>;
+  }
+
+  // Calculate totals (ensure all values are numbers)
+  const subtotal = billData?.items?.reduce((sum: number, item: any) => sum + Number(item.amount || 0), 0) || 0;
+  const discount = Number(billData?.discount || 0);
   const discountAmount = billData?.discount_type === 'percentage' 
     ? (subtotal * discount / 100) 
     : discount;
   const taxableAmount = subtotal - discountAmount;
-  const cgst = billData?.cgst || (billData?.total_gst || 0) / 2;
-  const sgst = billData?.sgst || (billData?.total_gst || 0) / 2;
+  const cgst = Number(billData?.cgst || (billData?.total_gst || 0) / 2);
+  const sgst = Number(billData?.sgst || (billData?.total_gst || 0) / 2);
   const totalGst = cgst + sgst;
   const grandTotal = taxableAmount + totalGst;
 
@@ -148,33 +155,41 @@ const ProfessionalInvoiceTemplate: React.FC<ProfessionalInvoiceTemplateProps> = 
           </tr>
         </thead>
         <tbody>
-          {billData?.items?.map((item: any, idx: number) => (
-            <tr key={idx}>
-              <td style={tdStyle}>{idx + 1}</td>
-              <td style={{ ...tdStyle, textAlign: 'left' }}>{item.name || item.product_name}</td>
-              <td style={tdStyle}>{item.hsn_code || item.hsn_sac || '-'}</td>
-              <td style={tdStyle}>{item.qty || item.quantity}</td>
-              <td style={tdStyle}>{item.unit || 'N.A.'}</td>
-              <td style={tdStyle}>{(item.price || 0).toFixed(2)}</td>
-              <td style={tdStyle}>{item.discount ? `${item.discount} (%)` : '0.00'}</td>
-              <td style={tdStyle}>{(item.tax_percentage || 0).toFixed(2)}</td>
-              <td style={tdStyle}>{(item.amount || 0).toFixed(2)}</td>
+          {Array.isArray(billData?.items) && billData.items.length > 0 ? (
+            <>
+              {billData.items.map((item: any, idx: number) => (
+                <tr key={idx}>
+                  <td style={tdStyle}>{idx + 1}</td>
+                  <td style={{ ...tdStyle, textAlign: 'left' }}>{String(item?.name || item?.product_name || 'Item')}</td>
+                  <td style={tdStyle}>{item?.hsn_code || item?.hsn_sac || '-'}</td>
+                  <td style={tdStyle}>{item?.qty || item?.quantity || 0}</td>
+                  <td style={tdStyle}>{item?.unit || 'N.A.'}</td>
+                  <td style={tdStyle}>{Number(item?.price || 0).toFixed(2)}</td>
+                  <td style={tdStyle}>{item?.discount ? `${item.discount} (%)` : '0.00'}</td>
+                  <td style={tdStyle}>{Number(item?.tax_percentage || 0).toFixed(2)}</td>
+                  <td style={tdStyle}>{Number(item?.amount || 0).toFixed(2)}</td>
+                </tr>
+              ))}
+              {/* Empty rows for spacing */}
+              {[...Array(Math.max(0, 3 - billData.items.length))].map((_, idx) => (
+                <tr key={`empty-${idx}`}>
+                  <td style={tdStyle}>&nbsp;</td>
+                  <td style={tdStyle}>&nbsp;</td>
+                  <td style={tdStyle}>&nbsp;</td>
+                  <td style={tdStyle}>&nbsp;</td>
+                  <td style={tdStyle}>&nbsp;</td>
+                  <td style={tdStyle}>&nbsp;</td>
+                  <td style={tdStyle}>&nbsp;</td>
+                  <td style={tdStyle}>&nbsp;</td>
+                  <td style={tdStyle}>&nbsp;</td>
+                </tr>
+              ))}
+            </>
+          ) : (
+            <tr>
+              <td colSpan={9} style={{ ...tdStyle, textAlign: 'center' }}>No items</td>
             </tr>
-          ))}
-          {/* Empty rows for spacing */}
-          {[...Array(Math.max(0, 3 - (billData?.items?.length || 0)))].map((_, idx) => (
-            <tr key={`empty-${idx}`}>
-              <td style={tdStyle}>&nbsp;</td>
-              <td style={tdStyle}>&nbsp;</td>
-              <td style={tdStyle}>&nbsp;</td>
-              <td style={tdStyle}>&nbsp;</td>
-              <td style={tdStyle}>&nbsp;</td>
-              <td style={tdStyle}>&nbsp;</td>
-              <td style={tdStyle}>&nbsp;</td>
-              <td style={tdStyle}>&nbsp;</td>
-              <td style={tdStyle}>&nbsp;</td>
-            </tr>
-          ))}
+          )}
         </tbody>
       </table>
 
@@ -222,16 +237,16 @@ const ProfessionalInvoiceTemplate: React.FC<ProfessionalInvoiceTemplateProps> = 
 
       {/* Footer Section */}
       <div style={{ display: 'flex', gap: 16, marginTop: 20 }}>
-        {/* Terms and Conditions */}
-        <div style={{ flex: 1, border: '1px solid #000', padding: 10 }}>
-          <div style={{ fontWeight: 'bold', marginBottom: 8, fontSize: 11 }}>Terms and Conditions</div>
-          <div style={{ fontSize: 9, marginBottom: 6 }}>E & O.E</div>
-          <ol style={{ margin: 0, paddingLeft: 16, fontSize: 9, lineHeight: 1.6 }}>
-            <li>Goods once sold will not be taken back.</li>
-            <li>Interest @ 18% p.a. will be charged if the payment for {userItem?.organisationItems?.org_name || 'Company Name'} is not made within the stipulated time.</li>
-            <li>Subject to '{userItem?.branchItems?.city || 'Delhi'}' Jurisdiction only.</li>
-          </ol>
-        </div>
+        {/* Terms and Conditions - Show only if enabled in settings */}
+        {settings?.show_terms_on_invoice && settings?.invoice_terms && (
+          <div style={{ flex: 1, border: '1px solid #000', padding: 10 }}>
+            <div style={{ fontWeight: 'bold', marginBottom: 8, fontSize: 11 }}>Terms and Conditions</div>
+            <div style={{ fontSize: 9, marginBottom: 6 }}>E & O.E</div>
+            <div style={{ fontSize: 9, lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>
+              {settings.invoice_terms}
+            </div>
+          </div>
+        )}
 
         {/* Payment Details and Signature */}
         <div style={{ width: 250, border: '1px solid #000', padding: 10 }}>
@@ -240,14 +255,32 @@ const ProfessionalInvoiceTemplate: React.FC<ProfessionalInvoiceTemplateProps> = 
               QR Code
             </div>
           </div>
-          <div style={{ fontSize: 9, marginBottom: 12, lineHeight: 1.6 }}>
-            <div style={{ fontWeight: 'bold', marginBottom: 4 }}>Bank Details:</div>
-            <div><strong>A/c No:</strong> {userItem?.organisationItems?.bank_account || '123456789'}</div>
-            <div><strong>Bank:</strong> {userItem?.organisationItems?.bank_name || 'ICICI Bank'}</div>
-            <div><strong>IFSC:</strong> {userItem?.organisationItems?.ifsc_code || 'ICICI1234'}</div>
-            <div><strong>Branch:</strong> {userItem?.organisationItems?.branch || userItem?.branchItems?.city || 'Noida'}</div>
-            <div><strong>Name:</strong> {userItem?.organisationItems?.org_name || 'Add Name'}</div>
-          </div>
+          
+          {/* Bank Details from Settings */}
+          {(settings?.bank_name || settings?.account_number) && (
+            <div style={{ fontSize: 9, marginBottom: 12, lineHeight: 1.6 }}>
+              <div style={{ fontWeight: 'bold', marginBottom: 4 }}>Bank Details:</div>
+              {settings?.account_holder_name && (
+                <div><strong>Name:</strong> {settings.account_holder_name}</div>
+              )}
+              {settings?.account_number && (
+                <div><strong>A/c No:</strong> {settings.account_number}</div>
+              )}
+              {settings?.bank_name && (
+                <div><strong>Bank:</strong> {settings.bank_name}</div>
+              )}
+              {settings?.ifsc_code && (
+                <div><strong>IFSC:</strong> {settings.ifsc_code}</div>
+              )}
+              {settings?.branch_name && (
+                <div><strong>Branch:</strong> {settings.branch_name}</div>
+              )}
+              {settings?.upi_id && (
+                <div><strong>UPI ID:</strong> {settings.upi_id}</div>
+              )}
+            </div>
+          )}
+          
           <div style={{ textAlign: 'center', marginTop: 16 }}>
             <div style={{ fontSize: 10 }}>For {userItem?.organisationItems?.org_name || 'Company Name'}</div>
             <div style={{ borderTop: '1px solid #000', marginTop: 24, paddingTop: 4, fontSize: 9 }}>
@@ -256,6 +289,13 @@ const ProfessionalInvoiceTemplate: React.FC<ProfessionalInvoiceTemplateProps> = 
           </div>
         </div>
       </div>
+
+      {/* Invoice Footer from Settings */}
+      {settings?.invoice_footer && (
+        <div style={{ marginTop: 16, padding: 12, background: '#f5f5f5', border: '1px solid #ddd', textAlign: 'center', fontSize: 10 }}>
+          {settings.invoice_footer}
+        </div>
+      )}
 
       {/* Footer Branding */}
       <div style={{ textAlign: 'center', marginTop: 16, fontSize: 9, color: '#666' }}>

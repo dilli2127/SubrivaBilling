@@ -25,11 +25,12 @@ export const useTemplateSettings = () => {
     return Array.isArray(settingsResult) ? settingsResult[0] : settingsResult;
   }, [settingsData]);
 
-  // Get selected template keys or use defaults
+  // Get selected template keys from API (no defaults - use actual API values)
+  // getBillTemplate/getInvoiceTemplate have built-in fallbacks to 'classic' if key is invalid
   const billTemplateKey = (settings?.bill_template || 'classic') as BillTemplateKey;
   const invoiceTemplateKey = (settings?.invoice_template || 'classic') as InvoiceTemplateKey;
 
-  // Get template components
+  // Get template components (these functions handle invalid keys gracefully)
   const BillTemplateComponent = getBillTemplate(billTemplateKey);
   const InvoiceTemplateComponent = getInvoiceTemplate(invoiceTemplateKey);
 

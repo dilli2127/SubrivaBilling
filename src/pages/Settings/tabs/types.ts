@@ -37,6 +37,7 @@ export interface SettingsFormData {
   
   // Default Values
   default_payment_mode: string;
+  default_document_type: string;
   
   // Notification Settings
   email_notifications: boolean;
@@ -45,4 +46,14 @@ export interface SettingsFormData {
   low_stock_threshold: number;
   payment_reminder: boolean;
   daily_report_email: boolean;
+  
+  // Bank Details
+  bank_name: string;
+  account_holder_name: string;
+  account_number: string;
+  ifsc_code: string;
+  branch_name: string;
+  account_type: string;
+  upi_id: string;
+  swift_code: string;
 }
