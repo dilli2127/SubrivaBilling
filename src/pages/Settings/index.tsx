@@ -88,16 +88,23 @@ const Settings: React.FC = () => {
   
   // For SuperAdmin: Filter organisations by selected tenant
   // For Tenant: Load all organisations (they will be filtered by tenant_id on backend)
+  // For OrganisationUser/BranchUser: Load their specific organisation
   const organisationsQueryParams = useMemo(() => {
     if (isSuperAdmin && selectedTenant && selectedTenant !== 'all') {
       return { tenant_id: selectedTenant };
     }
+    if (isOrganisationUser || isBranchUser) {
+      const organisationId = userItem?.organisation_id || userItem?.organisationItems?._id;
+      if (organisationId) {
+        return { organisation_id: organisationId };
+      }
+    }
     return {};
-  }, [isSuperAdmin, selectedTenant]);
+  }, [isSuperAdmin, selectedTenant, isOrganisationUser, isBranchUser, userItem]);
   
   const { data: organisationsData } = apiSlice.useGetOrganisationsQuery(
     organisationsQueryParams,
-    { skip: !isTenant && !isSuperAdmin }
+    { skip: !isTenant && !isSuperAdmin && !isOrganisationUser && !isBranchUser }
   );
   
   // For Settings by ID, we'll use RTK Query with skip option
@@ -114,7 +121,7 @@ const Settings: React.FC = () => {
 
   // Fetch settings using GetAll with organisation_id filter
   const { data: settingsData, refetch: refetchSettings } = apiSlice.useGetSettingsQuery(
-    { organisation_id: selectedSettingsId, page: 1, limit: 1 },
+    { organisation_id: selectedSettingsId, page: 1, limit: 10 },
     { 
       skip: shouldSkipSettings || !selectedSettingsId,
       refetchOnMountOrArgChange: true

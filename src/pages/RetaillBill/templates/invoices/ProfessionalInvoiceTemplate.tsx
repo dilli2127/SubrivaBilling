@@ -241,7 +241,6 @@ const ProfessionalInvoiceTemplate: React.FC<ProfessionalInvoiceTemplateProps> = 
         {settings?.show_terms_on_invoice && settings?.invoice_terms && (
           <div style={{ flex: 1, border: '1px solid #000', padding: 10 }}>
             <div style={{ fontWeight: 'bold', marginBottom: 8, fontSize: 11 }}>Terms and Conditions</div>
-            <div style={{ fontSize: 9, marginBottom: 6 }}>E & O.E</div>
             <div style={{ fontSize: 9, lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>
               {settings.invoice_terms}
             </div>
