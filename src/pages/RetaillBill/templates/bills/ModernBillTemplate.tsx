@@ -38,13 +38,16 @@ const ModernBillTemplate: React.FC<ModernBillTemplateProps> = ({
       {/* Header */}
       <div style={{ textAlign: 'center', marginBottom: 16 }}>
         <h2 style={{ margin: 0, fontSize: 20, fontWeight: 'bold' }}>
-          {userItem?.organisationItems?.org_name || 'Your Store'}
+          {billData?.organisationItems?.org_name || userItem?.organisationItems?.org_name || ''}
         </h2>
         <p style={{ margin: '4px 0', fontSize: 12, opacity: 0.9 }}>
-          {userItem?.branchItems?.address1 || ''}
+          {billData?.branchItems?.address1 || billData?.organisationItems?.address1 || userItem?.branchItems?.address1 || userItem?.organisationItems?.address1 || ''}
+        </p>
+        <p style={{ margin: '4px 0', fontSize: 11, opacity: 0.9 }}>
+          Mobile: {billData?.organisationItems?.phone || userItem?.organisationItems?.phone || ''} | Email: {billData?.organisationItems?.email || userItem?.organisationItems?.email || ''}
         </p>
         <p style={{ margin: '4px 0', fontSize: 11, opacity: 0.8 }}>
-          GSTIN: {userItem?.organisationItems?.gst_number || '-'}
+          GSTIN: {billData?.organisationItems?.gst_number || userItem?.organisationItems?.gst_number || ''} | PAN: {billData?.organisationItems?.pan_number || userItem?.organisationItems?.pan_number || ''}
         </p>
       </div>
 

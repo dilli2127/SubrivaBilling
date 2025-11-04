@@ -75,29 +75,27 @@ const ProfessionalInvoiceTemplate: React.FC<ProfessionalInvoiceTemplateProps> = 
       {/* Company Details */}
       <div style={{ textAlign: 'center', marginBottom: 16, borderBottom: '1px solid #000', paddingBottom: 12 }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 8 }}>
-          <div style={{ width: 60, height: 60, border: '1px solid #ccc', marginRight: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9 }}>
-            {userItem?.organisationItems?.logo_url ? (
-              <img src={userItem.organisationItems.logo_url} alt="Logo" style={{ maxWidth: '100%', maxHeight: '100%' }} />
-            ) : (
-              'Add Logo'
-            )}
-          </div>
+          {((billData?.organisationItems?.logo_url || userItem?.organisationItems?.logo_url) && (
+            <div style={{ width: 60, height: 60, border: '1px solid #ccc', marginRight: 16, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <img src={billData?.organisationItems?.logo_url || userItem?.organisationItems?.logo_url} alt="Logo" style={{ maxWidth: '100%', maxHeight: '100%' }} />
+            </div>
+          ))}
           <div>
             <h2 style={{ margin: 0, fontSize: 16, fontWeight: 'bold' }}>
-              {userItem?.organisationItems?.org_name || 'Add Company Name'}
+              {billData?.organisationItems?.org_name || userItem?.organisationItems?.org_name || ''}
             </h2>
             <p style={{ margin: '4px 0', fontSize: 10 }}>
-              {userItem?.branchItems?.address1 || 'Add Address'}
+              {billData?.branchItems?.address1 || billData?.organisationItems?.address1 || userItem?.branchItems?.address1 || userItem?.organisationItems?.address1 || ''}
             </p>
           </div>
         </div>
         <div style={{ fontSize: 10 }}>
-          <strong>Mobile:</strong> {userItem?.organisationItems?.phone || '+91 9999999999'} | 
-          <strong> Email:</strong> {userItem?.organisationItems?.email || 'company@gmail.com'}
+          <strong>Mobile:</strong> {billData?.organisationItems?.phone || userItem?.organisationItems?.phone || ''} | 
+          <strong> Email:</strong> {billData?.organisationItems?.email || userItem?.organisationItems?.email || ''}
         </div>
         <div style={{ fontSize: 10, marginTop: 4 }}>
-          <strong>GSTIN -</strong> {userItem?.organisationItems?.gst_number || '29AAAAA1234F000'} | 
-          <strong> PAN -</strong> {userItem?.organisationItems?.pan_number || '29AAAAA1234F'}
+          <strong>GSTIN -</strong> {billData?.organisationItems?.gst_number || userItem?.organisationItems?.gst_number || ''} | 
+          <strong> PAN -</strong> {billData?.organisationItems?.pan_number || userItem?.organisationItems?.pan_number || ''}
         </div>
       </div>
 
@@ -107,11 +105,17 @@ const ProfessionalInvoiceTemplate: React.FC<ProfessionalInvoiceTemplateProps> = 
         <div style={{ flex: 1, border: '1px solid #000', padding: 10 }}>
           <div style={{ fontWeight: 'bold', marginBottom: 8, fontSize: 12 }}>Billing Details</div>
           <div style={{ fontSize: 10, lineHeight: 1.6 }}>
-            <div><strong>Name:</strong> {billData?.customerName || 'Customer Name'}</div>
-            <div><strong>GSTIN:</strong> {billData?.customer_gstin || 'N/A'}</div>
-            <div><strong>Mobile:</strong> {billData?.customerPhone || '+91'}</div>
-            <div><strong>Email:</strong> {billData?.customerEmail || ''}</div>
-            <div><strong>Address:</strong> {billData?.customerAddress || 'Add Address'}</div>
+            <div><strong>Name:</strong> {billData?.customerName || ''}</div>
+            {billData?.customer_gstin && <div><strong>GSTIN:</strong> {billData.customer_gstin}</div>}
+            {billData?.customer_pan && <div><strong>PAN:</strong> {billData.customer_pan}</div>}
+            {billData?.customerPhone && <div><strong>Mobile:</strong> {billData.customerPhone}</div>}
+            {billData?.customerEmail && <div><strong>Email:</strong> {billData.customerEmail}</div>}
+            {billData?.customerAddress && <div><strong>Address:</strong> {billData.customerAddress}</div>}
+            {(billData?.customerCity || billData?.customerState || billData?.customerPincode) && (
+              <div>
+                {[billData?.customerCity, billData?.customerState, billData?.customerPincode].filter(Boolean).join(', ')}
+              </div>
+            )}
           </div>
         </div>
 

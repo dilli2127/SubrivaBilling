@@ -37,13 +37,16 @@ const ClassicBillTemplate: React.FC<ClassicBillTemplateProps> = ({
       {/* Header */}
       <div style={{ textAlign: 'center', marginBottom: '8px' }}>
         <h3 style={{ margin: '4px 0', fontWeight: 'bold', fontSize: '16px' }}>
-          {userItem?.organisationItems?.org_name || ''}
+          {billData?.organisationItems?.org_name || userItem?.organisationItems?.org_name || ''}
         </h3>
         <div style={{ fontSize: '11px', marginBottom: '4px' }}>
-          {userItem?.branchItems?.address1 || ''}
+          {billData?.branchItems?.address1 || billData?.organisationItems?.address1 || userItem?.branchItems?.address1 || userItem?.organisationItems?.address1 || ''}
+        </div>
+        <div style={{ fontSize: '10px', marginBottom: '4px' }}>
+          Mobile: {billData?.organisationItems?.phone || userItem?.organisationItems?.phone || ''} | Email: {billData?.organisationItems?.email || userItem?.organisationItems?.email || ''}
         </div>
         <div style={{ fontSize: '11px' }}>
-          GSTIN: {userItem?.organisationItems?.gst_number || '-'}
+          GSTIN: {billData?.organisationItems?.gst_number || userItem?.organisationItems?.gst_number || ''} | PAN: {billData?.organisationItems?.pan_number || userItem?.organisationItems?.pan_number || ''}
         </div>
       </div>
 

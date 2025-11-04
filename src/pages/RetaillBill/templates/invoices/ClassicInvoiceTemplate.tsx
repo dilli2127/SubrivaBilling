@@ -39,19 +39,23 @@ const ClassicInvoiceTemplate: React.FC<ClassicInvoiceTemplateProps> = ({
           INVOICE
         </h1>
         <h2 style={{ margin: '8px 0', fontSize: 24 }}>
-          {userItem?.organisationItems?.org_name || 'Company Name'}
+          {billData?.organisationItems?.org_name || userItem?.organisationItems?.org_name || ''}
         </h2>
         <p style={{ margin: '4px 0', fontSize: 14 }}>
-          {userItem?.branchItems?.address1 || 'Company Address'}
+          {billData?.branchItems?.address1 || billData?.organisationItems?.address1 || userItem?.branchItems?.address1 || userItem?.organisationItems?.address1 || ''}
         </p>
         <p style={{ margin: '4px 0', fontSize: 13 }}>
-          {userItem?.branchItems?.city && userItem?.branchItems?.state 
-            ? `${userItem.branchItems.city}, ${userItem.branchItems.state} - ${userItem.branchItems.pincode || ''}`
+          {(billData?.branchItems?.city || userItem?.branchItems?.city) && (billData?.branchItems?.state || userItem?.branchItems?.state)
+            ? `${billData?.branchItems?.city || userItem?.branchItems?.city}, ${billData?.branchItems?.state || userItem?.branchItems?.state}${(billData?.branchItems?.pincode || userItem?.branchItems?.pincode) ? ' - ' + (billData?.branchItems?.pincode || userItem?.branchItems?.pincode) : ''}`
             : ''}
         </p>
         <p style={{ margin: '4px 0', fontSize: 13 }}>
-          <strong>GSTIN:</strong> {userItem?.organisationItems?.gst_number || '-'} | 
-          <strong> Phone:</strong> {userItem?.organisationItems?.phone || '-'}
+          <strong>Mobile:</strong> {billData?.organisationItems?.phone || userItem?.organisationItems?.phone || ''} | 
+          <strong> Email:</strong> {billData?.organisationItems?.email || userItem?.organisationItems?.email || ''}
+        </p>
+        <p style={{ margin: '4px 0', fontSize: 13 }}>
+          <strong>GSTIN:</strong> {billData?.organisationItems?.gst_number || userItem?.organisationItems?.gst_number || ''} | 
+          <strong> PAN:</strong> {billData?.organisationItems?.pan_number || userItem?.organisationItems?.pan_number || ''}
         </p>
       </div>
 
@@ -62,14 +66,38 @@ const ClassicInvoiceTemplate: React.FC<ClassicInvoiceTemplateProps> = ({
             Bill To:
           </h3>
           <p style={{ margin: '4px 0', fontSize: 14 }}>
-            <strong>{billData?.customerName || 'Customer Name'}</strong>
+            <strong>{billData?.customerName || ''}</strong>
           </p>
-          <p style={{ margin: '4px 0', fontSize: 13, color: '#555' }}>
-            {billData?.customerAddress || 'Customer Address'}
-          </p>
-          <p style={{ margin: '4px 0', fontSize: 13 }}>
-            {billData?.customerPhone && `Phone: ${billData.customerPhone}`}
-          </p>
+          {billData?.customerAddress && (
+            <p style={{ margin: '4px 0', fontSize: 13, color: '#555' }}>
+              {billData.customerAddress}
+            </p>
+          )}
+          {(billData?.customerCity || billData?.customerState || billData?.customerPincode) && (
+            <p style={{ margin: '4px 0', fontSize: 13, color: '#555' }}>
+              {[billData?.customerCity, billData?.customerState, billData?.customerPincode].filter(Boolean).join(', ')}
+            </p>
+          )}
+          {billData?.customer_gstin && (
+            <p style={{ margin: '4px 0', fontSize: 13 }}>
+              GSTIN: {billData.customer_gstin}
+            </p>
+          )}
+          {billData?.customer_pan && (
+            <p style={{ margin: '4px 0', fontSize: 13 }}>
+              PAN: {billData.customer_pan}
+            </p>
+          )}
+          {billData?.customerPhone && (
+            <p style={{ margin: '4px 0', fontSize: 13 }}>
+              Phone: {billData.customerPhone}
+            </p>
+          )}
+          {billData?.customerEmail && (
+            <p style={{ margin: '4px 0', fontSize: 13 }}>
+              Email: {billData.customerEmail}
+            </p>
+          )}
         </div>
         <div style={{ width: '48%', textAlign: 'right' }}>
           <table style={{ width: '100%', fontSize: 13, borderCollapse: 'collapse' }}>

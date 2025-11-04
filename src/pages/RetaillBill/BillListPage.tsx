@@ -23,8 +23,10 @@ import {
   CalendarOutlined,
   FileTextOutlined,
   MailOutlined,
+  DownloadOutlined,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
+import ReactDOMServer from 'react-dom/server';
 import GlobalDrawer from "../../components/antd/GlobalDrawer";
 import BillDataGrid from "./components/BillDataGrid";
 import BillViewModal from "./components/BillViewModal";
@@ -33,12 +35,44 @@ import { useHandleApiResponse } from "../../components/common/useHandleApiRespon
 import { useGenericCrudRTK } from "../../hooks/useGenericCrudRTK";
 import EmailSendModal from "../../components/common/EmailSendModal";
 import { useTemplateSettings } from '../../hooks/useTemplateSettings';
+import { usePrintDocument } from '../../hooks/usePrintDocument';
+import { getCurrentUser } from "../../helpers/auth";
+import { apiSlice } from "../../services/redux/api/apiSlice";
 
 const { Title } = Typography;
 
 const BillListPage = () => {
-  // Get template settings
-  const { InvoiceTemplateComponent } = useTemplateSettings();
+  // Get template settings and print hook
+  const { BillTemplateComponent, InvoiceTemplateComponent, settings } = useTemplateSettings();
+  const { printDocument } = usePrintDocument();
+  
+  // Get current user data for organization details
+  const userItem = useMemo(() => {
+    const user = getCurrentUser();
+    console.log('Current User Data:', user);
+    console.log('Organisation Items:', user?.organisationItems);
+    console.log('Branch Items:', user?.branchItems);
+    return user;
+  }, []);
+
+  // Fetch organization data from API
+  const organisationId = userItem?.organisation_id || userItem?.organisationItems?._id;
+  const { data: organisationsData } = apiSlice.useGetOrganisationsQuery(
+    { organisation_id: organisationId },
+    { skip: !organisationId }
+  );
+
+  // Get organization details from API response
+  const organisationDetails = useMemo(() => {
+    const result = (organisationsData as any)?.result;
+    if (Array.isArray(result)) {
+      return result[0];
+    }
+    return result || userItem?.organisationItems || {};
+  }, [organisationsData, userItem]);
+
+  console.log('Organisation Details from API:', organisationDetails);
+  
   const [selectedBill, setSelectedBill] = useState<any>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [billViewVisible, setBillViewVisible] = useState(false);
@@ -48,8 +82,6 @@ const BillListPage = () => {
     current: 1,
     pageSize: 10,
   });
-  const [printModalVisible, setPrintModalVisible] = useState(false);
-  const [printBill, setPrintBill] = useState<any>(null);
   const [emailModalVisible, setEmailModalVisible] = useState(false);
   const [selectedBillForEmail, setSelectedBillForEmail] = useState<any>(null);
   const [activeTab, setActiveTab] = useState<string>("completed");
@@ -108,11 +140,27 @@ const BillListPage = () => {
     setEmailModalVisible(true);
   };
 
-  const handlePrint = (record: any) => {
-    // Map the sales record to the template's expected format
-    const billData = {
-      customerName: record.customerDetails?.full_name || '',
-      customerAddress: record.customerDetails?.address || '',
+  // Format bill data for templates
+  const formatBillData = (record: any) => {
+    // Bills use customerDetails, Invoices use vendorDetails
+    const isInvoice = record.document_type === 'invoice';
+    const partyDetails = isInvoice ? record.vendorDetails : record.customerDetails;
+    
+    // If no party details found, log warning and use fallback
+    if (!partyDetails) {
+      console.warn(`⚠️ Data mismatch: ${isInvoice ? 'Invoice' : 'Bill'} missing ${isInvoice ? 'vendorDetails' : 'customerDetails'}`, record);
+    }
+    
+    return {
+      customerName: partyDetails?.vendor_name || partyDetails?.full_name || partyDetails?.name || '',
+      customerAddress: partyDetails?.address || partyDetails?.address1 || '',
+      customerCity: partyDetails?.city || '',
+      customerState: partyDetails?.state || '',
+      customerPincode: partyDetails?.pincode || '',
+      customerPhone: partyDetails?.phone || partyDetails?.mobile || '',
+      customerEmail: partyDetails?.email || '',
+      customer_gstin: partyDetails?.gst_no || partyDetails?.gst_number || partyDetails?.gstin || '',
+      customer_pan: partyDetails?.pan_no || partyDetails?.pan_number || '',
       date: record.date,
       invoice_no: record.invoice_no,
       items: (record.Items || []).map((item: any) => ({
@@ -122,17 +170,96 @@ const BillListPage = () => {
         ].filter(Boolean).join(' '),
         qty: item.qty,
         price: item.price,
-        mrp:item.mrp,
+        mrp: item.mrp,
         amount: item.amount,
       })),
       total: record.total_amount || 0,
       total_gst: record.total_gst || 0,
       discount: record.discount || 0,
       discount_type: record.discount_type || '',
-      gst_number: record.gst_number || record.organisationItems?.gst_number || '',
+      gst_number: record.gst_number || record.organisationItems?.gst_number || organisationDetails?.gst_number || '',
+      // Add organization details - use record data or fallback to API fetched organization data
+      organisationItems: record.organisationItems || organisationDetails || userItem?.organisationItems || {},
+      branchItems: record.branchItems || userItem?.branchItems || {},
     };
-    setPrintBill(billData);
-    setPrintModalVisible(true);
+  };
+
+  const handlePrint = (record: any) => {
+    console.log('Print - Full Record:', record);
+    console.log('Print - Document Type:', record.document_type);
+    console.log('Print - Customer Details:', record.customerDetails);
+    console.log('Print - Vendor Details:', record.vendorDetails);
+    
+    const billData = formatBillData(record);
+    console.log('Print - Formatted Bill Data:', billData);
+    console.log('Print - Organization Data:', billData.organisationItems);
+    console.log('Print - Branch Data:', billData.branchItems);
+    
+    // Use document_type to determine template (default to 'bill' if not specified)
+    const documentType = (record.document_type || 'bill') as 'bill' | 'invoice';
+    printDocument(billData, documentType);
+  };
+
+  const handleDownload = (record: any) => {
+    const billData = formatBillData(record);
+    // Use document_type to determine template (default to 'bill' if not specified)
+    const documentType = (record.document_type || 'bill') as 'bill' | 'invoice';
+    
+    // Select appropriate template based on document type
+    const TemplateComponent = documentType === 'bill' 
+      ? BillTemplateComponent 
+      : InvoiceTemplateComponent;
+
+    // Create element and render to HTML
+    const element = React.createElement(TemplateComponent, { billData, settings });
+    const templateHtml = ReactDOMServer.renderToString(element);
+
+    // Create full HTML document
+    const fullHtml = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="UTF-8">
+          <title>${documentType === 'bill' ? 'Bill' : 'Invoice'} - ${billData.invoice_no}</title>
+          <style>
+            * {
+              margin: 0;
+              padding: 0;
+              box-sizing: border-box;
+            }
+            body {
+              margin: 0;
+              padding: 20px;
+              font-family: Arial, sans-serif;
+            }
+            @media print {
+              @page {
+                margin: 0;
+                size: auto;
+              }
+              body {
+                margin: 0;
+                padding: 0;
+              }
+            }
+          </style>
+        </head>
+        <body>
+          ${templateHtml}
+        </body>
+      </html>
+    `;
+
+    // Create blob and download
+    const blob = new Blob([fullHtml], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${documentType}_${billData.invoice_no}_${dayjs().format('YYYYMMDD')}.html`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
   const handleSearch = (value: string) => {
@@ -168,6 +295,20 @@ const BillListPage = () => {
           {text}
         </Tag>
       ),
+    },
+    {
+      title: "Type",
+      dataIndex: "document_type",
+      key: "document_type",
+      width: 100,
+      render: (type: string) => {
+        const isBill = !type || type === 'bill';
+        return (
+          <Tag color={isBill ? 'cyan' : 'purple'}>
+            {isBill ? 'BILL' : 'INVOICE'}
+          </Tag>
+        );
+      },
     },
     {
       title: "Date",
@@ -248,6 +389,13 @@ const BillListPage = () => {
                     type="link"
                     icon={<PrinterOutlined />}
                     onClick={() => handlePrint(record)}
+                  />
+                </Tooltip>
+                <Tooltip title="Download">
+                  <Button
+                    type="link"
+                    icon={<DownloadOutlined />}
+                    onClick={() => handleDownload(record)}
                   />
                 </Tooltip>
               </>
@@ -361,27 +509,6 @@ const BillListPage = () => {
           billData={selectedBill}
         />
       )}
-
-      {/* Print Modal for Bill Template */}
-      <Modal
-        open={printModalVisible}
-        onCancel={() => setPrintModalVisible(false)}
-        footer={[
-          <Button key="print" type="primary" onClick={() => window.print()}>
-            Print
-          </Button>,
-          <Button key="close" onClick={() => setPrintModalVisible(false)}>
-            Close
-          </Button>,
-        ]}
-        width={800}
-        title={printBill ? `Print Invoice #${printBill.invoice_no}` : 'Print Invoice'}
-        centered
-      >
-        {printBill && (
-          <InvoiceTemplateComponent billData={printBill} />
-        )}
-      </Modal>
 
       {/* Email Send Modal */}
       <EmailSendModal

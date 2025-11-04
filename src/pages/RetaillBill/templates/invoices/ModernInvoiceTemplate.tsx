@@ -44,24 +44,31 @@ const ModernInvoiceTemplate: React.FC<ModernInvoiceTemplateProps> = ({
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div>
             <h1 style={{ margin: 0, fontSize: 28, fontWeight: 'bold', letterSpacing: 1 }}>
-              {userItem?.organisationItems?.org_name || 'Your Company'}
+              {billData?.organisationItems?.org_name || userItem?.organisationItems?.org_name || ''}
             </h1>
             <p style={{ margin: '8px 0 4px 0', fontSize: 14, opacity: 0.9 }}>
-              {userItem?.branchItems?.branch_name || ''}
+              {billData?.branchItems?.branch_name || userItem?.branchItems?.branch_name || ''}
             </p>
             <p style={{ margin: '4px 0', fontSize: 13, opacity: 0.85 }}>
-              {userItem?.branchItems?.address1 || ''}
+              {billData?.branchItems?.address1 || billData?.organisationItems?.address1 || userItem?.branchItems?.address1 || userItem?.organisationItems?.address1 || ''}
             </p>
             <p style={{ margin: '4px 0', fontSize: 13, opacity: 0.85 }}>
-              {userItem?.branchItems?.city && userItem?.branchItems?.state 
-                ? `${userItem.branchItems.city}, ${userItem.branchItems.state}`
+              {(billData?.branchItems?.city || userItem?.branchItems?.city) && (billData?.branchItems?.state || userItem?.branchItems?.state)
+                ? `${billData?.branchItems?.city || userItem?.branchItems?.city}, ${billData?.branchItems?.state || userItem?.branchItems?.state}`
                 : ''}
+            </p>
+            <p style={{ margin: '4px 0', fontSize: 13, opacity: 0.85 }}>
+              <strong>Mobile:</strong> {billData?.organisationItems?.phone || userItem?.organisationItems?.phone || ''} | 
+              <strong> Email:</strong> {billData?.organisationItems?.email || userItem?.organisationItems?.email || ''}
             </p>
           </div>
           <div style={{ textAlign: 'right' }}>
             <h2 style={{ margin: 0, fontSize: 36, fontWeight: 'bold' }}>INVOICE</h2>
             <p style={{ margin: '8px 0 0 0', fontSize: 13, opacity: 0.9 }}>
-              GSTIN: {userItem?.organisationItems?.gst_number || '-'}
+              GSTIN: {billData?.organisationItems?.gst_number || userItem?.organisationItems?.gst_number || ''}
+            </p>
+            <p style={{ margin: '4px 0 0 0', fontSize: 13, opacity: 0.9 }}>
+              PAN: {billData?.organisationItems?.pan_number || userItem?.organisationItems?.pan_number || ''}
             </p>
           </div>
         </div>
@@ -83,14 +90,36 @@ const ModernInvoiceTemplate: React.FC<ModernInvoiceTemplateProps> = ({
                 Bill To
               </h3>
               <p style={{ margin: '4px 0', fontSize: 16, fontWeight: 'bold', color: '#333' }}>
-                {billData?.customerName || 'Customer Name'}
+                {billData?.customerName || ''}
               </p>
-              <p style={{ margin: '8px 0 4px 0', fontSize: 14, color: '#666' }}>
-                {billData?.customerAddress || 'Customer Address'}
-              </p>
+              {billData?.customerAddress && (
+                <p style={{ margin: '8px 0 4px 0', fontSize: 14, color: '#666' }}>
+                  {billData.customerAddress}
+                </p>
+              )}
+              {(billData?.customerCity || billData?.customerState || billData?.customerPincode) && (
+                <p style={{ margin: '4px 0', fontSize: 13, color: '#666' }}>
+                  {[billData?.customerCity, billData?.customerState, billData?.customerPincode].filter(Boolean).join(', ')}
+                </p>
+              )}
+              {billData?.customer_gstin && (
+                <p style={{ margin: '4px 0', fontSize: 13, color: '#666' }}>
+                  GSTIN: {billData.customer_gstin}
+                </p>
+              )}
+              {billData?.customer_pan && (
+                <p style={{ margin: '4px 0', fontSize: 13, color: '#666' }}>
+                  PAN: {billData.customer_pan}
+                </p>
+              )}
               {billData?.customerPhone && (
                 <p style={{ margin: '4px 0', fontSize: 13, color: '#666' }}>
                   Phone: {billData.customerPhone}
+                </p>
+              )}
+              {billData?.customerEmail && (
+                <p style={{ margin: '4px 0', fontSize: 13, color: '#666' }}>
+                  Email: {billData.customerEmail}
                 </p>
               )}
             </div>
