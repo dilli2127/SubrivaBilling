@@ -229,52 +229,12 @@ const BillListPage = () => {
     const element = React.createElement(TemplateComponent, { billData, settings: enhancedSettings });
     const templateHtml = ReactDOMServer.renderToString(element);
 
-    // Create full HTML document
-    const fullHtml = `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <meta charset="UTF-8">
-          <title>${documentType === 'bill' ? 'Bill' : 'Invoice'} - ${billData.invoice_no}</title>
-          <style>
-            * {
-              margin: 0;
-              padding: 0;
-              box-sizing: border-box;
-            }
-            body {
-              margin: 0;
-              padding: 20px;
-              font-family: Arial, sans-serif;
-            }
-            @media print {
-              @page {
-                margin: 0;
-                size: auto;
-              }
-              body {
-                margin: 0;
-                padding: 0;
-              }
-            }
-          </style>
-        </head>
-        <body>
-          ${templateHtml}
-        </body>
-      </html>
-    `;
-
-    // Create blob and download
-    const blob = new Blob([fullHtml], { type: 'text/html' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `${documentType}_${billData.invoice_no}_${dayjs().format('YYYYMMDD')}.html`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    // Import PDF helper
+    const { downloadAsPDF } = await import('../../helpers/pdfHelper');
+    const fileName = `${documentType}_${billData.invoice_no}_${dayjs().format('YYYYMMDD')}`;
+    
+    // Download as PDF
+    await downloadAsPDF(templateHtml, fileName, documentType);
   };
 
   const handleSearch = (value: string) => {
@@ -419,7 +379,7 @@ const BillListPage = () => {
                     onClick={() => handlePrint(record)}
                   />
                 </Tooltip>
-                <Tooltip title="Download">
+                <Tooltip title="Download PDF">
                   <Button
                     type="link"
                     icon={<DownloadOutlined />}

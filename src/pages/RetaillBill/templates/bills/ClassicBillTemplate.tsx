@@ -141,6 +141,39 @@ const ClassicBillTemplate: React.FC<ClassicBillTemplateProps> = ({
 
       <div style={{ borderTop: '1px dashed #000', margin: '8px 0' }}></div>
 
+      {/* Settlement Details */}
+      <div style={{ fontSize: '10px', textAlign: 'center', marginBottom: '8px' }}>
+        {(() => {
+          const isPaid = billData?.is_paid || false;
+          const isPartiallyPaid = billData?.is_partially_paid || false;
+          const paidAmount = Number(billData?.paid_amount || 0);
+          const pendingAmount = grandTotal - paidAmount;
+          
+          if (!isPaid && !isPartiallyPaid) {
+            // Unpaid bill - show full balance
+            return <div><strong>Balance:</strong> ₹{grandTotal.toFixed(2)}</div>;
+          } else if (isPartiallyPaid && !isPaid) {
+            // Partially paid - show paid and pending amounts
+            return (
+              <div>
+                <div><strong>Paid:</strong> ₹{paidAmount.toFixed(2)}</div>
+                <div><strong>Pending:</strong> ₹{pendingAmount.toFixed(2)}</div>
+              </div>
+            );
+          } else {
+            // Fully paid - show settlement details
+            return (
+              <div>
+                <div><strong>Paid by {billData?.payment_mode || 'Cash'}:</strong> ₹{paidAmount.toFixed(2)}</div>
+                <div><strong>Balance:</strong> ₹0.00</div>
+              </div>
+            );
+          }
+        })()}
+      </div>
+
+      <div style={{ borderTop: '1px dashed #000', margin: '8px 0' }}></div>
+
       {/* Payment QR Code */}
       {settings?.enable_payment_qr && settings?.qr_on_bill && (
         <div style={{ textAlign: 'center', margin: '12px 0' }}>
