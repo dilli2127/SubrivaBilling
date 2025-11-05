@@ -73,7 +73,9 @@ export const useSuperAdminFilters = (): SuperAdminFiltersReturn => {
     return undefined;
   }, [isSuperAdmin, selectedTenant]);
 
-  // Load organisations only when tenant is chosen for SuperAdmin (lazy load)
+  // Load organisations based on role:
+  // - SuperAdmin: Load after tenant selection (lazy load)
+  // - Tenant: Load immediately on mount (backend will scope by token)
   const { data: organisationsData, isLoading: organisationsLoading, refetch: refetchOrganisations } =
     apiSlice.useGetOrganisationsQuery(
       effectiveTenantId ? { tenant_id: effectiveTenantId } : {},
@@ -82,10 +84,16 @@ export const useSuperAdminFilters = (): SuperAdminFiltersReturn => {
       }
     );
 
-  // Load branches only when organisation is chosen (lazy load)
+  // Load branches based on role:
+  // - SuperAdmin/Tenant: Load after organisation selection (lazy load)
+  // - Organisation user: Load immediately on mount
   const effectiveOrganisationId = useMemo(() => {
+    if (isOrganisationUser) {
+      // For organisation users, get their org_id from user data
+      return userItem?.organisation_id || userItem?.organisationItems?._id;
+    }
     return selectedOrganisation !== 'all' ? selectedOrganisation : undefined;
-  }, [selectedOrganisation]);
+  }, [selectedOrganisation, isOrganisationUser, userItem]);
 
   const { data: branchesData, isLoading: branchesLoading, refetch: refetchBranches } =
     apiSlice.useGetBranchesQuery(
