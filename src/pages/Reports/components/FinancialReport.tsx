@@ -12,20 +12,22 @@ import {
   BarChart,
   Bar,
 } from 'recharts';
-import { apiSlice } from '../../../services/redux/api/apiSlice';
+import { useReportDataContext } from '../context/ReportDataContext';
 
 const { Text } = Typography;
 
 const FinancialReport: React.FC = () => {
-  // Use RTK Query for data fetching
-  const { data: profitLossResponse } = apiSlice.useGetProfitLossReportQuery({});
-  const { data: expenseResponse } = apiSlice.useGetExpenseReportQuery({});
-  const { data: gstResponse } = apiSlice.useGetGSTReportQuery({});
+  // Get data from context instead of making API calls
+  const {
+    profitLossData: profitLossDataContext,
+    expenseData: expenseDataContext,
+    gstData: gstDataContext,
+  } = useReportDataContext();
   
-  // Extract data from responses
-  const profitLoss = (profitLossResponse as any)?.result || profitLossResponse || {};
-  const expenseData = (expenseResponse as any)?.result || expenseResponse || {};
-  const gstData = (gstResponse as any)?.result || gstResponse || {};
+  // Extract data from context
+  const profitLoss = profitLossDataContext?.result || {};
+  const expenseData = expenseDataContext?.result || {};
+  const gstData = gstDataContext?.result || {};
   
   const expenses = expenseData?.expenses || [];
   const expenseSummary = expenseData?.summary || {};

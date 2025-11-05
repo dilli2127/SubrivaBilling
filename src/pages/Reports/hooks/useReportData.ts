@@ -34,69 +34,165 @@ export const useReportData = (props: UseReportDataProps) => {
   const [reportCache, setReportCache] = useState<{[key: string]: any}>({});
   const loadingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   
-  // Prepare API filters
+  // Prepare API filters - memoized to prevent unnecessary refetches
   const apiFilters = useMemo(() => ({
     start_date: dateRange?.[0]?.format('YYYY-MM-DD'),
     end_date: dateRange?.[1]?.format('YYYY-MM-DD'),
   }), [dateRange]);
   
+  // Memoize additional filter objects to prevent recreation on every render
+  const topProductsFilters = useMemo(() => ({
+    ...apiFilters,
+    limit: 10,
+  }), [apiFilters]);
+  
+  const topCustomersFilters = useMemo(() => ({
+    ...apiFilters,
+    limit: 10,
+  }), [apiFilters]);
+  
+  const stockExpiryFilters = useMemo(() => ({
+    days_threshold: 30,
+  }), []);
+  
+  const emptyFilters = useMemo(() => ({}), []);
+  
   // Use RTK Query for all report types
   const reportType = getReportTypeFromTab(activeTab);
   
-  // Conditionally fetch reports based on active tab
-  const shouldFetchSales = reportType === 'sales' || reportType === 'comprehensive';
-  const shouldFetchCustomer = reportType === 'customer' || reportType === 'comprehensive';
-  const shouldFetchInventory = reportType === 'inventory' || reportType === 'comprehensive';
-  const shouldFetchFinancial = reportType === 'financial' || reportType === 'comprehensive';
-  const shouldFetchPayment = reportType === 'payment' || reportType === 'comprehensive';
+  // Conditionally fetch reports based on ONLY the active tab (no comprehensive fetching all)
+  const shouldFetchSales = reportType === 'sales';
+  const shouldFetchProductSales = reportType === 'sales';
+  const shouldFetchTopProducts = reportType === 'sales';
+  
+  const shouldFetchCustomer = reportType === 'customer';
+  const shouldFetchTopCustomers = reportType === 'customer';
+  
+  const shouldFetchInventory = reportType === 'inventory';
+  const shouldFetchStockExpiry = reportType === 'inventory';
+  
+  const shouldFetchFinancial = reportType === 'financial';
+  const shouldFetchExpense = reportType === 'financial';
+  const shouldFetchGST = reportType === 'financial';
+  
+  const shouldFetchPayment = reportType === 'payment';
+  const shouldFetchOutstanding = reportType === 'payment';
+  
+  // For Comprehensive tab, fetch minimal summary data only
+  const shouldFetchComprehensive = reportType === 'comprehensive';
+  const shouldFetchSalesForComp = shouldFetchComprehensive;
+  const shouldFetchProfitLossForComp = shouldFetchComprehensive;
+  const shouldFetchCustomerForComp = shouldFetchComprehensive;
+  const shouldFetchStockForComp = shouldFetchComprehensive;
+  const shouldFetchPaymentForComp = shouldFetchComprehensive;
   
   const { data: salesReportResponse, refetch: refetchSales } = apiSlice.useGetSalesReportQuery(
     apiFilters,
-    { skip: !shouldFetchSales }
+    { 
+      skip: !shouldFetchSales && !shouldFetchSalesForComp,
+      refetchOnMountOrArgChange: false,
+      refetchOnFocus: false,
+      refetchOnReconnect: false,
+    }
   );
   const { data: productSalesResponse, refetch: refetchProductSales } = apiSlice.useGetProductSalesReportQuery(
     apiFilters,
-    { skip: !shouldFetchSales }
+    { 
+      skip: !shouldFetchProductSales && !shouldFetchSalesForComp,
+      refetchOnMountOrArgChange: false,
+      refetchOnFocus: false,
+      refetchOnReconnect: false,
+    }
   );
   const { data: customerSalesResponse, refetch: refetchCustomerSales } = apiSlice.useGetCustomerSalesReportQuery(
     apiFilters,
-    { skip: !shouldFetchCustomer }
+    { 
+      skip: !shouldFetchCustomer && !shouldFetchCustomerForComp,
+      refetchOnMountOrArgChange: false,
+      refetchOnFocus: false,
+      refetchOnReconnect: false,
+    }
   );
   const { data: stockReportResponse, refetch: refetchStock } = apiSlice.useGetStockReportQuery(
-    {},
-    { skip: !shouldFetchInventory }
+    emptyFilters,
+    { 
+      skip: !shouldFetchInventory && !shouldFetchStockForComp,
+      refetchOnMountOrArgChange: false,
+      refetchOnFocus: false,
+      refetchOnReconnect: false,
+    }
   );
   const { data: profitLossResponse, refetch: refetchProfitLoss } = apiSlice.useGetProfitLossReportQuery(
     apiFilters,
-    { skip: !shouldFetchFinancial }
+    { 
+      skip: !shouldFetchFinancial && !shouldFetchProfitLossForComp,
+      refetchOnMountOrArgChange: false,
+      refetchOnFocus: false,
+      refetchOnReconnect: false,
+    }
   );
   const { data: outstandingPaymentsResponse, refetch: refetchOutstanding } = apiSlice.useGetOutstandingPaymentsReportQuery(
-    {},
-    { skip: !shouldFetchPayment }
+    emptyFilters,
+    { 
+      skip: !shouldFetchOutstanding,
+      refetchOnMountOrArgChange: false,
+      refetchOnFocus: false,
+      refetchOnReconnect: false,
+    }
   );
   const { data: paymentCollectionResponse, refetch: refetchPaymentCollection } = apiSlice.useGetPaymentCollectionReportQuery(
     apiFilters,
-    { skip: !shouldFetchPayment }
+    { 
+      skip: !shouldFetchPayment && !shouldFetchPaymentForComp,
+      refetchOnMountOrArgChange: false,
+      refetchOnFocus: false,
+      refetchOnReconnect: false,
+    }
   );
   const { data: expenseResponse, refetch: refetchExpense } = apiSlice.useGetExpenseReportQuery(
     apiFilters,
-    { skip: !shouldFetchFinancial }
+    { 
+      skip: !shouldFetchExpense,
+      refetchOnMountOrArgChange: false,
+      refetchOnFocus: false,
+      refetchOnReconnect: false,
+    }
   );
   const { data: gstResponse, refetch: refetchGST } = apiSlice.useGetGSTReportQuery(
     apiFilters,
-    { skip: !shouldFetchFinancial }
+    { 
+      skip: !shouldFetchGST,
+      refetchOnMountOrArgChange: false,
+      refetchOnFocus: false,
+      refetchOnReconnect: false,
+    }
   );
   const { data: topProductsResponse, refetch: refetchTopProducts } = apiSlice.useGetTopProductsReportQuery(
-    { ...apiFilters, limit: 10 },
-    { skip: !shouldFetchSales }
+    topProductsFilters,
+    { 
+      skip: !shouldFetchTopProducts,
+      refetchOnMountOrArgChange: false,
+      refetchOnFocus: false,
+      refetchOnReconnect: false,
+    }
   );
   const { data: topCustomersResponse, refetch: refetchTopCustomers } = apiSlice.useGetTopCustomersReportQuery(
-    { ...apiFilters, limit: 10 },
-    { skip: !shouldFetchCustomer }
+    topCustomersFilters,
+    { 
+      skip: !shouldFetchTopCustomers,
+      refetchOnMountOrArgChange: false,
+      refetchOnFocus: false,
+      refetchOnReconnect: false,
+    }
   );
   const { data: stockExpiryResponse, refetch: refetchStockExpiry } = apiSlice.useGetStockExpiryReportQuery(
-    { days_threshold: 30 },
-    { skip: !shouldFetchInventory }
+    stockExpiryFilters,
+    { 
+      skip: !shouldFetchStockExpiry,
+      refetchOnMountOrArgChange: false,
+      refetchOnFocus: false,
+      refetchOnReconnect: false,
+    }
   );
   
   // Extract result from responses

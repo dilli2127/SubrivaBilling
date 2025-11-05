@@ -7,20 +7,22 @@ import {
   Tooltip as RechartsTooltip,
   ResponsiveContainer,
 } from 'recharts';
-import { apiSlice } from '../../../services/redux/api/apiSlice';
+import { useReportDataContext } from '../context/ReportDataContext';
 import dayjs from 'dayjs';
 
 const { Text } = Typography;
 const COLORS = ['#1890ff', '#52c41a', '#722ed1', '#fa8c16', '#13c2c2', '#eb2f96'];
 
 const PaymentReport: React.FC = () => {
-  // Use RTK Query for data fetching
-  const { data: paymentCollectionResponse } = apiSlice.useGetPaymentCollectionReportQuery({});
-  const { data: outstandingPaymentsResponse } = apiSlice.useGetOutstandingPaymentsReportQuery({});
+  // Get data from context instead of making API calls
+  const {
+    paymentCollectionData: paymentCollectionDataContext,
+    outstandingPaymentsData: outstandingPaymentsDataContext,
+  } = useReportDataContext();
   
-  // Extract data from responses
-  const paymentCollectionData = (paymentCollectionResponse as any)?.result || paymentCollectionResponse || {};
-  const outstandingPaymentsData = (outstandingPaymentsResponse as any)?.result || outstandingPaymentsResponse || {};
+  // Extract data from context
+  const paymentCollectionData = paymentCollectionDataContext?.result || {};
+  const outstandingPaymentsData = outstandingPaymentsDataContext?.result || {};
   
   const collectionSummary = paymentCollectionData?.summary || {};
   const paymentModeBreakdown = collectionSummary.payment_mode_breakdown || [];

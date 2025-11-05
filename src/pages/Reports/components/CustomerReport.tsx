@@ -19,16 +19,18 @@ import {
   CartesianGrid,
   Legend,
 } from 'recharts';
-import { apiSlice } from '../../../services/redux/api/apiSlice';
+import { useReportDataContext } from '../context/ReportDataContext';
 
 const CustomerReport: React.FC = () => {
-  // Use RTK Query for data fetching
-  const { data: customerSalesResponse } = apiSlice.useGetCustomerSalesReportQuery({});
-  const { data: topCustomersResponse } = apiSlice.useGetTopCustomersReportQuery({ limit: 10 });
+  // Get data from context instead of making API calls
+  const {
+    customerSalesData: customerSalesDataContext,
+    topCustomersData: topCustomersDataContext,
+  } = useReportDataContext();
   
-  // Extract data from responses
-  const customerSalesData = (customerSalesResponse as any)?.result || customerSalesResponse || {};
-  const topCustomersData = (topCustomersResponse as any)?.result || topCustomersResponse || {};
+  // Extract data from context
+  const customerSalesData = customerSalesDataContext?.result || {};
+  const topCustomersData = topCustomersDataContext?.result || {};
   
   const customers = customerSalesData?.customers || [];
   const topCustomers = topCustomersData?.top_customers || [];

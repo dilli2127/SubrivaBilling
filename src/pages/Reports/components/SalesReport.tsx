@@ -15,18 +15,20 @@ import {
   LineChart,
   Line,
 } from 'recharts';
-import { apiSlice } from '../../../services/redux/api/apiSlice';
+import { useReportDataContext } from '../context/ReportDataContext';
 
 const SalesReport: React.FC = () => {
-  // Use RTK Query for data fetching
-  const { data: salesReportResponse } = apiSlice.useGetSalesReportQuery({});
-  const { data: productSalesResponse } = apiSlice.useGetProductSalesReportQuery({});
-  const { data: topProductsResponse } = apiSlice.useGetTopProductsReportQuery({ limit: 10 });
+  // Get data from context instead of making API calls
+  const {
+    salesReportData: salesReportDataContext,
+    productSalesData: productSalesDataContext,
+    topProductsData: topProductsDataContext,
+  } = useReportDataContext();
   
-  // Extract data from responses
-  const salesReportData = (salesReportResponse as any)?.result || salesReportResponse || {};
-  const productSalesData = (productSalesResponse as any)?.result || productSalesResponse || {};
-  const topProductsData = (topProductsResponse as any)?.result || topProductsResponse || {};
+  // Extract data from context
+  const salesReportData = salesReportDataContext?.result || {};
+  const productSalesData = productSalesDataContext?.result || {};
+  const topProductsData = topProductsDataContext?.result || {};
   
   const salesSummary = salesReportData?.summary || {};
   const productSales = productSalesData?.products || [];
