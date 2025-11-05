@@ -32,7 +32,13 @@ const ProfessionalInvoiceTemplate: React.FC<ProfessionalInvoiceTemplateProps> = 
   const cgst = Number(billData?.cgst || (billData?.total_gst || 0) / 2);
   const sgst = Number(billData?.sgst || (billData?.total_gst || 0) / 2);
   const totalGst = cgst + sgst;
-  const grandTotal = taxableAmount + totalGst;
+  
+  // Check if GST is inclusive or exclusive
+  const isGstInclusive = billData?.is_gst_included ?? true;
+  
+  // If GST is inclusive, the taxableAmount already contains GST, so don't add it again
+  // If GST is exclusive, add GST on top
+  const grandTotal = isGstInclusive ? taxableAmount : taxableAmount + totalGst;
 
   // Convert amount to words
   const numberToWords = (num: number): string => {
@@ -216,14 +222,14 @@ const ProfessionalInvoiceTemplate: React.FC<ProfessionalInvoiceTemplateProps> = 
         )}
         <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 4 }}>
           <div style={{ width: 200, display: 'flex', justifyContent: 'space-between', padding: '4px 8px', borderBottom: '1px solid #ccc' }}>
-            <span><strong>CGST:</strong></span>
-            <span>₹ {cgst.toFixed(2)}</span>
+            <span><strong>{isGstInclusive ? 'CGST (Incl):' : 'CGST:'}</strong></span>
+            <span>{isGstInclusive ? '' : '₹ '}{cgst.toFixed(2)}</span>
           </div>
         </div>
         <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 4 }}>
           <div style={{ width: 200, display: 'flex', justifyContent: 'space-between', padding: '4px 8px', borderBottom: '1px solid #ccc' }}>
-            <span><strong>SGST:</strong></span>
-            <span>₹ {sgst.toFixed(2)}</span>
+            <span><strong>{isGstInclusive ? 'SGST (Incl):' : 'SGST:'}</strong></span>
+            <span>{isGstInclusive ? '' : '₹ '}{sgst.toFixed(2)}</span>
           </div>
         </div>
         <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 8 }}>
