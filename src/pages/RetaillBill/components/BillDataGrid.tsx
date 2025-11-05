@@ -446,6 +446,10 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
         }}
         onCancel={modals.closeSaveConfirmation}
         savedBillData={actions.savedBillData}
+        onOpenProductModal={() => {
+          // Open product selection modal for the first row (index 0)
+          modals.openProductSelectionModal(0);
+        }}
       />
 
       <ProductDetailsModal

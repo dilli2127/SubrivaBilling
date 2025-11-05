@@ -87,22 +87,9 @@ const BillListPage = () => {
     pageNumber: pagination.current,
     pageLimit: pagination.pageSize,
     searchString: searchText,
+    status: activeTab === "drafts" ? "draft" : "completed",
   });
   const SalesRecordList = SalesRecordData || { result: [], pagination: null };
-
-  // Filter bills by status
-  const filteredBills = useMemo(() => {
-    if (!SalesRecordList?.result) return [];
-    
-    if (activeTab === "drafts") {
-      return SalesRecordList.result.filter((bill: any) => bill.status === "draft");
-    } else {
-      // Show completed bills and bills without status (backward compatibility)
-      return SalesRecordList.result.filter((bill: any) => 
-        !bill.status || bill.status === "completed"
-      );
-    }
-  }, [SalesRecordList?.result, activeTab]);
   const { delete: deleteSale, ...deleteResult } = salesRecordRTK.useDelete();
 
   useHandleApiResponse({
@@ -296,6 +283,11 @@ const BillListPage = () => {
     // RTK Query will automatically refetch with new params
   };
 
+  const handleTabChange = (key: string) => {
+    setActiveTab(key);
+    setPagination({ current: 1, pageSize: pagination.pageSize }); // Reset to page 1 when switching tabs
+  };
+
   const columns = [
     {
       title: "Status",
@@ -485,13 +477,13 @@ const BillListPage = () => {
 
       <Tabs
         activeKey={activeTab}
-        onChange={setActiveTab}
+        onChange={handleTabChange}
         items={[
           {
             key: "completed",
             label: (
               <span>
-                ✅ Completed Bills ({SalesRecordList?.result?.filter((b: any) => !b.status || b.status === "completed").length || 0})
+                ✅ Completed Bills ({activeTab === "completed" ? SalesRecordList?.result?.length || 0 : "-"})
               </span>
             ),
           },
@@ -499,7 +491,7 @@ const BillListPage = () => {
             key: "drafts",
             label: (
               <span>
-                📝 Drafts ({SalesRecordList?.result?.filter((b: any) => b.status === "draft").length || 0})
+                📝 Drafts ({activeTab === "drafts" ? SalesRecordList?.result?.length || 0 : "-"})
               </span>
             ),
           },
@@ -508,12 +500,12 @@ const BillListPage = () => {
       />
 
       <GlobalTable
-        data={filteredBills}
+        data={SalesRecordList?.result || []}
         columns={columns}
         loading={loading}
         bordered
         rowKey="_id"
-        totalCount={filteredBills.length}
+        totalCount={SalesRecordList?.pagination?.totalCount || SalesRecordList?.result?.length || 0}
         pageLimit={pagination.pageSize}
         onPaginationChange={handlePaginationChange}
       />
