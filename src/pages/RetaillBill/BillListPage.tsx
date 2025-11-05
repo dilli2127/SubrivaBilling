@@ -499,7 +499,7 @@ const BillListPage = () => {
         title={selectedBill ? "Edit Sale" : "Create New Sale"}
         onClose={() => setIsDrawerOpen(false)}
         open={isDrawerOpen}
-        width={1200}
+        width="100%"
       >
         <BillDataGrid
           billdata={selectedBill}

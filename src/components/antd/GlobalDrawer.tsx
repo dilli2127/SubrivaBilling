@@ -6,7 +6,7 @@ interface GlobalDrawerProps {
   open: boolean;
   onClose: () => void;
   children: React.ReactNode;
-  width?: number;
+  width?: number | string;
 }
 
 const GlobalDrawer: React.FC<GlobalDrawerProps> = ({
