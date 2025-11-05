@@ -77,8 +77,11 @@ const vendorConfig = {
     {
       label: 'Phone',
       name: 'phone',
-      rules: [{ required: true, message: 'Please enter phone number!' }],
-      component: <Input placeholder="Enter phone number" />,
+      rules: [
+        { required: true, message: 'Please enter phone number!' },
+        { pattern: /^[0-9]{10}$/, message: 'Phone number must be exactly 10 digits!' }
+      ],
+      component: <Input placeholder="Enter phone number" maxLength={10} />,
     },
     {
       label: 'Email',
