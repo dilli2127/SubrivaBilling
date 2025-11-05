@@ -128,14 +128,30 @@ const ModernBillTemplate: React.FC<ModernBillTemplateProps> = ({
       {/* Payment QR Code */}
       {settings?.enable_payment_qr && settings?.qr_on_bill && (
         <div style={{ textAlign: 'center', margin: '12px 0' }}>
-          <PaymentQRCode
-            billData={billData}
-            settings={settings}
-            size={Math.min(settings?.qr_size || 150, 180)} // Limit size for thermal bills
-            position="footer"
-            showUpiId={settings?.show_upi_id_text}
-            style={{ position: 'relative', border: '2px solid rgba(255,255,255,0.6)', padding: 8, background: 'rgba(0,0,0,0.3)', color: '#fff' }}
-          />
+          {settings?.qrCodeDataUrl ? (
+            // Render pre-generated QR code (for print/download)
+            <div style={{ padding: 8, border: '2px solid rgba(255,255,255,0.6)', background: 'rgba(0,0,0,0.3)', display: 'inline-block' }}>
+              <div style={{ fontSize: 10, fontWeight: 'bold', marginBottom: 4, textAlign: 'center', color: '#fff' }}>Scan & Pay</div>
+              <img 
+                src={settings.qrCodeDataUrl} 
+                alt="Payment QR Code"
+                style={{ display: 'block', width: Math.min(settings?.qr_size || 150, 180), height: Math.min(settings?.qr_size || 150, 180) }}
+              />
+              {settings?.show_upi_id_text && settings?.upi_id && (
+                <div style={{ fontSize: 8, marginTop: 4, textAlign: 'center', color: '#fff' }}>UPI: {settings.upi_id}</div>
+              )}
+            </div>
+          ) : (
+            // Use dynamic component for live view
+            <PaymentQRCode
+              billData={billData}
+              settings={settings}
+              size={Math.min(settings?.qr_size || 150, 180)} // Limit size for thermal bills
+              position="footer"
+              showUpiId={settings?.show_upi_id_text}
+              style={{ position: 'relative', border: '2px solid rgba(255,255,255,0.6)', padding: 8, background: 'rgba(0,0,0,0.3)', color: '#fff' }}
+            />
+          )}
         </div>
       )}
 

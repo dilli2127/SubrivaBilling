@@ -284,14 +284,30 @@ const ModernInvoiceTemplate: React.FC<ModernInvoiceTemplateProps> = ({
               {/* Payment QR Code */}
               {settings?.enable_payment_qr && settings?.qr_on_invoice && (
                 <div style={{ marginTop: 16 }}>
-                  <PaymentQRCode
-                    billData={billData}
-                    settings={settings}
-                    size={settings?.qr_size || 150}
-                    position="footer"
-                    showUpiId={settings?.show_upi_id_text}
-                    style={{ position: 'relative', border: '2px solid #667eea', padding: 8 }}
-                  />
+                  {settings?.qrCodeDataUrl ? (
+                    // Render pre-generated QR code (for print/download)
+                    <div style={{ padding: 8, border: '2px solid #667eea', display: 'inline-block' }}>
+                      <div style={{ fontSize: 11, fontWeight: 'bold', marginBottom: 6, textAlign: 'center' }}>Scan & Pay</div>
+                      <img 
+                        src={settings.qrCodeDataUrl} 
+                        alt="Payment QR Code"
+                        style={{ display: 'block', width: settings?.qr_size || 150, height: settings?.qr_size || 150 }}
+                      />
+                      {settings?.show_upi_id_text && settings?.upi_id && (
+                        <div style={{ fontSize: 9, marginTop: 6, textAlign: 'center' }}>UPI: {settings.upi_id}</div>
+                      )}
+                    </div>
+                  ) : (
+                    // Use dynamic component for live view
+                    <PaymentQRCode
+                      billData={billData}
+                      settings={settings}
+                      size={settings?.qr_size || 150}
+                      position="footer"
+                      showUpiId={settings?.show_upi_id_text}
+                      style={{ position: 'relative', border: '2px solid #667eea', padding: 8 }}
+                    />
+                  )}
                 </div>
               )}
             </div>

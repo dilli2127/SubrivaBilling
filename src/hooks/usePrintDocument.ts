@@ -9,13 +9,29 @@ import { useTemplateSettings } from './useTemplateSettings';
 export const usePrintDocument = () => {
   const { BillTemplateComponent, InvoiceTemplateComponent, settings } = useTemplateSettings();
 
-  const printDocument = useCallback((
+  const printDocument = useCallback(async (
     billData: any,
     documentType: 'bill' | 'invoice',
     enhancedSettings?: any  // Accept pre-enhanced settings with QR code
   ) => {
-    // Use enhanced settings if provided, otherwise use default settings
-    const finalSettings = enhancedSettings || settings;
+    // Generate QR code BEFORE rendering if enabled and not already provided
+    let finalSettings = enhancedSettings || settings;
+    
+    if (!enhancedSettings?.qrCodeDataUrl && settings?.enable_payment_qr && settings?.upi_id) {
+      try {
+        const { generateUPIQRCode, formatBillToUPIParams } = await import('../helpers/upiPayment');
+        const upiParams = formatBillToUPIParams(billData, settings);
+        if (upiParams) {
+          const qrCodeDataUrl = await generateUPIQRCode(upiParams, { width: settings?.qr_size || 150 });
+          finalSettings = {
+            ...settings,
+            qrCodeDataUrl, // Pass pre-generated QR code
+          };
+        }
+      } catch (error) {
+        console.error('Error pre-generating QR code for print:', error);
+      }
+    }
     
     // Select appropriate template based on document type
     const TemplateComponent = documentType === 'bill' 
@@ -79,13 +95,29 @@ export const usePrintDocument = () => {
     printWindow.document.close();
   }, [BillTemplateComponent, InvoiceTemplateComponent, settings]);
 
-  const previewDocument = useCallback((
+  const previewDocument = useCallback(async (
     billData: any,
     documentType: 'bill' | 'invoice',
     enhancedSettings?: any  // Accept pre-enhanced settings with QR code
   ) => {
-    // Use enhanced settings if provided, otherwise use default settings
-    const finalSettings = enhancedSettings || settings;
+    // Generate QR code BEFORE rendering if enabled and not already provided
+    let finalSettings = enhancedSettings || settings;
+    
+    if (!enhancedSettings?.qrCodeDataUrl && settings?.enable_payment_qr && settings?.upi_id) {
+      try {
+        const { generateUPIQRCode, formatBillToUPIParams } = await import('../helpers/upiPayment');
+        const upiParams = formatBillToUPIParams(billData, settings);
+        if (upiParams) {
+          const qrCodeDataUrl = await generateUPIQRCode(upiParams, { width: settings?.qr_size || 150 });
+          finalSettings = {
+            ...settings,
+            qrCodeDataUrl, // Pass pre-generated QR code
+          };
+        }
+      } catch (error) {
+        console.error('Error pre-generating QR code for preview:', error);
+      }
+    }
     
     // Same as print but without auto-print
     const TemplateComponent = documentType === 'bill' 
