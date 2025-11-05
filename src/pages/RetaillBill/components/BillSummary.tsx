@@ -1,0 +1,181 @@
+import React from 'react';
+import { Typography, InputNumber, Switch } from 'antd';
+import styles from './BillDataGrid.module.css';
+
+const { Text } = Typography;
+
+interface BillSummaryProps {
+  billCalculations: {
+    sub_total: number;
+    value_of_goods: number;
+    total_gst: number;
+    cgst: number;
+    sgst: number;
+    total_amount: number;
+    discountValue: number;
+  };
+  billSettings: {
+    discount: number;
+    discountType: 'percentage' | 'amount';
+    isPaid: boolean;
+    isPartiallyPaid: boolean;
+    paidAmount: number;
+  };
+  onDiscountChange: (value: number) => void;
+  onDiscountTypeChange: (checked: boolean) => void;
+  onPaidAmountChange: (value: number) => void;
+}
+
+const BillSummary: React.FC<BillSummaryProps> = ({
+  billCalculations,
+  billSettings,
+  onDiscountChange,
+  onDiscountTypeChange,
+  onPaidAmountChange,
+}) => {
+  return (
+    <div className={styles.billSummary}>
+      {/* Decorative half circles for summary */}
+      <div className={styles.summaryCircle1} />
+      <div className={styles.summaryCircle2} />
+      
+      {/* Header */}
+      <div className={styles.summaryHeader}>
+        <Text className={styles.summaryTitle}>💰 BILL SUMMARY</Text>
+      </div>
+
+      {/* Summary Table */}
+      <div className={styles.summaryTable}>
+        <div className={styles.summaryRow}>
+          <Text className={styles.summaryLabel}>Sub Total:</Text>
+          <Text className={styles.summaryValue}>
+            ₹{billCalculations.sub_total.toFixed(2)}
+          </Text>
+        </div>
+
+        <div className={styles.summaryRow}>
+          <Text className={styles.summaryLabel}>Value of Goods:</Text>
+          <Text className={styles.summaryValue}>
+            ₹{billCalculations.value_of_goods.toFixed(2)}
+          </Text>
+        </div>
+
+        <div className={styles.summaryRow}>
+          <Text className={styles.summaryLabel}>Total GST:</Text>
+          <Text className={styles.summaryValue}>
+            ₹{billCalculations.total_gst.toFixed(2)}
+          </Text>
+        </div>
+
+        <div className={styles.summaryRow}>
+          <Text className={styles.summaryLabel}>CGST:</Text>
+          <Text className={styles.summaryValue}>
+            ₹{billCalculations.cgst.toFixed(2)}
+          </Text>
+        </div>
+
+        <div className={styles.summaryRow}>
+          <Text className={styles.summaryLabel}>SGST:</Text>
+          <Text className={styles.summaryValue}>
+            ₹{billCalculations.sgst.toFixed(2)}
+          </Text>
+        </div>
+
+        {billSettings.discount > 0 && (
+          <div className={styles.summaryRow}>
+            <Text className={styles.summaryLabel}>DISCOUNT:</Text>
+            <Text className={styles.discountValue}>
+              -₹
+              {billSettings.discountType === 'percentage'
+                ? (
+                    ((billCalculations.sub_total + billCalculations.total_gst) *
+                      (typeof billSettings.discount === 'number' ? billSettings.discount : 0)) /
+                    100
+                  ).toFixed(2)
+                : (typeof billSettings.discount === 'number'
+                    ? billSettings.discount
+                    : 0
+                  ).toFixed(2)}
+            </Text>
+          </div>
+        )}
+
+        <div className={styles.totalAmountRow}>
+          <Text className={styles.totalAmountLabel}>NET/EXC/REPL:</Text>
+          <Text className={styles.totalAmountValue}>
+            ₹{billCalculations.total_amount.toFixed(2)}
+          </Text>
+        </div>
+
+        {billSettings.isPartiallyPaid && (
+          <div className={styles.partialPaymentInfo}>
+            <div className={styles.partialPaymentRow}>
+              <Text className={styles.partialPaymentLabel}>Paid Amount:</Text>
+              <Text className={styles.partialPaymentValue}>
+                ₹
+                {(typeof billSettings.paidAmount === 'number'
+                  ? billSettings.paidAmount
+                  : 0
+                ).toFixed(2)}
+              </Text>
+            </div>
+            <div className={styles.partialPaymentRow}>
+              <Text className={styles.partialPaymentLabel}>Balance:</Text>
+              <Text className={styles.partialPaymentValue}>
+                ₹
+                {(
+                  billCalculations.total_amount -
+                  (typeof billSettings.paidAmount === 'number' ? billSettings.paidAmount : 0)
+                ).toFixed(2)}
+              </Text>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Discount & Payment Controls */}
+      <div className={styles.controlsContainer}>
+        {/* Discount Controls */}
+        <div className={styles.discountControl}>
+          <Text className={styles.discountControlLabel}>💸 DISCOUNT</Text>
+          <div className={styles.discountControlInputs}>
+            <InputNumber
+              min={0}
+              value={billSettings.discount}
+              onChange={value => onDiscountChange(value || 0)}
+              style={{ width: 70 }}
+              size="small"
+            />
+            <Switch
+              checkedChildren="%"
+              unCheckedChildren="₹"
+              checked={billSettings.discountType === 'percentage'}
+              onChange={onDiscountTypeChange}
+              size="small"
+            />
+          </div>
+        </div>
+
+        {/* Partial Payment Controls */}
+        {billSettings.isPartiallyPaid && (
+          <div className={styles.partialPaymentControl}>
+            <Text className={styles.partialPaymentControlLabel}>💰 PARTIAL PAY</Text>
+            <InputNumber
+              min={0}
+              max={billCalculations.total_amount}
+              value={billSettings.paidAmount}
+              onChange={value => onPaidAmountChange(value || 0)}
+              style={{ width: 90 }}
+              size="small"
+              formatter={value => `₹${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+              parser={value => Number(value!.replace(/₹\s?|(,*)/g, ''))}
+            />
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default BillSummary;
+

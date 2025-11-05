@@ -1,0 +1,184 @@
+import { useState, useCallback } from 'react';
+import dayjs from 'dayjs';
+import { BillFormData, BillItem } from '../../../types/entities';
+
+interface BillSettings {
+  isPaid: boolean;
+  isPartiallyPaid: boolean;
+  isRetail: boolean;
+  isGstIncluded: boolean;
+  discount: number;
+  discountType: 'percentage' | 'amount';
+  paidAmount: number;
+}
+
+/**
+ * Hook to manage bill form state and settings
+ */
+export const useBillForm = () => {
+  const [billFormData, setBillFormData] = useState<BillFormData>({
+    invoice_no: '',
+    date: dayjs().format('YYYY-MM-DD'),
+    customer_id: '',
+    customer_name: '',
+    billed_by_id: '',
+    billed_by_name: '',
+    payment_mode: 'cash',
+    items: [],
+  });
+
+  const [billSettings, setBillSettings] = useState<BillSettings>({
+    isPaid: true,
+    isPartiallyPaid: false,
+    isRetail: true,
+    isGstIncluded: true,
+    discount: 0,
+    discountType: 'percentage',
+    paidAmount: 0,
+  });
+
+  const [documentType, setDocumentType] = useState<'bill' | 'invoice'>('bill');
+
+  // Update header fields
+  const updateHeader = useCallback((updates: Partial<BillFormData>) => {
+    setBillFormData(prev => ({ ...prev, ...updates }));
+  }, []);
+
+  // Update items
+  const updateItems = useCallback((items: BillItem[]) => {
+    setBillFormData(prev => ({ ...prev, items }));
+  }, []);
+
+  // Add item
+  const addItem = useCallback(() => {
+    const newItem: BillItem = {
+      product_id: '',
+      product_name: '',
+      variant_name: '',
+      stock_id: '',
+      batch_no: '',
+      qty: 0,
+      loose_qty: 0,
+      price: 0,
+      mrp: 0,
+      amount: 0,
+      tax_percentage: 0,
+    };
+    setBillFormData(prev => ({ ...prev, items: [...prev.items, newItem] }));
+  }, []);
+
+  // Delete items
+  const deleteItems = useCallback((indices: number[]) => {
+    setBillFormData(prev => ({
+      ...prev,
+      items: prev.items.filter((_, index) => !indices.includes(index)),
+    }));
+  }, []);
+
+  // Update settings
+  const updateSettings = useCallback((updates: Partial<BillSettings>) => {
+    setBillSettings(prev => ({ ...prev, ...updates }));
+  }, []);
+
+  // Reset form
+  const resetForm = useCallback(() => {
+    setBillFormData({
+      invoice_no: '',
+      date: dayjs().format('YYYY-MM-DD'),
+      customer_id: '',
+      customer_name: '',
+      billed_by_id: '',
+      billed_by_name: '',
+      payment_mode: 'cash',
+      items: [
+        {
+          product_id: '',
+          product_name: '',
+          variant_name: '',
+          stock_id: '',
+          batch_no: '',
+          qty: 0,
+          loose_qty: 0,
+          price: 0,
+          mrp: 0,
+          amount: 0,
+          tax_percentage: 0,
+        },
+      ],
+    });
+
+    setBillSettings({
+      isPaid: true,
+      isPartiallyPaid: false,
+      isRetail: true,
+      isGstIncluded: true,
+      discount: 0,
+      discountType: 'percentage',
+      paidAmount: 0,
+    });
+
+    setDocumentType('bill');
+  }, []);
+
+  // Load bill data (for editing)
+  const loadBillData = useCallback((billdata: any) => {
+    const isInvoice = billdata.document_type === 'invoice';
+    const partyDetails = isInvoice ? billdata.vendorDetails : billdata.customerDetails;
+    const partyId = isInvoice ? billdata.vendor_id : billdata.customer_id;
+    const partyName =
+      partyDetails?.vendor_name || partyDetails?.full_name || partyDetails?.name || '';
+
+    setBillFormData({
+      invoice_no: billdata.invoice_no,
+      date: dayjs(billdata.date).format('YYYY-MM-DD'),
+      customer_id: partyId,
+      customer_name: partyName,
+      billed_by_id: billdata.billed_by_id || '',
+      billed_by_name: billdata.billedByDetails?.name || '',
+      payment_mode: billdata.payment_mode,
+      items:
+        billdata.Items?.map((item: any) => ({
+          _id: item._id,
+          product_id: item.product_id,
+          product_name: item.productItems?.name || '',
+          variant_name: item.productItems?.VariantItem?.variant_name || '',
+          stock_id: item.stock_id || item.branch_stock_id,
+          qty: item.qty || 0,
+          loose_qty: item.loose_qty || 0,
+          price: item.price,
+          mrp: item.mrp || item.price,
+          amount: item.amount,
+          tax_percentage: item.tax_percentage || 0,
+        })) || [],
+    });
+
+    setBillSettings({
+      isPaid: billdata.is_paid ?? true,
+      isPartiallyPaid: billdata.is_partially_paid ?? false,
+      isRetail: billdata.sale_type === 'retail',
+      isGstIncluded: billdata.is_gst_included ?? true,
+      discount: billdata.discount ?? 0,
+      discountType: billdata.discount_type ?? 'percentage',
+      paidAmount: billdata.paid_amount ?? 0,
+    });
+
+    setDocumentType(billdata.document_type || 'bill');
+  }, []);
+
+  return {
+    billFormData,
+    billSettings,
+    documentType,
+    setBillFormData,
+    setBillSettings,
+    setDocumentType,
+    updateHeader,
+    updateItems,
+    addItem,
+    deleteItems,
+    updateSettings,
+    resetForm,
+    loadBillData,
+  };
+};
+
