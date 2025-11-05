@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import styles from './Login.module.css';
 import { setUserData, setAuthToken, setTokens } from '../../helpers/auth';
 import { setPermissions, setMenuKeys, setUserData as setUserDataHelper } from '../../helpers/permissionHelper';
-import { useBillingLoginMutation, useTenantLoginMutation } from '../../services/redux/api/apiSlice';
+import { useBillingLoginMutation, useTenantLoginMutation } from '../../services/redux/api/endpoints';
 import LandingPageHeader from '../../components/common/LandingPageHeader';
 
 const { Text } = Typography;

@@ -2,6 +2,20 @@ import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { message } from 'antd';
 import dayjs from 'dayjs';
 import { apiSlice } from '../../../services/redux/api/apiSlice';
+import {
+  useGetSalesReportQuery,
+  useGetStockReportQuery,
+  useGetProfitLossReportQuery,
+  useGetOutstandingPaymentsReportQuery,
+  useGetPaymentCollectionReportQuery,
+  useGetExpenseReportQuery,
+  useGetGSTReportQuery,
+  useGetTopProductsReportQuery,
+  useGetTopCustomersReportQuery,
+  useGetStockExpiryReportQuery,
+  useGetProductSalesReportQuery,
+  useGetCustomerSalesReportQuery,
+} from '../../../services/redux/api/endpoints';
 
 export type ReportType = 'comprehensive' | 'financial' | 'sales' | 'customer' | 'inventory' | 'staff' | 'payment';
 
@@ -86,7 +100,7 @@ export const useReportData = (props: UseReportDataProps) => {
   const shouldFetchStockForComp = shouldFetchComprehensive;
   const shouldFetchPaymentForComp = shouldFetchComprehensive;
   
-  const { data: salesReportResponse, refetch: refetchSales } = apiSlice.useGetSalesReportQuery(
+  const { data: salesReportResponse, refetch: refetchSales } = useGetSalesReportQuery(
     apiFilters,
     { 
       skip: !shouldFetchSales && !shouldFetchSalesForComp,
@@ -95,7 +109,7 @@ export const useReportData = (props: UseReportDataProps) => {
       refetchOnReconnect: false,
     }
   );
-  const { data: productSalesResponse, refetch: refetchProductSales } = apiSlice.useGetProductSalesReportQuery(
+  const { data: productSalesResponse, refetch: refetchProductSales } = useGetProductSalesReportQuery(
     apiFilters,
     { 
       skip: !shouldFetchProductSales && !shouldFetchSalesForComp,
@@ -104,7 +118,7 @@ export const useReportData = (props: UseReportDataProps) => {
       refetchOnReconnect: false,
     }
   );
-  const { data: customerSalesResponse, refetch: refetchCustomerSales } = apiSlice.useGetCustomerSalesReportQuery(
+  const { data: customerSalesResponse, refetch: refetchCustomerSales } = useGetCustomerSalesReportQuery(
     apiFilters,
     { 
       skip: !shouldFetchCustomer && !shouldFetchCustomerForComp,
@@ -113,7 +127,7 @@ export const useReportData = (props: UseReportDataProps) => {
       refetchOnReconnect: false,
     }
   );
-  const { data: stockReportResponse, refetch: refetchStock } = apiSlice.useGetStockReportQuery(
+  const { data: stockReportResponse, refetch: refetchStock } = useGetStockReportQuery(
     emptyFilters,
     { 
       skip: !shouldFetchInventory && !shouldFetchStockForComp,
@@ -122,7 +136,7 @@ export const useReportData = (props: UseReportDataProps) => {
       refetchOnReconnect: false,
     }
   );
-  const { data: profitLossResponse, refetch: refetchProfitLoss } = apiSlice.useGetProfitLossReportQuery(
+  const { data: profitLossResponse, refetch: refetchProfitLoss } = useGetProfitLossReportQuery(
     apiFilters,
     { 
       skip: !shouldFetchFinancial && !shouldFetchProfitLossForComp,
@@ -131,7 +145,7 @@ export const useReportData = (props: UseReportDataProps) => {
       refetchOnReconnect: false,
     }
   );
-  const { data: outstandingPaymentsResponse, refetch: refetchOutstanding } = apiSlice.useGetOutstandingPaymentsReportQuery(
+  const { data: outstandingPaymentsResponse, refetch: refetchOutstanding } = useGetOutstandingPaymentsReportQuery(
     emptyFilters,
     { 
       skip: !shouldFetchOutstanding,
@@ -140,7 +154,7 @@ export const useReportData = (props: UseReportDataProps) => {
       refetchOnReconnect: false,
     }
   );
-  const { data: paymentCollectionResponse, refetch: refetchPaymentCollection } = apiSlice.useGetPaymentCollectionReportQuery(
+  const { data: paymentCollectionResponse, refetch: refetchPaymentCollection } = useGetPaymentCollectionReportQuery(
     apiFilters,
     { 
       skip: !shouldFetchPayment && !shouldFetchPaymentForComp,
@@ -149,7 +163,7 @@ export const useReportData = (props: UseReportDataProps) => {
       refetchOnReconnect: false,
     }
   );
-  const { data: expenseResponse, refetch: refetchExpense } = apiSlice.useGetExpenseReportQuery(
+  const { data: expenseResponse, refetch: refetchExpense } = useGetExpenseReportQuery(
     apiFilters,
     { 
       skip: !shouldFetchExpense,
@@ -158,7 +172,7 @@ export const useReportData = (props: UseReportDataProps) => {
       refetchOnReconnect: false,
     }
   );
-  const { data: gstResponse, refetch: refetchGST } = apiSlice.useGetGSTReportQuery(
+  const { data: gstResponse, refetch: refetchGST } = useGetGSTReportQuery(
     apiFilters,
     { 
       skip: !shouldFetchGST,
@@ -167,7 +181,7 @@ export const useReportData = (props: UseReportDataProps) => {
       refetchOnReconnect: false,
     }
   );
-  const { data: topProductsResponse, refetch: refetchTopProducts } = apiSlice.useGetTopProductsReportQuery(
+  const { data: topProductsResponse, refetch: refetchTopProducts } = useGetTopProductsReportQuery(
     topProductsFilters,
     { 
       skip: !shouldFetchTopProducts,
@@ -176,7 +190,7 @@ export const useReportData = (props: UseReportDataProps) => {
       refetchOnReconnect: false,
     }
   );
-  const { data: topCustomersResponse, refetch: refetchTopCustomers } = apiSlice.useGetTopCustomersReportQuery(
+  const { data: topCustomersResponse, refetch: refetchTopCustomers } = useGetTopCustomersReportQuery(
     topCustomersFilters,
     { 
       skip: !shouldFetchTopCustomers,
@@ -185,7 +199,7 @@ export const useReportData = (props: UseReportDataProps) => {
       refetchOnReconnect: false,
     }
   );
-  const { data: stockExpiryResponse, refetch: refetchStockExpiry } = apiSlice.useGetStockExpiryReportQuery(
+  const { data: stockExpiryResponse, refetch: refetchStockExpiry } = useGetStockExpiryReportQuery(
     stockExpiryFilters,
     { 
       skip: !shouldFetchStockExpiry,

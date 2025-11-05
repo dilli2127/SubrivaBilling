@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useCallback, memo } from "react";
 import { apiSlice } from "../../services/redux/api/apiSlice";
+import { useGetProductStockCountQuery } from "../../services/redux/api/endpoints";
 import GlobalTable from "../../components/antd/GlobalTable";
 import { Input, Row, Space, Tag, Typography } from "antd";
 const { Text } = Typography;
@@ -11,7 +12,7 @@ const StockAvailable = () => {
   });
 
   // Use RTK Query for stock data
-  const { data: stockData, isLoading: stock_get_loading, refetch } = apiSlice.useGetProductStockCountQuery({
+  const { data: stockData, isLoading: stock_get_loading, refetch } = useGetProductStockCountQuery({
     searchString: searchText.length > 2 || searchText.length === 0 ? searchText : undefined,
     pageNumber: pagination.current,
     pageLimit: pagination.pageSize,

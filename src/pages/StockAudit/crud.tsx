@@ -8,6 +8,7 @@ import RevertDrawer from './RevertDrawer';
 import StockOutDrawer from './StockOutDrawer';
 import StorageAllocateDrawer from './StorageAllocateDrawer';
 import { apiSlice } from '../../services/redux/api/apiSlice';
+import { useRevertStockFromBranchMutation } from '../../services/redux/api/endpoints';
 import { useDispatch } from 'react-redux';
 
 const StockAuditCrud: React.FC = () => {
@@ -42,7 +43,7 @@ const StockAuditCrud: React.FC = () => {
   const [createStockStorage, { isLoading: storageLoading }] = apiSlice.useCreateStockStorageMutation();
 
   // Use RTK Query mutation for revert stock
-  const [revertStockFromBranch, { isLoading: revertLoading }] = apiSlice.useRevertStockFromBranchMutation();
+  const [revertStockFromBranch, { isLoading: revertLoading }] = useRevertStockFromBranchMutation();
 
   // Memoize form field watchers to prevent unnecessary re-renders
   const quantity = form.getFieldValue('quantity');

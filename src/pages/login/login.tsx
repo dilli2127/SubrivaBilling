@@ -9,7 +9,7 @@ import {
 import { UserOutlined, LockOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import "./Login.css";
-import { useLoginMutation } from "../../services/redux/api/apiSlice";
+import { useLoginMutation } from "../../services/redux/api/endpoints";
 import { setUserData, setAuthToken, setTokens } from "../../helpers/auth";
 import { setPermissions, setMenuKeys, setUserData as setUserDataHelper } from "../../helpers/permissionHelper";
 
