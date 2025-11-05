@@ -23,6 +23,13 @@ const ClassicBillTemplate: React.FC<ClassicBillTemplateProps> = ({
     return <div>No data to display</div>;
   }
 
+  // Calculate totals based on GST mode
+  const subtotal = Number(billData?.total || 0);
+  const cgst = Number(billData?.cgst || (billData?.total_gst || 0) / 2);
+  const sgst = Number(billData?.sgst || (billData?.total_gst || 0) / 2);
+  const isGstInclusive = billData?.is_gst_included ?? true;
+  const grandTotal = isGstInclusive ? subtotal : subtotal + cgst + sgst;
+
   return (
     <div
       style={{
@@ -124,11 +131,11 @@ const ClassicBillTemplate: React.FC<ClassicBillTemplateProps> = ({
 
       {/* Total Section */}
       <div style={{ textAlign: 'right', fontWeight: 'bold' }}>
-        <div>Subtotal: ₹ {billData?.total}</div>
-        <div>CGST: ₹ {(billData?.cgst || (billData?.total_gst || 0) / 2).toFixed(2)}</div>
-        <div>SGST: ₹ {(billData?.sgst || (billData?.total_gst || 0) / 2).toFixed(2)}</div>
+        <div>Subtotal: ₹ {subtotal.toFixed(2)}</div>
+        <div>{isGstInclusive ? 'CGST (Incl):' : 'CGST:'} {isGstInclusive ? '' : '₹ '}{cgst.toFixed(2)}</div>
+        <div>{isGstInclusive ? 'SGST (Incl):' : 'SGST:'} {isGstInclusive ? '' : '₹ '}{sgst.toFixed(2)}</div>
         <div style={{ fontSize: '14px' }}>
-          NET AMOUNT: ₹ {billData?.total}
+          NET AMOUNT: ₹ {grandTotal.toFixed(2)}
         </div>
       </div>
 

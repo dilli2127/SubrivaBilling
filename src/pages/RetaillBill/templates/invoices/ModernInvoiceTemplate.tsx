@@ -22,6 +22,13 @@ const ModernInvoiceTemplate: React.FC<ModernInvoiceTemplateProps> = ({
     return <div>No data to display</div>;
   }
 
+  // Calculate totals based on GST mode
+  const subtotal = Number(billData?.total || 0);
+  const cgst = Number(billData?.cgst || (billData?.total_gst || 0) / 2);
+  const sgst = Number(billData?.sgst || (billData?.total_gst || 0) / 2);
+  const isGstInclusive = billData?.is_gst_included ?? true;
+  const grandTotal = isGstInclusive ? subtotal : subtotal + cgst + sgst;
+
   return (
     <div
       style={{
@@ -226,19 +233,19 @@ const ModernInvoiceTemplate: React.FC<ModernInvoiceTemplateProps> = ({
                   <tr>
                     <td style={{ padding: '8px 0', color: '#666' }}>Subtotal:</td>
                     <td style={{ padding: '8px 0', textAlign: 'right', fontWeight: '500' }}>
-                      ₹{billData?.total}
+                      ₹{subtotal.toFixed(2)}
                     </td>
                   </tr>
                   <tr>
-                    <td style={{ padding: '8px 0', color: '#666' }}>CGST:</td>
+                    <td style={{ padding: '8px 0', color: '#666' }}>{isGstInclusive ? 'CGST (Incl):' : 'CGST:'}</td>
                     <td style={{ padding: '8px 0', textAlign: 'right', fontWeight: '500' }}>
-                      ₹{(billData?.cgst || (billData?.total_gst || 0) / 2).toFixed(2)}
+                      {isGstInclusive ? '' : '₹'}{cgst.toFixed(2)}
                     </td>
                   </tr>
                   <tr>
-                    <td style={{ padding: '8px 0', color: '#666' }}>SGST:</td>
+                    <td style={{ padding: '8px 0', color: '#666' }}>{isGstInclusive ? 'SGST (Incl):' : 'SGST:'}</td>
                     <td style={{ padding: '8px 0', textAlign: 'right', fontWeight: '500' }}>
-                      ₹{(billData?.sgst || (billData?.total_gst || 0) / 2).toFixed(2)}
+                      {isGstInclusive ? '' : '₹'}{sgst.toFixed(2)}
                     </td>
                   </tr>
                   <tr style={{ borderTop: '2px solid #667eea' }}>
@@ -246,7 +253,7 @@ const ModernInvoiceTemplate: React.FC<ModernInvoiceTemplateProps> = ({
                       Grand Total:
                     </td>
                     <td style={{ padding: '12px 0 0 0', textAlign: 'right', fontSize: 20, fontWeight: 'bold', color: '#667eea' }}>
-                      ₹{billData?.total}
+                      ₹{grandTotal.toFixed(2)}
                     </td>
                   </tr>
                 </tbody>

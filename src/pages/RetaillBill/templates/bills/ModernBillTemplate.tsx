@@ -23,6 +23,12 @@ const ModernBillTemplate: React.FC<ModernBillTemplateProps> = ({
     return <div>No data to display</div>;
   }
 
+  // Calculate totals based on GST mode
+  const subtotal = Number(billData?.total || 0);
+  const totalGst = Number(billData?.total_gst || 0);
+  const isGstInclusive = billData?.is_gst_included ?? true;
+  const grandTotal = isGstInclusive ? subtotal : subtotal + totalGst;
+
   return (
     <div
       style={{
@@ -110,10 +116,10 @@ const ModernBillTemplate: React.FC<ModernBillTemplateProps> = ({
 
       {/* Totals */}
       <div style={{ textAlign: 'right', fontSize: 12, marginBottom: 8 }}>
-        <div>Subtotal: ₹{billData?.total}</div>
-        <div>GST: ₹{(billData?.total_gst || 0).toFixed(2)}</div>
+        <div>Subtotal: ₹{subtotal.toFixed(2)}</div>
+        <div>{isGstInclusive ? 'GST (Incl):' : 'GST:'} {isGstInclusive ? '' : '₹'}{totalGst.toFixed(2)}</div>
         <div style={{ fontSize: 16, fontWeight: 'bold', marginTop: 4 }}>
-          Total: ₹{billData?.total}
+          Total: ₹{grandTotal.toFixed(2)}
         </div>
       </div>
 
