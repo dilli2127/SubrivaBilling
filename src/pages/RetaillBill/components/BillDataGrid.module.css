@@ -362,7 +362,7 @@
 
 /* Bill Summary */
 .billSummary {
-  width: 350px;
+  width: auto;
   max-width: 350px;
   flex-shrink: 0;
   background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
