@@ -29,8 +29,25 @@ const baseQuery = fetchBaseQuery({
 const baseQueryWithReauth = async (args: any, api: any, extraOptions: any) => {
   let result = await baseQuery(args, api, extraOptions);
 
-  if (result.error && result.error.status === 401) {
-    // Try to refresh token using existing auth system
+  // Check for 401 in TWO places:
+  // 1. HTTP 401 error (result.error.status === 401)
+  // 2. HTTP 200 with statusCode: 401 in body (result.data.statusCode === 401)
+  const isHttpError401 = result.error && result.error.status === 401;
+  const isBodyError401 = result.data && (result.data as any).statusCode === 401;
+  
+  if (isHttpError401 || isBodyError401) {
+    // Check if it's a permission denied error (not token expiration)
+    const errorData: any = isBodyError401 ? result.data : result.error?.data;
+    const errorMessage = errorData?.exception || errorData?.message || '';
+    
+    if (errorMessage.toLowerCase().includes('access denied') || 
+        errorMessage.toLowerCase().includes('insufficient permissions') ||
+        errorMessage.toLowerCase().includes('permission')) {
+      // Permission denied - don't clear auth, just return error
+      return result;
+    }
+    
+    // Token expired - try to refresh token
     const refreshToken = localStorage.getItem('refreshToken');
     if (refreshToken) {
       const refreshResult = await baseQuery(
@@ -60,6 +77,9 @@ const baseQueryWithReauth = async (args: any, api: any, extraOptions: any) => {
         localStorage.removeItem('refreshToken');
         window.location.href = '#/billing_login';
       }
+    } else {
+      localStorage.removeItem('accessToken');
+      window.location.href = '#/billing_login';
     }
   }
 
