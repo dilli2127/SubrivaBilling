@@ -365,14 +365,17 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
     [billFormData.items, validateStockQuantity]
   );
 
-  // Initialize data
+  // Initialize data - fetch fresh data only once when component mounts or billdata changes
   useEffect(() => {
-    refetchProducts();
-    refetchCustomers();
-    refetchVendors();
-    refetchUsers();
+    // Only refetch if this is a new session (not just a re-render)
+    // RTK Query caching will prevent duplicate calls if data is fresh
+    if (!productListResult.length) refetchProducts();
+    if (!customerListResult.length) refetchCustomers();
+    if (!vendorListResult.length) refetchVendors();
+    if (!userListResult.length) refetchUsers();
+    
     // Only get invoice number for new bills, not when editing existing bills
-    if (!billdata && !invoice_no_create_loading) {
+    if (!billdata && !invoice_no_create_loading && !billFormData.invoice_no) {
       refetchInvoiceNo();
     }
 
