@@ -11,8 +11,12 @@ export const usePrintDocument = () => {
 
   const printDocument = useCallback((
     billData: any,
-    documentType: 'bill' | 'invoice'
+    documentType: 'bill' | 'invoice',
+    enhancedSettings?: any  // Accept pre-enhanced settings with QR code
   ) => {
+    // Use enhanced settings if provided, otherwise use default settings
+    const finalSettings = enhancedSettings || settings;
+    
     // Select appropriate template based on document type
     const TemplateComponent = documentType === 'bill' 
       ? BillTemplateComponent 
@@ -27,7 +31,7 @@ export const usePrintDocument = () => {
     }
 
     // Render template to HTML - Pass settings as props to avoid Redux context issues
-    const element = React.createElement(TemplateComponent, { billData, settings });
+    const element = React.createElement(TemplateComponent, { billData, settings: finalSettings });
     const templateHtml = ReactDOMServer.renderToString(element);
 
     // Write HTML to print window
@@ -77,8 +81,12 @@ export const usePrintDocument = () => {
 
   const previewDocument = useCallback((
     billData: any,
-    documentType: 'bill' | 'invoice'
+    documentType: 'bill' | 'invoice',
+    enhancedSettings?: any  // Accept pre-enhanced settings with QR code
   ) => {
+    // Use enhanced settings if provided, otherwise use default settings
+    const finalSettings = enhancedSettings || settings;
+    
     // Same as print but without auto-print
     const TemplateComponent = documentType === 'bill' 
       ? BillTemplateComponent 
@@ -92,7 +100,7 @@ export const usePrintDocument = () => {
     }
 
     // Pass settings as props to avoid Redux context issues
-    const element = React.createElement(TemplateComponent, { billData, settings });
+    const element = React.createElement(TemplateComponent, { billData, settings: finalSettings });
     const templateHtml = ReactDOMServer.renderToString(element);
 
     printWindow.document.write(`

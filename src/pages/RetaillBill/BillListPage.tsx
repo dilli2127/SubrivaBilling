@@ -179,18 +179,54 @@ const BillListPage = () => {
     };
   };
 
-  const handlePrint = (record: any) => {
+  const handlePrint = async (record: any) => {
     const billData = formatBillData(record);
     
     // Use document_type to determine template (default to 'bill' if not specified)
     const documentType = (record.document_type || 'bill') as 'bill' | 'invoice';
-    printDocument(billData, documentType);
+    
+    // Generate QR code BEFORE printing if enabled
+    let enhancedSettings = settings;
+    if (settings?.enable_payment_qr && settings?.upi_id) {
+      try {
+        const { generateUPIQRCode, formatBillToUPIParams } = await import('../../helpers/upiPayment');
+        const upiParams = formatBillToUPIParams(billData, settings);
+        if (upiParams) {
+          const qrCodeDataUrl = await generateUPIQRCode(upiParams, { width: settings?.qr_size || 150 });
+          enhancedSettings = { ...settings, qrCodeDataUrl };
+        }
+      } catch (error) {
+        console.error('Error pre-generating QR code for print:', error);
+      }
+    }
+    
+    printDocument(billData, documentType, enhancedSettings);
   };
 
-  const handleDownload = (record: any) => {
+  const handleDownload = async (record: any) => {
     const billData = formatBillData(record);
     // Use document_type to determine template (default to 'bill' if not specified)
     const documentType = (record.document_type || 'bill') as 'bill' | 'invoice';
+    
+    // Generate QR code BEFORE rendering if enabled
+    let qrCodeDataUrl = '';
+    if (settings?.enable_payment_qr && settings?.upi_id) {
+      try {
+        const { generateUPIQRCode, formatBillToUPIParams } = await import('../../helpers/upiPayment');
+        const upiParams = formatBillToUPIParams(billData, settings);
+        if (upiParams) {
+          qrCodeDataUrl = await generateUPIQRCode(upiParams, { width: settings?.qr_size || 150 });
+        }
+      } catch (error) {
+        console.error('Error pre-generating QR code for download:', error);
+      }
+    }
+    
+    // Add QR code to settings
+    const enhancedSettings = {
+      ...settings,
+      qrCodeDataUrl, // Pass pre-generated QR code
+    };
     
     // Select appropriate template based on document type
     const TemplateComponent = documentType === 'bill' 
@@ -198,7 +234,7 @@ const BillListPage = () => {
       : InvoiceTemplateComponent;
 
     // Create element and render to HTML
-    const element = React.createElement(TemplateComponent, { billData, settings });
+    const element = React.createElement(TemplateComponent, { billData, settings: enhancedSettings });
     const templateHtml = ReactDOMServer.renderToString(element);
 
     // Create full HTML document

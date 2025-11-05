@@ -1,5 +1,6 @@
 import React from 'react';
 import { useUser } from '../../../../components/antd/UserContext';
+import PaymentQRCode from '../components/PaymentQRCode';
 
 interface ClassicInvoiceTemplateProps {
   billData: any;
@@ -222,11 +223,24 @@ const ClassicInvoiceTemplate: React.FC<ClassicInvoiceTemplateProps> = ({
           </div>
         )}
 
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 32 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 32, alignItems: 'flex-end' }}>
           <div>
             <p style={{ margin: 0, fontSize: 12, color: '#666' }}>
               This is a computer-generated invoice
             </p>
+            {/* Payment QR Code */}
+            {settings?.enable_payment_qr && settings?.qr_on_invoice && (
+              <div style={{ marginTop: 16 }}>
+                <PaymentQRCode
+                  billData={billData}
+                  settings={settings}
+                  size={settings?.qr_size || 150}
+                  position="footer"
+                  showUpiId={settings?.show_upi_id_text}
+                  style={{ position: 'relative', border: '2px solid #333', padding: 8 }}
+                />
+              </div>
+            )}
           </div>
           <div style={{ textAlign: 'right' }}>
             <p style={{ margin: '32px 0 0 0', borderTop: '1px solid #333', paddingTop: 8, fontSize: 13 }}>

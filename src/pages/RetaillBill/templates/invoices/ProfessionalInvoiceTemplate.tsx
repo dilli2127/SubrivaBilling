@@ -1,5 +1,6 @@
 import React from 'react';
 import { useUser } from '../../../../components/antd/UserContext';
+import PaymentQRCode from '../components/PaymentQRCode';
 
 interface ProfessionalInvoiceTemplateProps {
   billData: any;
@@ -254,9 +255,37 @@ const ProfessionalInvoiceTemplate: React.FC<ProfessionalInvoiceTemplateProps> = 
         {/* Payment Details and Signature */}
         <div style={{ width: 250, border: '1px solid #000', padding: 10 }}>
           <div style={{ textAlign: 'center', marginBottom: 8 }}>
-            <div style={{ width: 80, height: 80, border: '1px solid #ccc', margin: '0 auto 8px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 8 }}>
-              QR Code
-            </div>
+            {settings?.enable_payment_qr && settings?.qr_on_invoice ? (
+              // Check if QR code was pre-generated (for print/download)
+              settings?.qrCodeDataUrl ? (
+                <div style={{ padding: 12, background: '#fff', border: '2px solid #000', borderRadius: 8, textAlign: 'center' }}>
+                  <div style={{ fontSize: 11, fontWeight: 'bold', marginBottom: 6 }}>Scan & Pay</div>
+                  <img 
+                    src={settings.qrCodeDataUrl} 
+                    alt="Payment QR Code"
+                    style={{ display: 'block', width: settings?.qr_size || 120, height: settings?.qr_size || 120, margin: '0 auto' }}
+                  />
+                  {settings?.show_upi_id_text && settings?.upi_id && (
+                    <div style={{ fontSize: 9, marginTop: 6, color: '#333' }}>UPI: {settings.upi_id}</div>
+                  )}
+                  <div style={{ fontSize: 8, marginTop: 4, color: '#666' }}>Google Pay • PhonePe • Paytm</div>
+                </div>
+              ) : (
+                // Use dynamic component for live view
+                <PaymentQRCode
+                  billData={billData}
+                  settings={settings}
+                  size={settings?.qr_size || 120}
+                  position="footer"
+                  showUpiId={settings?.show_upi_id_text}
+                  style={{ position: 'relative', border: 'none', padding: 0 }}
+                />
+              )
+            ) : (
+              <div style={{ width: 80, height: 80, border: '1px solid #ccc', margin: '0 auto 8px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 8 }}>
+                QR Code
+              </div>
+            )}
           </div>
           
           {/* Bank Details from Settings */}

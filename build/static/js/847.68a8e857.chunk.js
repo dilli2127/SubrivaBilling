@@ -1,0 +1,3 @@
+/*! For license information please see 847.68a8e857.chunk.js.LICENSE.txt */
+"use strict";(self.webpackChunkSUBRIVA_BILLING=self.webpackChunkSUBRIVA_BILLING||[]).push([[847],{73847:(e,n,r)=>{r.d(n,{A:()=>f});var t=r(65043),a=r(78500),c=r(66381);function s(){return s=Object.assign?Object.assign.bind():function(e){for(var n=1;n<arguments.length;n++){var r=arguments[n];for(var t in r)Object.prototype.hasOwnProperty.call(r,t)&&(e[t]=r[t])}return e},s.apply(this,arguments)}const o=(e,n)=>t.createElement(c.A,s({},e,{ref:n,icon:a.A}));const f=t.forwardRef(o)}}]);
+//# sourceMappingURL=847.68a8e857.chunk.js.map

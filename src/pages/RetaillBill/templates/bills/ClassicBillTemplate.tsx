@@ -1,5 +1,6 @@
 import React from 'react';
 import { useUser } from '../../../../components/antd/UserContext';
+import PaymentQRCode from '../components/PaymentQRCode';
 
 interface ClassicBillTemplateProps {
   billData: any;
@@ -13,6 +14,7 @@ interface ClassicBillTemplateProps {
  */
 const ClassicBillTemplate: React.FC<ClassicBillTemplateProps> = ({
   billData,
+  settings,
 }) => {
   const userItem = useUser();
 
@@ -131,6 +133,20 @@ const ClassicBillTemplate: React.FC<ClassicBillTemplateProps> = ({
       </div>
 
       <div style={{ borderTop: '1px dashed #000', margin: '8px 0' }}></div>
+
+      {/* Payment QR Code */}
+      {settings?.enable_payment_qr && settings?.qr_on_bill && (
+        <div style={{ textAlign: 'center', margin: '12px 0' }}>
+          <PaymentQRCode
+            billData={billData}
+            settings={settings}
+            size={Math.min(settings?.qr_size || 150, 180)} // Limit size for thermal bills
+            position="footer"
+            showUpiId={settings?.show_upi_id_text}
+            style={{ position: 'relative', border: '1px solid #000', padding: 8 }}
+          />
+        </div>
+      )}
 
       {/* Footer */}
       <div style={{ textAlign: 'center', fontSize: '11px' }}>

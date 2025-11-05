@@ -56,4 +56,12 @@ export interface SettingsFormData {
   account_type: string;
   upi_id: string;
   swift_code: string;
+  
+  // Payment QR Code Settings
+  enable_payment_qr: boolean;
+  qr_on_invoice: boolean;
+  qr_on_bill: boolean;
+  qr_size: number;
+  qr_position: 'bottom-left' | 'bottom-right' | 'top-right' | 'footer';
+  show_upi_id_text: boolean;
 }

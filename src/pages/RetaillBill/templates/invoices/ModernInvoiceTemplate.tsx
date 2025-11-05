@@ -1,5 +1,6 @@
 import React from 'react';
 import { useUser } from '../../../../components/antd/UserContext';
+import PaymentQRCode from '../components/PaymentQRCode';
 
 interface ModernInvoiceTemplateProps {
   billData: any;
@@ -273,6 +274,19 @@ const ModernInvoiceTemplate: React.FC<ModernInvoiceTemplateProps> = ({
               <p style={{ margin: 0, fontSize: 12, color: '#999' }}>
                 Generated on {new Date().toLocaleDateString()}
               </p>
+              {/* Payment QR Code */}
+              {settings?.enable_payment_qr && settings?.qr_on_invoice && (
+                <div style={{ marginTop: 16 }}>
+                  <PaymentQRCode
+                    billData={billData}
+                    settings={settings}
+                    size={settings?.qr_size || 150}
+                    position="footer"
+                    showUpiId={settings?.show_upi_id_text}
+                    style={{ position: 'relative', border: '2px solid #667eea', padding: 8 }}
+                  />
+                </div>
+              )}
             </div>
             <div style={{ textAlign: 'center' }}>
               <div style={{ borderTop: '2px solid #333', paddingTop: 8, width: 200 }}>

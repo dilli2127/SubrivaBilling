@@ -18,6 +18,7 @@ import {
   BellOutlined,
   ShopOutlined,
   BankOutlined,
+  QrcodeOutlined,
 } from '@ant-design/icons';
 import styles from './Settings.module.css';
 import { apiSlice } from '../../services/redux/api/apiSlice';
@@ -32,6 +33,7 @@ import {
   NotificationsTab,
   TemplateSettingsTab,
   BankDetailsTab,
+  PaymentQRTab,
 } from './tabs';
 
 const { Title, Text } = Typography;
@@ -252,6 +254,14 @@ const Settings: React.FC = () => {
           account_type: settings.account_type ?? null,
           upi_id: settings.upi_id ?? null,
           swift_code: settings.swift_code ?? null,
+
+          // Payment QR Settings
+          enable_payment_qr: settings.enable_payment_qr ?? false,
+          qr_on_invoice: settings.qr_on_invoice ?? true,
+          qr_on_bill: settings.qr_on_bill ?? true,
+          qr_size: settings.qr_size ?? 200,
+          qr_position: settings.qr_position ?? 'bottom-right',
+          show_upi_id_text: settings.show_upi_id_text ?? true,
         });
       } else {
         // No settings found - initialize with default values
@@ -300,6 +310,14 @@ const Settings: React.FC = () => {
           account_type: null,
           upi_id: null,
           swift_code: null,
+
+          // Payment QR Settings - Initialize with defaults
+          enable_payment_qr: false,
+          qr_on_invoice: true,
+          qr_on_bill: true,
+          qr_size: 200,
+          qr_position: 'bottom-right',
+          show_upi_id_text: true,
         });
       }
     } else if (selectedOrganisation === 'all' && (isSuperAdmin || isTenant)) {
@@ -398,6 +416,18 @@ const Settings: React.FC = () => {
           account_type: values.account_type,
           upi_id: values.upi_id,
           swift_code: values.swift_code,
+        };
+      }
+      // Payment QR tab - only payment QR settings
+      else if (activeTab === 'payment-qr') {
+        newSettingsData = {
+          upi_id: values.upi_id,
+          enable_payment_qr: values.enable_payment_qr ?? false,
+          qr_on_invoice: values.qr_on_invoice ?? true,
+          qr_on_bill: values.qr_on_bill ?? true,
+          qr_size: values.qr_size ?? 200,
+          qr_position: values.qr_position ?? 'bottom-right',
+          show_upi_id_text: values.show_upi_id_text ?? true,
         };
       }
 
@@ -751,6 +781,22 @@ const Settings: React.FC = () => {
               ),
               children: (
                 <BankDetailsTab
+                  form={form}
+                  loading={loading}
+                  onSave={handleSave}
+                  onReset={handleReset}
+                />
+              ),
+            },
+            {
+              key: 'payment-qr',
+              label: (
+                <span>
+                  <QrcodeOutlined /> Payment QR
+                </span>
+              ),
+              children: (
+                <PaymentQRTab
                   form={form}
                   loading={loading}
                   onSave={handleSave}
