@@ -1,5 +1,8 @@
 import { useEffect, useMemo, useCallback } from 'react';
 import { message } from 'antd';
+import React from 'react';
+import ReactDOMServer from 'react-dom/server';
+import dayjs from 'dayjs';
 import { useBillData } from './useBillData';
 import { useBillForm } from './useBillForm';
 import { useBillModals } from './useBillModals';
@@ -8,6 +11,7 @@ import { useBillCalculations } from './useBillCalculations';
 import { useBillKeyboardShortcuts } from './useBillKeyboardShortcuts';
 import { useBillActions } from './useBillActions';
 import { usePrintDocument } from '../../../hooks/usePrintDocument';
+import { useTemplateSettings } from '../../../hooks/useTemplateSettings';
 
 interface AdvancedBillingProps {
   billdata?: any;
@@ -31,6 +35,7 @@ export const useAdvancedBilling = ({ billdata, onSuccess }: AdvancedBillingProps
   // 1. Data Management
   const billData = useBillData(billdata);
   const { printDocument } = usePrintDocument();
+  const { BillTemplateComponent, InvoiceTemplateComponent, settings } = useTemplateSettings();
 
   // 2. Form State Management
   const form = useBillForm();
@@ -194,6 +199,89 @@ export const useAdvancedBilling = ({ billdata, onSuccess }: AdvancedBillingProps
     printDocument(printData, form.documentType);
   }, [form, billCalculations, billData, printDocument]);
 
+  // Handle download PDF
+  const handleDownload = useCallback(async () => {
+    if (!form.billFormData.items || form.billFormData.items.length === 0) {
+      message.warning('Please add items before downloading');
+      return;
+    }
+
+    const isInvoice = form.documentType === 'invoice';
+    const partyList = isInvoice ? billData.vendorListResult : billData.customerListResult;
+    const selectedParty = partyList.find((p: any) => p._id === form.billFormData.customer_id);
+
+    const billDataForPDF = {
+      invoice_no: form.billFormData.invoice_no,
+      date: form.billFormData.date,
+      customerName: selectedParty?.vendor_name || selectedParty?.full_name || '',
+      customerAddress: selectedParty?.address || selectedParty?.address1 || '',
+      customerCity: selectedParty?.city || '',
+      customerState: selectedParty?.state || '',
+      customerPincode: selectedParty?.pincode || '',
+      customerPhone: selectedParty?.phone || selectedParty?.mobile || '',
+      customerEmail: selectedParty?.email || '',
+      customer_gstin: selectedParty?.gst_no || '',
+      customer_pan: selectedParty?.pan_no || '',
+      items: form.billFormData.items,
+      total: billCalculations.total_amount,
+      total_gst: billCalculations.total_gst,
+      cgst: billCalculations.total_gst / 2,
+      sgst: billCalculations.total_gst / 2,
+      discount: form.billSettings.discount,
+      discount_type: form.billSettings.discountType,
+      is_gst_included: form.billSettings.isGstIncluded,
+      payment_mode: form.billFormData.payment_mode,
+      // Payment status fields
+      is_paid: form.billSettings.isPaid,
+      is_partially_paid: form.billSettings.isPartiallyPaid,
+      paid_amount: form.billSettings.isPartiallyPaid
+        ? form.billSettings.paidAmount
+        : form.billSettings.isPaid
+          ? billCalculations.total_amount
+          : 0,
+      organisationItems: billData.organisationDetails,
+      branchItems: billData.branchDetails,
+    };
+
+    // Generate QR code if enabled
+    let qrCodeDataUrl = '';
+    if (settings?.enable_payment_qr && settings?.upi_id) {
+      try {
+        const { generateUPIQRCode, formatBillToUPIParams } = await import('../../../helpers/upiPayment');
+        const upiParams = formatBillToUPIParams(billDataForPDF, settings);
+        if (upiParams) {
+          qrCodeDataUrl = await generateUPIQRCode(upiParams, { width: settings?.qr_size || 150 });
+        }
+      } catch (error) {
+        console.error('Error generating QR code for download:', error);
+      }
+    }
+
+    // Add QR code to settings
+    const enhancedSettings = {
+      ...settings,
+      qrCodeDataUrl,
+    };
+
+    // Select appropriate template
+    const TemplateComponent = form.documentType === 'bill' 
+      ? BillTemplateComponent 
+      : InvoiceTemplateComponent;
+
+    // Render template to HTML
+    const element = React.createElement(TemplateComponent, { 
+      billData: billDataForPDF, 
+      settings: enhancedSettings 
+    });
+    const templateHtml = ReactDOMServer.renderToString(element);
+
+    // Import and use PDF helper
+    const { downloadAsPDF } = await import('../../../helpers/pdfHelper');
+    const fileName = `${form.documentType}_${billDataForPDF.invoice_no}_${dayjs().format('YYYYMMDD')}`;
+    
+    await downloadAsPDF(templateHtml, fileName, form.documentType);
+  }, [form, billCalculations, billData, BillTemplateComponent, InvoiceTemplateComponent, settings]);
+
   // 7. Keyboard Shortcuts
   const shortcuts = useBillKeyboardShortcuts({
     onF1AddItem: form.addItem,
@@ -340,6 +428,7 @@ export const useAdvancedBilling = ({ billdata, onSuccess }: AdvancedBillingProps
     handleProductSelect,
     handleStockSelect,
     handlePrint,
+    handleDownload,
     
     // Keyboard
     shortcuts,

@@ -854,6 +854,25 @@
   box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
 }
 
+.downloadButton {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  border: none;
+  font-weight: 800;
+  border-radius: 25px;
+  font-size: 13px;
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.3);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.downloadButton:hover {
+  transform: scale(1.05);
+  box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+}
+
 .clearButton {
   background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
   color: white;

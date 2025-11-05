@@ -30,7 +30,9 @@
     "dompurify": "^3.2.7",
     "electron-updater": "^6.6.2",
     "framer-motion": "^12.15.0",
+    "html2canvas": "^1.4.1",
     "html5-qrcode": "^2.3.8",
+    "jspdf": "^3.0.3",
     "leaflet": "^1.9.4",
     "lodash": "^4.17.21",
     "moment": "^2.30.1",
@@ -99,6 +101,7 @@
   },
   "devDependencies": {
     "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
+    "@types/html2canvas": "^0.5.35",
     "@types/leaflet": "^1.9.15",
     "@types/react-color": "^3.0.13",
     "@types/react-redux": "^7.1.34",

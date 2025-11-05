@@ -5,6 +5,7 @@ import {
   PrinterOutlined,
   FileTextOutlined,
   ClearOutlined,
+  DownloadOutlined,
 } from '@ant-design/icons';
 import AntdEditableTable from '../../../components/common/AntdEditableTable';
 import { useAdvancedBilling } from '../hooks/useAdvancedBilling';
@@ -53,6 +54,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
     handleProductSelect,
     handleStockSelect,
     handlePrint,
+    handleDownload,
     productOptions,
     customerOptions,
     vendorOptions,
@@ -342,6 +344,15 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
             onClick={handlePrint}
           >
             🖨️ PRINT {form.documentType === 'bill' ? 'BILL' : 'INVOICE'} (F8)
+          </Button>
+
+          <Button
+            size="large"
+            icon={<DownloadOutlined />}
+            className={styles.downloadButton}
+            onClick={handleDownload}
+          >
+            📥 DOWNLOAD PDF
           </Button>
         </div>
 
