@@ -323,19 +323,27 @@ const BillListPage = () => {
       ),
     },
     {
-      title: "Customer",
+      title: "Customer/Vendor",
       dataIndex: "customerDetails",
       key: "customerDetails",
-      render: (customerDetails: any) => (
-        <Space>
-          <UserOutlined />
-          <span>
-            <strong>{customerDetails?.full_name}</strong>
-            <br />
-            <small style={{ color: "#999" }}>{customerDetails?.mobile}</small>
-          </span>
-        </Space>
-      ),
+      render: (customerDetails: any, record: any) => {
+        // Show vendor for invoices, customer for bills
+        const isInvoice = record.document_type === 'invoice';
+        const partyDetails = isInvoice ? record.vendorDetails : customerDetails;
+        const name = partyDetails?.vendor_name || partyDetails?.full_name || partyDetails?.name || 'N/A';
+        const contact = partyDetails?.phone || partyDetails?.mobile || '';
+        
+        return (
+          <Space>
+            <UserOutlined />
+            <span>
+              <strong>{name}</strong>
+              <br />
+              <small style={{ color: "#999" }}>{contact}</small>
+            </span>
+          </Space>
+        );
+      },
     },
     {
       title: "Payment Mode",
