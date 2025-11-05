@@ -56,7 +56,7 @@ const RolesCrudNew: React.FC = () => {
         const paginationData = response.pagination as any;
         setPagination(prev => ({
           ...prev,
-          total: paginationData?.total || response.result?.length || 0,
+          total: paginationData?.totalCount || paginationData?.total || response.result?.length || 0,
         }));
       } else {
         message.error(`Failed to fetch roles: ${response.message || 'Unknown error'}`);

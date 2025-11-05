@@ -32,6 +32,7 @@ export interface CrudReturn<T extends BaseEntity> {
     current: number;
     pageSize: number;
     total?: number;
+    totalCount?: number; // Some APIs return totalCount instead of total
   };
   drawerVisible: boolean;
   initialValues: Partial<T>;

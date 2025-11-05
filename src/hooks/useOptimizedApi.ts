@@ -37,7 +37,7 @@ export const useOptimizedApi = () => {
     return {
       result: data.result || [],
       pagination: data.pagination || null,
-      total: data.pagination?.total || 0,
+      total: data.pagination?.totalCount || data.pagination?.total || 0,
       current: data.pagination?.current || 1,
       pageSize: data.pagination?.pageSize || 10,
     };
@@ -110,11 +110,12 @@ export const useOptimizedList = <T>(
 
   const pagination = useMemo(() => {
     if (!data?.pagination) return null;
+    const totalCount = data.pagination.totalCount || data.pagination.total || 0;
     return {
       current: data.pagination.current || 1,
       pageSize: data.pagination.pageSize || 10,
-      total: data.pagination.total || 0,
-      totalPages: Math.ceil((data.pagination.total || 0) / (data.pagination.pageSize || 10)),
+      total: totalCount,
+      totalPages: Math.ceil(totalCount / (data.pagination.pageSize || 10)),
     };
   }, [data?.pagination]);
 

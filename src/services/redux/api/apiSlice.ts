@@ -134,8 +134,13 @@ const createDynamicEndpoints = (builder: any) => {
                   if (!draft) return;
                   const list = Array.isArray(draft.result) ? draft.result : [];
                   draft.result = [createdItem, ...list];
-                  if (draft.pagination && typeof draft.pagination.total === 'number') {
-                    draft.pagination.total += 1;
+                  if (draft.pagination) {
+                    // Handle both totalCount and total for backward compatibility
+                    if (typeof draft.pagination.totalCount === 'number') {
+                      draft.pagination.totalCount += 1;
+                    } else if (typeof draft.pagination.total === 'number') {
+                      draft.pagination.total += 1;
+                    }
                   }
                   const limit = originalArgs?.limit ?? 10;
                   if (Array.isArray(draft.result) && draft.result.length > limit) {
@@ -268,10 +273,15 @@ const createDynamicEndpoints = (builder: any) => {
                   if (!draft || !Array.isArray(draft.result)) return;
                   const before = draft.result.length;
                   draft.result = draft.result.filter((item: any) => item?._id !== id);
-                  if (draft.pagination && typeof draft.pagination.total === 'number') {
+                  if (draft.pagination) {
                     const after = draft.result.length;
                     if (after < before) {
-                      draft.pagination.total -= 1;
+                      // Handle both totalCount and total for backward compatibility
+                      if (typeof draft.pagination.totalCount === 'number') {
+                        draft.pagination.totalCount -= 1;
+                      } else if (typeof draft.pagination.total === 'number') {
+                        draft.pagination.total -= 1;
+                      }
                     }
                   }
                 })
