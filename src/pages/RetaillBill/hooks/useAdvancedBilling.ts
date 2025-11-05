@@ -236,9 +236,16 @@ export const useAdvancedBilling = ({ billdata, onSuccess }: AdvancedBillingProps
 
     // Load bill data if editing
     if (billdata) {
-      form.loadBillData(billdata);
+      form.loadBillData(billdata, () => {
+        // Recalculate items after loading to populate stock data
+        if (form.billFormData.items.length > 0) {
+          const calculatedItems = items.calculateItemAmounts(form.billFormData.items);
+          form.updateItems(calculatedItems);
+        }
+      });
     }
-  }, [billdata]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [billdata?._id]);
 
   // 9. Set invoice number
   useEffect(() => {
@@ -273,6 +280,30 @@ export const useAdvancedBilling = ({ billdata, onSuccess }: AdvancedBillingProps
       form.setDocumentType(billData.settings.default_document_type as 'bill' | 'invoice');
     }
   }, [billData.settings, billdata]);
+
+  // 13. Recalculate items when editing and stock data is loaded
+  useEffect(() => {
+    if (billdata && form.billFormData.items.length > 0 && 
+        (billData.branchStockListResult.length > 0 || billData.stockAuditListResult.length > 0)) {
+      
+      // Check if any item needs stock data populated
+      const needsStockData = form.billFormData.items.some(
+        (item: any) => item.stock_id && !item.stockData
+      );
+      
+      if (needsStockData) {
+        // Recalculate items to populate stockData from stock lists
+        const calculatedItems = items.calculateItemAmounts(form.billFormData.items);
+        form.updateItems(calculatedItems);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    billdata?._id, // Trigger when different bill is loaded
+    form.billFormData.items.length, 
+    billData.branchStockListResult.length, 
+    billData.stockAuditListResult.length
+  ]);
 
   // Return all necessary data and functions
   return {

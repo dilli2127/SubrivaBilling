@@ -50,13 +50,13 @@ export const useBillData = (billdata?: any) => {
     data: stockAuditListData,
     isLoading: stockLoading,
     refetch: refetchStockAudit,
-  } = apiSlice.useGetStockAuditQuery({}, { skip: !billdata || !!branchId });
+  } = apiSlice.useGetStockAuditQuery({}, { skip: !!branchId });
 
   const {
     data: branchStockListData,
     isLoading: branchStockLoading,
     refetch: refetchBranchStock,
-  } = apiSlice.useGetBranchStockQuery({}, { skip: !billdata || !branchId });
+  } = apiSlice.useGetBranchStockQuery({}, { skip: !branchId });
 
   const { data: invoiceNoData, refetch: refetchInvoiceNo } =
     InvoiceNumberApi.useGetAll();

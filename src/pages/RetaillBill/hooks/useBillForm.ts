@@ -121,7 +121,7 @@ export const useBillForm = () => {
   }, []);
 
   // Load bill data (for editing)
-  const loadBillData = useCallback((billdata: any) => {
+  const loadBillData = useCallback((billdata: any, onLoadComplete?: () => void) => {
     const isInvoice = billdata.document_type === 'invoice';
     const partyDetails = isInvoice ? billdata.vendorDetails : billdata.customerDetails;
     const partyId = isInvoice ? billdata.vendor_id : billdata.customer_id;
@@ -143,6 +143,7 @@ export const useBillForm = () => {
           product_name: item.productItems?.name || '',
           variant_name: item.productItems?.VariantItem?.variant_name || '',
           stock_id: item.stock_id || item.branch_stock_id,
+          batch_no: item.batch_no || '',
           qty: item.qty || 0,
           loose_qty: item.loose_qty || 0,
           price: item.price,
@@ -163,6 +164,11 @@ export const useBillForm = () => {
     });
 
     setDocumentType(billdata.document_type || 'bill');
+    
+    // Trigger callback after data is loaded
+    if (onLoadComplete) {
+      setTimeout(() => onLoadComplete(), 0);
+    }
   }, []);
 
   return {

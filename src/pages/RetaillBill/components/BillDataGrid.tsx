@@ -477,7 +477,12 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
         onClose={modals.closeBillListDrawer}
         onViewBill={bill => {
           // Load bill for editing
-          form.loadBillData(bill);
+          form.loadBillData(bill, () => {
+            // Recalculate items after loading to populate stock data
+            if (form.billFormData.items.length > 0) {
+              billing.handleItemsChange(form.billFormData.items);
+            }
+          });
           billData.refetchAllData();
           modals.closeBillListDrawer();
           message.success(`Bill "${bill.invoice_no}" loaded successfully!`);

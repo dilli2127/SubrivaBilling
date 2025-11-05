@@ -64,9 +64,10 @@ export const useBillItems = ({
             mrp: stock.mrp || sellPrice,
             amount: amount,
             tax_percentage: taxPercentage,
-            product_name: product?.name || '',
-            variant_name: product?.VariantItem?.variant_name || '',
-            batch_no: stock.batch_no || '',
+            product_name: product?.name || item.product_name || '',
+            variant_name: product?.VariantItem?.variant_name || item.variant_name || '',
+            batch_no: stock.batch_no || item.batch_no || '',
+            stockData: stock, // Attach stock data for UI display
           };
         }
 
