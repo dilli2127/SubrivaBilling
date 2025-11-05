@@ -10,7 +10,6 @@ import { useBillItems } from './useBillItems';
 import { useBillCalculations } from './useBillCalculations';
 import { useBillKeyboardShortcuts } from './useBillKeyboardShortcuts';
 import { useBillActions } from './useBillActions';
-import { usePrintDocument } from '../../../hooks/usePrintDocument';
 import { useTemplateSettings } from '../../../hooks/useTemplateSettings';
 
 interface AdvancedBillingProps {
@@ -34,7 +33,6 @@ interface AdvancedBillingProps {
 export const useAdvancedBilling = ({ billdata, onSuccess }: AdvancedBillingProps) => {
   // 1. Data Management
   const billData = useBillData(billdata);
-  const { printDocument } = usePrintDocument();
   const { BillTemplateComponent, InvoiceTemplateComponent, settings } = useTemplateSettings();
 
   // 2. Form State Management
@@ -153,7 +151,7 @@ export const useAdvancedBilling = ({ billdata, onSuccess }: AdvancedBillingProps
   );
 
   // Handle print
-  const handlePrint = useCallback(() => {
+  const handlePrint = useCallback(async () => {
     if (!form.billFormData.items || form.billFormData.items.length === 0) {
       message.warning('Please add items before printing');
       return;
@@ -163,7 +161,7 @@ export const useAdvancedBilling = ({ billdata, onSuccess }: AdvancedBillingProps
     const partyList = isInvoice ? billData.vendorListResult : billData.customerListResult;
     const selectedParty = partyList.find((p: any) => p._id === form.billFormData.customer_id);
 
-    const printData = {
+    const billDataForPDF = {
       invoice_no: form.billFormData.invoice_no,
       date: form.billFormData.date,
       customerName: selectedParty?.vendor_name || selectedParty?.full_name || '',
@@ -196,8 +194,44 @@ export const useAdvancedBilling = ({ billdata, onSuccess }: AdvancedBillingProps
       branchItems: billData.branchDetails,
     };
 
-    printDocument(printData, form.documentType);
-  }, [form, billCalculations, billData, printDocument]);
+    // Generate QR code if enabled
+    let qrCodeDataUrl = '';
+    if (settings?.enable_payment_qr && settings?.upi_id) {
+      try {
+        const { generateUPIQRCode, formatBillToUPIParams } = await import('../../../helpers/upiPayment');
+        const upiParams = formatBillToUPIParams(billDataForPDF, settings);
+        if (upiParams) {
+          qrCodeDataUrl = await generateUPIQRCode(upiParams, { width: settings?.qr_size || 150 });
+        }
+      } catch (error) {
+        console.error('Error generating QR code for print:', error);
+      }
+    }
+
+    // Add QR code to settings
+    const enhancedSettings = {
+      ...settings,
+      qrCodeDataUrl,
+    };
+
+    // Select appropriate template
+    const TemplateComponent = form.documentType === 'bill' 
+      ? BillTemplateComponent 
+      : InvoiceTemplateComponent;
+
+    // Render template to HTML
+    const element = React.createElement(TemplateComponent, { 
+      billData: billDataForPDF, 
+      settings: enhancedSettings 
+    });
+    const templateHtml = ReactDOMServer.renderToString(element);
+
+    // Import and use PDF helper for printing
+    const { printAsPDF } = await import('../../../helpers/pdfHelper');
+    const fileName = `${form.documentType}_${billDataForPDF.invoice_no}_${dayjs().format('YYYYMMDD')}`;
+    
+    await printAsPDF(templateHtml, fileName, form.documentType);
+  }, [form, billCalculations, billData, BillTemplateComponent, InvoiceTemplateComponent, settings]);
 
   // Handle download PDF
   const handleDownload = useCallback(async () => {

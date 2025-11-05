@@ -3,6 +3,96 @@ import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 
 /**
+ * Print HTML content directly without converting to PDF first
+ * Opens browser print dialog directly (Ctrl+P action)
+ */
+export const printAsPDF = async (
+  htmlContent: string,
+  fileName: string,
+  documentType: 'bill' | 'invoice' = 'bill'
+) => {
+  try {
+    message.loading(`Preparing ${documentType === 'bill' ? 'Bill' : 'Invoice'} for printing...`, 0);
+
+    // Create a hidden iframe for printing
+    const printFrame = document.createElement('iframe');
+    printFrame.style.position = 'absolute';
+    printFrame.style.width = '0';
+    printFrame.style.height = '0';
+    printFrame.style.border = 'none';
+    printFrame.style.visibility = 'hidden';
+    
+    document.body.appendChild(printFrame);
+
+    // Write HTML content with print styles to iframe
+    const iframeDoc = printFrame.contentDocument || printFrame.contentWindow?.document;
+    if (iframeDoc) {
+      iframeDoc.open();
+      iframeDoc.write(`
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <meta charset="UTF-8">
+            <title>${fileName}</title>
+            <style>
+              * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+              }
+              body {
+                margin: 0;
+                padding: 0;
+                font-family: Arial, sans-serif;
+              }
+              @media print {
+                @page {
+                  size: A4;
+                  margin: 0;
+                }
+                body {
+                  margin: 0;
+                  padding: 0;
+                }
+              }
+            </style>
+          </head>
+          <body>
+            ${htmlContent}
+          </body>
+        </html>
+      `);
+      iframeDoc.close();
+
+      message.destroy();
+
+      // Wait for content to load, then trigger print
+      setTimeout(() => {
+        try {
+          printFrame.contentWindow?.focus();
+          printFrame.contentWindow?.print();
+          message.success(`${documentType === 'bill' ? 'Bill' : 'Invoice'} ready to print`);
+        } catch (error) {
+          console.error('Error triggering print:', error);
+          message.error('Failed to open print dialog');
+        }
+
+        // Clean up iframe after printing
+        setTimeout(() => {
+          if (document.body.contains(printFrame)) {
+            document.body.removeChild(printFrame);
+          }
+        }, 1000);
+      }, 500);
+    }
+  } catch (error) {
+    console.error('Error preparing print:', error);
+    message.destroy();
+    message.error('Failed to prepare print. Please try again.');
+  }
+};
+
+/**
  * Generate and download actual PDF file from HTML content
  * Uses html2canvas and jsPDF to create a real PDF file in A4 format
  */

@@ -35,16 +35,14 @@ import { useHandleApiResponse } from "../../components/common/useHandleApiRespon
 import { useGenericCrudRTK } from "../../hooks/useGenericCrudRTK";
 import EmailSendModal from "../../components/common/EmailSendModal";
 import { useTemplateSettings } from '../../hooks/useTemplateSettings';
-import { usePrintDocument } from '../../hooks/usePrintDocument';
 import { getCurrentUser } from "../../helpers/auth";
 import { apiSlice } from "../../services/redux/api/apiSlice";
 
 const { Title } = Typography;
 
 const BillListPage = () => {
-  // Get template settings and print hook
+  // Get template settings
   const { BillTemplateComponent, InvoiceTemplateComponent, settings } = useTemplateSettings();
-  const { printDocument } = usePrintDocument();
   
   // Get current user data for organization details
   const userItem = useMemo(() => {
@@ -178,21 +176,40 @@ const BillListPage = () => {
     const documentType = (record.document_type || 'bill') as 'bill' | 'invoice';
     
     // Generate QR code BEFORE printing if enabled
-    let enhancedSettings = settings;
+    let qrCodeDataUrl = '';
     if (settings?.enable_payment_qr && settings?.upi_id) {
       try {
         const { generateUPIQRCode, formatBillToUPIParams } = await import('../../helpers/upiPayment');
         const upiParams = formatBillToUPIParams(billData, settings);
         if (upiParams) {
-          const qrCodeDataUrl = await generateUPIQRCode(upiParams, { width: settings?.qr_size || 150 });
-          enhancedSettings = { ...settings, qrCodeDataUrl };
+          qrCodeDataUrl = await generateUPIQRCode(upiParams, { width: settings?.qr_size || 150 });
         }
       } catch (error) {
         console.error('Error pre-generating QR code for print:', error);
       }
     }
     
-    printDocument(billData, documentType, enhancedSettings);
+    // Add QR code to settings
+    const enhancedSettings = {
+      ...settings,
+      qrCodeDataUrl,
+    };
+    
+    // Select appropriate template based on document type
+    const TemplateComponent = documentType === 'bill' 
+      ? BillTemplateComponent 
+      : InvoiceTemplateComponent;
+
+    // Create element and render to HTML
+    const element = React.createElement(TemplateComponent, { billData, settings: enhancedSettings });
+    const templateHtml = ReactDOMServer.renderToString(element);
+
+    // Import PDF helper and print
+    const { printAsPDF } = await import('../../helpers/pdfHelper');
+    const fileName = `${documentType}_${billData.invoice_no}_${dayjs().format('YYYYMMDD')}`;
+    
+    // Print as PDF
+    await printAsPDF(templateHtml, fileName, documentType);
   };
 
   const handleDownload = async (record: any) => {
