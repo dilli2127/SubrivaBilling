@@ -59,6 +59,25 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
   const branchId = user?.branch_id;
   const isOrganisationUser = !branchId;
 
+  // Fetch organization data from API
+  const organisationId = user?.organisation_id || user?.organisationItems?._id;
+  const { data: organisationsData } = apiSlice.useGetOrganisationsQuery(
+    { organisation_id: organisationId },
+    { skip: !organisationId }
+  );
+
+  // Get organization details from API response
+  const organisationDetails = useMemo(() => {
+    const result = (organisationsData as any)?.result;
+    if (Array.isArray(result)) {
+      return result[0];
+    }
+    return result || user?.organisationItems || {};
+  }, [organisationsData, user]);
+
+  // Memoize branch details for consistency
+  const branchDetails = useMemo(() => user?.branchItems || {}, [user]);
+
   // RTK Query hooks for fetching data
   const {
     data: productListData,
@@ -81,19 +100,19 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
     refetch: refetchUsers,
   } = BillingUsersApi.useGetAll();
 
-  // Stock APIs - Skip initial load (not needed)
-  // Stock quantities will come from the selected stock data saved in the item
+  // Stock APIs - Load when editing to prefill stock data
+  // For new bills, skip initial load - stock quantities will come from modal selection
   const {
     data: stockAuditListData,
     isLoading: stockLoading,
     refetch: refetchStockAudit,
-  } = apiSlice.useGetStockAuditQuery({}, { skip: true });
+  } = apiSlice.useGetStockAuditQuery({}, { skip: !billdata || !!branchId });
   
   const {
     data: branchStockListData,
     isLoading: branchStockLoading,
     refetch: refetchBranchStock,
-  } = apiSlice.useGetBranchStockQuery({}, { skip: true });
+  } = apiSlice.useGetBranchStockQuery({}, { skip: !billdata || !branchId });
 
   const { data: invoiceNoData, refetch: refetchInvoiceNo } =
     InvoiceNumberApi.useGetAll();
@@ -203,8 +222,6 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
   >(null);
   const [lastInteractedRowIndex, setLastInteractedRowIndex] =
     useState<number>(0);
-
-  const organisationId = user?.organisation_id || user?.organisationItems?._id;
 
   // Fetch settings to get default document type
   const { data: settingsData } = apiSlice.useGetSettingsQuery(
@@ -352,6 +369,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
   useEffect(() => {
     refetchProducts();
     refetchCustomers();
+    refetchVendors();
     refetchUsers();
     // Only get invoice number for new bills, not when editing existing bills
     if (!billdata && !invoice_no_create_loading) {
@@ -359,11 +377,17 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
     }
 
     if (billdata) {
+      // Check if this is an invoice or bill to get correct party details
+      const isInvoice = billdata.document_type === 'invoice';
+      const partyDetails = isInvoice ? billdata.vendorDetails : billdata.customerDetails;
+      const partyId = isInvoice ? billdata.vendor_id : billdata.customer_id;
+      const partyName = partyDetails?.vendor_name || partyDetails?.full_name || partyDetails?.name || '';
+      
       setBillFormData({
         invoice_no: billdata.invoice_no,
         date: dayjs(billdata.date).format('YYYY-MM-DD'),
-        customer_id: billdata.customer_id,
-        customer_name: billdata.customerDetails?.full_name || '',
+        customer_id: partyId,
+        customer_name: partyName,
         billed_by_id: billdata.billed_by_id || '',
         billed_by_name: billdata.billedByDetails?.name || '',
         payment_mode: billdata.payment_mode,
@@ -2520,6 +2544,50 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
     }
   }, [productListResult, billFormData.items]);
 
+  // Load stock data when editing existing bills - runs once when stock data loads
+  useEffect(() => {
+    if (!billdata) return; // Only for editing
+    
+    const stockListData = branchId ? branchStockListResult : stockAuditListResult;
+    
+    if (stockListData.length > 0) {
+      // Check if any items have stock_id but no stockData
+      const needsStockData = billFormData.items.some(
+        item => item.stock_id && !(item as any).stockData
+      );
+
+      if (needsStockData) {
+        const updatedItems = billFormData.items.map(item => {
+          if (item.stock_id && !(item as any).stockData) {
+            const stockData = stockListData.find(
+              (s: any) => s._id === item.stock_id
+            );
+            if (stockData) {
+              return {
+                ...item,
+                stockData: stockData,
+              };
+            }
+          }
+          return item;
+        });
+
+        // Only update if we actually made changes
+        const hasChanges = updatedItems.some(
+          (item, index) => (item as any).stockData && !(billFormData.items[index] as any).stockData
+        );
+
+        if (hasChanges) {
+          setBillFormData(prev => ({
+            ...prev,
+            items: updatedItems,
+          }));
+        }
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stockAuditListResult, branchStockListResult, branchId, billdata]);
+
   // Force resolve product names when product list changes
   useEffect(() => {
     if (productListResult.length > 0 && billFormData.items.length > 0) {
@@ -3242,17 +3310,25 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
                 return;
               }
 
-              // Format bill data for printing
-              const selectedCustomer = customerListResult.find(
-                (c: any) => c._id === billFormData.customer_id
+              // Format bill data for printing - handle both bills and invoices
+              const isInvoice = documentType === 'invoice';
+              const partyList = isInvoice ? vendorListResult : customerListResult;
+              const selectedParty = partyList.find(
+                (p: any) => p._id === billFormData.customer_id
               );
+              
               const printData = {
                 invoice_no: billFormData.invoice_no,
                 date: billFormData.date,
-                customerName: billFormData.customer_name,
-                customerAddress: selectedCustomer?.address || '',
-                customerPhone: selectedCustomer?.mobile || '',
-                customerEmail: selectedCustomer?.email || '',
+                customerName: selectedParty?.vendor_name || selectedParty?.full_name || billFormData.customer_name || '',
+                customerAddress: selectedParty?.address || selectedParty?.address1 || '',
+                customerCity: selectedParty?.city || '',
+                customerState: selectedParty?.state || '',
+                customerPincode: selectedParty?.pincode || '',
+                customerPhone: selectedParty?.phone || selectedParty?.mobile || selectedParty?.contact_number || '',
+                customerEmail: selectedParty?.email || '',
+                customer_gstin: selectedParty?.gst_no || selectedParty?.gst_number || selectedParty?.gstin || '',
+                customer_pan: selectedParty?.pan_no || selectedParty?.pan_number || '',
                 items: billFormData.items,
                 total: billCalculations.total_amount,
                 total_gst: billCalculations.total_gst,
@@ -3261,6 +3337,9 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
                 discount: billSettings.discount,
                 discount_type: billSettings.discountType,
                 payment_mode: billFormData.payment_mode,
+                // Add organization and branch details
+                organisationItems: organisationDetails,
+                branchItems: branchDetails,
               };
 
               // Print with selected document type

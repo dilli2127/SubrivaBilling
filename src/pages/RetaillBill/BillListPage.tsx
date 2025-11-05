@@ -49,9 +49,6 @@ const BillListPage = () => {
   // Get current user data for organization details
   const userItem = useMemo(() => {
     const user = getCurrentUser();
-    console.log('Current User Data:', user);
-    console.log('Organisation Items:', user?.organisationItems);
-    console.log('Branch Items:', user?.branchItems);
     return user;
   }, []);
 
@@ -70,8 +67,6 @@ const BillListPage = () => {
     }
     return result || userItem?.organisationItems || {};
   }, [organisationsData, userItem]);
-
-  console.log('Organisation Details from API:', organisationDetails);
   
   const [selectedBill, setSelectedBill] = useState<any>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -185,15 +180,7 @@ const BillListPage = () => {
   };
 
   const handlePrint = (record: any) => {
-    console.log('Print - Full Record:', record);
-    console.log('Print - Document Type:', record.document_type);
-    console.log('Print - Customer Details:', record.customerDetails);
-    console.log('Print - Vendor Details:', record.vendorDetails);
-    
     const billData = formatBillData(record);
-    console.log('Print - Formatted Bill Data:', billData);
-    console.log('Print - Organization Data:', billData.organisationItems);
-    console.log('Print - Branch Data:', billData.branchItems);
     
     // Use document_type to determine template (default to 'bill' if not specified)
     const documentType = (record.document_type || 'bill') as 'bill' | 'invoice';
