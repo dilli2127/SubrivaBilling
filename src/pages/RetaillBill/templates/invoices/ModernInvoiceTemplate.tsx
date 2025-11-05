@@ -262,6 +262,30 @@ const ModernInvoiceTemplate: React.FC<ModernInvoiceTemplateProps> = ({
           </div>
         </div>
 
+        {/* Settlement Details */}
+        <div style={{ marginTop: 20, fontSize: 14, textAlign: 'right', padding: '12px 24px', background: '#f8f9fa', borderRadius: 8 }}>
+          <strong style={{ color: '#667eea' }}>Settlement Details:</strong>{' '}
+          <span style={{ color: '#333' }}>
+            {(() => {
+              const isPaid = billData?.is_paid || false;
+              const isPartiallyPaid = billData?.is_partially_paid || false;
+              const paidAmount = Number(billData?.paid_amount || 0);
+              const pendingAmount = grandTotal - paidAmount;
+              
+              if (!isPaid && !isPartiallyPaid) {
+                // Unpaid invoice - show full balance
+                return `Invoice Balance: ₹${grandTotal.toFixed(2)}`;
+              } else if (isPartiallyPaid && !isPaid) {
+                // Partially paid - show paid and pending amounts
+                return `Paid: ₹${paidAmount.toFixed(2)} | Pending: ₹${pendingAmount.toFixed(2)}`;
+              } else {
+                // Fully paid - show settlement details
+                return `Settled by ${billData?.payment_mode || 'Cash'}: ₹${paidAmount.toFixed(2)} | Balance: ₹0.00`;
+              }
+            })()}
+          </span>
+        </div>
+
         {/* Terms & Signature */}
         <div style={{ borderTop: '2px solid #e9ecef', paddingTop: 24 }}>
           {/* Terms from Settings */}

@@ -177,7 +177,16 @@ export const useAdvancedBilling = ({ billdata, onSuccess }: AdvancedBillingProps
       sgst: billCalculations.total_gst / 2,
       discount: form.billSettings.discount,
       discount_type: form.billSettings.discountType,
+      is_gst_included: form.billSettings.isGstIncluded,
       payment_mode: form.billFormData.payment_mode,
+      // Payment status fields
+      is_paid: form.billSettings.isPaid,
+      is_partially_paid: form.billSettings.isPartiallyPaid,
+      paid_amount: form.billSettings.isPartiallyPaid
+        ? form.billSettings.paidAmount
+        : form.billSettings.isPaid
+          ? billCalculations.total_amount
+          : 0,
       organisationItems: billData.organisationDetails,
       branchItems: billData.branchDetails,
     };

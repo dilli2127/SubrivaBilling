@@ -242,7 +242,23 @@ const ProfessionalInvoiceTemplate: React.FC<ProfessionalInvoiceTemplateProps> = 
           <strong>Amount in Words:</strong> {amountInWords}
         </div>
         <div style={{ fontSize: 10 }}>
-          <strong>Settlement Details:</strong> Settled by - {billData?.payment_mode || 'Cash'}: {grandTotal.toFixed(2)} | Invoice Balance: 0.00
+          <strong>Settlement Details:</strong> {(() => {
+            const isPaid = billData?.is_paid || false;
+            const isPartiallyPaid = billData?.is_partially_paid || false;
+            const paidAmount = Number(billData?.paid_amount || 0);
+            const pendingAmount = grandTotal - paidAmount;
+            
+            if (!isPaid && !isPartiallyPaid) {
+              // Unpaid invoice - show full balance
+              return `Invoice Balance: ₹${grandTotal.toFixed(2)}`;
+            } else if (isPartiallyPaid && !isPaid) {
+              // Partially paid - show paid and pending amounts
+              return `Paid: ₹${paidAmount.toFixed(2)} | Pending: ₹${pendingAmount.toFixed(2)}`;
+            } else {
+              // Fully paid - show settlement details
+              return `Settled by - ${billData?.payment_mode || 'Cash'}: ₹${paidAmount.toFixed(2)} | Invoice Balance: ₹0.00`;
+            }
+          })()}
         </div>
       </div>
 

@@ -71,6 +71,9 @@ const TemplateSettingsTab: React.FC<SettingsTabProps> = ({
     sgst: 31.5,
     discount: 0,
     discount_type: 'percentage',
+    is_paid: true,
+    is_partially_paid: false,
+    paid_amount: 350,
   });
 
   const handlePreview = (key: string, type: 'bill' | 'invoice') => {

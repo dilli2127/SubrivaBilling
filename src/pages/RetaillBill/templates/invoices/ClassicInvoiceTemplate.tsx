@@ -211,6 +211,28 @@ const ClassicInvoiceTemplate: React.FC<ClassicInvoiceTemplateProps> = ({
         </div>
       </div>
 
+      {/* Settlement Details */}
+      <div style={{ marginTop: 16, fontSize: 13, textAlign: 'right', paddingRight: 12 }}>
+        <strong>Settlement Details:</strong>{' '}
+        {(() => {
+          const isPaid = billData?.is_paid || false;
+          const isPartiallyPaid = billData?.is_partially_paid || false;
+          const paidAmount = Number(billData?.paid_amount || 0);
+          const pendingAmount = grandTotal - paidAmount;
+          
+          if (!isPaid && !isPartiallyPaid) {
+            // Unpaid invoice - show full balance
+            return `Invoice Balance: ₹${grandTotal.toFixed(2)}`;
+          } else if (isPartiallyPaid && !isPaid) {
+            // Partially paid - show paid and pending amounts
+            return `Paid: ₹${paidAmount.toFixed(2)} | Pending: ₹${pendingAmount.toFixed(2)}`;
+          } else {
+            // Fully paid - show settlement details
+            return `Settled by ${billData?.payment_mode || 'Cash'}: ₹${paidAmount.toFixed(2)} | Balance: ₹0.00`;
+          }
+        })()}
+      </div>
+
       {/* Terms & Footer */}
       <div style={{ borderTop: '2px solid #333', paddingTop: 16, marginTop: 32 }}>
         {/* Terms from Settings */}

@@ -160,6 +160,11 @@ const BillListPage = () => {
       discount: record.discount || 0,
       discount_type: record.discount_type || '',
       gst_number: record.gst_number || record.organisationItems?.gst_number || organisationDetails?.gst_number || '',
+      // Payment status fields
+      is_paid: record.is_paid || false,
+      is_partially_paid: record.is_partially_paid || false,
+      paid_amount: record.paid_amount || 0,
+      payment_mode: record.payment_mode || 'Cash',
       // Add organization details - use record data or fallback to API fetched organization data
       organisationItems: record.organisationItems || organisationDetails || userItem?.organisationItems || {},
       branchItems: record.branchItems || userItem?.branchItems || {},
