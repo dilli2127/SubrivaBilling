@@ -43,11 +43,12 @@ export const useBillData = (billdata?: any) => {
   } = apiSlice.useGetBillingUsersQuery({}, { skip: true });
 
   // Stock APIs - conditional based on branch
+  const shouldFetchStockAudit = !branchId && !!billdata;
   const {
     data: stockAuditListData,
     isLoading: stockLoading,
     refetch: refetchStockAudit,
-  } = apiSlice.useGetStockAuditQuery({}, { skip: !!branchId });
+  } = apiSlice.useGetStockAuditQuery({}, { skip: !shouldFetchStockAudit });
 
   const {
     data: branchStockListData,
@@ -130,7 +131,7 @@ export const useBillData = (billdata?: any) => {
     refetchUsers();
     if (branchId) {
       refetchBranchStock();
-    } else {
+    } else if (shouldFetchStockAudit) {
       refetchStockAudit();
     }
   };
