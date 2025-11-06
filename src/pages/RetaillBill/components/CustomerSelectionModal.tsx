@@ -124,6 +124,10 @@ const CustomerSelectionModalComponent: React.FC<CustomerSelectionModalProps> = (
         // First page - replace all items
         setAllCustomers(newItems);
         setHasMore(newItems.length < totalCount && newItems.length > 0);
+        if (newItems.length > 0) {
+          setShowCreateGrid(false);
+          setShowAddForm(false);
+        }
       } else {
         // Subsequent pages - append items
         setAllCustomers(prev => {
@@ -133,6 +137,10 @@ const CustomerSelectionModalComponent: React.FC<CustomerSelectionModalProps> = (
           setHasMore(updated.length < totalCount && uniqueNewItems.length > 0);
           return updated;
         });
+        if (newItems.length > 0) {
+          setShowCreateGrid(false);
+          setShowAddForm(false);
+        }
       }
       
       isLoadingMoreRef.current = false;
@@ -225,7 +233,6 @@ const CustomerSelectionModalComponent: React.FC<CustomerSelectionModalProps> = (
         setDebouncedSearchTerm(value.trim());
         // Reset to page 1 when search changes
         setPage(1);
-        setAllCustomers([]);
         setHasMore(true);
         isLoadingMoreRef.current = false;
       }, 300);
