@@ -2,7 +2,7 @@
 
 ## 🎉 Implementation Status: PRODUCTION READY
 
-Your ProBillDesk billing system now has a fully functional UPI Payment QR code system!
+Your subrivabilling billing system now has a fully functional UPI Payment QR code system!
 
 ---
 

@@ -353,7 +353,7 @@ const ProfessionalInvoiceTemplate: React.FC<ProfessionalInvoiceTemplateProps> = 
 
       {/* Footer Branding */}
       <div style={{ textAlign: 'center', marginTop: 16, fontSize: 9, color: '#666' }}>
-        Invoice Created by {userItem?.organisationItems?.org_name || 'ProBillDesk'}
+        Invoice Created by Subriva Billing
       </div>
     </div>
   );

@@ -10,7 +10,7 @@
 REACT_APP_ENCRYPTION_KEY=your-secret-key-change-this-min-32-chars-long-use-crypto-random-generator
 
 # API Base URL
-REACT_APP_API_BASE_URL=https://api.probilldesk.com
+REACT_APP_API_BASE_URL=https://api.subrivabilling.com
 
 # ============================================
 # OPTIONAL SETTINGS
@@ -33,7 +33,7 @@ REACT_APP_API_BASE_URL=https://api.probilldesk.com
 # ============================================
 
 # Auto-update server URL
-# REACT_APP_UPDATE_SERVER_URL=https://updates.probilldesk.com
+# REACT_APP_UPDATE_SERVER_URL=https://updates.subrivabilling.com
 
 # ============================================
 # FEATURE FLAGS

@@ -508,4 +508,4 @@ ipcMain.handle('show-open-dialog', async () => {
 });
 
 // Handle app protocol for deep linking (optional)
-app.setAsDefaultProtocolClient('probilldesk');
+app.setAsDefaultProtocolClient('subrivabilling');

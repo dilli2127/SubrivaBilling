@@ -120,7 +120,7 @@
     "wait-on": "^8.0.3"
   },
   "build": {
-    "appId": "com.freshfocuztech.probilldesk",
+    "appId": "com.freshfocuztech.subrivabilling",
     "productName": "SubrivaBilling",
     "directories": {
       "output": "dist"
