@@ -1,6 +1,7 @@
 import React from 'react';
 import { Input, Select, Switch, Button } from 'antd';
 import { ScanOutlined } from '@ant-design/icons';
+import { InfiniteDropdownResult } from '../../hooks/useInfiniteDropdown';
 
 const { Option } = Select;
 
@@ -18,20 +19,16 @@ type Category = {
 };
 
 interface FormItemsParams {
-  categoryItems: any;
-  variantItems: any;
-  categoryLoading: boolean;
-  variantLoading: boolean;
+  categoryDropdown: InfiniteDropdownResult;
+  variantDropdown: InfiniteDropdownResult;
   isSuperAdmin: boolean;
   onScanClick: () => void;
   onBarcodeInputFocus: () => void;
 }
 
 export const productsFormItems = ({
-  categoryItems,
-  variantItems,
-  categoryLoading,
-  variantLoading,
+  categoryDropdown,
+  variantDropdown,
   isSuperAdmin,
   onScanClick,
   onBarcodeInputFocus,
@@ -49,11 +46,24 @@ export const productsFormItems = ({
     component: (
       <Select
         placeholder="Select category"
-        loading={categoryLoading}
+        loading={categoryDropdown.loading && categoryDropdown.items.length === 0}
         showSearch
         allowClear
+        onSearch={categoryDropdown.setSearchString}
+        onPopupScroll={categoryDropdown.handlePopupScroll}
+        filterOption={false}
+        dropdownRender={(menu) => (
+          <>
+            {menu}
+            {categoryDropdown.hasMore && categoryDropdown.items.length > 0 && (
+              <div style={{ textAlign: 'center', padding: '8px', color: '#999' }}>
+                {categoryDropdown.loading ? 'Loading...' : 'Scroll for more'}
+              </div>
+            )}
+          </>
+        )}
       >
-        {(categoryItems || []).map((cat: Category) => (
+        {categoryDropdown.items.map((cat: Category) => (
           <Option key={cat._id} value={cat._id}>
             {cat.category_name}
           </Option>
@@ -100,11 +110,24 @@ export const productsFormItems = ({
     component: (
       <Select
         placeholder="Select variant"
-        loading={variantLoading}
+        loading={variantDropdown.loading && variantDropdown.items.length === 0}
         showSearch
         allowClear
+        onSearch={variantDropdown.setSearchString}
+        onPopupScroll={variantDropdown.handlePopupScroll}
+        filterOption={false}
+        dropdownRender={(menu) => (
+          <>
+            {menu}
+            {variantDropdown.hasMore && variantDropdown.items.length > 0 && (
+              <div style={{ textAlign: 'center', padding: '8px', color: '#999' }}>
+                {variantDropdown.loading ? 'Loading...' : 'Scroll for more'}
+              </div>
+            )}
+          </>
+        )}
       >
-        {(variantItems || []).map((variant: Variant) => (
+        {variantDropdown.items.map((variant: Variant) => (
           <Option key={variant._id} value={variant._id}>
             {variant.variant_name} ({variant.unit})
           </Option>

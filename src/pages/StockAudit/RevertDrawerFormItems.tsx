@@ -1,11 +1,11 @@
 import React from "react";
 import { Select, InputNumber } from "antd";
+import { InfiniteDropdownResult } from "../../hooks/useInfiniteDropdown";
 
 const { Option } = Select;
 
 export const revertDrawerFormItems = (
-  branchList: any,
-  branchLoading: boolean,
+  branchDropdown: InfiniteDropdownResult,
   record: any,
   options: {
     onBranchChange: (branchId: string) => void;
@@ -20,12 +20,25 @@ export const revertDrawerFormItems = (
     component: (
       <Select
         placeholder="Select branch"
-        loading={branchLoading}
+        loading={branchDropdown.loading && branchDropdown.items.length === 0}
         showSearch
-        optionFilterProp="children"
+        allowClear
+        onSearch={branchDropdown.setSearchString}
+        onPopupScroll={branchDropdown.handlePopupScroll}
+        filterOption={false}
         onChange={options.onBranchChange}
+        dropdownRender={(menu) => (
+          <>
+            {menu}
+            {branchDropdown.hasMore && branchDropdown.items.length > 0 && (
+              <div style={{ textAlign: 'center', padding: '8px', color: '#999' }}>
+                {branchDropdown.loading ? 'Loading...' : 'Scroll for more'}
+              </div>
+            )}
+          </>
+        )}
       >
-        {branchList?.map((branch: any) => (
+        {branchDropdown.items.map((branch: any) => (
           <Option key={branch._id} value={branch._id}>
             {branch.branch_name}
           </Option>

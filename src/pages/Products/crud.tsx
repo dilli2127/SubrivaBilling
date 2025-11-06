@@ -7,17 +7,22 @@ import { RESOURCES } from '../../helpers/permissionHelper';
 import { productsColumns } from './columns';
 import { productsFormItems } from './formItems';
 import { apiSlice } from '../../services/redux/api/apiSlice';
+import { useInfiniteDropdown } from '../../hooks/useInfiniteDropdown';
 
 const ProductCrud: React.FC = () => {
   const currentUserRole = getCurrentUserRole();
   const isSuperAdmin = currentUserRole?.toLowerCase() === 'superadmin';
 
-  // Use RTK Query for fetching related data - using dynamic hooks
-  const { data: variantData, isLoading: variantLoading } = apiSlice.useGetVariantQuery({});
-  const { data: categoryData, isLoading: categoryLoading } = apiSlice.useGetCategoryQuery({});
+  // Use infinite scroll dropdowns
+  const categoryDropdown = useInfiniteDropdown({
+    queryHook: apiSlice.useGetCategoryQuery,
+    limit: 20,
+  });
 
-  const variantItems = useMemo(() => (variantData as any)?.result || [], [variantData]);
-  const categoryItems = useMemo(() => (categoryData as any)?.result || [], [categoryData]);
+  const variantDropdown = useInfiniteDropdown({
+    queryHook: apiSlice.useGetVariantQuery,
+    limit: 20,
+  });
 
   const [scannerVisible, setScannerVisible] = useState(false);
   const [currentForm, setCurrentForm] = useState<any>(null);
@@ -29,8 +34,8 @@ const ProductCrud: React.FC = () => {
     }, {}), []);
 
   const variantMap = useMemo(() => 
-    createMap(variantItems, 'variant_name'), 
-    [variantItems, createMap]
+    createMap(variantDropdown.items, 'variant_name'), 
+    [variantDropdown.items, createMap]
   );
 
   // Memoize callback functions to prevent recreation
@@ -57,10 +62,8 @@ const ProductCrud: React.FC = () => {
     title: 'Products',
     columns: productsColumns({ variantMap, isSuperAdmin }),
     formItems: productsFormItems({
-      categoryItems,
-      variantItems,
-      categoryLoading,
-      variantLoading,
+      categoryDropdown,
+      variantDropdown,
       isSuperAdmin,
       onScanClick: handleScanClick,
       onBarcodeInputFocus: handleBarcodeInputFocus,
@@ -71,7 +74,7 @@ const ProductCrud: React.FC = () => {
     // Note: PermissionAwareCrudPage will combine these with user permissions
     canEdit,
     canDelete,
-  }), [variantMap, variantItems, categoryItems, variantLoading, categoryLoading, isSuperAdmin, handleScanClick, handleBarcodeInputFocus, canEdit, canDelete]);
+  }), [variantMap, categoryDropdown, variantDropdown, isSuperAdmin, handleScanClick, handleBarcodeInputFocus, canEdit, canDelete]);
 
   // Handle barcode scan
   const handleBarcodeScan = (barcode: string) => {

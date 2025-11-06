@@ -1,11 +1,11 @@
 import React from "react";
 import { Select, InputNumber } from "antd";
+import { InfiniteDropdownResult } from "../../hooks/useInfiniteDropdown";
 
 const { Option } = Select;
 
 export const storageAllocateDrawerFormItems = (
-  rackList: any,
-  rackLoading: boolean
+  rackDropdown: InfiniteDropdownResult
 ) => [
   {
     name: "rack_id",
@@ -14,11 +14,24 @@ export const storageAllocateDrawerFormItems = (
     component: (
       <Select
         placeholder="Select rack"
-        loading={rackLoading}
+        loading={rackDropdown.loading && rackDropdown.items.length === 0}
         showSearch
-        optionFilterProp="children"
+        allowClear
+        onSearch={rackDropdown.setSearchString}
+        onPopupScroll={rackDropdown.handlePopupScroll}
+        filterOption={false}
+        dropdownRender={(menu) => (
+          <>
+            {menu}
+            {rackDropdown.hasMore && rackDropdown.items.length > 0 && (
+              <div style={{ textAlign: 'center', padding: '8px', color: '#999' }}>
+                {rackDropdown.loading ? 'Loading...' : 'Scroll for more'}
+              </div>
+            )}
+          </>
+        )}
       >
-        {rackList?.map((rack: any) => (
+        {rackDropdown.items.map((rack: any) => (
           <Option key={rack._id} value={rack._id}>
             {rack.name}
           </Option>

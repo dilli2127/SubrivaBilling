@@ -8,15 +8,21 @@ import {
 import GlobalTable from '../../components/antd/GlobalTable';
 import StorageAllocateDrawer from '../StockAudit/StorageAllocateDrawer';
 import { apiSlice } from '../../services/redux/api/apiSlice';
+import { useInfiniteDropdown } from '../../hooks/useInfiniteDropdown';
+
 const { Text } = Typography;
 
 const BranchStock: React.FC = () => {
   // Use RTK Query for fetching data - using dynamic hooks
   const { data: branchStockData, isLoading: stockAuditLoading } = apiSlice.useGetBranchStockQuery({});
-  const { data: rackData, isLoading: rackLoading } = apiSlice.useGetRackQuery({});
+  
+  // Use infinite scroll for Rack dropdown
+  const rackDropdown = useInfiniteDropdown({
+    queryHook: apiSlice.useGetRackQuery,
+    limit: 20,
+  });
   
   const BranchStockList = (branchStockData as any)?.result || [];
-  const rackList = (rackData as any)?.result || [];
 
   // Use RTK Query mutations - using dynamic hooks
   const [createStockStorage, { isLoading: createLoading }] = apiSlice.useCreateStockStorageMutation();
@@ -199,8 +205,7 @@ const BranchStock: React.FC = () => {
         onClose={() => setStorageAllocateDrawerOpen(false)}
         onSubmit={handleStorageAllocateSubmit}
         record={storageAllocateRecord}
-        rackList={rackList}
-        rackLoading={rackLoading}
+        rackDropdown={rackDropdown}
         createLoading={createLoading}
       />
     </>

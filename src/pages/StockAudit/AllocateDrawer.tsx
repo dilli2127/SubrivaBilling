@@ -2,14 +2,14 @@ import React, { useEffect } from 'react';
 import { Form, Button } from 'antd';
 import GlobalDrawer from '../../components/antd/GlobalDrawer';
 import { allocateDrawerFormItems } from './AllocateDrawerFormItems';
+import { InfiniteDropdownResult } from '../../hooks/useInfiniteDropdown';
 
 interface AllocateDrawerProps {
   open: boolean;
   onClose: () => void;
   onSubmit: (values: any) => void;
   record: any;
-  branchList: any;
-  branchLoading: boolean;
+  branchDropdown: InfiniteDropdownResult;
   createLoading?: boolean;
 }
 
@@ -18,12 +18,11 @@ const AllocateDrawer: React.FC<AllocateDrawerProps> = ({
   onClose,
   onSubmit,
   record,
-  branchList,
-  branchLoading,
+  branchDropdown,
   createLoading = false,
 }) => {
   const [form] = Form.useForm();
-  const formItems = allocateDrawerFormItems(branchList, branchLoading);
+  const formItems = allocateDrawerFormItems(branchDropdown);
 
   useEffect(() => {
     if (open) {

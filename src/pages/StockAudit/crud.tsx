@@ -10,6 +10,7 @@ import StorageAllocateDrawer from './StorageAllocateDrawer';
 import { apiSlice } from '../../services/redux/api/apiSlice';
 import { useRevertStockFromBranchMutation } from '../../services/redux/api/endpoints';
 import { useDispatch } from 'react-redux';
+import { useInfiniteDropdown } from '../../hooks/useInfiniteDropdown';
 
 const StockAuditCrud: React.FC = () => {
   const dispatch = useDispatch();
@@ -23,19 +24,31 @@ const StockAuditCrud: React.FC = () => {
   const [storageAllocateDrawerOpen, setStorageAllocateDrawerOpen] = useState(false);
   const [storageAllocateRecord, setStorageAllocateRecord] = useState<any>(null);
 
-  // Use RTK Query for fetching related data (read operations)
-  const { data: productData, isLoading: loading } = apiSlice.useGetProductQuery({});
-  const { data: vendorData, isLoading: vendorloading } = apiSlice.useGetVendorQuery({});
-  const { data: wareHouseData, isLoading: wareHouseLoading } = apiSlice.useGetWarehouseQuery({});
-  const { data: branchData, isLoading: branchLoading } = apiSlice.useGetBranchesQuery({});
-  const { data: rackData, isLoading: rackLoading } = apiSlice.useGetRackQuery({});
+  // Use infinite scroll dropdowns
+  const productDropdown = useInfiniteDropdown({
+    queryHook: apiSlice.useGetProductQuery,
+    limit: 20,
+  });
 
-  // Memoize data extraction to prevent unnecessary re-renders
-  const productList = useMemo(() => (productData as any)?.result || [], [productData]);
-  const vendorList = useMemo(() => (vendorData as any)?.result || [], [vendorData]);
-  const wareHouseList = useMemo(() => (wareHouseData as any)?.result || [], [wareHouseData]);
-  const branchList = useMemo(() => (branchData as any)?.result || [], [branchData]);
-  const rackList = useMemo(() => (rackData as any)?.result || [], [rackData]);
+  const vendorDropdown = useInfiniteDropdown({
+    queryHook: apiSlice.useGetVendorQuery,
+    limit: 20,
+  });
+
+  const warehouseDropdown = useInfiniteDropdown({
+    queryHook: apiSlice.useGetWarehouseQuery,
+    limit: 20,
+  });
+
+  const branchDropdown = useInfiniteDropdown({
+    queryHook: apiSlice.useGetBranchesQuery,
+    limit: 20,
+  });
+
+  const rackDropdown = useInfiniteDropdown({
+    queryHook: apiSlice.useGetRackQuery,
+    limit: 20,
+  });
 
   // Use RTK Query mutations
   const [createBranchStock, { isLoading: createLoading }] = apiSlice.useCreateBranchStockMutation();
@@ -160,14 +173,11 @@ const StockAuditCrud: React.FC = () => {
       onStockout: handleStockout,
       onStorageAllocate: handleStorageAllocate,
     }),
-    formItems: getStockAuditFormItems(
-      productList,
-      vendorList,
-      wareHouseList,
-      loading,
-      vendorloading,
-      wareHouseLoading
-    ),
+    formItems: getStockAuditFormItems({
+      productDropdown,
+      vendorDropdown,
+      warehouseDropdown,
+    }),
     entityName: 'StockAudit',
     formColumns: 3,
     drawerWidth: 1200,
@@ -176,12 +186,9 @@ const StockAuditCrud: React.FC = () => {
     handleRevert,
     handleStockout,
     handleStorageAllocate,
-    productList,
-    vendorList,
-    wareHouseList,
-    loading,
-    vendorloading,
-    wareHouseLoading
+    productDropdown,
+    vendorDropdown,
+    warehouseDropdown,
   ]);
 
   return (
@@ -208,8 +215,7 @@ const StockAuditCrud: React.FC = () => {
         onClose={() => setAllocateDrawerOpen(false)}
         onSubmit={handleAllocateSubmit}
         record={allocateRecord}
-        branchList={branchList}
-        branchLoading={branchLoading}
+        branchDropdown={branchDropdown}
         createLoading={createLoading}
       />
       <RevertDrawer
@@ -217,8 +223,7 @@ const StockAuditCrud: React.FC = () => {
         onClose={() => setRevertDrawerOpen(false)}
         onSubmit={handleRevertSubmit}
         record={revertRecord}
-        branchList={branchList}
-        branchLoading={branchLoading}
+        branchDropdown={branchDropdown}
         loading={revertLoading}
       />
       <StockOutDrawer
@@ -233,8 +238,7 @@ const StockAuditCrud: React.FC = () => {
         onClose={() => setStorageAllocateDrawerOpen(false)}
         onSubmit={handleStorageAllocateSubmit}
         record={storageAllocateRecord}
-        rackList={rackList}
-        rackLoading={rackLoading}
+        rackDropdown={rackDropdown}
         createLoading={storageLoading}
       />
     </>
