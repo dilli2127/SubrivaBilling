@@ -46,37 +46,57 @@ const VendorSelectionModalComponent: React.FC<VendorSelectionModalProps> = ({
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
+  const [page, setPage] = useState(1);
+  const [allVendors, setAllVendors] = useState<Vendor[]>([]);
+  const [hasMore, setHasMore] = useState(true);
   const [selectedVendor, setSelectedVendor] = useState<Vendor | null>(null);
   const [selectedRowIndex, setSelectedRowIndex] = useState<number>(-1);
 
   const searchInputRef = useRef<any>(null);
   const modalRef = useRef<HTMLDivElement>(null);
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const isLoadingMoreRef = useRef(false);
 
-  // RTK Query hooks for Vendor
-  // Only fetch when modal is visible to prevent duplicate API calls
+  // RTK Query hooks for Vendor with pagination
   const { data: vendorData, isLoading: vendorLoading } = 
     apiSlice.useGetVendorQuery(
-      { searchString: debouncedSearchTerm },
-      { skip: !visible } // Only fetch when modal is open
+      { 
+        searchString: debouncedSearchTerm,
+        page: page,
+        limit: 10
+      },
+      { 
+        skip: !visible,
+        refetchOnMountOrArgChange: true,
+      }
     );
 
-  // Extract vendors from vendorData
-  const vendors = useMemo(() => {
-    if (!vendorData) return [];
-    return (vendorData as any)?.result || [];
-  }, [vendorData]);
+  // Accumulate vendors for infinite scroll
+  useEffect(() => {
+    if (!visible) return;
+    
+    if (vendorData) {
+      const newItems = (vendorData as any)?.result || [];
+      const totalCount = (vendorData as any).pagination?.totalCount || (vendorData as any).pagination?.total || 0;
+      
+      if (page === 1) {
+        setAllVendors(newItems);
+        setHasMore(newItems.length < totalCount && newItems.length > 0);
+      } else {
+        setAllVendors(prev => {
+          const existingIds = new Set(prev.map((item: any) => item._id));
+          const uniqueNewItems = newItems.filter((item: any) => !existingIds.has(item._id));
+          const updated = [...prev, ...uniqueNewItems];
+          setHasMore(updated.length < totalCount && uniqueNewItems.length > 0);
+          return updated;
+        });
+      }
+      
+      isLoadingMoreRef.current = false;
+    }
+  }, [vendorData, page, visible]);
 
-  // Memoized filtered vendors - filter locally for instant UI feedback
-  const filteredVendors = useMemo(() => {
-    if (!searchTerm.trim()) return vendors;
-    const term = searchTerm.toLowerCase();
-    return vendors.filter((vendor: Vendor) =>
-      vendor.vendor_name?.toLowerCase().includes(term) ||
-      vendor.contact_number?.includes(term) ||
-      vendor.email?.toLowerCase().includes(term)
-    );
-  }, [vendors, searchTerm]);
+  const filteredVendors = allVendors;
 
   // Memoized vendor type color function
   const getVendorTypeColor = useCallback((type?: string) => {
@@ -88,14 +108,22 @@ const VendorSelectionModalComponent: React.FC<VendorSelectionModalProps> = ({
     return colorMap[type || 'regular'] || 'green';
   }, []);
 
-  // Debounce search term for API calls
+  // Debounce search term for API calls with pagination reset
   useEffect(() => {
+    if (!visible) return;
+
+    if (searchTerm === debouncedSearchTerm) return;
+
     if (searchTimeoutRef.current) {
       clearTimeout(searchTimeoutRef.current);
     }
 
     searchTimeoutRef.current = setTimeout(() => {
       setDebouncedSearchTerm(searchTerm);
+      setPage(1);
+      setAllVendors([]);
+      setHasMore(true);
+      isLoadingMoreRef.current = false;
     }, 300);
 
     return () => {
@@ -103,7 +131,23 @@ const VendorSelectionModalComponent: React.FC<VendorSelectionModalProps> = ({
         clearTimeout(searchTimeoutRef.current);
       }
     };
-  }, [searchTerm]);
+  }, [searchTerm, debouncedSearchTerm, visible]);
+
+  // Reset state when modal opens/closes
+  useEffect(() => {
+    if (visible) {
+      setPage(1);
+      setHasMore(true);
+      isLoadingMoreRef.current = false;
+    } else {
+      setSearchTerm('');
+      setDebouncedSearchTerm('');
+      setPage(1);
+      setAllVendors([]);
+      setHasMore(true);
+      isLoadingMoreRef.current = false;
+    }
+  }, [visible]);
 
   // Handle search input change
   const handleSearch = useCallback((value: string) => {
@@ -384,16 +428,37 @@ const VendorSelectionModalComponent: React.FC<VendorSelectionModalProps> = ({
             </Text>
           </div>
         ) : (
-          <Table
-            columns={columns}
-            dataSource={filteredVendors}
-            rowKey="_id"
-            pagination={false}
-            size="small"
-            scroll={{ y: 300 }}
-            onRow={getRowProps}
-            className="vendor-selection-table"
-          />
+          <div
+            onScroll={(e: any) => {
+              const target = e.currentTarget;
+              const scrollTop = target.scrollTop;
+              const scrollHeight = target.scrollHeight;
+              const clientHeight = target.clientHeight;
+              const scrollPercentage = (scrollTop + clientHeight) / scrollHeight;
+              
+              if (scrollPercentage > 0.7 && hasMore && !vendorLoading && !isLoadingMoreRef.current) {
+                isLoadingMoreRef.current = true;
+                setPage(prev => prev + 1);
+              }
+            }}
+            style={{ maxHeight: 360, overflowY: 'auto' }}
+          >
+            <Table
+              columns={columns}
+              dataSource={filteredVendors}
+              rowKey="_id"
+              pagination={false}
+              size="small"
+              scroll={{ y: undefined }}
+              onRow={getRowProps}
+              className="vendor-selection-table"
+            />
+            {hasMore && filteredVendors.length > 0 && (
+              <div style={{ textAlign: 'center', padding: '8px', color: '#999', borderTop: '1px solid #f0f0f0' }}>
+                {vendorLoading ? 'Loading more...' : 'Scroll for more vendors'}
+              </div>
+            )}
+          </div>
         )}
       </div>
 

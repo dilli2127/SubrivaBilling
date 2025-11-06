@@ -13,37 +13,34 @@ export const useBillData = (billdata?: any) => {
   const organisationId = user?.organisation_id || user?.organisationItems?._id;
 
   // RTK Query API hooks
-  const ProductsApi = useGenericCrudRTK('Product');
-  const CustomerApi = useGenericCrudRTK('Customer');
-  const VendorApi = useGenericCrudRTK('Vendor');
-  const BillingUsersApi = useGenericCrudRTK('BillingUsers');
   const SalesRecord = useGenericCrudRTK('SalesRecord');
   const InvoiceNumberApi = useGenericCrudRTK('InvoiceNumber');
 
-  // Fetch all data
+  // Skip products - will load when modal opens (like Customer/Vendor/User)
+  // Selected product data will be stored in bill items for calculations
   const {
     data: productListData,
     isLoading: productLoading,
     refetch: refetchProducts,
-  } = ProductsApi.useGetAll();
+  } = apiSlice.useGetProductQuery({}, { skip: true });
 
   const {
     data: customerListData,
     isLoading: customerLoading,
     refetch: refetchCustomers,
-  } = CustomerApi.useGetAll();
+  } = apiSlice.useGetCustomerQuery({}, { skip: true });
 
   const {
     data: vendorListData,
     isLoading: vendorLoading,
     refetch: refetchVendors,
-  } = VendorApi.useGetAll();
+  } = apiSlice.useGetVendorQuery({}, { skip: true });
 
   const {
     data: userListData,
     isLoading: userLoading,
     refetch: refetchUsers,
-  } = BillingUsersApi.useGetAll();
+  } = apiSlice.useGetBillingUsersQuery({}, { skip: true });
 
   // Stock APIs - conditional based on branch
   const {
@@ -75,22 +72,22 @@ export const useBillData = (billdata?: any) => {
 
   // Extract results from API responses
   const productListResult = useMemo(
-    () => (Array.isArray(productListData?.result) ? productListData.result : []),
+    () => (Array.isArray((productListData as any)?.result) ? (productListData as any).result : []),
     [productListData]
   );
 
   const customerListResult = useMemo(
-    () => (Array.isArray(customerListData?.result) ? customerListData.result : []),
+    () => (Array.isArray((customerListData as any)?.result) ? (customerListData as any).result : []),
     [customerListData]
   );
 
   const vendorListResult = useMemo(
-    () => (Array.isArray(vendorListData?.result) ? vendorListData.result : []),
+    () => (Array.isArray((vendorListData as any)?.result) ? (vendorListData as any).result : []),
     [vendorListData]
   );
 
   const userListResult = useMemo(
-    () => (Array.isArray(userListData?.result) ? userListData.result : []),
+    () => (Array.isArray((userListData as any)?.result) ? (userListData as any).result : []),
     [userListData]
   );
 

@@ -11,7 +11,9 @@ interface BillHeaderProps {
     invoice_no: string;
     date: string;
     customer_id: string;
+    customer_name?: string;
     billed_by_id?: string;
+    billed_by_name?: string;
     payment_mode: string;
   };
   customerOrVendorOptions: Array<{ label: string; value: string }>;
@@ -55,8 +57,8 @@ const BillHeader: React.FC<BillHeaderProps> = ({
         key: 'customer_id',
         title: documentType === 'bill' ? '👤 CUSTOMER' : '🏢 VENDOR',
         dataIndex: 'customer_id',
-        type: 'select',
-        options: customerOrVendorOptions,
+        type: 'text',
+        editable: false,
         required: true,
         width: 250,
         render: (value: any) => {
@@ -65,6 +67,8 @@ const BillHeader: React.FC<BillHeaderProps> = ({
           );
           const isVendor = documentType === 'invoice';
           const placeholderText = isVendor ? 'Select vendor' : 'Select customer';
+          const displayLabel =
+            selectedItem?.label || billFormData.customer_name || placeholderText;
           const tooltipText = isVendor
             ? 'Click to open vendor selection modal (or press End key)'
             : 'Click to open customer selection modal (or press End key)';
@@ -93,7 +97,7 @@ const BillHeader: React.FC<BillHeaderProps> = ({
                   e.currentTarget.style.borderColor = '#d9d9d9';
                 }}
               >
-                <span>{selectedItem ? selectedItem.label : placeholderText}</span>
+                <span>{displayLabel}</span>
                 <span
                   style={{
                     fontSize: '10px',
@@ -115,12 +119,13 @@ const BillHeader: React.FC<BillHeaderProps> = ({
         key: 'billed_by_id',
         title: '👨‍💼 BILLED BY',
         dataIndex: 'billed_by_id',
-        type: 'select',
-        options: userOptions,
+        type: 'text',
+        editable: false,
         required: false,
         width: 250,
         render: (value: any) => {
           const selectedUser = userOptions.find((opt: any) => opt.value === value);
+          const displayLabel = selectedUser?.label || billFormData.billed_by_name || 'Select user';
           return (
             <Tooltip title="Click to open user selection modal (or press Ctrl+U key)">
               <div
@@ -145,7 +150,7 @@ const BillHeader: React.FC<BillHeaderProps> = ({
                   e.currentTarget.style.borderColor = '#d9d9d9';
                 }}
               >
-                <span>{selectedUser ? selectedUser.label : 'Select user'}</span>
+                <span>{displayLabel}</span>
                 <span
                   style={{
                     fontSize: '10px',

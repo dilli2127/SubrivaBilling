@@ -10,7 +10,6 @@ interface BillSettings {
 
 export const useBillCalculations = (
   items: BillItem[],
-  productList: any[],
   billSettings: BillSettings
 ) => {
   const billCalculations = useMemo(() => {
@@ -27,12 +26,12 @@ export const useBillCalculations = (
 
     return calculateBillTotals({
       items,
-      productList,
+      productList: [], // Not needed - tax_percentage stored in bill items
       isGstIncluded: billSettings.isGstIncluded,
       discount: billSettings.discount,
       discountType: billSettings.discountType,
     });
-  }, [items, productList, billSettings]);
+  }, [items, billSettings]);
 
   return billCalculations;
 };

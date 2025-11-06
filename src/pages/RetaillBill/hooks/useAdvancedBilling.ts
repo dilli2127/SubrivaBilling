@@ -43,25 +43,16 @@ export const useAdvancedBilling = ({ billdata, onSuccess }: AdvancedBillingProps
 
   // 4. Item Management & Calculations
   const items = useBillItems({
-    productOptions: useMemo(
-      () =>
-        billData.productListResult.map((product: any) => ({
-          label: `${product.name} ${product?.VariantItem?.variant_name || ''}`.trim(),
-          value: product._id,
-        })),
-      [billData.productListResult]
-    ),
+    productOptions: [], // Not needed - product data stored in bill items
     branchId: billData.branchId,
     branchStockListResult: billData.branchStockListResult,
     stockAuditListResult: billData.stockAuditListResult,
-    productListResult: billData.productListResult,
     billSettings: form.billSettings,
   });
 
   // 5. Bill Calculations
   const billCalculations = useBillCalculations(
     form.billFormData.items,
-    billData.productListResult,
     form.billSettings
   );
 
@@ -108,11 +99,31 @@ export const useAdvancedBilling = ({ billdata, onSuccess }: AdvancedBillingProps
 
   // Handle product selection
   const handleProductSelect = useCallback(
-    (product: any, rowIndex: number) => {
+    (product: any, rowOrIndex: any) => {
       const newItems = [...form.billFormData.items];
+      
+      // Find row index - AntdEditableTable passes row object, others might pass index number
+      let rowIndex: number;
+      if (typeof rowOrIndex === 'number') {
+        rowIndex = rowOrIndex;
+      } else {
+        // rowOrIndex is the row object - find its index by key
+        rowIndex = newItems.findIndex(item => (item as any).key === rowOrIndex.key);
+      }
+      
+      if (rowIndex === -1) {
+        console.error('❌ Could not find row index for product selection!');
+        return;
+      }
+      
+      // Store ALL product data (including tax %) for calculations
       newItems[rowIndex].product_id = product.id || product._id || '';
       newItems[rowIndex].product_name = product.name || '';
+      newItems[rowIndex].variant_name = product.VariantItem?.variant_name || '';
       newItems[rowIndex].price = product.selling_price || 0;
+      newItems[rowIndex].tax_percentage = product.CategoryItem?.tax_percentage || 0;
+      newItems[rowIndex].category_name = product.CategoryItem?.category_name || '';
+      
       handleItemsChange(newItems);
       modals.openStockModal(rowIndex);
     },
@@ -125,11 +136,28 @@ export const useAdvancedBilling = ({ billdata, onSuccess }: AdvancedBillingProps
       if (modals.stockModalRowIndex === null) return;
 
       const newItems = [...form.billFormData.items];
-      newItems[modals.stockModalRowIndex].stock_id = stock.id || stock._id || '';
-      newItems[modals.stockModalRowIndex].batch_no = stock.batch_no || '';
+      const rowIndex = modals.stockModalRowIndex;
+      const currentItem = { ...newItems[rowIndex] };
+
+      currentItem.stock_id = stock.id || stock._id || '';
+      currentItem.batch_no = stock.batch_no || '';
+
+      const productFromStock = stock.ProductItem;
+      if (productFromStock) {
+        currentItem.product_id = currentItem.product_id || productFromStock._id || '';
+        currentItem.product_name = productFromStock.name || currentItem.product_name || '';
+        currentItem.variant_name =
+          currentItem.variant_name || productFromStock.VariantItem?.variant_name || '';
+        currentItem.tax_percentage =
+          typeof currentItem.tax_percentage === 'number' && currentItem.tax_percentage !== undefined
+            ? currentItem.tax_percentage
+            : productFromStock.CategoryItem?.tax_percentage || 0;
+        currentItem.category_name =
+          currentItem.category_name || productFromStock.CategoryItem?.category_name || '';
+      }
 
       // Save stock data for display AND price calculation
-      (newItems[modals.stockModalRowIndex] as any).stockData = {
+      (currentItem as any).stockData = {
         _id: stock.id || stock._id,
         available_quantity: stock.available_quantity || 0,
         available_loose_quantity: stock.available_loose_quantity || 0,
@@ -139,6 +167,8 @@ export const useAdvancedBilling = ({ billdata, onSuccess }: AdvancedBillingProps
         mrp: stock.mrp || stock.sell_price || 0,
         ProductItem: stock.ProductItem,
       };
+
+      newItems[rowIndex] = currentItem;
 
       handleItemsChange(newItems);
       modals.closeStockModal();
@@ -355,11 +385,9 @@ export const useAdvancedBilling = ({ billdata, onSuccess }: AdvancedBillingProps
 
   // 8. Initialize data on mount
   useEffect(() => {
-    if (!billData.productListResult.length) billData.refetchProducts();
-    if (!billData.customerListResult.length) billData.refetchCustomers();
-    if (!billData.vendorListResult.length) billData.refetchVendors();
-    if (!billData.userListResult.length) billData.refetchUsers();
-
+    // Products, Customers, Vendors, Users: All loaded by modals when opened
+    // Selected product data (with tax %) is stored in bill items for calculations
+    
     // Get invoice number for new bills
     if (!billdata && !billData.invoice_no_create_loading && !form.billFormData.invoice_no) {
       billData.refetchInvoiceNo();
@@ -468,41 +496,77 @@ export const useAdvancedBilling = ({ billdata, onSuccess }: AdvancedBillingProps
     shortcuts,
 
     // Options for dropdowns
-    productOptions: useMemo(
-      () =>
-        billData.productListResult.map((product: any) => ({
-          label: `${product.name} ${product?.VariantItem?.variant_name || ''}`.trim(),
-          value: product._id,
-        })),
-      [billData.productListResult]
-    ),
+    // Product options not needed - products loaded in modal on demand
+    productOptions: [],
     
-    customerOptions: useMemo(
-      () =>
-        billData.customerListResult.map((customer: any) => ({
-          label: `${customer.full_name} - ${customer.mobile}`,
-          value: customer._id,
-        })),
-      [billData.customerListResult]
-    ),
+    customerOptions: useMemo(() => {
+      const options = billData.customerListResult.map((customer: any) => ({
+        label: `${customer.full_name} - ${customer.mobile}`,
+        value: customer._id,
+      }));
+
+      if (form.billFormData.customer_id && form.billFormData.customer_name) {
+        const exists = options.some((opt: { value: string }) => opt.value === form.billFormData.customer_id);
+        if (!exists) {
+          options.push({
+            value: form.billFormData.customer_id,
+            label: form.billFormData.customer_name,
+          });
+        }
+      }
+
+      return options;
+    }, [
+      billData.customerListResult,
+      form.billFormData.customer_id,
+      form.billFormData.customer_name,
+    ]),
     
-    vendorOptions: useMemo(
-      () =>
-        billData.vendorListResult.map((vendor: any) => ({
-          label: `${vendor.vendor_name} - ${vendor.contact_number || 'N/A'}`,
-          value: vendor._id,
-        })),
-      [billData.vendorListResult]
-    ),
+    vendorOptions: useMemo(() => {
+      const options = billData.vendorListResult.map((vendor: any) => ({
+        label: `${vendor.vendor_name} - ${vendor.contact_number || 'N/A'}`,
+        value: vendor._id,
+      }));
+
+      if (form.billFormData.customer_id && form.billFormData.customer_name) {
+        const exists = options.some((opt: { value: string }) => opt.value === form.billFormData.customer_id);
+        if (!exists) {
+          options.push({
+            value: form.billFormData.customer_id,
+            label: form.billFormData.customer_name,
+          });
+        }
+      }
+
+      return options;
+    }, [
+      billData.vendorListResult,
+      form.billFormData.customer_id,
+      form.billFormData.customer_name,
+    ]),
     
-    userOptions: useMemo(
-      () =>
-        billData.userListResult.map((user: any) => ({
-          label: `${user.name} (${user.roleItems?.name || 'No Role'})`,
-          value: user._id,
-        })),
-      [billData.userListResult]
-    ),
+    userOptions: useMemo(() => {
+      const options = billData.userListResult.map((user: any) => ({
+        label: `${user.name} (${user.roleItems?.name || 'No Role'})`,
+        value: user._id,
+      }));
+
+      if (form.billFormData.billed_by_id && form.billFormData.billed_by_name) {
+        const exists = options.some((opt: { value: string }) => opt.value === form.billFormData.billed_by_id);
+        if (!exists) {
+          options.push({
+            value: form.billFormData.billed_by_id,
+            label: form.billFormData.billed_by_name,
+          });
+        }
+      }
+
+      return options;
+    }, [
+      billData.userListResult,
+      form.billFormData.billed_by_id,
+      form.billFormData.billed_by_name,
+    ]),
   };
 };
 

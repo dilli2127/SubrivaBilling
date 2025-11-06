@@ -142,12 +142,9 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
                 required: true,
                 width: 280,
                 render: (value: any, record: any, index?: number) => {
-                  const selectedProduct = productOptions.find(
-                    (opt: any) => opt.value === value
-                  );
+                  // Use product data stored in bill item (not from options)
                   const displayName = value
-                    ? selectedProduct?.label ||
-                      (record.product_name
+                    ? (record.product_name
                         ? `${record.product_name}${record.variant_name ? ` ${record.variant_name}` : ''}`.trim()
                         : 'Unknown Product')
                     : 'Select product';
@@ -473,12 +470,17 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
         visible={modals.productSelectionModalVisible}
         onSelect={product => {
           if (modals.productSelectionRowIndex === null) return;
+          
           const newItems = [...form.billFormData.items];
+          // Store ALL product data (including tax %) for calculations
           newItems[modals.productSelectionRowIndex].product_id = product._id || '';
           newItems[modals.productSelectionRowIndex].product_name = product.name || '';
           newItems[modals.productSelectionRowIndex].variant_name =
             product.VariantItem?.variant_name || '';
           newItems[modals.productSelectionRowIndex].price = product.selling_price || 0;
+          newItems[modals.productSelectionRowIndex].tax_percentage = product.CategoryItem?.tax_percentage || 0;
+          newItems[modals.productSelectionRowIndex].category_name = product.CategoryItem?.category_name || '';
+          
           billing.handleItemsChange(newItems);
           modals.closeProductSelectionModal();
           modals.openStockModal(modals.productSelectionRowIndex);

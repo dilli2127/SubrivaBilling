@@ -180,6 +180,7 @@ export interface BillItem {
   product_id: string;
   product_name: string;
   variant_name: string;
+  category_name?: string; // Category name for reference
   stock_id: string;
   batch_no?: string;
   qty: number;

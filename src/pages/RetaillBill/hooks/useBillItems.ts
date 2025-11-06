@@ -7,7 +7,6 @@ interface UseBillItemsProps {
   branchId: string | undefined;
   branchStockListResult: any[];
   stockAuditListResult: any[];
-  productListResult: any[];
   billSettings: {
     isGstIncluded: boolean;
   };
@@ -18,14 +17,26 @@ export const useBillItems = ({
   branchId,
   branchStockListResult,
   stockAuditListResult,
-  productListResult,
   billSettings,
 }: UseBillItemsProps) => {
   // Calculate item amounts with proper price and tax
   const calculateItemAmounts = useCallback(
     (items: BillItem[]) => {
       return items.map(item => {
-        if (!item.product_id || !item.stock_id) return item;
+        // If no product selected at all, return as is
+        if (!item.product_id) return item;
+
+        // If product selected but no stock yet, preserve product data
+        if (!item.stock_id) {
+          return {
+            ...item,
+            // Preserve product/variant names and tax even without stock
+            product_name: item.product_name || '',
+            variant_name: item.variant_name || '',
+            tax_percentage: item.tax_percentage || 0,
+            category_name: item.category_name || '',
+          };
+        }
 
         // First try to use saved stockData (for new bills where stock list isn't loaded)
         const savedStockData = (item as any).stockData;
@@ -49,9 +60,9 @@ export const useBillItems = ({
 
           const baseAmount = (item.qty || 0) * sellPrice + (item.loose_qty || 0) * looseRate;
 
-          // Get product for tax calculation
-          const product = productListResult.find((p: any) => p._id === item.product_id);
-          const taxPercentage = product?.CategoryItem?.tax_percentage || 0;
+          // Use tax_percentage from bill item (stored when product was selected)
+          // No need to lookup product - all data already in item
+          const taxPercentage = item.tax_percentage || 0;
 
           let amount = baseAmount;
           if (!billSettings.isGstIncluded) {
@@ -64,8 +75,10 @@ export const useBillItems = ({
             mrp: stock.mrp || sellPrice,
             amount: amount,
             tax_percentage: taxPercentage,
-            product_name: product?.name || item.product_name || '',
-            variant_name: product?.VariantItem?.variant_name || item.variant_name || '',
+            // Keep product/variant names from item (already stored when selected)
+            product_name: item.product_name || '',
+            variant_name: item.variant_name || '',
+            category_name: item.category_name || '',
             batch_no: stock.batch_no || item.batch_no || '',
             stockData: stock, // Attach stock data for UI display
           };
@@ -74,7 +87,7 @@ export const useBillItems = ({
         return item;
       });
     },
-    [branchId, branchStockListResult, stockAuditListResult, productListResult, billSettings]
+    [branchId, branchStockListResult, stockAuditListResult, billSettings]
   );
 
   // Validate stock quantities
@@ -83,10 +96,7 @@ export const useBillItems = ({
       return items.map(item => {
         const billItem: BillItem = {
           product_id: item.product_id || '',
-          product_name:
-            productOptions.find(
-              (opt: { label: string; value: string }) => opt.value === item.product_id
-            )?.label || '',
+          product_name: item.product_name || '',
           variant_name: item.variant_name || '',
           stock_id: item.stock_id || '',
           batch_no: item.batch_no || '',
@@ -96,6 +106,7 @@ export const useBillItems = ({
           mrp: item.mrp || 0,
           amount: item.amount || 0,
           tax_percentage: item.tax_percentage || 0,
+          category_name: item.category_name || '',
           stockData: (item as any).stockData,
         };
 
@@ -139,7 +150,7 @@ export const useBillItems = ({
         return billItem;
       });
     },
-    [productOptions, branchId, branchStockListResult, stockAuditListResult]
+    [branchId, branchStockListResult, stockAuditListResult]
   );
 
   const handleItemsChange = useCallback(
