@@ -290,8 +290,19 @@ const ClassicInvoiceTemplate: React.FC<ClassicInvoiceTemplateProps> = ({
           <div style={{ textAlign: 'right' }}>
             <p style={{ margin: '32px 0 0 0', borderTop: '1px solid #333', paddingTop: 8, fontSize: 13 }}>
               Authorized Signatory
+              <br />
+              <span style={{ fontSize: 11, fontWeight: 'normal', color: '#666' }}>
+                For {billData?.organisationItems?.org_name || userItem?.organisationItems?.org_name || 'Company Name'}
+              </span>
             </p>
           </div>
+        </div>
+
+        {/* Company Branding Footer */}
+        <div style={{ marginTop: 20, textAlign: 'center', paddingTop: 16, borderTop: '1px solid #ddd' }}>
+          <p style={{ margin: 0, fontSize: 11, color: '#888' }}>
+            Powered by <strong style={{ color: '#333' }}>Subriva Billing</strong>
+          </p>
         </div>
       </div>
     </div>

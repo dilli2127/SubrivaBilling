@@ -336,9 +336,9 @@ const ProfessionalInvoiceTemplate: React.FC<ProfessionalInvoiceTemplateProps> = 
           )}
           
           <div style={{ textAlign: 'center', marginTop: 16 }}>
-            <div style={{ fontSize: 10 }}>For {userItem?.organisationItems?.org_name || 'Company Name'}</div>
+            <div style={{ fontSize: 10 }}>For {billData?.organisationItems?.org_name || userItem?.organisationItems?.org_name || 'Company Name'}</div>
             <div style={{ borderTop: '1px solid #000', marginTop: 24, paddingTop: 4, fontSize: 9 }}>
-              Signature
+              Authorized Signature
             </div>
           </div>
         </div>
@@ -352,8 +352,10 @@ const ProfessionalInvoiceTemplate: React.FC<ProfessionalInvoiceTemplateProps> = 
       )}
 
       {/* Footer Branding */}
-      <div style={{ textAlign: 'center', marginTop: 16, fontSize: 9, color: '#666' }}>
-        Invoice Created by Subriva Billing
+      <div style={{ textAlign: 'center', marginTop: 16, paddingTop: 12, borderTop: '1px solid #ddd', fontSize: 10, color: '#888' }}>
+        <p style={{ margin: 0 }}>
+          Powered by <strong style={{ color: '#333' }}>Subriva Billing</strong>
+        </p>
       </div>
     </div>
   );

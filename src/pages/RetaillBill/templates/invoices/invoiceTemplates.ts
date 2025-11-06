@@ -1,6 +1,7 @@
 import ClassicInvoiceTemplate from './ClassicInvoiceTemplate';
 import ModernInvoiceTemplate from './ModernInvoiceTemplate';
 import ProfessionalInvoiceTemplate from './ProfessionalInvoiceTemplate';
+import ProfessionalTaxInvoiceTemplate from './ProfessionalTaxInvoiceTemplate';
 
 /**
  * Invoice Templates Registry
@@ -21,6 +22,11 @@ export const invoiceTemplates = {
     label: 'Professional Bill of Supply',
     component: ProfessionalInvoiceTemplate,
     description: 'Comprehensive invoice with terms, bank details, and QR code',
+  },
+  advanced: {
+    label: 'Professional Tax Invoice',
+    component: ProfessionalTaxInvoiceTemplate,
+    description: 'Professional GST-compliant invoice with detailed breakdowns and modern layout',
   },
 };
 

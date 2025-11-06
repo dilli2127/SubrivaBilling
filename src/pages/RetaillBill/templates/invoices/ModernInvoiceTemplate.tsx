@@ -338,6 +338,9 @@ const ModernInvoiceTemplate: React.FC<ModernInvoiceTemplateProps> = ({
             <div style={{ textAlign: 'center' }}>
               <div style={{ borderTop: '2px solid #333', paddingTop: 8, width: 200 }}>
                 <p style={{ margin: 0, fontSize: 13, fontWeight: 'bold' }}>Authorized Signature</p>
+                <p style={{ margin: '4px 0 0 0', fontSize: 11, color: '#666', fontWeight: 'normal' }}>
+                  For {billData?.organisationItems?.org_name || userItem?.organisationItems?.org_name || 'Company Name'}
+                </p>
               </div>
             </div>
           </div>
@@ -353,6 +356,13 @@ const ModernInvoiceTemplate: React.FC<ModernInvoiceTemplateProps> = ({
         fontSize: 12
       }}>
         {settings?.invoice_footer || 'Thank you for your business!'}
+      </div>
+
+      {/* Company Branding Footer */}
+      <div style={{ padding: '16px 32px', textAlign: 'center', background: '#f9f9f9' }}>
+        <p style={{ margin: 0, fontSize: 11, color: '#888' }}>
+          Powered by <strong style={{ color: '#667eea' }}>Subriva Billing</strong>
+        </p>
       </div>
     </div>
   );
