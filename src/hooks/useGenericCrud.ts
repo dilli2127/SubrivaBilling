@@ -94,6 +94,11 @@ export const useGenericCrud = <T extends BaseEntity>(
     pageSize: 10,
   });
 
+  // Reset pagination to page 1 when filters change
+  useEffect(() => {
+    setPagination(prev => ({ ...prev, current: 1 }));
+  }, [debouncedFilters]);
+
   // Get RTK Query hooks for this entity
   const entityHooks = getEntityHooks(config.entityName);
 
