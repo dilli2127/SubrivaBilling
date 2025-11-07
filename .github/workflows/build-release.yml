@@ -21,6 +21,7 @@ jobs:
     timeout-minutes: 30
     
     strategy:
+      fail-fast: false
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest]
     
@@ -33,6 +34,12 @@ jobs:
         with:
           node-version: 18
           cache: 'npm'
+      
+      - name: Install Linux dependencies
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libarchive-tools
       
       - name: Install dependencies
         run: npm install
