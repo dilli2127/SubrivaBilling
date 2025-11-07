@@ -180,13 +180,27 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
                 render: (value: any, record: any, index?: number) => {
                   const stockData = (record as any).stockData;
                   const availableQty = stockData?.available_quantity || 0;
+                  const hasStock = record.stock_id || stockData;
+                  
+                  // Determine display text
+                  let displayText = 'Select Stock';
+                  if (hasStock) {
+                    // If we have batch_no, show it with quantity
+                    if (value) {
+                      displayText = `${value} (Qty: ${availableQty})`;
+                    } else {
+                      // If stock is selected but no batch_no, show stock ID
+                      displayText = `${record.stock_id?.slice(-8) || 'Stock'} (Qty: ${availableQty})`;
+                    }
+                  }
+                  
                   return (
                     <div
                       style={{
                         cursor: 'pointer',
                         padding: '4px 8px',
                         borderRadius: '4px',
-                        border: value ? '1px solid #52c41a' : '1px solid #d9d9d9',
+                        border: hasStock ? '1px solid #52c41a' : '1px solid #d9d9d9',
                       }}
                       onClick={() => {
                         if (record.product_id && typeof index === 'number') {
@@ -196,7 +210,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
                         }
                       }}
                     >
-                      <span>{value ? `${value} (Qty: ${availableQty})` : 'Select Stock'}</span>
+                      <span>{displayText}</span>
                     </div>
                   );
                 },

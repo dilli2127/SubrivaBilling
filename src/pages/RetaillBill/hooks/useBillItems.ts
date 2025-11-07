@@ -69,6 +69,9 @@ export const useBillItems = ({
             amount = baseAmount + (baseAmount * taxPercentage) / 100;
           }
 
+          // Ensure batch_no is properly extracted from stockData
+          const batchNo = stock.batch_no || item.batch_no || '';
+
           return {
             ...item,
             price: item.price || sellPrice,
@@ -79,8 +82,11 @@ export const useBillItems = ({
             product_name: item.product_name || '',
             variant_name: item.variant_name || '',
             category_name: item.category_name || '',
-            batch_no: stock.batch_no || item.batch_no || '',
-            stockData: stock, // Attach stock data for UI display
+            batch_no: batchNo,
+            stockData: {
+              ...stock,
+              batch_no: batchNo, // Ensure stockData also has batch_no
+            }, // Attach stock data for UI display
           };
         }
 
@@ -94,12 +100,16 @@ export const useBillItems = ({
   const validateStockQuantities = useCallback(
     (items: BillItem[]) => {
       return items.map(item => {
+        // Extract batch_no from item or stockData
+        const itemStockData = (item as any).stockData;
+        const batchNo = item.batch_no || itemStockData?.batch_no || '';
+        
         const billItem: BillItem = {
           product_id: item.product_id || '',
           product_name: item.product_name || '',
           variant_name: item.variant_name || '',
           stock_id: item.stock_id || '',
-          batch_no: item.batch_no || '',
+          batch_no: batchNo,
           qty: item.qty || 0,
           loose_qty: item.loose_qty || 0,
           price: item.price || 0,
@@ -107,7 +117,7 @@ export const useBillItems = ({
           amount: item.amount || 0,
           tax_percentage: item.tax_percentage || 0,
           category_name: item.category_name || '',
-          stockData: (item as any).stockData,
+          stockData: itemStockData,
         };
 
         // Stock validation for pack and loose quantities
