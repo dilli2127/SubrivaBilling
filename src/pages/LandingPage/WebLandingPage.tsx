@@ -48,7 +48,7 @@ const WebLandingPage: React.FC = () => {
     });
 
     // Web browser download
-    const downloadUrl = 'https://freshfocuzstudio.s3.ap-south-1.amazonaws.com/SubrivaBilling/SubrivaBilling-V.1.0.1.exe';
+    const downloadUrl = 'https://freshfocuzstudio.s3.ap-south-1.amazonaws.com/SubrivaBilling/SubrivaBilling+Setup+2.0.2.exe';
     const link = document.createElement('a');
     link.href = downloadUrl;
     link.download = 'SubrivaBilling Setup 1.0.1.exe';
