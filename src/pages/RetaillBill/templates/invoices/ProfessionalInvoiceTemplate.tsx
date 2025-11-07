@@ -22,29 +22,27 @@ const ProfessionalInvoiceTemplate: React.FC<ProfessionalInvoiceTemplateProps> = 
     return <div>No data to display</div>;
   }
 
-  // Calculate totals (ensure all values are numbers)
-  const valueOfGoods = billData?.items?.reduce((sum: number, item: any) => {
+  // Check if GST is inclusive or exclusive
+  const isGstInclusive = billData?.is_gst_included ?? true;
+  
+  // Use backend calculated values (correct calculations)
+  const valueOfGoods = Number(billData?.value_of_goods || 0);
+  const cgst = Number(billData?.cgst || (billData?.total_gst || 0) / 2);
+  const sgst = Number(billData?.sgst || (billData?.total_gst || 0) / 2);
+  const totalGst = cgst + sgst;
+  const grandTotal = Number(billData?.total_amount || billData?.total || 0);
+  
+  // Discount calculation
+  const discount = Number(billData?.discount || 0);
+  const discountValue = Number(billData?.discountValue || billData?.discount_value || 0);
+  const discountAmount = discountValue > 0 ? discountValue : (billData?.discount_type === 'percentage' ? (valueOfGoods * discount / 100) : discount);
+  
+  // For display purposes - calculate item totals
+  const itemsTotal = billData?.items?.reduce((sum: number, item: any) => {
     const qty = Number(item?.qty || item?.quantity || 0);
     const price = Number(item?.price || 0);
     return sum + (qty * price);
   }, 0) || 0;
-  
-  const subtotal = billData?.items?.reduce((sum: number, item: any) => sum + Number(item.amount || 0), 0) || 0;
-  const discount = Number(billData?.discount || 0);
-  const discountAmount = billData?.discount_type === 'percentage' 
-    ? (subtotal * discount / 100) 
-    : discount;
-  const taxableAmount = subtotal - discountAmount;
-  const cgst = Number(billData?.cgst || (billData?.total_gst || 0) / 2);
-  const sgst = Number(billData?.sgst || (billData?.total_gst || 0) / 2);
-  const totalGst = cgst + sgst;
-  
-  // Check if GST is inclusive or exclusive
-  const isGstInclusive = billData?.is_gst_included ?? true;
-  
-  // If GST is inclusive, the taxableAmount already contains GST, so don't add it again
-  // If GST is exclusive, add GST on top
-  const grandTotal = isGstInclusive ? taxableAmount : taxableAmount + totalGst;
 
   // Convert amount to words
   const numberToWords = (num: number): string => {
@@ -63,6 +61,9 @@ const ProfessionalInvoiceTemplate: React.FC<ProfessionalInvoiceTemplateProps> = 
   };
 
   const amountInWords = `Rs. ${numberToWords(Math.floor(grandTotal))} Only`;
+  
+  // Subtotal for display (same as total for inclusive, value + gst for exclusive)
+  const displaySubtotal = grandTotal;
 
   return (
     <div style={{ 
@@ -109,6 +110,9 @@ const ProfessionalInvoiceTemplate: React.FC<ProfessionalInvoiceTemplateProps> = 
         <div style={{ fontSize: 10, marginTop: 4 }}>
           <strong>GSTIN -</strong> {billData?.organisationItems?.gst_number || userItem?.organisationItems?.gst_number || ''} | 
           <strong> PAN -</strong> {billData?.organisationItems?.pan_number || userItem?.organisationItems?.pan_number || ''}
+        </div>
+        <div style={{ fontSize: 9, marginTop: 8, padding: '4px 8px', background: isGstInclusive ? '#fff3cd' : '#d1ecf1', border: `1px solid ${isGstInclusive ? '#ffc107' : '#17a2b8'}`, borderRadius: 3, display: 'inline-block', fontWeight: 'bold', color: isGstInclusive ? '#856404' : '#0c5460' }}>
+          {isGstInclusive ? '⚠️ Tax Inclusive' : 'ℹ️ Tax Exclusive'} - Prices {isGstInclusive ? 'include' : 'exclude'} GST
         </div>
       </div>
 
@@ -166,7 +170,10 @@ const ProfessionalInvoiceTemplate: React.FC<ProfessionalInvoiceTemplateProps> = 
             <th style={thStyle}>Qty</th>
             <th style={thStyle}>Price</th>
             <th style={thStyle}>Discount</th>
-            <th style={thStyle}>Tax %</th>
+            <th style={thStyle}>CGST %</th>
+            <th style={thStyle}>CGST Amt</th>
+            <th style={thStyle}>SGST %</th>
+            <th style={thStyle}>SGST Amt</th>
             <th style={thStyle}>Amount</th>
           </tr>
         </thead>
@@ -177,7 +184,34 @@ const ProfessionalInvoiceTemplate: React.FC<ProfessionalInvoiceTemplateProps> = 
                 const qty = Number(item?.qty || item?.quantity || 0);
                 const price = Number(item?.price || 0);
                 const discount = Number(item?.discount || 0);
-                const valueOfGoods = qty * price;
+                const taxPercentage = Number(item?.tax_percentage || 0);
+                
+                // Calculate CGST and SGST (split tax equally)
+                const cgstPercent = taxPercentage / 2;
+                const sgstPercent = taxPercentage / 2;
+                
+                const itemSubtotal = qty * price;
+                
+                // If GST is inclusive, extract GST from the amount
+                // If GST is exclusive, calculate GST on top
+                let cgstAmount = 0;
+                let sgstAmount = 0;
+                
+                if (isGstInclusive) {
+                  // GST is included in price - extract it
+                  const gstFactor = (100 + taxPercentage) / 100;
+                  const priceWithoutGst = itemSubtotal / gstFactor;
+                  const totalGstAmount = itemSubtotal - priceWithoutGst;
+                  cgstAmount = totalGstAmount / 2;
+                  sgstAmount = totalGstAmount / 2;
+                } else {
+                  // GST is excluded - calculate on top
+                  cgstAmount = (itemSubtotal * cgstPercent) / 100;
+                  sgstAmount = (itemSubtotal * sgstPercent) / 100;
+                }
+                
+                // Amount includes GST (base + CGST + SGST)
+                const finalAmount = itemSubtotal + cgstAmount + sgstAmount;
                 
                 return (
                   <tr key={idx}>
@@ -187,8 +221,11 @@ const ProfessionalInvoiceTemplate: React.FC<ProfessionalInvoiceTemplateProps> = 
                     <td style={tdStyle}>{qty}</td>
                     <td style={tdStyle}>{price.toFixed(2)}</td>
                     <td style={tdStyle}>{discount.toFixed(2)}</td>
-                    <td style={tdStyle}>{Number(item?.tax_percentage || 0).toFixed(2)}%</td>
-                    <td style={tdStyle}>{valueOfGoods.toFixed(2)}</td>
+                    <td style={tdStyle}>{cgstPercent.toFixed(2)}%</td>
+                    <td style={tdStyle}>{cgstAmount.toFixed(2)}</td>
+                    <td style={tdStyle}>{sgstPercent.toFixed(2)}%</td>
+                    <td style={tdStyle}>{sgstAmount.toFixed(2)}</td>
+                    <td style={tdStyle}>{finalAmount.toFixed(2)}</td>
                   </tr>
                 );
               })}
@@ -203,12 +240,15 @@ const ProfessionalInvoiceTemplate: React.FC<ProfessionalInvoiceTemplateProps> = 
                   <td style={tdStyle}>&nbsp;</td>
                   <td style={tdStyle}>&nbsp;</td>
                   <td style={tdStyle}>&nbsp;</td>
+                  <td style={tdStyle}>&nbsp;</td>
+                  <td style={tdStyle}>&nbsp;</td>
+                  <td style={tdStyle}>&nbsp;</td>
                 </tr>
               ))}
             </>
           ) : (
             <tr>
-              <td colSpan={8} style={{ ...tdStyle, textAlign: 'center' }}>No items</td>
+              <td colSpan={11} style={{ ...tdStyle, textAlign: 'center' }}>No items</td>
             </tr>
           )}
         </tbody>
@@ -233,19 +273,19 @@ const ProfessionalInvoiceTemplate: React.FC<ProfessionalInvoiceTemplateProps> = 
         <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 4 }}>
           <div style={{ width: 200, display: 'flex', justifyContent: 'space-between', padding: '4px 8px', borderBottom: '1px solid #ccc' }}>
             <span><strong>{isGstInclusive ? 'CGST (Incl):' : 'CGST:'}</strong></span>
-            <span>{isGstInclusive ? '' : '₹ '}{cgst.toFixed(2)}</span>
+            <span>₹ {cgst.toFixed(2)}</span>
           </div>
         </div>
         <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 4 }}>
           <div style={{ width: 200, display: 'flex', justifyContent: 'space-between', padding: '4px 8px', borderBottom: '1px solid #ccc' }}>
             <span><strong>{isGstInclusive ? 'SGST (Incl):' : 'SGST:'}</strong></span>
-            <span>{isGstInclusive ? '' : '₹ '}{sgst.toFixed(2)}</span>
+            <span>₹ {sgst.toFixed(2)}</span>
           </div>
         </div>
         <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 4 }}>
           <div style={{ width: 200, display: 'flex', justifyContent: 'space-between', padding: '4px 8px', borderBottom: '1px solid #ccc' }}>
             <span><strong>Subtotal:</strong></span>
-            <span>₹ {subtotal.toFixed(2)}</span>
+            <span>₹ {displaySubtotal.toFixed(2)}</span>
           </div>
         </div>
         <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 8 }}>

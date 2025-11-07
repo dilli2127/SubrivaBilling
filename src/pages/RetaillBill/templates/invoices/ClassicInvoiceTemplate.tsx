@@ -22,18 +22,16 @@ const ClassicInvoiceTemplate: React.FC<ClassicInvoiceTemplateProps> = ({
     return <div>No data to display</div>;
   }
 
-  // Calculate totals based on GST mode
-  const valueOfGoods = billData?.items?.reduce((sum: number, item: any) => {
-    const qty = Number(item?.qty || item?.quantity || 0);
-    const price = Number(item?.price || 0);
-    return sum + (qty * price);
-  }, 0) || 0;
+  // Check if GST is inclusive or exclusive
+  const isGstInclusive = billData?.is_gst_included ?? true;
   
-  const subtotal = Number(billData?.total || 0);
+  // Use backend calculated values (correct calculations)
+  const valueOfGoods = Number(billData?.value_of_goods || 0);
   const cgst = Number(billData?.cgst || (billData?.total_gst || 0) / 2);
   const sgst = Number(billData?.sgst || (billData?.total_gst || 0) / 2);
-  const isGstInclusive = billData?.is_gst_included ?? true;
-  const grandTotal = isGstInclusive ? subtotal : subtotal + cgst + sgst;
+  const totalGst = cgst + sgst;
+  const grandTotal = Number(billData?.total_amount || billData?.total || 0);
+  const displaySubtotal = grandTotal;
 
   return (
     <div
@@ -70,6 +68,9 @@ const ClassicInvoiceTemplate: React.FC<ClassicInvoiceTemplateProps> = ({
         <p style={{ margin: '4px 0', fontSize: 13 }}>
           <strong>GSTIN:</strong> {billData?.organisationItems?.gst_number || userItem?.organisationItems?.gst_number || ''} | 
           <strong> PAN:</strong> {billData?.organisationItems?.pan_number || userItem?.organisationItems?.pan_number || ''}
+        </p>
+        <p style={{ margin: '8px 0 0 0', fontSize: 12, padding: '6px 12px', background: isGstInclusive ? '#fff3cd' : '#d1ecf1', border: `1px solid ${isGstInclusive ? '#ffc107' : '#17a2b8'}`, borderRadius: 4, display: 'inline-block' }}>
+          <strong>{isGstInclusive ? '⚠️ Tax Inclusive' : 'ℹ️ Tax Exclusive'}</strong> - Prices {isGstInclusive ? 'include' : 'exclude'} GST
         </p>
       </div>
 
@@ -149,7 +150,10 @@ const ClassicInvoiceTemplate: React.FC<ClassicInvoiceTemplateProps> = ({
             <th style={thStyle}>Qty</th>
             <th style={thStyle}>Price</th>
             <th style={thStyle}>Discount</th>
-            <th style={thStyle}>Tax %</th>
+            <th style={thStyle}>CGST %</th>
+            <th style={thStyle}>CGST Amt</th>
+            <th style={thStyle}>SGST %</th>
+            <th style={thStyle}>SGST Amt</th>
             <th style={thStyle}>Amount</th>
           </tr>
         </thead>
@@ -159,7 +163,34 @@ const ClassicInvoiceTemplate: React.FC<ClassicInvoiceTemplateProps> = ({
               const qty = Number(item?.qty || item?.quantity || 0);
               const price = Number(item?.price || 0);
               const discount = Number(item?.discount || 0);
-              const valueOfGoods = qty * price;
+              const taxPercentage = Number(item?.tax_percentage || 0);
+              
+              // Calculate CGST and SGST (split tax equally)
+              const cgstPercent = taxPercentage / 2;
+              const sgstPercent = taxPercentage / 2;
+              
+              const itemSubtotal = qty * price;
+              
+              // If GST is inclusive, extract GST from the amount
+              // If GST is exclusive, calculate GST on top
+              let cgstAmount = 0;
+              let sgstAmount = 0;
+              
+              if (isGstInclusive) {
+                // GST is included in price - extract it
+                const gstFactor = (100 + taxPercentage) / 100;
+                const priceWithoutGst = itemSubtotal / gstFactor;
+                const totalGstAmount = itemSubtotal - priceWithoutGst;
+                cgstAmount = totalGstAmount / 2;
+                sgstAmount = totalGstAmount / 2;
+              } else {
+                // GST is excluded - calculate on top
+                cgstAmount = (itemSubtotal * cgstPercent) / 100;
+                sgstAmount = (itemSubtotal * sgstPercent) / 100;
+              }
+              
+              // Amount includes GST (base + CGST + SGST)
+              const finalAmount = itemSubtotal + cgstAmount + sgstAmount;
               
               return (
                 <tr key={idx} style={{ borderBottom: '1px solid #ddd' }}>
@@ -169,14 +200,17 @@ const ClassicInvoiceTemplate: React.FC<ClassicInvoiceTemplateProps> = ({
                   <td style={tdStyle}>{qty}</td>
                   <td style={tdStyle}>₹{price.toFixed(2)}</td>
                   <td style={tdStyle}>{discount.toFixed(2)}</td>
-                  <td style={tdStyle}>{Number(item?.tax_percentage || 0).toFixed(2)}%</td>
-                  <td style={tdStyle}>₹{valueOfGoods.toFixed(2)}</td>
+                  <td style={tdStyle}>{cgstPercent.toFixed(2)}%</td>
+                  <td style={tdStyle}>₹{cgstAmount.toFixed(2)}</td>
+                  <td style={tdStyle}>{sgstPercent.toFixed(2)}%</td>
+                  <td style={tdStyle}>₹{sgstAmount.toFixed(2)}</td>
+                  <td style={tdStyle}>₹{finalAmount.toFixed(2)}</td>
                 </tr>
               );
             })
           ) : (
             <tr>
-              <td colSpan={8} style={{ ...tdStyle, textAlign: 'center' }}>No items</td>
+              <td colSpan={11} style={{ ...tdStyle, textAlign: 'center' }}>No items</td>
             </tr>
           )}
         </tbody>
@@ -200,7 +234,7 @@ const ClassicInvoiceTemplate: React.FC<ClassicInvoiceTemplateProps> = ({
                   {isGstInclusive ? 'CGST (Incl):' : 'CGST:'}
                 </td>
                 <td style={{ padding: '6px 12px', textAlign: 'right', border: '1px solid #ddd', fontSize: 13 }}>
-                  {isGstInclusive ? '' : '₹'}{cgst.toFixed(2)}
+                  ₹{cgst.toFixed(2)}
                 </td>
               </tr>
               <tr>
@@ -208,7 +242,7 @@ const ClassicInvoiceTemplate: React.FC<ClassicInvoiceTemplateProps> = ({
                   {isGstInclusive ? 'SGST (Incl):' : 'SGST:'}
                 </td>
                 <td style={{ padding: '6px 12px', textAlign: 'right', border: '1px solid #ddd', fontSize: 13 }}>
-                  {isGstInclusive ? '' : '₹'}{sgst.toFixed(2)}
+                  ₹{sgst.toFixed(2)}
                 </td>
               </tr>
               <tr>
@@ -216,7 +250,7 @@ const ClassicInvoiceTemplate: React.FC<ClassicInvoiceTemplateProps> = ({
                   Subtotal:
                 </td>
                 <td style={{ padding: '6px 12px', textAlign: 'right', border: '1px solid #ddd', fontSize: 13 }}>
-                  ₹{subtotal.toFixed(2)}
+                  ₹{displaySubtotal.toFixed(2)}
                 </td>
               </tr>
               <tr style={{ background: '#f5f5f5' }}>
