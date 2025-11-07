@@ -1,0 +1,45 @@
+name: Build Multi-Platform Release
+
+on:
+  push:
+    tags:
+      - 'v*'  # Triggers on version tags like v2.0.4
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    
+    strategy:
+      matrix:
+        os: [macos-latest, ubuntu-latest, windows-latest]
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      
+      - name: Install dependencies
+        run: npm install
+      
+      - name: Build React app
+        run: npm run build
+      
+      - name: Build Electron app and publish
+        run: npm run electron-pack
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ matrix.os }}-build
+          path: |
+            dist/*.exe
+            dist/*.dmg
+            dist/*.AppImage
+            dist/*.yml
+

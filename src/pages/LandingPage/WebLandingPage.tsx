@@ -1,6 +1,20 @@
 import React, { useEffect } from 'react';
-import { Button, Typography, Space, Badge, Card, Row, Col, Statistic, Progress, Avatar, Tag, Divider, notification } from 'antd';
-import { 
+import {
+  Button,
+  Typography,
+  Space,
+  Badge,
+  Card,
+  Row,
+  Col,
+  Statistic,
+  Progress,
+  Avatar,
+  Tag,
+  Divider,
+  notification,
+} from 'antd';
+import {
   ArrowRightOutlined,
   FileTextOutlined,
   PhoneOutlined,
@@ -25,12 +39,13 @@ import {
   EyeOutlined,
   WifiOutlined,
   SyncOutlined,
-  ShareAltOutlined
+  ShareAltOutlined,
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import FeaturesSection from '../../components/common/FeaturesSection';
 import LandingPageHeader from '../../components/common/LandingPageHeader';
 import styles from './LandingPage.module.css';
+import packageJson from '../../../package.json';
 
 const { Title, Paragraph, Text } = Typography;
 
@@ -47,15 +62,17 @@ const WebLandingPage: React.FC = () => {
       placement: 'topRight',
     });
 
-    // Web browser download
-    const downloadUrl = 'https://freshfocuzstudio.s3.ap-south-1.amazonaws.com/SubrivaBilling/SubrivaBilling+Setup+2.0.2.exe';
+    // Web browser download - Version automatically comes from package.json
+    // No need to update manually - it syncs when you run npm run version:patch:publish
+    const version = packageJson.version;
+    const downloadUrl = `https://github.com/dilli2127/SubrivaBilling/releases/download/v${version}/SubrivaBilling-Setup-${version}.exe`;
     const link = document.createElement('a');
     link.href = downloadUrl;
-    link.download = 'SubrivaBilling Setup 1.0.1.exe';
+    link.download = `SubrivaBilling Setup ${version}.exe`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    
+
     notification.success({
       message: 'Download Started',
       description: 'The installer download has started in your browser.',
@@ -70,11 +87,20 @@ const WebLandingPage: React.FC = () => {
       if (e.key === 'Tab') {
         e.preventDefault();
         // Cycle through navigation items
-        const navItems = ['features', 'pricing', 'customers', 'login', 'download', 'download-main'];
+        const navItems = [
+          'features',
+          'pricing',
+          'customers',
+          'login',
+          'download',
+          'download-main',
+        ];
         const currentFocus = document.activeElement?.getAttribute('data-nav');
         const currentIndex = navItems.indexOf(currentFocus || 'features');
         const nextIndex = (currentIndex + 1) % navItems.length;
-        const nextElement = document.querySelector(`[data-nav="${navItems[nextIndex]}"]`);
+        const nextElement = document.querySelector(
+          `[data-nav="${navItems[nextIndex]}"]`
+        );
         if (nextElement) {
           (nextElement as HTMLElement).focus();
         }
@@ -92,31 +118,86 @@ const WebLandingPage: React.FC = () => {
   }, [navigate]);
 
   const stats = [
-    { number: "10,000+", label: "Happy Customers", icon: <UserOutlined />, color: "#1890ff" },
-    { number: "1M+", label: "Invoices Generated", icon: <FileTextOutlined />, color: "#52c41a" },
-    { number: "99.9%", label: "Uptime", icon: <ThunderboltOutlined />, color: "#722ed1" },
-    { number: "24/7", label: "Support", icon: <SafetyOutlined />, color: "#fa541c" }
+    {
+      number: '10,000+',
+      label: 'Happy Customers',
+      icon: <UserOutlined />,
+      color: '#1890ff',
+    },
+    {
+      number: '1M+',
+      label: 'Invoices Generated',
+      icon: <FileTextOutlined />,
+      color: '#52c41a',
+    },
+    {
+      number: '99.9%',
+      label: 'Uptime',
+      icon: <ThunderboltOutlined />,
+      color: '#722ed1',
+    },
+    {
+      number: '24/7',
+      label: 'Support',
+      icon: <SafetyOutlined />,
+      color: '#fa541c',
+    },
   ];
 
   const features = [
-    { icon: <WifiOutlined />, title: "Cloud Sync", description: "Access from anywhere, anytime" },
-    { icon: <TeamOutlined />, title: "Multi-User", description: "Collaborate with your team" },
-    { icon: <MobileOutlined />, title: "Mobile Ready", description: "Works on all devices" },
-    { icon: <SyncOutlined />, title: "Real-time", description: "Live updates and collaboration" }
+    {
+      icon: <WifiOutlined />,
+      title: 'Cloud Sync',
+      description: 'Access from anywhere, anytime',
+    },
+    {
+      icon: <TeamOutlined />,
+      title: 'Multi-User',
+      description: 'Collaborate with your team',
+    },
+    {
+      icon: <MobileOutlined />,
+      title: 'Mobile Ready',
+      description: 'Works on all devices',
+    },
+    {
+      icon: <SyncOutlined />,
+      title: 'Real-time',
+      description: 'Live updates and collaboration',
+    },
   ];
 
   const dashboardStats = [
-    { label: "Total Revenue", value: "₹2,45,67,890", change: "+12.5%", color: "#52c41a" },
-    { label: "Active Invoices", value: "1,234", change: "+8.2%", color: "#1890ff" },
-    { label: "Pending Payments", value: "₹45,670", change: "-3.1%", color: "#fa541c" },
-    { label: "This Month", value: "₹1,23,456", change: "+15.3%", color: "#722ed1" }
+    {
+      label: 'Total Revenue',
+      value: '₹2,45,67,890',
+      change: '+12.5%',
+      color: '#52c41a',
+    },
+    {
+      label: 'Active Invoices',
+      value: '1,234',
+      change: '+8.2%',
+      color: '#1890ff',
+    },
+    {
+      label: 'Pending Payments',
+      value: '₹45,670',
+      change: '-3.1%',
+      color: '#fa541c',
+    },
+    {
+      label: 'This Month',
+      value: '₹1,23,456',
+      change: '+15.3%',
+      color: '#722ed1',
+    },
   ];
 
   return (
     <div className={styles.landingPage}>
-      
       {/* Landing Page Header */}
-      <LandingPageHeader 
+      <LandingPageHeader
         title="Subriva Billing"
         logoUrl="https://freshfocuzstudio.s3.ap-south-1.amazonaws.com/ffs+logo.png"
         logoAlt="Subriva Billing"
@@ -132,13 +213,14 @@ const WebLandingPage: React.FC = () => {
               </Title>
             </Badge.Ribbon>
             <Paragraph className={styles.heroSubtitle}>
-              Transform outdated billing practices and build a better workplace for your business with Subriva Billing.
-              Access from anywhere with our cloud-based solution.
+              Transform outdated billing practices and build a better workplace
+              for your business with Subriva Billing. Access from anywhere with
+              our cloud-based solution.
             </Paragraph>
             <Space size="large" className={styles.heroActions}>
-              <Button 
-                type="primary" 
-                size="large" 
+              <Button
+                type="primary"
+                size="large"
                 onClick={() => navigate('/billing_login')}
                 className={styles.ctaButton}
                 tabIndex={0}
@@ -146,8 +228,8 @@ const WebLandingPage: React.FC = () => {
                 Access Subriva Billing
                 <ArrowRightOutlined />
               </Button>
-              <Button 
-                size="large" 
+              <Button
+                size="large"
                 className={styles.downloadButton}
                 onClick={() => handleDownloadWindows()}
                 tabIndex={0}
@@ -156,8 +238,8 @@ const WebLandingPage: React.FC = () => {
               >
                 Download for Windows
               </Button>
-              <Button 
-                size="large" 
+              <Button
+                size="large"
                 className={styles.demoButton}
                 onClick={() => navigate('/features')}
                 tabIndex={0}
@@ -177,13 +259,13 @@ const WebLandingPage: React.FC = () => {
               Get Started with Subriva Billing
             </Title>
             <Paragraph className={styles.downloadSubtitle}>
-              Download our Windows application and start managing your billing efficiently. 
-              No installation hassles, just download and run.
+              Download our Windows application and start managing your billing
+              efficiently. No installation hassles, just download and run.
             </Paragraph>
             <div className={styles.downloadActions}>
-              <Button 
-                type="primary" 
-                size="large" 
+              <Button
+                type="primary"
+                size="large"
                 className={styles.downloadMainButton}
                 onClick={() => handleDownloadWindows()}
                 tabIndex={0}
@@ -226,8 +308,9 @@ const WebLandingPage: React.FC = () => {
                 </div>
                 <Title level={3}>Cloud-Based Solution</Title>
                 <Paragraph>
-                  Access your billing system from anywhere with our cloud-based platform. 
-                  Automatic backups, real-time sync, and enterprise-grade security.
+                  Access your billing system from anywhere with our cloud-based
+                  platform. Automatic backups, real-time sync, and
+                  enterprise-grade security.
                 </Paragraph>
                 <Button type="primary" icon={<ArrowRightOutlined />}>
                   Learn More
@@ -241,8 +324,9 @@ const WebLandingPage: React.FC = () => {
                 </div>
                 <Title level={3}>Team Collaboration</Title>
                 <Paragraph>
-                  Work seamlessly with your team using our multi-user features. 
-                  Assign roles, share access, and collaborate on invoices and reports in real-time.
+                  Work seamlessly with your team using our multi-user features.
+                  Assign roles, share access, and collaborate on invoices and
+                  reports in real-time.
                 </Paragraph>
                 <Button type="primary" icon={<ArrowRightOutlined />}>
                   Learn More
@@ -252,7 +336,6 @@ const WebLandingPage: React.FC = () => {
           </Row>
         </div>
       </section>
-
     </div>
   );
 };
