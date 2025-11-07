@@ -115,8 +115,24 @@ const WebLandingPage: React.FC = () => {
 
   // Platform-specific download handlers
   const handleDownloadWindows = () => handleDownload('windows');
-  const handleDownloadMac = () => handleDownload('mac');
-  const handleDownloadLinux = () => handleDownload('linux');
+  
+  const handleDownloadMac = () => {
+    notification.info({
+      message: 'Release Too Soon! 🍎',
+      description: 'macOS version release is coming soon. Currently, only Windows version is available. Stay tuned for updates!',
+      duration: 5,
+      placement: 'topRight',
+    });
+  };
+  
+  const handleDownloadLinux = () => {
+    notification.info({
+      message: 'Release Too Soon! 🐧',
+      description: 'Linux version release is coming soon. Currently, only Windows version is available. Stay tuned for updates!',
+      duration: 5,
+      placement: 'topRight',
+    });
+  };
 
   // Keyboard navigation
   useEffect(() => {
@@ -344,6 +360,7 @@ const WebLandingPage: React.FC = () => {
                 data-nav="download"
               >
                 Download for {platform === 'mac' ? 'macOS' : platform === 'linux' ? 'Linux' : 'Windows'}
+                {(platform === 'mac' || platform === 'linux') && <Tag color="orange" style={{ marginLeft: 8, fontSize: 11 }}>Soon</Tag>}
               </Button>
               <Button
                 size="large"
@@ -367,7 +384,7 @@ const WebLandingPage: React.FC = () => {
             </Title>
             <Paragraph className={styles.downloadSubtitle}>
               Download our desktop application and start managing your billing
-              efficiently. Available for Windows, macOS, and Linux.
+              efficiently. Currently available for Windows. macOS and Linux coming soon!
             </Paragraph>
             <div className={styles.downloadActions}>
               <Button
