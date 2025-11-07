@@ -50,7 +50,7 @@ const ModernInvoiceTemplate: React.FC<ModernInvoiceTemplateProps> = ({
         style={{
           background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
           color: '#fff',
-          padding: '20px 16px',
+          padding: '10px 8px',
         }}
       >
         <div
@@ -101,6 +101,21 @@ const ModernInvoiceTemplate: React.FC<ModernInvoiceTemplateProps> = ({
                 userItem?.organisationItems?.email ||
                 ''}
             </p>
+            <p
+              style={{
+                margin: '12px 0 0 0',
+                fontSize: 11,
+                padding: '6px 12px',
+                background: isGstInclusive ? '#fff3cd' : '#d1ecf1',
+                color: isGstInclusive ? '#856404' : '#0c5460',
+                border: `1px solid ${isGstInclusive ? '#ffc107' : '#17a2b8'}`,
+                borderRadius: 4,
+                display: 'inline-block',
+                fontWeight: 'bold',
+              }}
+            >
+              {isGstInclusive ? '⚠️ Tax Inclusive' : 'ℹ️ Tax Exclusive'}
+            </p>
           </div>
           <div style={{ textAlign: 'right' }}>
             <h2 style={{ margin: 0, fontSize: 36, fontWeight: 'bold' }}>
@@ -118,27 +133,12 @@ const ModernInvoiceTemplate: React.FC<ModernInvoiceTemplateProps> = ({
                 userItem?.organisationItems?.pan_number ||
                 ''}
             </p>
-            <p
-              style={{
-                margin: '12px 0 0 0',
-                fontSize: 11,
-                padding: '6px 12px',
-                background: isGstInclusive ? '#fff3cd' : '#d1ecf1',
-                color: isGstInclusive ? '#856404' : '#0c5460',
-                border: `1px solid ${isGstInclusive ? '#ffc107' : '#17a2b8'}`,
-                borderRadius: 4,
-                display: 'inline-block',
-                fontWeight: 'bold',
-              }}
-            >
-              {isGstInclusive ? '⚠️ Tax Inclusive' : 'ℹ️ Tax Exclusive'}
-            </p>
           </div>
         </div>
       </div>
 
       {/* Content Area */}
-      <div style={{ padding: '20px 16px' }}>
+      <div style={{ padding: '10px 8px' }}>
         {/* Invoice Info & Customer */}
         <div
           style={{
@@ -152,7 +152,7 @@ const ModernInvoiceTemplate: React.FC<ModernInvoiceTemplateProps> = ({
             <div
               style={{
                 background: '#f8f9fa',
-                padding: 16,
+                padding: 8,
                 borderRadius: 8,
                 border: '1px solid #e9ecef',
               }}
@@ -181,7 +181,7 @@ const ModernInvoiceTemplate: React.FC<ModernInvoiceTemplateProps> = ({
               </p>
               {billData?.customerAddress && (
                 <p
-                  style={{ margin: '8px 0 4px 0', fontSize: 14, color: '#666' }}
+                  style={{ margin: '4px 0 4px 0', fontSize: 14, color: '#666' }}
                 >
                   {billData.customerAddress}
                 </p>
@@ -227,17 +227,17 @@ const ModernInvoiceTemplate: React.FC<ModernInvoiceTemplateProps> = ({
             <div
               style={{
                 background: '#f8f9fa',
-                padding: 16,
+                padding: 8,
                 borderRadius: 8,
                 border: '1px solid #e9ecef',
               }}
             >
-              <table style={{ width: '100%', fontSize: 14 }}>
+              <table style={{ width: '100%', fontSize: 12 }}>
                 <tbody>
                   <tr>
                     <td
                       style={{
-                        padding: '8px 0',
+                        padding: '4px 0',
                         color: '#666',
                         fontWeight: '500',
                       }}
@@ -246,7 +246,7 @@ const ModernInvoiceTemplate: React.FC<ModernInvoiceTemplateProps> = ({
                     </td>
                     <td
                       style={{
-                        padding: '8px 0',
+                        padding: '4px 0',
                         textAlign: 'right',
                         fontWeight: 'bold',
                         color: '#333',
@@ -258,7 +258,7 @@ const ModernInvoiceTemplate: React.FC<ModernInvoiceTemplateProps> = ({
                   <tr>
                     <td
                       style={{
-                        padding: '8px 0',
+                        padding: '4px 0',
                         color: '#666',
                         fontWeight: '500',
                       }}
@@ -267,7 +267,7 @@ const ModernInvoiceTemplate: React.FC<ModernInvoiceTemplateProps> = ({
                     </td>
                     <td
                       style={{
-                        padding: '8px 0',
+                        padding: '4x 0',
                         textAlign: 'right',
                         fontWeight: 'bold',
                         color: '#333',
@@ -281,7 +281,7 @@ const ModernInvoiceTemplate: React.FC<ModernInvoiceTemplateProps> = ({
                   <tr>
                     <td
                       style={{
-                        padding: '8px 0',
+                        padding: '4px 0',
                         color: '#666',
                         fontWeight: '500',
                       }}
@@ -290,7 +290,7 @@ const ModernInvoiceTemplate: React.FC<ModernInvoiceTemplateProps> = ({
                     </td>
                     <td
                       style={{
-                        padding: '8px 0',
+                        padding: '4px 0',
                         textAlign: 'right',
                         fontWeight: 'bold',
                         color: '#333',
@@ -302,14 +302,14 @@ const ModernInvoiceTemplate: React.FC<ModernInvoiceTemplateProps> = ({
                   <tr>
                     <td
                       style={{
-                        padding: '8px 0',
+                        padding: '4px 0',
                         color: '#666',
                         fontWeight: '500',
                       }}
                     >
                       Status:
                     </td>
-                    <td style={{ padding: '8px 0', textAlign: 'right' }}>
+                    <td style={{ padding: '4px 0', textAlign: 'right' }}>
                       <span
                         style={{
                           background: '#d4edda',
