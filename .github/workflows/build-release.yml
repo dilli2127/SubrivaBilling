@@ -4,6 +4,12 @@ on:
   push:
     tags:
       - 'v*'  # Triggers on version tags like v2.0.4
+  workflow_dispatch:  # Allows manual triggering from Actions tab
+
+permissions:
+  contents: write  # Required to publish release assets
+  packages: read
+  actions: read
 
 jobs:
   build:
