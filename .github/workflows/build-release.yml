@@ -23,7 +23,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-latest, ubuntu-latest, windows-latest]
+        os: [windows-latest]
+        # Add later when needed: macos-latest, ubuntu-latest
     
     steps:
       - name: Checkout code
