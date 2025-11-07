@@ -8,7 +8,7 @@ interface ProfessionalInvoiceTemplateProps {
 }
 
 /**
- * Professional Invoice Template - Bill of Supply Style
+ * Professional Invoice Template - TAX INVOICE Style
  * Comprehensive invoice with all details, terms, and bank information
  */
 const ProfessionalInvoiceTemplate: React.FC<ProfessionalInvoiceTemplateProps> = ({
@@ -68,7 +68,7 @@ const ProfessionalInvoiceTemplate: React.FC<ProfessionalInvoiceTemplateProps> = 
   return (
     <div style={{ 
       fontFamily: 'Arial, sans-serif', 
-      padding: 20, 
+      padding: 16, 
       maxWidth: 900, 
       margin: '0 auto', 
       background: '#fff',
@@ -76,18 +76,18 @@ const ProfessionalInvoiceTemplate: React.FC<ProfessionalInvoiceTemplateProps> = 
       color: '#000'
     }}>
       {/* Top Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
         <div style={{ fontSize: 10 }}>Page No. 1 of 1</div>
         <div style={{ fontSize: 10 }}>Original Copy</div>
       </div>
 
       {/* Title */}
-      <div style={{ textAlign: 'center', fontSize: 18, fontWeight: 'bold', marginBottom: 12, borderBottom: '2px solid #000', paddingBottom: 8 }}>
-        BILL OF SUPPLY
+      <div style={{ textAlign: 'center', fontSize: 18, fontWeight: 'bold', marginBottom: 8, borderBottom: '2px solid #000', paddingBottom: 6 }}>
+        TAX INVOICE
       </div>
 
       {/* Company Details */}
-      <div style={{ textAlign: 'center', marginBottom: 16, borderBottom: '1px solid #000', paddingBottom: 12 }}>
+      <div style={{ textAlign: 'center', marginBottom: 12, borderBottom: '1px solid #000', paddingBottom: 10 }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 8 }}>
           {((billData?.organisationItems?.logo_url || userItem?.organisationItems?.logo_url) && (
             <div style={{ width: 60, height: 60, border: '1px solid #ccc', marginRight: 16, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -117,10 +117,10 @@ const ProfessionalInvoiceTemplate: React.FC<ProfessionalInvoiceTemplateProps> = 
       </div>
 
       {/* Billing and Invoice Details */}
-      <div style={{ display: 'flex', marginBottom: 16, gap: 16 }}>
+      <div style={{ display: 'flex', marginBottom: 12, gap: 12 }}>
         {/* Billing Details */}
-        <div style={{ flex: 1, border: '1px solid #000', padding: 10 }}>
-          <div style={{ fontWeight: 'bold', marginBottom: 8, fontSize: 12 }}>Billing Details</div>
+        <div style={{ flex: 1, border: '1px solid #000', padding: 8 }}>
+          <div style={{ fontWeight: 'bold', marginBottom: 6, fontSize: 11 }}>Billing Details</div>
           <div style={{ fontSize: 10, lineHeight: 1.6 }}>
             <div><strong>Name:</strong> {billData?.customerName || ''}</div>
             {billData?.customer_gstin && <div><strong>GSTIN:</strong> {billData.customer_gstin}</div>}
@@ -137,8 +137,8 @@ const ProfessionalInvoiceTemplate: React.FC<ProfessionalInvoiceTemplateProps> = 
         </div>
 
         {/* Invoice Details */}
-        <div style={{ flex: 1, border: '1px solid #000', padding: 10 }}>
-          <div style={{ fontWeight: 'bold', marginBottom: 8, fontSize: 12 }}>Invoice</div>
+        <div style={{ flex: 1, border: '1px solid #000', padding: 8 }}>
+          <div style={{ fontWeight: 'bold', marginBottom: 6, fontSize: 11 }}>Invoice</div>
           <div style={{ fontSize: 10, lineHeight: 1.6 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
               <span><strong>Number:</strong></span>
@@ -254,106 +254,143 @@ const ProfessionalInvoiceTemplate: React.FC<ProfessionalInvoiceTemplateProps> = 
         </tbody>
       </table>
 
-      {/* Summary Section */}
-      <div style={{ marginBottom: 16 }}>
-        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 4 }}>
-          <div style={{ width: 200, display: 'flex', justifyContent: 'space-between', padding: '4px 8px', borderBottom: '1px solid #ccc' }}>
-            <span><strong>Value of Goods:</strong></span>
-            <span>₹ {valueOfGoods.toFixed(2)}</span>
+      {/* Summary Section - Two Column Layout */}
+      <div style={{ display: 'flex', gap: 16, marginBottom: 12 }}>
+        {/* Left Side - Amount in Words & Settlement Details */}
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
+          <div style={{ fontSize: 10, marginBottom: 6, padding: '8px', border: '1px solid #ddd', background: '#f9f9f9' }}>
+            <strong>Amount in Words:</strong>
+            <div style={{ marginTop: 4 }}>{amountInWords}</div>
+          </div>
+          <div style={{ fontSize: 10, padding: '8px', border: '1px solid #ddd', background: '#f9f9f9' }}>
+            <strong>Settlement Details:</strong>
+            <div style={{ marginTop: 4 }}>{(() => {
+              const isPaid = billData?.is_paid || false;
+              const isPartiallyPaid = billData?.is_partially_paid || false;
+              const paidAmount = Number(billData?.paid_amount || 0);
+              const pendingAmount = grandTotal - paidAmount;
+              
+              if (!isPaid && !isPartiallyPaid) {
+                return `Invoice Balance: ₹${grandTotal.toFixed(2)}`;
+              } else if (isPartiallyPaid && !isPaid) {
+                return `Paid: ₹${paidAmount.toFixed(2)} | Pending: ₹${pendingAmount.toFixed(2)}`;
+              } else {
+                return `Settled by - ${billData?.payment_mode || 'Cash'}: ₹${paidAmount.toFixed(2)} | Invoice Balance: ₹0.00`;
+              }
+            })()}</div>
           </div>
         </div>
-        {discountAmount > 0 && (
-          <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 4 }}>
-            <div style={{ width: 200, display: 'flex', justifyContent: 'space-between', padding: '4px 8px', borderBottom: '1px solid #ccc' }}>
-              <span><strong>Discount:</strong></span>
-              <span>- ₹ {discountAmount.toFixed(2)}</span>
+
+        {/* Right Side - Summary of Charges */}
+        <div style={{ width: 220 }}>
+          <div style={{ marginBottom: 3 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 8px', borderBottom: '1px solid #ccc' }}>
+              <span style={{ fontSize: 10 }}><strong>Value of Goods:</strong></span>
+              <span style={{ fontSize: 10 }}>₹ {valueOfGoods.toFixed(2)}</span>
             </div>
           </div>
-        )}
-        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 4 }}>
-          <div style={{ width: 200, display: 'flex', justifyContent: 'space-between', padding: '4px 8px', borderBottom: '1px solid #ccc' }}>
-            <span><strong>{isGstInclusive ? 'CGST (Incl):' : 'CGST:'}</strong></span>
-            <span>₹ {cgst.toFixed(2)}</span>
+          {discountAmount > 0 && (
+            <div style={{ marginBottom: 3 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 8px', borderBottom: '1px solid #ccc' }}>
+                <span style={{ fontSize: 10 }}><strong>Discount:</strong></span>
+                <span style={{ fontSize: 10 }}>- ₹ {discountAmount.toFixed(2)}</span>
+              </div>
+            </div>
+          )}
+          <div style={{ marginBottom: 3 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 8px', borderBottom: '1px solid #ccc' }}>
+              <span style={{ fontSize: 10 }}><strong>{isGstInclusive ? 'CGST (Incl):' : 'CGST:'}</strong></span>
+              <span style={{ fontSize: 10 }}>₹ {cgst.toFixed(2)}</span>
+            </div>
           </div>
-        </div>
-        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 4 }}>
-          <div style={{ width: 200, display: 'flex', justifyContent: 'space-between', padding: '4px 8px', borderBottom: '1px solid #ccc' }}>
-            <span><strong>{isGstInclusive ? 'SGST (Incl):' : 'SGST:'}</strong></span>
-            <span>₹ {sgst.toFixed(2)}</span>
+          <div style={{ marginBottom: 3 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 8px', borderBottom: '1px solid #ccc' }}>
+              <span style={{ fontSize: 10 }}><strong>{isGstInclusive ? 'SGST (Incl):' : 'SGST:'}</strong></span>
+              <span style={{ fontSize: 10 }}>₹ {sgst.toFixed(2)}</span>
+            </div>
           </div>
-        </div>
-        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 4 }}>
-          <div style={{ width: 200, display: 'flex', justifyContent: 'space-between', padding: '4px 8px', borderBottom: '1px solid #ccc' }}>
-            <span><strong>Subtotal:</strong></span>
-            <span>₹ {displaySubtotal.toFixed(2)}</span>
+          <div style={{ marginBottom: 3 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 8px', borderBottom: '1px solid #ccc' }}>
+              <span style={{ fontSize: 10 }}><strong>Subtotal:</strong></span>
+              <span style={{ fontSize: 10 }}>₹ {displaySubtotal.toFixed(2)}</span>
+            </div>
           </div>
-        </div>
-        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 8 }}>
-          <div style={{ width: 200, display: 'flex', justifyContent: 'space-between', padding: '6px 8px', background: '#f0f0f0', fontWeight: 'bold', fontSize: 12, border: '1px solid #000' }}>
-            <span>Total:</span>
-            <span>₹ {grandTotal.toFixed(2)}</span>
+          <div style={{ marginTop: 6 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 8px', background: '#f0f0f0', fontWeight: 'bold', fontSize: 11, border: '2px solid #000' }}>
+              <span>Total:</span>
+              <span>₹ {grandTotal.toFixed(2)}</span>
+            </div>
           </div>
-        </div>
-        <div style={{ fontSize: 10, marginBottom: 4 }}>
-          <strong>Amount in Words:</strong> {amountInWords}
-        </div>
-        <div style={{ fontSize: 10 }}>
-          <strong>Settlement Details:</strong> {(() => {
-            const isPaid = billData?.is_paid || false;
-            const isPartiallyPaid = billData?.is_partially_paid || false;
-            const paidAmount = Number(billData?.paid_amount || 0);
-            const pendingAmount = grandTotal - paidAmount;
-            
-            if (!isPaid && !isPartiallyPaid) {
-              // Unpaid invoice - show full balance
-              return `Invoice Balance: ₹${grandTotal.toFixed(2)}`;
-            } else if (isPartiallyPaid && !isPaid) {
-              // Partially paid - show paid and pending amounts
-              return `Paid: ₹${paidAmount.toFixed(2)} | Pending: ₹${pendingAmount.toFixed(2)}`;
-            } else {
-              // Fully paid - show settlement details
-              return `Settled by - ${billData?.payment_mode || 'Cash'}: ₹${paidAmount.toFixed(2)} | Invoice Balance: ₹0.00`;
-            }
-          })()}
         </div>
       </div>
 
-      {/* Footer Section */}
-      <div style={{ display: 'flex', gap: 16, marginTop: 20 }}>
-        {/* Terms and Conditions - Show only if enabled in settings */}
-        {settings?.show_terms_on_invoice && settings?.invoice_terms && (
-          <div style={{ flex: 1, border: '1px solid #000', padding: 10 }}>
-            <div style={{ fontWeight: 'bold', marginBottom: 8, fontSize: 11 }}>Terms and Conditions</div>
-            <div style={{ fontSize: 9, lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>
-              {settings.invoice_terms}
+      {/* Footer Section - Optimized Layout */}
+      <div style={{ display: 'flex', gap: 12, marginTop: 12 }}>
+        {/* Left Side - Terms, Conditions and Bank Details */}
+        <div style={{ flex: 1 }}>
+          {/* Terms and Conditions - Show only if enabled in settings */}
+          {settings?.show_terms_on_invoice && settings?.invoice_terms && (
+            <div style={{ border: '1px solid #000', padding: 8, marginBottom: 8 }}>
+              <div style={{ fontWeight: 'bold', marginBottom: 6, fontSize: 10 }}>Terms and Conditions</div>
+              <div style={{ fontSize: 9, lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>
+                {settings.invoice_terms}
+              </div>
             </div>
-          </div>
-        )}
+          )}
+          
+          {/* Bank Details from Settings */}
+          {(settings?.bank_name || settings?.account_number) && (
+            <div style={{ border: '1px solid #000', padding: 8 }}>
+              <div style={{ fontWeight: 'bold', marginBottom: 6, fontSize: 10 }}>Bank Details</div>
+              <div style={{ fontSize: 9, lineHeight: 1.5 }}>
+                {settings?.account_holder_name && (
+                  <div><strong>Name:</strong> {settings.account_holder_name}</div>
+                )}
+                {settings?.account_number && (
+                  <div><strong>A/c No:</strong> {settings.account_number}</div>
+                )}
+                {settings?.bank_name && (
+                  <div><strong>Bank:</strong> {settings.bank_name}</div>
+                )}
+                {settings?.ifsc_code && (
+                  <div><strong>IFSC:</strong> {settings.ifsc_code}</div>
+                )}
+                {settings?.branch_name && (
+                  <div><strong>Branch:</strong> {settings.branch_name}</div>
+                )}
+                {settings?.upi_id && (
+                  <div><strong>UPI ID:</strong> {settings.upi_id}</div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
 
-        {/* Payment Details and Signature */}
-        <div style={{ width: 250, border: '1px solid #000', padding: 10 }}>
-          <div style={{ textAlign: 'center', marginBottom: 8 }}>
+        {/* Right Side - QR Code and Signature */}
+        <div style={{ width: 200, border: '1px solid #000', padding: 10, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+          {/* QR Code Section */}
+          <div style={{ textAlign: 'center', marginBottom: 12 }}>
             {settings?.enable_payment_qr && settings?.qr_on_invoice ? (
               // Check if QR code was pre-generated (for print/download)
               settings?.qrCodeDataUrl ? (
-                <div style={{ padding: 12, background: '#fff', border: '2px solid #000', borderRadius: 8, textAlign: 'center' }}>
-                  <div style={{ fontSize: 11, fontWeight: 'bold', marginBottom: 6 }}>Scan & Pay</div>
+                <div style={{ padding: 8, background: '#fff', border: '2px solid #000', borderRadius: 6, textAlign: 'center' }}>
+                  <div style={{ fontSize: 10, fontWeight: 'bold', marginBottom: 6 }}>Scan & Pay</div>
                   <img 
                     src={settings.qrCodeDataUrl} 
                     alt="Payment QR Code"
-                    style={{ display: 'block', width: settings?.qr_size || 120, height: settings?.qr_size || 120, margin: '0 auto' }}
+                    style={{ display: 'block', width: settings?.qr_size || 100, height: settings?.qr_size || 100, margin: '0 auto' }}
                   />
                   {settings?.show_upi_id_text && settings?.upi_id && (
-                    <div style={{ fontSize: 9, marginTop: 6, color: '#333' }}>UPI: {settings.upi_id}</div>
+                    <div style={{ fontSize: 8, marginTop: 4, color: '#333' }}>UPI: {settings.upi_id}</div>
                   )}
-                  <div style={{ fontSize: 8, marginTop: 4, color: '#666' }}>Google Pay • PhonePe • Paytm</div>
+                  <div style={{ fontSize: 7, marginTop: 2, color: '#666' }}>Google Pay • PhonePe • Paytm</div>
                 </div>
               ) : (
                 // Use dynamic component for live view
                 <PaymentQRCode
                   billData={billData}
                   settings={settings}
-                  size={settings?.qr_size || 120}
+                  size={settings?.qr_size || 100}
                   position="footer"
                   showUpiId={settings?.show_upi_id_text}
                   style={{ position: 'relative', border: 'none', padding: 0 }}
@@ -366,34 +403,10 @@ const ProfessionalInvoiceTemplate: React.FC<ProfessionalInvoiceTemplateProps> = 
             )}
           </div>
           
-          {/* Bank Details from Settings */}
-          {(settings?.bank_name || settings?.account_number) && (
-            <div style={{ fontSize: 9, marginBottom: 12, lineHeight: 1.6 }}>
-              <div style={{ fontWeight: 'bold', marginBottom: 4 }}>Bank Details:</div>
-              {settings?.account_holder_name && (
-                <div><strong>Name:</strong> {settings.account_holder_name}</div>
-              )}
-              {settings?.account_number && (
-                <div><strong>A/c No:</strong> {settings.account_number}</div>
-              )}
-              {settings?.bank_name && (
-                <div><strong>Bank:</strong> {settings.bank_name}</div>
-              )}
-              {settings?.ifsc_code && (
-                <div><strong>IFSC:</strong> {settings.ifsc_code}</div>
-              )}
-              {settings?.branch_name && (
-                <div><strong>Branch:</strong> {settings.branch_name}</div>
-              )}
-              {settings?.upi_id && (
-                <div><strong>UPI ID:</strong> {settings.upi_id}</div>
-              )}
-            </div>
-          )}
-          
-          <div style={{ textAlign: 'center', marginTop: 16 }}>
-            <div style={{ fontSize: 10 }}>For {billData?.organisationItems?.org_name || userItem?.organisationItems?.org_name || 'Company Name'}</div>
-            <div style={{ borderTop: '1px solid #000', marginTop: 24, paddingTop: 4, fontSize: 9 }}>
+          {/* Signature Section */}
+          <div style={{ textAlign: 'center', marginTop: 'auto' }}>
+            <div style={{ fontSize: 9, marginBottom: 20 }}>For {billData?.organisationItems?.org_name || userItem?.organisationItems?.org_name || 'Company Name'}</div>
+            <div style={{ borderTop: '1px solid #000', paddingTop: 4, fontSize: 9 }}>
               Authorized Signature
             </div>
           </div>
@@ -402,13 +415,13 @@ const ProfessionalInvoiceTemplate: React.FC<ProfessionalInvoiceTemplateProps> = 
 
       {/* Invoice Footer from Settings */}
       {settings?.invoice_footer && (
-        <div style={{ marginTop: 16, padding: 12, background: '#f5f5f5', border: '1px solid #ddd', textAlign: 'center', fontSize: 10 }}>
+        <div style={{ marginTop: 10, padding: 8, background: '#f5f5f5', border: '1px solid #ddd', textAlign: 'center', fontSize: 9 }}>
           {settings.invoice_footer}
         </div>
       )}
 
       {/* Footer Branding */}
-      <div style={{ textAlign: 'center', marginTop: 16, paddingTop: 12, borderTop: '1px solid #ddd', fontSize: 10, color: '#888' }}>
+      <div style={{ textAlign: 'center', marginTop: 10, paddingTop: 8, borderTop: '1px solid #ddd', fontSize: 9, color: '#888' }}>
         <p style={{ margin: 0 }}>
           Powered by <strong style={{ color: '#333' }}>Subriva Billing</strong>
         </p>
