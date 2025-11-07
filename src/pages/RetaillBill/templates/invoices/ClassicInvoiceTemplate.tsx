@@ -1,0 +1,382 @@
+import React from 'react';
+import { useUser } from '../../../../components/antd/UserContext';
+import PaymentQRCode from '../components/PaymentQRCode';
+
+interface ClassicInvoiceTemplateProps {
+  billData: any;
+  settings?: any; // Settings passed as prop to avoid Redux context issues during server-side rendering
+}
+
+/**
+ * Classic Invoice Template - For Formal Invoices
+ * Traditional professional invoice format with full details
+ */
+const ClassicInvoiceTemplate: React.FC<ClassicInvoiceTemplateProps> = ({
+  billData,
+  settings,
+}) => {
+  const userItem = useUser();
+
+  // Ensure billData exists
+  if (!billData) {
+    return <div>No data to display</div>;
+  }
+
+  // Check if GST is inclusive or exclusive
+  const isGstInclusive = billData?.is_gst_included ?? true;
+  
+  // Use backend calculated values (correct calculations)
+  const valueOfGoods = Number(billData?.value_of_goods || 0);
+  const cgst = Number(billData?.cgst || (billData?.total_gst || 0) / 2);
+  const sgst = Number(billData?.sgst || (billData?.total_gst || 0) / 2);
+  const totalGst = cgst + sgst;
+  const grandTotal = Number(billData?.total_amount || billData?.total || 0);
+  const displaySubtotal = grandTotal;
+
+  return (
+    <div
+      style={{
+        padding: 40,
+        background: '#fff',
+        border: '2px solid #333',
+        maxWidth: 850,
+        margin: '20px auto',
+        color: '#000',
+        fontFamily: 'Times New Roman, serif',
+      }}
+    >
+      {/* Header */}
+      <div style={{ textAlign: 'center', borderBottom: '3px double #333', paddingBottom: 16, marginBottom: 20 }}>
+        <h1 style={{ margin: 0, fontSize: 32, fontWeight: 'bold', letterSpacing: 2 }}>
+          INVOICE
+        </h1>
+        <h2 style={{ margin: '8px 0', fontSize: 24 }}>
+          {billData?.organisationItems?.org_name || userItem?.organisationItems?.org_name || ''}
+        </h2>
+        <p style={{ margin: '4px 0', fontSize: 14 }}>
+          {billData?.branchItems?.address1 || billData?.organisationItems?.address1 || userItem?.branchItems?.address1 || userItem?.organisationItems?.address1 || ''}
+        </p>
+        <p style={{ margin: '4px 0', fontSize: 13 }}>
+          {(billData?.branchItems?.city || userItem?.branchItems?.city) && (billData?.branchItems?.state || userItem?.branchItems?.state)
+            ? `${billData?.branchItems?.city || userItem?.branchItems?.city}, ${billData?.branchItems?.state || userItem?.branchItems?.state}${(billData?.branchItems?.pincode || userItem?.branchItems?.pincode) ? ' - ' + (billData?.branchItems?.pincode || userItem?.branchItems?.pincode) : ''}`
+            : ''}
+        </p>
+        <p style={{ margin: '4px 0', fontSize: 13 }}>
+          <strong>Mobile:</strong> {billData?.organisationItems?.phone || userItem?.organisationItems?.phone || ''} | 
+          <strong> Email:</strong> {billData?.organisationItems?.email || userItem?.organisationItems?.email || ''}
+        </p>
+        <p style={{ margin: '4px 0', fontSize: 13 }}>
+          <strong>GSTIN:</strong> {billData?.organisationItems?.gst_number || userItem?.organisationItems?.gst_number || ''} | 
+          <strong> PAN:</strong> {billData?.organisationItems?.pan_number || userItem?.organisationItems?.pan_number || ''}
+        </p>
+        <p style={{ margin: '8px 0 0 0', fontSize: 12, padding: '6px 12px', background: isGstInclusive ? '#fff3cd' : '#d1ecf1', border: `1px solid ${isGstInclusive ? '#ffc107' : '#17a2b8'}`, borderRadius: 4, display: 'inline-block' }}>
+          <strong>{isGstInclusive ? '⚠️ Tax Inclusive' : 'ℹ️ Tax Exclusive'}</strong> - Prices {isGstInclusive ? 'include' : 'exclude'} GST
+        </p>
+      </div>
+
+      {/* Invoice Details & Customer Info */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 24 }}>
+        <div style={{ width: '48%' }}>
+          <h3 style={{ margin: '0 0 8px 0', fontSize: 14, fontWeight: 'bold', textDecoration: 'underline' }}>
+            Bill To:
+          </h3>
+          <p style={{ margin: '4px 0', fontSize: 14 }}>
+            <strong>{billData?.customerName || ''}</strong>
+          </p>
+          {billData?.customerAddress && (
+            <p style={{ margin: '4px 0', fontSize: 13, color: '#555' }}>
+              {billData.customerAddress}
+            </p>
+          )}
+          {(billData?.customerCity || billData?.customerState || billData?.customerPincode) && (
+            <p style={{ margin: '4px 0', fontSize: 13, color: '#555' }}>
+              {[billData?.customerCity, billData?.customerState, billData?.customerPincode].filter(Boolean).join(', ')}
+            </p>
+          )}
+          {billData?.customer_gstin && (
+            <p style={{ margin: '4px 0', fontSize: 13 }}>
+              GSTIN: {billData.customer_gstin}
+            </p>
+          )}
+          {billData?.customer_pan && (
+            <p style={{ margin: '4px 0', fontSize: 13 }}>
+              PAN: {billData.customer_pan}
+            </p>
+          )}
+          {billData?.customerPhone && (
+            <p style={{ margin: '4px 0', fontSize: 13 }}>
+              Phone: {billData.customerPhone}
+            </p>
+          )}
+          {billData?.customerEmail && (
+            <p style={{ margin: '4px 0', fontSize: 13 }}>
+              Email: {billData.customerEmail}
+            </p>
+          )}
+        </div>
+        <div style={{ width: '48%', textAlign: 'right' }}>
+          <table style={{ width: '100%', fontSize: 13, borderCollapse: 'collapse' }}>
+            <tbody>
+              <tr>
+                <td style={{ padding: '4px 8px', textAlign: 'right', fontWeight: 'bold' }}>Invoice No:</td>
+                <td style={{ padding: '4px 8px', border: '1px solid #ddd', textAlign: 'left' }}>
+                  {billData?.invoice_no || '-'}
+                </td>
+              </tr>
+              <tr>
+                <td style={{ padding: '4px 8px', textAlign: 'right', fontWeight: 'bold' }}>Invoice Date:</td>
+                <td style={{ padding: '4px 8px', border: '1px solid #ddd', textAlign: 'left' }}>
+                  {billData?.date ? new Date(billData.date).toLocaleDateString() : '-'}
+                </td>
+              </tr>
+              <tr>
+                <td style={{ padding: '4px 8px', textAlign: 'right', fontWeight: 'bold' }}>Payment Mode:</td>
+                <td style={{ padding: '4px 8px', border: '1px solid #ddd', textAlign: 'left' }}>
+                  {billData?.payment_mode || 'Cash'}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Items Table */}
+      <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: 24 }}>
+        <thead>
+          <tr style={{ background: '#f5f5f5', borderTop: '2px solid #333', borderBottom: '2px solid #333' }}>
+            <th style={thStyle}>Sr.</th>
+            <th style={{ ...thStyle, textAlign: 'left' }}>Item Description</th>
+            <th style={thStyle}>HSN/SAC</th>
+            <th style={thStyle}>Qty</th>
+            <th style={thStyle}>Price</th>
+            <th style={thStyle}>Discount</th>
+            <th style={thStyle}>CGST %</th>
+            <th style={thStyle}>CGST Amt</th>
+            <th style={thStyle}>SGST %</th>
+            <th style={thStyle}>SGST Amt</th>
+            <th style={thStyle}>Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          {Array.isArray(billData?.items) && billData.items.length > 0 ? (
+            billData.items.map((item: any, idx: number) => {
+              const qty = Number(item?.qty || item?.quantity || 0);
+              const price = Number(item?.price || 0);
+              const discount = Number(item?.discount || 0);
+              const taxPercentage = Number(item?.tax_percentage || 0);
+              
+              // Calculate CGST and SGST (split tax equally)
+              const cgstPercent = taxPercentage / 2;
+              const sgstPercent = taxPercentage / 2;
+              
+              const itemSubtotal = qty * price;
+              
+              // If GST is inclusive, extract GST from the amount
+              // If GST is exclusive, calculate GST on top
+              let cgstAmount = 0;
+              let sgstAmount = 0;
+              
+              if (isGstInclusive) {
+                // GST is included in price - extract it
+                const gstFactor = (100 + taxPercentage) / 100;
+                const priceWithoutGst = itemSubtotal / gstFactor;
+                const totalGstAmount = itemSubtotal - priceWithoutGst;
+                cgstAmount = totalGstAmount / 2;
+                sgstAmount = totalGstAmount / 2;
+              } else {
+                // GST is excluded - calculate on top
+                cgstAmount = (itemSubtotal * cgstPercent) / 100;
+                sgstAmount = (itemSubtotal * sgstPercent) / 100;
+              }
+              
+              // Amount includes GST (base + CGST + SGST)
+              const finalAmount = itemSubtotal + cgstAmount + sgstAmount;
+              
+              return (
+                <tr key={idx} style={{ borderBottom: '1px solid #ddd' }}>
+                  <td style={tdStyle}>{idx + 1}</td>
+                  <td style={{ ...tdStyle, textAlign: 'left' }}>{String(item?.name || item?.product_name || 'Item')}</td>
+                  <td style={tdStyle}>{item?.hsn_code || item?.hsn_sac || '-'}</td>
+                  <td style={tdStyle}>{qty}</td>
+                  <td style={tdStyle}>₹{price.toFixed(2)}</td>
+                  <td style={tdStyle}>{discount.toFixed(2)}</td>
+                  <td style={tdStyle}>{cgstPercent.toFixed(2)}%</td>
+                  <td style={tdStyle}>₹{cgstAmount.toFixed(2)}</td>
+                  <td style={tdStyle}>{sgstPercent.toFixed(2)}%</td>
+                  <td style={tdStyle}>₹{sgstAmount.toFixed(2)}</td>
+                  <td style={tdStyle}>₹{finalAmount.toFixed(2)}</td>
+                </tr>
+              );
+            })
+          ) : (
+            <tr>
+              <td colSpan={11} style={{ ...tdStyle, textAlign: 'center' }}>No items</td>
+            </tr>
+          )}
+        </tbody>
+      </table>
+
+      {/* Totals */}
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 24 }}>
+        <div style={{ width: '300px' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <tbody>
+              <tr>
+                <td style={{ padding: '6px 12px', textAlign: 'right', fontWeight: 'bold', fontSize: 13 }}>
+                  Value of Goods:
+                </td>
+                <td style={{ padding: '6px 12px', textAlign: 'right', border: '1px solid #ddd', fontSize: 13 }}>
+                  ₹{valueOfGoods.toFixed(2)}
+                </td>
+              </tr>
+              <tr>
+                <td style={{ padding: '6px 12px', textAlign: 'right', fontWeight: 'bold', fontSize: 13 }}>
+                  {isGstInclusive ? 'CGST (Incl):' : 'CGST:'}
+                </td>
+                <td style={{ padding: '6px 12px', textAlign: 'right', border: '1px solid #ddd', fontSize: 13 }}>
+                  ₹{cgst.toFixed(2)}
+                </td>
+              </tr>
+              <tr>
+                <td style={{ padding: '6px 12px', textAlign: 'right', fontWeight: 'bold', fontSize: 13 }}>
+                  {isGstInclusive ? 'SGST (Incl):' : 'SGST:'}
+                </td>
+                <td style={{ padding: '6px 12px', textAlign: 'right', border: '1px solid #ddd', fontSize: 13 }}>
+                  ₹{sgst.toFixed(2)}
+                </td>
+              </tr>
+              <tr>
+                <td style={{ padding: '6px 12px', textAlign: 'right', fontWeight: 'bold', fontSize: 13 }}>
+                  Subtotal:
+                </td>
+                <td style={{ padding: '6px 12px', textAlign: 'right', border: '1px solid #ddd', fontSize: 13 }}>
+                  ₹{displaySubtotal.toFixed(2)}
+                </td>
+              </tr>
+              <tr style={{ background: '#f5f5f5' }}>
+                <td style={{ padding: '8px 12px', textAlign: 'right', fontWeight: 'bold', fontSize: 15 }}>
+                  Grand Total:
+                </td>
+                <td style={{ padding: '8px 12px', textAlign: 'right', border: '2px solid #333', fontSize: 15, fontWeight: 'bold' }}>
+                  ₹{grandTotal.toFixed(2)}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Settlement Details */}
+      <div style={{ marginTop: 16, fontSize: 13, textAlign: 'right', paddingRight: 12 }}>
+        <strong>Settlement Details:</strong>{' '}
+        {(() => {
+          const isPaid = billData?.is_paid || false;
+          const isPartiallyPaid = billData?.is_partially_paid || false;
+          const paidAmount = Number(billData?.paid_amount || 0);
+          const pendingAmount = grandTotal - paidAmount;
+          
+          if (!isPaid && !isPartiallyPaid) {
+            // Unpaid invoice - show full balance
+            return `Invoice Balance: ₹${grandTotal.toFixed(2)}`;
+          } else if (isPartiallyPaid && !isPaid) {
+            // Partially paid - show paid and pending amounts
+            return `Paid: ₹${paidAmount.toFixed(2)} | Pending: ₹${pendingAmount.toFixed(2)}`;
+          } else {
+            // Fully paid - show settlement details
+            return `Settled by ${billData?.payment_mode || 'Cash'}: ₹${paidAmount.toFixed(2)} | Balance: ₹0.00`;
+          }
+        })()}
+      </div>
+
+      {/* Terms & Footer */}
+      <div style={{ borderTop: '2px solid #333', paddingTop: 16, marginTop: 32 }}>
+        {/* Terms from Settings */}
+        {settings?.show_terms_on_invoice && settings?.invoice_terms && (
+          <div style={{ marginBottom: 16 }}>
+            <h4 style={{ margin: '0 0 8px 0', fontSize: 13 }}>Terms & Conditions:</h4>
+            <div style={{ fontSize: 12, color: '#555', lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>
+              {settings.invoice_terms}
+            </div>
+          </div>
+        )}
+
+        {/* Footer from Settings */}
+        {settings?.invoice_footer && (
+          <div style={{ marginBottom: 16, padding: 12, background: '#f9f9f9', border: '1px solid #ddd', fontSize: 12, textAlign: 'center' }}>
+            {settings.invoice_footer}
+          </div>
+        )}
+
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 32, alignItems: 'flex-end' }}>
+          <div>
+            <p style={{ margin: 0, fontSize: 12, color: '#666' }}>
+              This is a computer-generated invoice
+            </p>
+            {/* Payment QR Code */}
+            {settings?.enable_payment_qr && settings?.qr_on_invoice && (
+              <div style={{ marginTop: 16 }}>
+                {settings?.qrCodeDataUrl ? (
+                  // Render pre-generated QR code (for print/download)
+                  <div style={{ padding: 8, border: '2px solid #333', display: 'inline-block' }}>
+                    <div style={{ fontSize: 11, fontWeight: 'bold', marginBottom: 6, textAlign: 'center' }}>Scan & Pay</div>
+                    <img 
+                      src={settings.qrCodeDataUrl} 
+                      alt="Payment QR Code"
+                      style={{ display: 'block', width: settings?.qr_size || 150, height: settings?.qr_size || 150 }}
+                    />
+                    {settings?.show_upi_id_text && settings?.upi_id && (
+                      <div style={{ fontSize: 9, marginTop: 6, textAlign: 'center' }}>UPI: {settings.upi_id}</div>
+                    )}
+                  </div>
+                ) : (
+                  // Use dynamic component for live view
+                  <PaymentQRCode
+                    billData={billData}
+                    settings={settings}
+                    size={settings?.qr_size || 150}
+                    position="footer"
+                    showUpiId={settings?.show_upi_id_text}
+                    style={{ position: 'relative', border: '2px solid #333', padding: 8 }}
+                  />
+                )}
+              </div>
+            )}
+          </div>
+          <div style={{ textAlign: 'right' }}>
+            <p style={{ margin: '32px 0 0 0', borderTop: '1px solid #333', paddingTop: 8, fontSize: 13 }}>
+              Authorized Signatory
+              <br />
+              <span style={{ fontSize: 11, fontWeight: 'normal', color: '#666' }}>
+                For {billData?.organisationItems?.org_name || userItem?.organisationItems?.org_name || 'Company Name'}
+              </span>
+            </p>
+          </div>
+        </div>
+
+        {/* Company Branding Footer */}
+        <div style={{ marginTop: 20, textAlign: 'center', paddingTop: 16, borderTop: '1px solid #ddd' }}>
+          <p style={{ margin: 0, fontSize: 11, color: '#888' }}>
+            Powered by <strong style={{ color: '#333' }}>Subriva Billing</strong>
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const thStyle = {
+  padding: 8,
+  textAlign: 'center' as const,
+  fontSize: 12,
+  fontWeight: 'bold' as const,
+};
+
+const tdStyle = {
+  padding: 8,
+  textAlign: 'center' as const,
+  fontSize: 12,
+  border: '1px solid #eee',
+};
+
+export default ClassicInvoiceTemplate;
+

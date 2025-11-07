@@ -7,11 +7,6 @@ export interface SettingsTabProps {
   onReset: () => void;
 }
 
-export interface CompanyTabProps extends SettingsTabProps {
-  uploadedLogoUrl?: string | null;
-  onLogoUpload: (file: any) => Promise<boolean>;
-}
-
 export interface PrinterTabProps extends SettingsTabProps {
   onTestPrinter: () => void;
 }
@@ -21,19 +16,6 @@ export interface DefaultsTabProps extends SettingsTabProps {
 }
 
 export interface SettingsFormData {
-  // Company Settings
-  company_name: string;
-  company_address: string;
-  company_city: string;
-  company_state: string;
-  company_pincode: string;
-  company_gstin: string;
-  company_phone: string;
-  company_email: string;
-  company_website: string;
-  company_logo: string;
-  business_type: string;
-  
   // Tax Settings
   tax_enabled: boolean;
   tax_type: string;
@@ -55,6 +37,7 @@ export interface SettingsFormData {
   
   // Default Values
   default_payment_mode: string;
+  default_document_type: string;
   
   // Notification Settings
   email_notifications: boolean;
@@ -63,4 +46,22 @@ export interface SettingsFormData {
   low_stock_threshold: number;
   payment_reminder: boolean;
   daily_report_email: boolean;
+  
+  // Bank Details
+  bank_name: string;
+  account_holder_name: string;
+  account_number: string;
+  ifsc_code: string;
+  branch_name: string;
+  account_type: string;
+  upi_id: string;
+  swift_code: string;
+  
+  // Payment QR Code Settings
+  enable_payment_qr: boolean;
+  qr_on_invoice: boolean;
+  qr_on_bill: boolean;
+  qr_size: number;
+  qr_position: 'bottom-left' | 'bottom-right' | 'top-right' | 'footer';
+  show_upi_id_text: boolean;
 }

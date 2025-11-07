@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useCallback, memo } from "react";
 import { apiSlice } from "../../services/redux/api/apiSlice";
+import { useGetBranchStockCountQuery } from "../../services/redux/api/endpoints";
 import GlobalTable from "../../components/antd/GlobalTable";
 import { Input, Row, Space, Tag, Typography } from "antd";
 const { Text } = Typography;
@@ -11,7 +12,7 @@ const BranchStockAvailable = () => {
   });
 
   // Use RTK Query for branch stock data
-  const { data: stockData, isLoading: stock_get_loading, refetch } = apiSlice.useGetBranchStockCountQuery({
+  const { data: stockData, isLoading: stock_get_loading, refetch } = useGetBranchStockCountQuery({
     searchString: searchText.length > 2 || searchText.length === 0 ? searchText : undefined,
     pageNumber: pagination.current,
     pageLimit: pagination.pageSize,

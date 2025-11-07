@@ -11,37 +11,61 @@ import {
 } from 'antd';
 import {
   SettingOutlined,
-  ShopOutlined,
   PercentageOutlined,
   FileTextOutlined,
   PrinterOutlined,
   CheckCircleOutlined,
   BellOutlined,
+  ShopOutlined,
+  BankOutlined,
+  QrcodeOutlined,
 } from '@ant-design/icons';
-import { useNavigate } from 'react-router-dom';
 import styles from './Settings.module.css';
 import { apiSlice } from '../../services/redux/api/apiSlice';
 import { getCurrentUser } from '../../helpers/auth';
-import { useFileUpload } from '../../helpers/useFileUpload';
 import SessionStorageEncryption from '../../helpers/encryption';
 import {
-  CompanyTab,
+  BusinessInfoTab,
   TaxTab,
   InvoiceTab,
   PrinterTab,
   DefaultsTab,
   NotificationsTab,
+  TemplateSettingsTab,
+  BankDetailsTab,
+  PaymentQRTab,
 } from './tabs';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
 
+// Helper function to populate organisation form data
+const populateOrganisationForm = (form: any, orgData: any) => {
+  if (!orgData) return;
+  
+  form.setFieldsValue({
+    org_name: orgData.org_name || orgData.organization_name || orgData.name,
+    business_type: orgData.business_type,
+    email: orgData.email,
+    phone: orgData.phone,
+    gst_number: orgData.gst_number,
+    pan_number: orgData.pan_number,
+    address1: orgData.address1 || orgData.address,
+    city: orgData.city,
+    state: orgData.state,
+    pincode: orgData.pincode,
+    currency: orgData.currency,
+    timezone: orgData.timezone,
+    status: orgData.status !== false,
+  });
+};
+
 const Settings: React.FC = () => {
   const [form] = Form.useForm();
+  const [businessForm] = Form.useForm();
   const [loading, setLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState('company');
-  const { handleFileUpload, url: uploadedLogoUrl } = useFileUpload();
-  const navigate = useNavigate();
+  const [businessLoading, setBusinessLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState('business');
   const [selectedTenant, setSelectedTenant] = useState<string>('all');
   const [selectedOrganisation, setSelectedOrganisation] = useState<string>('all');
 
@@ -49,45 +73,87 @@ const Settings: React.FC = () => {
   const userItem = useMemo(() => getCurrentUser(), []);
   
   // Get user role with memoization to prevent unnecessary recalculations
-  const { userRole, isSuperAdmin, isTenant } = useMemo(() => {
+  const { userRole, isSuperAdmin, isTenant, isOrganisationUser, isBranchUser } = useMemo(() => {
     const scopeData = SessionStorageEncryption.getItem('scope');
     const role = scopeData?.userType || userItem?.user_type || userItem?.usertype || userItem?.user_role || '';
     return {
       userRole: role,
       isSuperAdmin: role.toLowerCase() === 'superadmin',
-      isTenant: role.toLowerCase() === 'tenant'
+      isTenant: role.toLowerCase() === 'tenant',
+      isOrganisationUser: role.toLowerCase() === 'organisationuser',
+      isBranchUser: role.toLowerCase() === 'branchuser'
     };
   }, [userItem]);
 
   // Use RTK Query for data fetching
-  const { data: tenantsData } = apiSlice.useGetTenantQuery({}, { skip: !isSuperAdmin });
-  const { data: organisationsData } = apiSlice.useGetOrganisationsQuery({}, { skip: !isTenant && !isSuperAdmin });
+  const { data: tenantsData } = apiSlice.useGetTenantAccountsQuery({}, { skip: !isSuperAdmin });
   
-  // For Settings and Organisation by ID, we'll use RTK Query with skip option
-  const [selectedSettingsId, setSelectedSettingsId] = useState<string | null>(null);
-  const [selectedOrgId, setSelectedOrgId] = useState<string | null>(null);
+  // For SuperAdmin: Filter organisations by selected tenant
+  // For Tenant: Load all organisations (they will be filtered by tenant_id on backend)
+  // For OrganisationUser/BranchUser: Load their specific organisation
+  const organisationsQueryParams = useMemo(() => {
+    if (isSuperAdmin && selectedTenant && selectedTenant !== 'all') {
+      return { tenant_id: selectedTenant };
+    }
+    if (isOrganisationUser || isBranchUser) {
+      const organisationId = userItem?.organisation_id || userItem?.organisationItems?._id;
+      if (organisationId) {
+        return { organisation_id: organisationId };
+      }
+    }
+    return {};
+  }, [isSuperAdmin, selectedTenant, isOrganisationUser, isBranchUser, userItem]);
   
-  const { data: settingsData, refetch: refetchSettings } = apiSlice.useGetSettingsByIdQuery(
-    { id: selectedSettingsId || '' },
-    { skip: !selectedSettingsId }
+  const { data: organisationsData } = apiSlice.useGetOrganisationsQuery(
+    organisationsQueryParams,
+    { skip: !isTenant && !isSuperAdmin && !isOrganisationUser && !isBranchUser }
   );
-  const { data: organisationData, refetch: refetchOrganisation } = apiSlice.useGetOrganisationsByIdQuery(
-    { id: selectedOrgId || '' },
-    { skip: !selectedOrgId }
+  
+  // For Settings by ID, we'll use RTK Query with skip option
+  const [selectedSettingsId, setSelectedSettingsId] = useState<string | null>(null);
+  
+  // Determine if settings API should be skipped
+  const shouldSkipSettings = useMemo(() => {
+    if (!selectedSettingsId || selectedSettingsId === 'all') return true;
+    if (isOrganisationUser || isBranchUser) return false;
+    if (isSuperAdmin) return !selectedTenant || selectedTenant === 'all';
+    if (isTenant) return false;
+    return true;
+  }, [selectedSettingsId, isSuperAdmin, isTenant, isOrganisationUser, isBranchUser, selectedTenant]);
+
+  // Fetch settings using GetAll with organisation_id filter
+  const { data: settingsData, refetch: refetchSettings } = apiSlice.useGetSettingsQuery(
+    { organisation_id: selectedSettingsId, page: 1, limit: 10 },
+    { 
+      skip: shouldSkipSettings || !selectedSettingsId,
+      refetchOnMountOrArgChange: true
+    }
   );
   
   // Use RTK Query mutations
   const [updateSettings] = apiSlice.useUpdateSettingsMutation();
   const [createSettings] = apiSlice.useCreateSettingsMutation();
-  const [updateOrganisations] = apiSlice.useUpdateOrganisationsMutation();
+  const [updateOrganisation] = apiSlice.useUpdateOrganisationsMutation();
 
   const tenantsItems = (tenantsData as any)?.result || [];
   const organisationsItems = (organisationsData as any)?.result || [];
 
-  // Load settings on mount
+  // Get selected organisation data from already-loaded dropdown data
+  const selectedOrganisationData = useMemo(() => {
+    if (!selectedSettingsId || selectedSettingsId === 'all') return null;
+    return organisationsItems?.find((item: any) => item._id === selectedSettingsId) || null;
+  }, [selectedSettingsId, organisationsItems]);
+
+  // Load settings on mount - only for organisation/branch users
   useEffect(() => {
-    loadSettings();
-    // RTK Query automatically fetches data based on skip conditions
+    if ((isOrganisationUser || isBranchUser) && !selectedSettingsId) {
+      const organisationId = userItem?.organisation_id || userItem?.organisationItems?._id;
+      if (organisationId) {
+        setSelectedSettingsId(organisationId);
+        // Populate business form with user's organisation data
+        populateOrganisationForm(businessForm, userItem?.organisationItems);
+      }
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -95,98 +161,171 @@ const Settings: React.FC = () => {
   const handleTenantChange = useCallback((tenantId: string) => {
     setSelectedTenant(tenantId || 'all');
     setSelectedOrganisation('all'); // Clear organisation selection
+    setSelectedSettingsId(null); // Clear settings when tenant changes
+    form.resetFields(); // Reset settings form when tenant changes
+    businessForm.resetFields(); // Reset business form when tenant changes
     
     if (tenantId && tenantId !== 'all') {
       // RTK Query will refetch with new filters when tenant changes
       // Organisations are filtered by tenant_id on backend
     }
     // If "all" or cleared, don't fetch organisations (keep dropdown disabled)
-  }, []);
+  }, [form, businessForm]);
 
-  const loadSettings = useCallback(async () => {
-    try {
-      // Determine which organisation to load
-      let organisationId = selectedOrganisation !== 'all' ? selectedOrganisation : null;
-      if (!organisationId) {
-        organisationId = userItem?.organisation_id || userItem?.organisationItems?._id;
+  // Handle organisation selection change
+  const handleOrganisationChange = useCallback((organisationId: string) => {
+    setSelectedOrganisation(organisationId || 'all');
+    
+    if (organisationId && organisationId !== 'all') {
+      // For SuperAdmin: Only proceed if tenant is selected
+      if (isSuperAdmin && (!selectedTenant || selectedTenant === 'all')) {
+        setSelectedSettingsId(null);
+        form.resetFields();
+      } else {
+        setSelectedSettingsId(organisationId);
       }
-      
-      // Set IDs to trigger RTK Query fetches
-      if (organisationId) {
-        setSelectedOrgId(organisationId);
-        const settingsId = organisationId || userItem?._id || null;
-        if (settingsId) {
-          setSelectedSettingsId(settingsId);
-        }
-      }
-    } catch (error) {
-      console.error('Error loading settings:', error);
+    } else {
+      setSelectedSettingsId(null);
+      form.resetFields();
     }
-  }, [selectedOrganisation, userItem]);
+  }, [form, isSuperAdmin, selectedTenant]);
 
-  // Reload settings when selected organisation changes
+
+
+  // Populate business form when organisation is selected
   useEffect(() => {
-    if (selectedOrganisation && selectedOrganisation !== 'all') {
-      loadSettings();
+    if (selectedOrganisationData) {
+      populateOrganisationForm(businessForm, selectedOrganisationData);
+    } else if (selectedSettingsId && selectedSettingsId !== 'all') {
+      businessForm.resetFields();
     }
-  }, [selectedOrganisation, loadSettings]);
+  }, [selectedOrganisationData, selectedSettingsId, businessForm]);
 
-  // Populate form when data loads
+  // Populate settings form when data loads
   useEffect(() => {
     const settingsResult = (settingsData as any)?.result || settingsData || {};
-    const orgResult = (organisationData as any)?.result || organisationData || {};
+    const settings = Array.isArray(settingsResult) ? settingsResult[0] : settingsResult;
+    const hasSettingsData = settings && typeof settings === 'object' && (settings._id || settings.id);
     
-    if (settingsResult || orgResult) {
-      const settings = settingsResult;
-      const org = orgResult;
-      
-      form.setFieldsValue({
-        // Company Settings - Map API fields to form fields
-        company_name: org.org_name || '',
-        company_address: org.address || '',
-        company_city: org.city || '',
-        company_state: org.state || '',
-        company_pincode: org.pincode || '',
-        company_gstin: org.gst_number || '',
-        company_phone: org.phone || '',
-        company_email: org.email || '',
-        company_website: org.website || '',
-        company_logo: org.logo_url || '',
-        business_type: org.business_type || '',
-        
-        // Tax Settings
-        tax_enabled: settings.tax_enabled !== false,
-        tax_type: settings.tax_type || 'GST',
+    if (selectedSettingsId) {
+      if (hasSettingsData) {
+        form.setFieldsValue({
+          // Tax Settings
+          tax_enabled: settings.tax_enabled ?? null,
+          tax_type: settings.tax_type ?? null,
 
-        // Invoice Settings
-        invoice_prefix: settings.invoice_prefix || 'INV',
-        invoice_starting_number: settings.invoice_starting_number || 1,
-        invoice_footer: settings.invoice_footer || '',
-        show_logo_on_invoice: settings.show_logo_on_invoice !== false,
-        show_terms_on_invoice: settings.show_terms_on_invoice !== false,
-        invoice_terms: settings.invoice_terms || '',
+          // Invoice Settings
+          invoice_prefix: settings.invoice_prefix ?? null,
+          invoice_starting_number: settings.invoice_starting_number ?? null,
+          invoice_footer: settings.invoice_footer ?? null,
+          show_logo_on_invoice: settings.show_logo_on_invoice ?? null,
+          show_terms_on_invoice: settings.show_terms_on_invoice ?? null,
+          invoice_terms: settings.invoice_terms ?? null,
 
-        // Printer Settings
-        thermal_printer_enabled: settings.thermal_printer_enabled || false,
-        printer_port: settings.printer_port || 'COM1',
-        printer_baud_rate: settings.printer_baud_rate || 9600,
-        paper_width: settings.paper_width || 80,
-        auto_print: settings.auto_print || false,
+          // Printer Settings
+          thermal_printer_enabled: settings.thermal_printer_enabled ?? null,
+          printer_port: settings.printer_port ?? null,
+          printer_baud_rate: settings.printer_baud_rate ?? null,
+          paper_width: settings.paper_width ?? null,
+          auto_print: settings.auto_print ?? null,
 
-        // Default Values
-        default_payment_mode: settings.default_payment_mode || 'cash',
+          // Default Values
+          default_payment_mode: settings.default_payment_mode ?? null,
+          default_document_type: settings.default_document_type ?? null,
 
-        // Notification Settings
-        email_notifications: settings.email_notifications !== false,
-        sms_notifications: settings.sms_notifications || false,
-        low_stock_alert: settings.low_stock_alert !== false,
-        low_stock_threshold: settings.low_stock_threshold || 10,
-        payment_reminder: settings.payment_reminder || false,
-        daily_report_email: settings.daily_report_email || false,
-      });
+          // Notification Settings
+          email_notifications: settings.email_notifications ?? null,
+          sms_notifications: settings.sms_notifications ?? null,
+          low_stock_alert: settings.low_stock_alert ?? null,
+          low_stock_threshold: settings.low_stock_threshold ?? null,
+          payment_reminder: settings.payment_reminder ?? null,
+          daily_report_email: settings.daily_report_email ?? null,
+
+          // Template Settings - Use API values directly
+          bill_template: settings.bill_template,
+          invoice_template: settings.invoice_template,
+
+          // Bank Details
+          bank_name: settings.bank_name ?? null,
+          account_holder_name: settings.account_holder_name ?? null,
+          account_number: settings.account_number ?? null,
+          ifsc_code: settings.ifsc_code ?? null,
+          branch_name: settings.branch_name ?? null,
+          account_type: settings.account_type ?? null,
+          upi_id: settings.upi_id ?? null,
+          swift_code: settings.swift_code ?? null,
+
+          // Payment QR Settings
+          enable_payment_qr: settings.enable_payment_qr ?? false,
+          qr_on_invoice: settings.qr_on_invoice ?? true,
+          qr_on_bill: settings.qr_on_bill ?? true,
+          qr_size: settings.qr_size ?? 200,
+          qr_position: settings.qr_position ?? 'bottom-right',
+          show_upi_id_text: settings.show_upi_id_text ?? true,
+        });
+      } else {
+        // No settings found - initialize with default values
+        form.setFieldsValue({
+          // Tax Settings
+          tax_enabled: null,
+          tax_type: null,
+
+          // Invoice Settings
+          invoice_prefix: null,
+          invoice_starting_number: null,
+          invoice_footer: null,
+          show_logo_on_invoice: null,
+          show_terms_on_invoice: null,
+          invoice_terms: null,
+
+          // Printer Settings
+          thermal_printer_enabled: null,
+          printer_port: null,
+          printer_baud_rate: null,
+          paper_width: null,
+          auto_print: null,
+
+          // Default Values
+          default_payment_mode: null,
+          default_document_type: null,
+
+          // Notification Settings
+          email_notifications: null,
+          sms_notifications: null,
+          low_stock_alert: null,
+          low_stock_threshold: null,
+          payment_reminder: null,
+          daily_report_email: null,
+
+          // Template Settings - No defaults, let backend/initial setup handle this
+          bill_template: null,
+          invoice_template: null,
+
+          // Bank Details
+          bank_name: null,
+          account_holder_name: null,
+          account_number: null,
+          ifsc_code: null,
+          branch_name: null,
+          account_type: null,
+          upi_id: null,
+          swift_code: null,
+
+          // Payment QR Settings - Initialize with defaults
+          enable_payment_qr: false,
+          qr_on_invoice: true,
+          qr_on_bill: true,
+          qr_size: 200,
+          qr_position: 'bottom-right',
+          show_upi_id_text: true,
+        });
+      }
+    } else if (selectedOrganisation === 'all' && (isSuperAdmin || isTenant)) {
+      form.resetFields();
     }
-  }, [settingsData, organisationData, form]);
+  }, [settingsData, selectedSettingsId, selectedOrganisation, isSuperAdmin, isTenant, form]);
 
+  // Handle settings save
   const handleSave = useCallback(async () => {
     try {
       // Check if organization is selected for SuperAdmin and Tenant users
@@ -210,121 +349,130 @@ const Settings: React.FC = () => {
         return;
       }
 
-      // Only update organization data if we're on the company tab
-      if (activeTab === 'company' && organisationId) {
-        await updateOrganisations({
-          id: organisationId,
-          org_name: values.company_name,
-          address: values.company_address,
-          city: values.company_city,
-          state: values.company_state,
-          pincode: values.company_pincode,
-          gst_number: values.company_gstin,
-          phone: values.company_phone,
-          email: values.company_email,
-          website: values.company_website,
-          logo_url: uploadedLogoUrl || values.company_logo,
-          business_type: values.business_type,
-        }).unwrap();
-      }
-
       // Save settings - Send only relevant data based on active tab
-      if (activeTab !== 'company') {
-        let newSettingsData: any = {};
+      let newSettingsData: any = {};
 
-        // Tax & GST tab - only tax settings
-        if (activeTab === 'tax') {
-          newSettingsData = {
-            tax_enabled: values.tax_enabled,
-            tax_type: values.tax_type,
-          };
-        }
-        // Invoice tab - only invoice settings
-        else if (activeTab === 'invoice') {
-          newSettingsData = {
-            invoice_prefix: values.invoice_prefix,
-            invoice_starting_number: values.invoice_starting_number,
-            invoice_footer: values.invoice_footer,
-            invoice_terms: values.invoice_terms,
-            show_logo_on_invoice: values.show_logo_on_invoice,
-            show_terms_on_invoice: values.show_terms_on_invoice,
-          };
-        }
-        // Printer tab - only printer settings
-        else if (activeTab === 'printer') {
-          newSettingsData = {
-            thermal_printer_enabled: values.thermal_printer_enabled,
-            printer_port: values.printer_port,
-            printer_baud_rate: values.printer_baud_rate,
-            paper_width: values.paper_width,
-            auto_print: values.auto_print,
-          };
-        }
-        // Defaults tab - only default values
-        else if (activeTab === 'defaults') {
-          newSettingsData = {
-            default_payment_mode: values.default_payment_mode,
-          };
-        }
-        // Notifications tab - only notification settings
-        else if (activeTab === 'notifications') {
-          newSettingsData = {
-            email_notifications: values.email_notifications,
-            sms_notifications: values.sms_notifications,
-            low_stock_alert: values.low_stock_alert,
-            low_stock_threshold: values.low_stock_threshold,
-            payment_reminder: values.payment_reminder,
-            daily_report_email: values.daily_report_email,
-          };
-        }
-
-        // Check if settings exist, if not create new settings
-        const settingsResult = (settingsData as any)?.result || settingsData;
-        const existingSettings = settingsResult && typeof settingsResult === 'object' ? settingsResult : null;
-        const hasExistingSettings = existingSettings && (
-          existingSettings._id || 
-          existingSettings.id || 
-          (typeof existingSettings === 'object' && Object.keys(existingSettings).some(key => 
-            key !== '_id' && key !== 'id' && existingSettings[key] !== null && existingSettings[key] !== undefined
-          ))
-        );
-        const targetId = organisationId || userItem?._id;
-        
-        if (hasExistingSettings) {
-          // Update existing settings - use the settings ID or target ID
-          const settingsId = existingSettings._id || existingSettings.id || targetId;
-          await updateSettings({
-            id: settingsId,
-            ...newSettingsData,
-            organisation_id: targetId, // Include organisation_id for updates too
-          }).unwrap();
-        } else {
-          // Create new settings for the first time
-          await createSettings({
-            ...newSettingsData,
-            organisation_id: targetId, // Include organisation_id for new settings
-          }).unwrap();
-        }
-
-        // Reload settings after save to get updated data
-        if (targetId) {
-          setSelectedSettingsId(targetId);
-          refetchSettings();
-        }
+      // Tax & GST tab - only tax settings
+      if (activeTab === 'tax') {
+        newSettingsData = {
+          tax_enabled: values.tax_enabled,
+          tax_type: values.tax_type,
+        };
+      }
+      // Invoice tab - only invoice settings
+      else if (activeTab === 'invoice') {
+        newSettingsData = {
+          invoice_prefix: values.invoice_prefix,
+          invoice_starting_number: values.invoice_starting_number,
+          invoice_footer: values.invoice_footer,
+          invoice_terms: values.invoice_terms,
+          show_logo_on_invoice: values.show_logo_on_invoice,
+          show_terms_on_invoice: values.show_terms_on_invoice,
+        };
+      }
+      // Printer tab - only printer settings
+      else if (activeTab === 'printer') {
+        newSettingsData = {
+          thermal_printer_enabled: values.thermal_printer_enabled,
+          printer_port: values.printer_port,
+          printer_baud_rate: values.printer_baud_rate,
+          paper_width: values.paper_width,
+          auto_print: values.auto_print,
+        };
+      }
+      // Defaults tab - only default values
+      else if (activeTab === 'defaults') {
+        newSettingsData = {
+          default_payment_mode: values.default_payment_mode,
+          default_document_type: values.default_document_type,
+        };
+      }
+      // Notifications tab - only notification settings
+      else if (activeTab === 'notifications') {
+        newSettingsData = {
+          email_notifications: values.email_notifications,
+          sms_notifications: values.sms_notifications,
+          low_stock_alert: values.low_stock_alert,
+          low_stock_threshold: values.low_stock_threshold,
+          payment_reminder: values.payment_reminder,
+          daily_report_email: values.daily_report_email,
+        };
+      }
+      // Template tab - only template settings
+      else if (activeTab === 'templates') {
+        newSettingsData = {
+          bill_template: values.bill_template,
+          invoice_template: values.invoice_template,
+        };
+      }
+      // Bank Details tab - only bank details
+      else if (activeTab === 'bank') {
+        newSettingsData = {
+          bank_name: values.bank_name,
+          account_holder_name: values.account_holder_name,
+          account_number: values.account_number,
+          ifsc_code: values.ifsc_code,
+          branch_name: values.branch_name,
+          account_type: values.account_type,
+          upi_id: values.upi_id,
+          swift_code: values.swift_code,
+        };
+      }
+      // Payment QR tab - only payment QR settings
+      else if (activeTab === 'payment-qr') {
+        newSettingsData = {
+          upi_id: values.upi_id,
+          enable_payment_qr: values.enable_payment_qr ?? false,
+          qr_on_invoice: values.qr_on_invoice ?? true,
+          qr_on_bill: values.qr_on_bill ?? true,
+          qr_size: values.qr_size ?? 200,
+          qr_position: values.qr_position ?? 'bottom-right',
+          show_upi_id_text: values.show_upi_id_text ?? true,
+        };
       }
 
-      const tabLabels = {
-        company: 'Company Settings',
-        tax: 'Tax & GST Settings',
-        invoice: 'Invoice Settings',
-        printer: 'Printer Settings',
-        defaults: 'Default Values',
-        notifications: 'Notification Settings'
-      };
+      // Check if settings exist, if not create new settings
+      const settingsResult = (settingsData as any)?.result || settingsData || [];
+      
+      // Extract first item from array if it's an array response
+      const existingSettings = Array.isArray(settingsResult) 
+        ? settingsResult[0] 
+        : settingsResult;
+      
+      // Check if we have valid existing settings with an ID
+      const hasExistingSettings = existingSettings && (existingSettings._id || existingSettings.id);
+      const targetOrgId = organisationId || userItem?._id;
+      
+      if (hasExistingSettings) {
+        // Update existing settings
+        const settingsId = existingSettings._id || existingSettings.id;
+        await updateSettings({
+          id: settingsId,
+          data: {
+            ...newSettingsData,
+            organisation_id: targetOrgId,
+          }
+        }).unwrap();
+        
+        message.success('Settings updated successfully! 🎉');
+      } else {
+        // Create new settings
+        await createSettings({
+          ...newSettingsData,
+          organisation_id: targetOrgId,
+        }).unwrap();
+        
+        message.success(`Settings created successfully! 🎉`);
+      }
 
-      message.success(`${tabLabels[activeTab as keyof typeof tabLabels] || 'Settings'} saved successfully! 🎉`);
+      // Reload settings after save to get updated data
+      if (targetOrgId) {
+        await refetchSettings();
+      }
+
     } catch (error: any) {
-      message.error(error.message || 'Failed to save settings');
+      console.error('❌ Error saving settings:', error);
+      message.error(error.message || error.data?.message || 'Failed to save settings');
     } finally {
       setLoading(false);
     }
@@ -334,13 +482,75 @@ const Settings: React.FC = () => {
     selectedOrganisation, 
     userItem, 
     activeTab, 
-    updateOrganisations,
     updateSettings,
     createSettings,
     refetchSettings,
-    uploadedLogoUrl,
     settingsData,
-    form
+    form,
+    isOrganisationUser,
+    isBranchUser
+  ]);
+
+  // Handle business information save
+  const handleBusinessSave = useCallback(async () => {
+    try {
+      // Check if organization is selected for SuperAdmin and Tenant users
+      if ((isSuperAdmin || isTenant) && selectedOrganisation === 'all') {
+        message.error('Please select an organisation before updating business information');
+        return;
+      }
+
+      const values = await businessForm.validateFields();
+      setBusinessLoading(true);
+
+      // Determine the organisation ID to update
+      let organisationId = selectedOrganisation !== 'all' ? selectedOrganisation : null;
+      if (!organisationId) {
+        organisationId = userItem?.organisation_id || userItem?.organisationItems?._id;
+      }
+
+      if (!organisationId) {
+        message.error('Organisation ID not found. Please select an organisation.');
+        return;
+      }
+
+      // Update organisation
+      await updateOrganisation({
+        id: organisationId,
+        data: {
+          org_name: values.org_name,
+          business_type: values.business_type,
+          email: values.email,
+          phone: values.phone,
+          gst_number: values.gst_number,
+          pan_number: values.pan_number,
+          address1: values.address1,
+          city: values.city,
+          state: values.state,
+          pincode: values.pincode,
+          currency: values.currency,
+          timezone: values.timezone,
+          status: values.status,
+        }
+      }).unwrap();
+
+      message.success('Business information updated successfully! 🎉');
+
+      // RTK Query will automatically update the organisations list cache
+
+    } catch (error: any) {
+      console.error('❌ Error saving business information:', error);
+      message.error(error.message || error.data?.message || 'Failed to save business information');
+    } finally {
+      setBusinessLoading(false);
+    }
+  }, [
+    isSuperAdmin,
+    isTenant,
+    selectedOrganisation,
+    userItem,
+    businessForm,
+    updateOrganisation,
   ]);
 
   const handleReset = useCallback(() => {
@@ -348,16 +558,10 @@ const Settings: React.FC = () => {
     message.info('Form reset to last saved values');
   }, [form]);
 
-  const handleLogoUpload = useCallback(async (file: any) => {
-    try {
-      const url = await handleFileUpload(file);
-      form.setFieldValue('company_logo', url);
-      message.success('Logo uploaded successfully!');
-    } catch (error) {
-      message.error('Failed to upload logo');
-    }
-    return false; // Prevent default upload
-  }, [handleFileUpload, form]);
+  const handleBusinessReset = useCallback(() => {
+    businessForm.resetFields();
+    message.info('Form reset to last saved values');
+  }, [businessForm]);
 
   const testPrinter = useCallback(() => {
     message.info('Printing test page... Check your thermal printer');
@@ -366,14 +570,14 @@ const Settings: React.FC = () => {
 
   // Prepare options for dropdowns
   const tenantOptions = useMemo(() => {
-    return tenantsItems?.result?.map((tenant: any) => ({
+    return tenantsItems?.map((tenant: any) => ({
       label: tenant.organization_name || tenant.tenant_name,
       value: tenant._id,
     })) || [];
   }, [tenantsItems]);
 
   const organisationOptions = useMemo(() => {
-    return organisationsItems?.result?.map((org: any) => ({
+    return organisationsItems?.map((org: any) => ({
       label: org.org_name || org.organization_name || org.name,
       value: org._id,
     })) || [];
@@ -429,7 +633,7 @@ const Settings: React.FC = () => {
                   style={{ width: '100%' }}
                   placeholder="Select Organisation"
                   value={selectedOrganisation}
-                  onChange={setSelectedOrganisation}
+                  onChange={handleOrganisationChange}
                   showSearch
                   optionFilterProp="children"
                   allowClear
@@ -456,20 +660,18 @@ const Settings: React.FC = () => {
           type="card"
           items={[
             {
-              key: 'company',
+              key: 'business',
               label: (
                 <span>
-                  <ShopOutlined /> Company
+                  <ShopOutlined /> Business Info
                 </span>
               ),
               children: (
-                <CompanyTab
-                  form={form}
-                  loading={loading}
-                  onSave={handleSave}
-                  onReset={handleReset}
-                  uploadedLogoUrl={uploadedLogoUrl}
-                  onLogoUpload={handleLogoUpload}
+                <BusinessInfoTab
+                  form={businessForm}
+                  loading={businessLoading}
+                  onSave={handleBusinessSave}
+                  onReset={handleBusinessReset}
                 />
               ),
             },
@@ -547,6 +749,54 @@ const Settings: React.FC = () => {
               ),
               children: (
                 <NotificationsTab
+                  form={form}
+                  loading={loading}
+                  onSave={handleSave}
+                  onReset={handleReset}
+                />
+              ),
+            },
+            {
+              key: 'templates',
+              label: (
+                <span>
+                  <FileTextOutlined /> Templates
+                </span>
+              ),
+              children: (
+                <TemplateSettingsTab
+                  form={form}
+                  loading={loading}
+                  onSave={handleSave}
+                  onReset={handleReset}
+                />
+              ),
+            },
+            {
+              key: 'bank',
+              label: (
+                <span>
+                  <BankOutlined /> Bank Details
+                </span>
+              ),
+              children: (
+                <BankDetailsTab
+                  form={form}
+                  loading={loading}
+                  onSave={handleSave}
+                  onReset={handleReset}
+                />
+              ),
+            },
+            {
+              key: 'payment-qr',
+              label: (
+                <span>
+                  <QrcodeOutlined /> Payment QR
+                </span>
+              ),
+              children: (
+                <PaymentQRTab
                   form={form}
                   loading={loading}
                   onSave={handleSave}

@@ -6,14 +6,17 @@ import { GenericCrudPage } from "../../components/common/GenericCrudPage";
 import { Variant } from "../../types/entities";
 import { getCurrentUserRole } from "../../helpers/auth";
 import { apiSlice } from '../../services/redux/api/apiSlice';
+import { useInfiniteDropdown } from "../../hooks/useInfiniteDropdown";
 
 const VariantCrud: React.FC = () => {
-  // Use RTK Query for fetching units - Unit is singular in API_ROUTES
-  const { data: unitData, isLoading: unit_get_loading } = apiSlice.useGetUnitQuery({});
-  const unitItems = (unitData as any)?.result || [];
-  
   const currentUserRole = getCurrentUserRole();
   const isSuperAdmin = currentUserRole?.toLowerCase() === 'superadmin';
+
+  // Use infinite scroll for Unit dropdown
+  const unitDropdown = useInfiniteDropdown({
+    queryHook: apiSlice.useGetUnitQuery,
+    limit: 20,
+  });
 
   const variantConfig = useMemo(() => ({
     title: "Variants",
@@ -86,11 +89,24 @@ const VariantCrud: React.FC = () => {
         component: (
           <Select
             placeholder="Select unit"
-            loading={unit_get_loading}
+            loading={unitDropdown.loading && unitDropdown.items.length === 0}
             showSearch
             allowClear
+            onSearch={unitDropdown.setSearchString}
+            onPopupScroll={unitDropdown.handlePopupScroll}
+            filterOption={false}
+            dropdownRender={(menu) => (
+              <>
+                {menu}
+                {unitDropdown.hasMore && unitDropdown.items.length > 0 && (
+                  <div style={{ textAlign: 'center', padding: '8px', color: '#999' }}>
+                    {unitDropdown.loading ? 'Loading...' : 'Scroll for more'}
+                  </div>
+                )}
+              </>
+            )}
           >
-            {(unitItems || []).map((unit: any) => (
+            {unitDropdown.items.map((unit: any) => (
               <Option key={unit._id} value={unit.unit_code}>
                 {unit.unit_name}
               </Option>
@@ -189,7 +205,7 @@ const VariantCrud: React.FC = () => {
       // Otherwise, all users can delete
       return true;
     },
-  }), [unitItems, unit_get_loading, isSuperAdmin]);
+  }), [unitDropdown, isSuperAdmin]);
 
   return (
     <GenericCrudPage 

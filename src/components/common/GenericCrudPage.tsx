@@ -529,7 +529,7 @@ const GenericCrudPageComponent = <T extends BaseEntity>({
         data={items}
         loading={loading || deleteLoading}
         rowKeyField="_id"
-        totalCount={pagination?.total || 0}
+        totalCount={(pagination as any)?.totalCount || pagination?.total || 0}
         pageLimit={pagination?.pageSize || 10}
         onPaginationChange={handlePaginationChange}
       />

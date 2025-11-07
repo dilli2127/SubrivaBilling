@@ -2,14 +2,14 @@ import React, { useEffect } from 'react';
 import { Form, Button, message } from 'antd';
 import GlobalDrawer from '../../components/antd/GlobalDrawer';
 import { storageAllocateDrawerFormItems } from './StorageAllocateDrawerFormItems';
+import { InfiniteDropdownResult } from '../../hooks/useInfiniteDropdown';
 
 interface StorageAllocateDrawerProps {
   open: boolean;
   onClose: () => void;
   onSubmit: (values: any) => void;
   record: any;
-  rackList: any;
-  rackLoading: boolean;
+  rackDropdown: InfiniteDropdownResult;
   createLoading?: boolean;
 }
 
@@ -18,12 +18,11 @@ const StorageAllocateDrawer: React.FC<StorageAllocateDrawerProps> = ({
   onClose,
   onSubmit,
   record,
-  rackList,
-  rackLoading,
+  rackDropdown,
   createLoading = false,
 }) => {
   const [form] = Form.useForm();
-  const formItems = storageAllocateDrawerFormItems(rackList, rackLoading);
+  const formItems = storageAllocateDrawerFormItems(rackDropdown);
 
   useEffect(() => {
     if (open) {

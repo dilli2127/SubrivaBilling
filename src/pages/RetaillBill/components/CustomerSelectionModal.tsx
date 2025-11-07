@@ -34,6 +34,7 @@ import {
 } from '@ant-design/icons';
 import { useHandleApiResponse } from '../../../components/common/useHandleApiResponse';
 import { useGenericCrudRTK } from '../../../hooks/useGenericCrudRTK';
+import { apiSlice } from '../../../services/redux/api/apiSlice';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -68,6 +69,9 @@ const CustomerSelectionModalComponent: React.FC<CustomerSelectionModalProps> = (
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
+  const [page, setPage] = useState(1);
+  const [allCustomers, setAllCustomers] = useState<Customer[]>([]);
+  const [hasMore, setHasMore] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(
     null
@@ -88,31 +92,62 @@ const CustomerSelectionModalComponent: React.FC<CustomerSelectionModalProps> = (
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const createGridRef = useRef<HTMLDivElement>(null);
   const firstFormInputRef = useRef<any>(null);
+  const isLoadingMoreRef = useRef(false);
 
-  // RTK Query hooks for Customer - use debouncedSearchTerm for API calls
+  // RTK Query hooks for Customer - with pagination
+  const { data: customerData, isLoading: customerLoading, refetch: refetchCustomerList } = 
+    apiSlice.useGetCustomerQuery(
+      { 
+        searchString: debouncedSearchTerm,
+        page: page,
+        limit: 10
+      },
+      { 
+        skip: !visible, // Only fetch when modal is open
+        refetchOnMountOrArgChange: true,
+      }
+    );
+  
   const customerRTK = useGenericCrudRTK('Customer');
-  const { data: customerData, isLoading: customerLoading, refetch: refetchCustomerList } = customerRTK.useGetAll({
-    searchString: debouncedSearchTerm,
-  });
   const { create: createCustomer, ...createResult } = customerRTK.useCreate();
   const createLoading = createResult.isLoading;
 
-  // Extract items from customerData
-  const customers = useMemo(() => {
-    if (!customerData) return [];
-    return (customerData as any)?.result || [];
-  }, [customerData]);
+  // Accumulate customers for infinite scroll
+  useEffect(() => {
+    if (!visible) return;
+    
+    if (customerData) {
+      const newItems = (customerData as any)?.result || [];
+      const totalCount = (customerData as any).pagination?.totalCount || (customerData as any).pagination?.total || 0;
+      
+      if (page === 1) {
+        // First page - replace all items
+        setAllCustomers(newItems);
+        setHasMore(newItems.length < totalCount && newItems.length > 0);
+        if (newItems.length > 0) {
+          setShowCreateGrid(false);
+          setShowAddForm(false);
+        }
+      } else {
+        // Subsequent pages - append items
+        setAllCustomers(prev => {
+          const existingIds = new Set(prev.map((item: any) => item._id));
+          const uniqueNewItems = newItems.filter((item: any) => !existingIds.has(item._id));
+          const updated = [...prev, ...uniqueNewItems];
+          setHasMore(updated.length < totalCount && uniqueNewItems.length > 0);
+          return updated;
+        });
+        if (newItems.length > 0) {
+          setShowCreateGrid(false);
+          setShowAddForm(false);
+        }
+      }
+      
+      isLoadingMoreRef.current = false;
+    }
+  }, [customerData, page, visible]);
 
-  // Memoized filtered customers - filter locally for instant UI feedback
-  const filteredCustomers = useMemo(() => {
-    if (!searchTerm.trim()) return customers;
-    const term = searchTerm.toLowerCase();
-    return customers.filter((customer: Customer) =>
-      customer.full_name?.toLowerCase().includes(term) ||
-      customer.mobile?.includes(term) ||
-      customer.email?.toLowerCase().includes(term)
-    );
-  }, [customers, searchTerm]);
+  const filteredCustomers = allCustomers;
 
   // Check if search has no results and should show create grid
   const shouldShowCreateGrid = useMemo(() => {
@@ -185,7 +220,7 @@ const CustomerSelectionModalComponent: React.FC<CustomerSelectionModalProps> = (
     [filteredCustomers, selectedRowIndex]
   );
 
-  // Debounced search function
+  // Debounced search function with pagination reset
   const handleSearch = useCallback(
     (value: string) => {
       setSearchTerm(value);
@@ -196,7 +231,11 @@ const CustomerSelectionModalComponent: React.FC<CustomerSelectionModalProps> = (
 
       searchTimeoutRef.current = setTimeout(() => {
         setDebouncedSearchTerm(value.trim());
-      }, 500);
+        // Reset to page 1 when search changes
+        setPage(1);
+        setHasMore(true);
+        isLoadingMoreRef.current = false;
+      }, 300);
     },
     []
   );
@@ -509,13 +548,23 @@ const CustomerSelectionModalComponent: React.FC<CustomerSelectionModalProps> = (
       setSelectedCustomer(null);
       setSelectedRowIndex(-1);
       setShowCreateGrid(false);
+      // Reset pagination when modal opens
+      setPage(1);
+      setHasMore(true);
+      isLoadingMoreRef.current = false;
     } else {
       setSearchTerm('');
+      setDebouncedSearchTerm('');
       setSelectedCustomer(null);
       setSelectedRowIndex(-1);
       setShowCreateGrid(false);
       setShowAddForm(false);
       clearFormData();
+      // Reset pagination when modal closes
+      setPage(1);
+      setAllCustomers([]);
+      setHasMore(true);
+      isLoadingMoreRef.current = false;
       if (searchTimeoutRef.current) {
         clearTimeout(searchTimeoutRef.current);
         searchTimeoutRef.current = null;
@@ -1107,15 +1156,36 @@ const CustomerSelectionModalComponent: React.FC<CustomerSelectionModalProps> = (
             )}
           </div>
         ) : (
-          <Table
-            columns={columns}
-            dataSource={filteredCustomers}
-            rowKey="_id"
-            pagination={false}
-            size="small"
-            scroll={{ y: 300 }}
-            onRow={getRowProps}
-          />
+          <div
+            onScroll={(e: any) => {
+              const target = e.currentTarget;
+              const scrollTop = target.scrollTop;
+              const scrollHeight = target.scrollHeight;
+              const clientHeight = target.clientHeight;
+              const scrollPercentage = (scrollTop + clientHeight) / scrollHeight;
+              
+              if (scrollPercentage > 0.7 && hasMore && !customerLoading && !isLoadingMoreRef.current) {
+                isLoadingMoreRef.current = true;
+                setPage(prev => prev + 1);
+              }
+            }}
+            style={{ maxHeight: 360, overflowY: 'auto' }}
+          >
+            <Table
+              columns={columns}
+              dataSource={filteredCustomers}
+              rowKey="_id"
+              pagination={false}
+              size="small"
+              scroll={{ y: undefined }}
+              onRow={getRowProps}
+            />
+            {hasMore && filteredCustomers.length > 0 && (
+              <div style={{ textAlign: 'center', padding: '8px', color: '#999', borderTop: '1px solid #f0f0f0' }}>
+                {customerLoading ? 'Loading more...' : 'Scroll for more customers'}
+              </div>
+            )}
+          </div>
         )}
       </div>
     </Modal>

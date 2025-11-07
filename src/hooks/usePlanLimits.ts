@@ -23,7 +23,7 @@
  */
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { apiSlice } from '../services/redux/api/apiSlice';
+import { useGetPlanLimitsQuery } from '../services/redux/api/endpoints';
 
 export interface PlanLimits {
   plan: {
@@ -74,7 +74,7 @@ export function usePlanLimits(autoFetch: boolean = true): UsePlanLimitsResult {
   const [error, setError] = useState<string | null>(null);
 
   // Use RTK Query to fetch plan limits
-  const { data: planLimitsResponse, isLoading: loading, error: queryError, refetch: fetchPlanLimits } = apiSlice.useGetPlanLimitsQuery(
+  const { data: planLimitsResponse, isLoading: loading, error: queryError, refetch: fetchPlanLimits } = useGetPlanLimitsQuery(
     {},
     { skip: !autoFetch }
   );

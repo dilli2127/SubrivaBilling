@@ -16,6 +16,7 @@ import {
   Checkbox,
   Form,
   Tooltip,
+  Tag,
 } from 'antd';
 import {
   BarChartOutlined,
@@ -36,9 +37,14 @@ import {
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import styles from './Reports.module.css';
-import { apiSlice } from '../../services/redux/api/apiSlice';
+import {
+  useGetTenantAccountsQuery,
+  useGetOrganisationsQuery,
+  useGetBranchesQuery,
+} from '../../services/redux/api/apiSlice';
 import { useReportData } from './hooks/useReportData';
 import { useReportExport } from './hooks/useReportExport';
+import { ReportDataProvider } from './context/ReportDataContext';
 
 // Import report components
 import ComprehensiveReport from './components/ComprehensiveReport';
@@ -77,10 +83,19 @@ const Reports: React.FC = () => {
   const isOrganisationUser = userRole.toLowerCase() === 'organisationuser';
   const isBranchUser = userRole.toLowerCase() === 'branchuser';
 
-  // Use RTK Query for dropdowns data
-  const { data: tenantsData } = apiSlice.useGetTenantQuery({});
-  const { data: organisationsData } = apiSlice.useGetOrganisationsQuery({});
-  const { data: branchesData } = apiSlice.useGetBrachesQuery({});
+  // Use RTK Query for dropdowns data - conditionally based on user role
+  // Only fetch tenants for SuperAdmin
+  const { data: tenantsData } = useGetTenantAccountsQuery({}, { skip: !isSuperAdmin });
+  
+  // Only fetch organisations for SuperAdmin and Tenant (not for OrganisationUser or BranchUser)
+  const { data: organisationsData } = useGetOrganisationsQuery({}, { 
+    skip: !isSuperAdmin && !isTenant 
+  });
+  
+  // Only fetch branches for SuperAdmin, Tenant, and OrganisationUser (not for BranchUser)
+  const { data: branchesData } = useGetBranchesQuery({}, { 
+    skip: isBranchUser 
+  });
 
   const tenantsItems = (tenantsData as any)?.result || [];
   const organisationsItems = (organisationsData as any)?.result || [];
@@ -140,7 +155,23 @@ const Reports: React.FC = () => {
   };
 
   // Use custom hooks
-  const { loading, reportCache, fetchReportData } = useReportData({
+  const {
+    loading,
+    reportCache,
+    fetchReportData,
+    salesReportData,
+    productSalesData,
+    customerSalesData,
+    stockReportData,
+    profitLossData,
+    outstandingPaymentsData,
+    paymentCollectionData,
+    expenseData,
+    gstData,
+    topProductsData,
+    topCustomersData,
+    stockExpiryData,
+  } = useReportData({
     activeTab,
     selectedTenant,
     selectedOrganisation,
@@ -200,9 +231,9 @@ const Reports: React.FC = () => {
     return () => window.removeEventListener('keydown', handleKeyPress);
   }, [fetchReportData, handlePrint, setExportModalVisible]);
 
-  useEffect(() => {
-    fetchReportData();
-  }, [fetchReportData]);
+  // Note: RTK Query automatically fetches data on mount when skip=false
+  // Only manually refetch when user clicks "Apply Filters" or "Refresh" buttons
+  // Removing automatic fetch on mount to prevent duplicate API calls
 
   return (
     <div className={styles.container}>
@@ -365,78 +396,99 @@ const Reports: React.FC = () => {
       </Card>
 
       {/* Report Content Tabs */}
-      <Tabs 
-        activeKey={activeTab}
-        onChange={setActiveTab}
-        type="card" 
-        size="large"
-        style={{ backgroundColor: '#fff', padding: 16, borderRadius: 12, boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}
-        items={[
-          {
-            key: '1',
-            label: (
-              <Tooltip title="Comprehensive Overview (Ctrl+1)">
-                <span><BarChartOutlined /> Comprehensive</span>
-              </Tooltip>
-            ),
-            children: <ComprehensiveReport />,
-          },
-          {
-            key: '2',
-            label: (
-              <Tooltip title="Financial Analysis (Ctrl+2)">
-                <span><FundOutlined /> Financial</span>
-              </Tooltip>
-            ),
-            children: <FinancialReport />,
-          },
-          {
-            key: '3',
-            label: (
-              <Tooltip title="Sales Analytics (Ctrl+3)">
-                <span><ShoppingCartOutlined /> Sales</span>
-              </Tooltip>
-            ),
-            children: <SalesReport />,
-          },
-          {
-            key: '4',
-            label: (
-              <Tooltip title="Customer Analytics (Ctrl+4)">
-                <span><UserOutlined /> Customers</span>
-              </Tooltip>
-            ),
-            children: <CustomerReport />,
-          },
-          {
-            key: '5',
-            label: (
-              <Tooltip title="Inventory Report (Ctrl+5)">
-                <span><StockOutlined /> Inventory</span>
-              </Tooltip>
-            ),
-            children: <InventoryReport />,
-          },
+      <ReportDataProvider
+        value={{
+          salesReportData,
+          productSalesData,
+          customerSalesData,
+          stockReportData,
+          profitLossData,
+          outstandingPaymentsData,
+          paymentCollectionData,
+          expenseData,
+          gstData,
+          topProductsData,
+          topCustomersData,
+          stockExpiryData,
+          loading,
+        }}
+      >
+        <Tabs 
+          activeKey={activeTab}
+          onChange={setActiveTab}
+          type="card" 
+          size="large"
+          style={{ backgroundColor: '#fff', padding: 16, borderRadius: 12, boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}
+          items={[
+            {
+              key: '1',
+              label: (
+                <Tooltip title="Comprehensive Overview (Ctrl+1)">
+                  <span><BarChartOutlined /> Comprehensive</span>
+                </Tooltip>
+              ),
+              children: <ComprehensiveReport />,
+            },
+            {
+              key: '2',
+              label: (
+                <Tooltip title="Financial Analysis (Ctrl+2)">
+                  <span><FundOutlined /> Financial</span>
+                </Tooltip>
+              ),
+              children: <FinancialReport />,
+            },
+            {
+              key: '3',
+              label: (
+                <Tooltip title="Sales Analytics (Ctrl+3)">
+                  <span><ShoppingCartOutlined /> Sales</span>
+                </Tooltip>
+              ),
+              children: <SalesReport />,
+            },
+            {
+              key: '4',
+              label: (
+                <Tooltip title="Customer Analytics (Ctrl+4)">
+                  <span><UserOutlined /> Customers</span>
+                </Tooltip>
+              ),
+              children: <CustomerReport />,
+            },
+            {
+              key: '5',
+              label: (
+                <Tooltip title="Inventory Report (Ctrl+5)">
+                  <span><StockOutlined /> Inventory</span>
+                </Tooltip>
+              ),
+              children: <InventoryReport />,
+            },
           {
             key: '6',
             label: (
-              <Tooltip title="Staff Performance (Ctrl+6)">
-                <span><TeamOutlined /> Staff</span>
+              <Tooltip title="Staff Performance (Under Development)">
+                <span>
+                  <TeamOutlined /> Staff 
+                  <Tag color="orange" style={{ marginLeft: 8, fontSize: 10 }}>Dev</Tag>
+                </span>
               </Tooltip>
             ),
             children: <StaffReport />,
           },
-          {
-            key: '7',
-            label: (
-              <Tooltip title="Payment Analysis (Ctrl+7)">
-                <span><DollarOutlined /> Payments</span>
-              </Tooltip>
-            ),
-            children: <PaymentReport />,
-          },
-        ]}
-      />
+            {
+              key: '7',
+              label: (
+                <Tooltip title="Payment Analysis (Ctrl+7)">
+                  <span><DollarOutlined /> Payments</span>
+                </Tooltip>
+              ),
+              children: <PaymentReport />,
+            },
+          ]}
+        />
+      </ReportDataProvider>
 
       {/* Export Modal */}
       <Modal

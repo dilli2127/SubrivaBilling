@@ -1,5 +1,11 @@
 import { useMemo, useCallback } from 'react';
 import { apiSlice } from '../services/redux/api/apiSlice';
+import {
+  useGetDashboardStatsQuery,
+  useGetSalesChartQuery,
+  useGetPurchaseChartQuery,
+  useGetStockAlertsQuery,
+} from '../services/redux/api/endpoints';
 
 /**
  * Optimized hook for API calls with built-in memoization
@@ -8,26 +14,26 @@ import { apiSlice } from '../services/redux/api/apiSlice';
 export const useOptimizedApi = () => {
   // Memoize common API calls to prevent recreation
   const commonQueries = useMemo(() => ({
-    // Products
+    // Products (CRUD - from apiSlice)
     useGetProductQuery: apiSlice.useGetProductQuery,
     useGetVariantQuery: apiSlice.useGetVariantQuery,
     useGetCategoryQuery: apiSlice.useGetCategoryQuery,
     
-    // Users & Organizations
+    // Users & Organizations (CRUD - from apiSlice)
     useGetRolesQuery: apiSlice.useGetRolesQuery,
     useGetOrganisationsQuery: apiSlice.useGetOrganisationsQuery,
     useGetBranchesQuery: apiSlice.useGetBranchesQuery,
     
-    // Inventory
+    // Inventory (CRUD - from apiSlice)
     useGetWarehouseQuery: apiSlice.useGetWarehouseQuery,
     useGetRackQuery: apiSlice.useGetRackQuery,
     useGetVendorQuery: apiSlice.useGetVendorQuery,
     
-    // Dashboard
-    useGetDashboardStatsQuery: apiSlice.useGetDashboardStatsQuery,
-    useGetSalesChartQuery: apiSlice.useGetSalesChartQuery,
-    useGetPurchaseChartQuery: apiSlice.useGetPurchaseChartQuery,
-    useGetStockAlertsQuery: apiSlice.useGetStockAlertsQuery,
+    // Dashboard (Custom endpoints - from endpoints/)
+    useGetDashboardStatsQuery,
+    useGetSalesChartQuery,
+    useGetPurchaseChartQuery,
+    useGetStockAlertsQuery,
   }), []);
 
   // Memoized data transformer
@@ -37,7 +43,7 @@ export const useOptimizedApi = () => {
     return {
       result: data.result || [],
       pagination: data.pagination || null,
-      total: data.pagination?.total || 0,
+      total: data.pagination?.totalCount || data.pagination?.total || 0,
       current: data.pagination?.current || 1,
       pageSize: data.pagination?.pageSize || 10,
     };
@@ -110,11 +116,12 @@ export const useOptimizedList = <T>(
 
   const pagination = useMemo(() => {
     if (!data?.pagination) return null;
+    const totalCount = data.pagination.totalCount || data.pagination.total || 0;
     return {
       current: data.pagination.current || 1,
       pageSize: data.pagination.pageSize || 10,
-      total: data.pagination.total || 0,
-      totalPages: Math.ceil((data.pagination.total || 0) / (data.pagination.pageSize || 10)),
+      total: totalCount,
+      totalPages: Math.ceil(totalCount / (data.pagination.pageSize || 10)),
     };
   }, [data?.pagination]);
 

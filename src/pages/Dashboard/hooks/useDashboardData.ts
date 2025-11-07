@@ -1,5 +1,15 @@
 import { useCallback, useEffect, useState, useMemo } from 'react';
 import { apiSlice } from '../../../services/redux/api/apiSlice';
+import {
+  useGetDashboardStatsQuery,
+  useGetSalesChartQuery,
+  useGetPurchaseChartQuery,
+  useGetStockAlertsQuery,
+  useGetFinancialDataQuery,
+  useGetSalesAnalyticsQuery,
+  useGetInventoryMetricsQuery,
+  useGetPlanLimitsQuery,
+} from '../../../services/redux/api/endpoints';
 
 interface DashboardFilters {
   tenant_id?: string;
@@ -14,49 +24,49 @@ export const useDashboardData = (activeTab: string, filters: DashboardFilters = 
   const { 
     data: statsData, 
     refetch: refetchStats 
-  } = apiSlice.useGetDashboardStatsQuery(filters, {
+  } = useGetDashboardStatsQuery(filters, {
     skip: !loadedTabs.has('1')
   });
 
   const { 
     data: salesChartData, 
     refetch: refetchSalesChart 
-  } = apiSlice.useGetSalesChartQuery(filters, {
+  } = useGetSalesChartQuery(filters, {
     skip: !loadedTabs.has('1')
   });
 
   const { 
     data: purchaseChartData,
     refetch: refetchPurchaseChart 
-  } = apiSlice.useGetPurchaseChartQuery(filters, {
+  } = useGetPurchaseChartQuery(filters, {
     skip: !loadedTabs.has('1')
   });
 
   const { 
     data: stockAlertsData, 
     refetch: refetchStockAlerts 
-  } = apiSlice.useGetStockAlertsQuery(filters, {
+  } = useGetStockAlertsQuery(filters, {
     skip: !loadedTabs.has('1')
   });
 
   const { 
     data: financialData, 
     refetch: refetchFinancialData 
-  } = apiSlice.useGetFinancialDataQuery(filters, {
+  } = useGetFinancialDataQuery(filters, {
     skip: !loadedTabs.has('2')
   });
 
   const { 
     data: salesAnalyticsData, 
     refetch: refetchSalesAnalytics 
-  } = apiSlice.useGetSalesAnalyticsQuery(filters, {
+  } = useGetSalesAnalyticsQuery(filters, {
     skip: !loadedTabs.has('4') && !loadedTabs.has('6')
   });
 
   const { 
     data: inventoryMetricsData, 
     refetch: refetchInventoryMetrics 
-  } = apiSlice.useGetInventoryMetricsQuery(filters, {
+  } = useGetInventoryMetricsQuery(filters, {
     skip: !loadedTabs.has('3')
   });
 

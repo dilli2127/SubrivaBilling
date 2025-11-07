@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import {
   Button,
   Space,
@@ -9,6 +9,7 @@ import {
   Input,
   Tooltip,
   Modal,
+  Tabs,
 } from "antd";
 import {
   EyeOutlined,
@@ -22,8 +23,10 @@ import {
   CalendarOutlined,
   FileTextOutlined,
   MailOutlined,
+  DownloadOutlined,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
+import ReactDOMServer from 'react-dom/server';
 import GlobalDrawer from "../../components/antd/GlobalDrawer";
 import BillDataGrid from "./components/BillDataGrid";
 import BillViewModal from "./components/BillViewModal";
@@ -31,11 +34,38 @@ import GlobalTable from "../../components/antd/GlobalTable";
 import { useHandleApiResponse } from "../../components/common/useHandleApiResponse";
 import { useGenericCrudRTK } from "../../hooks/useGenericCrudRTK";
 import EmailSendModal from "../../components/common/EmailSendModal";
-import { billingTemplates } from './templates/registry';
+import { useTemplateSettings } from '../../hooks/useTemplateSettings';
+import { getCurrentUser } from "../../helpers/auth";
+import { apiSlice } from "../../services/redux/api/apiSlice";
 
 const { Title } = Typography;
 
 const BillListPage = () => {
+  // Get template settings
+  const { BillTemplateComponent, InvoiceTemplateComponent, settings } = useTemplateSettings();
+  
+  // Get current user data for organization details
+  const userItem = useMemo(() => {
+    const user = getCurrentUser();
+    return user;
+  }, []);
+
+  // Fetch organization data from API
+  const organisationId = userItem?.organisation_id || userItem?.organisationItems?._id;
+  const { data: organisationsData } = apiSlice.useGetOrganisationsQuery(
+    { organisation_id: organisationId },
+    { skip: !organisationId }
+  );
+
+  // Get organization details from API response
+  const organisationDetails = useMemo(() => {
+    const result = (organisationsData as any)?.result;
+    if (Array.isArray(result)) {
+      return result[0];
+    }
+    return result || userItem?.organisationItems || {};
+  }, [organisationsData, userItem]);
+  
   const [selectedBill, setSelectedBill] = useState<any>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [billViewVisible, setBillViewVisible] = useState(false);
@@ -45,10 +75,9 @@ const BillListPage = () => {
     current: 1,
     pageSize: 10,
   });
-  const [printModalVisible, setPrintModalVisible] = useState(false);
-  const [printBill, setPrintBill] = useState<any>(null);
   const [emailModalVisible, setEmailModalVisible] = useState(false);
   const [selectedBillForEmail, setSelectedBillForEmail] = useState<any>(null);
+  const [activeTab, setActiveTab] = useState<string>("completed");
 
   // RTK Query hooks for SalesRecord
   const salesRecordRTK = useGenericCrudRTK("SalesRecord");
@@ -56,6 +85,7 @@ const BillListPage = () => {
     pageNumber: pagination.current,
     pageLimit: pagination.pageSize,
     searchString: searchText,
+    status: activeTab === "drafts" ? "draft" : "completed",
   });
   const SalesRecordList = SalesRecordData || { result: [], pagination: null };
   const { delete: deleteSale, ...deleteResult } = salesRecordRTK.useDelete();
@@ -90,11 +120,27 @@ const BillListPage = () => {
     setEmailModalVisible(true);
   };
 
-  const handlePrint = (record: any) => {
-    // Map the sales record to the template's expected format
-    const billData = {
-      customerName: record.customerDetails?.full_name || '',
-      customerAddress: record.customerDetails?.address || '',
+  // Format bill data for templates
+  const formatBillData = (record: any) => {
+    // Bills use customerDetails, Invoices use vendorDetails
+    const isInvoice = record.document_type === 'invoice';
+    const partyDetails = isInvoice ? record.vendorDetails : record.customerDetails;
+    
+    // If no party details found, log warning and use fallback
+    if (!partyDetails) {
+      console.warn(`⚠️ Data mismatch: ${isInvoice ? 'Invoice' : 'Bill'} missing ${isInvoice ? 'vendorDetails' : 'customerDetails'}`, record);
+    }
+    
+    return {
+      customerName: partyDetails?.vendor_name || partyDetails?.full_name || partyDetails?.name || '',
+      customerAddress: partyDetails?.address || partyDetails?.address1 || '',
+      customerCity: partyDetails?.city || '',
+      customerState: partyDetails?.state || '',
+      customerPincode: partyDetails?.pincode || '',
+      customerPhone: partyDetails?.phone || partyDetails?.mobile || '',
+      customerEmail: partyDetails?.email || '',
+      customer_gstin: partyDetails?.gst_no || partyDetails?.gst_number || partyDetails?.gstin || '',
+      customer_pan: partyDetails?.pan_no || partyDetails?.pan_number || '',
       date: record.date,
       invoice_no: record.invoice_no,
       items: (record.Items || []).map((item: any) => ({
@@ -102,19 +148,124 @@ const BillListPage = () => {
           item.productItems?.name || item.product_name || '',
           item.productItems?.VariantItem?.variant_name || '',
         ].filter(Boolean).join(' '),
+        product_name: item.productItems?.name || item.product_name || '',
         qty: item.qty,
+        quantity: item.quantity || item.qty,
         price: item.price,
-        mrp:item.mrp,
+        mrp: item.mrp,
         amount: item.amount,
+        hsn_code: item.hsn_code || item.productItems?.hsn_code || item.productItems?.VariantItem?.hsn_code || '',
+        hsn_sac: item.hsn_sac || item.productItems?.hsn_sac || '',
+        tax_percentage: item.tax_percentage || item.productItems?.CategoryItem?.tax_percentage || item.productItems?.tax_percentage || 0,
+        discount: item.discount || 0,
+        description: item.description || '',
       })),
       total: record.total_amount || 0,
+      total_amount: record.total_amount || 0,
+      value_of_goods: record.value_of_goods || 0,
+      sub_total: record.sub_total || 0,
       total_gst: record.total_gst || 0,
+      cgst: record.cgst || (record.total_gst || 0) / 2,
+      sgst: record.sgst || (record.total_gst || 0) / 2,
+      discountValue: record.discountValue || 0,
       discount: record.discount || 0,
       discount_type: record.discount_type || '',
-      gst_number: record.gst_number || record.organisationItems?.gst_number || '',
+      is_gst_included: record.is_gst_included ?? true,
+      gst_number: record.gst_number || record.organisationItems?.gst_number || organisationDetails?.gst_number || '',
+      // Payment status fields
+      is_paid: record.is_paid || false,
+      is_partially_paid: record.is_partially_paid || false,
+      paid_amount: record.paid_amount || 0,
+      payment_mode: record.payment_mode || 'Cash',
+      // Add organization details - use record data or fallback to API fetched organization data
+      organisationItems: record.organisationItems || organisationDetails || userItem?.organisationItems || {},
+      branchItems: record.branchItems || userItem?.branchItems || {},
     };
-    setPrintBill(billData);
-    setPrintModalVisible(true);
+  };
+
+  const handlePrint = async (record: any) => {
+    const billData = formatBillData(record);
+    
+    // Use document_type to determine template (default to 'bill' if not specified)
+    const documentType = (record.document_type || 'bill') as 'bill' | 'invoice';
+    
+    // Generate QR code BEFORE printing if enabled
+    let qrCodeDataUrl = '';
+    if (settings?.enable_payment_qr && settings?.upi_id) {
+      try {
+        const { generateUPIQRCode, formatBillToUPIParams } = await import('../../helpers/upiPayment');
+        const upiParams = formatBillToUPIParams(billData, settings);
+        if (upiParams) {
+          qrCodeDataUrl = await generateUPIQRCode(upiParams, { width: settings?.qr_size || 150 });
+        }
+      } catch (error) {
+        console.error('Error pre-generating QR code for print:', error);
+      }
+    }
+    
+    // Add QR code to settings
+    const enhancedSettings = {
+      ...settings,
+      qrCodeDataUrl,
+    };
+    
+    // Select appropriate template based on document type
+    const TemplateComponent = documentType === 'bill' 
+      ? BillTemplateComponent 
+      : InvoiceTemplateComponent;
+
+    // Create element and render to HTML
+    const element = React.createElement(TemplateComponent, { billData, settings: enhancedSettings });
+    const templateHtml = ReactDOMServer.renderToString(element);
+
+    // Import PDF helper and print
+    const { printAsPDF } = await import('../../helpers/pdfHelper');
+    const fileName = `${documentType}_${billData.invoice_no}_${dayjs().format('YYYYMMDD')}`;
+    
+    // Print as PDF
+    await printAsPDF(templateHtml, fileName, documentType);
+  };
+
+  const handleDownload = async (record: any) => {
+    const billData = formatBillData(record);
+    // Use document_type to determine template (default to 'bill' if not specified)
+    const documentType = (record.document_type || 'bill') as 'bill' | 'invoice';
+    
+    // Generate QR code BEFORE rendering if enabled
+    let qrCodeDataUrl = '';
+    if (settings?.enable_payment_qr && settings?.upi_id) {
+      try {
+        const { generateUPIQRCode, formatBillToUPIParams } = await import('../../helpers/upiPayment');
+        const upiParams = formatBillToUPIParams(billData, settings);
+        if (upiParams) {
+          qrCodeDataUrl = await generateUPIQRCode(upiParams, { width: settings?.qr_size || 150 });
+        }
+      } catch (error) {
+        console.error('Error pre-generating QR code for download:', error);
+      }
+    }
+    
+    // Add QR code to settings
+    const enhancedSettings = {
+      ...settings,
+      qrCodeDataUrl, // Pass pre-generated QR code
+    };
+    
+    // Select appropriate template based on document type
+    const TemplateComponent = documentType === 'bill' 
+      ? BillTemplateComponent 
+      : InvoiceTemplateComponent;
+
+    // Create element and render to HTML
+    const element = React.createElement(TemplateComponent, { billData, settings: enhancedSettings });
+    const templateHtml = ReactDOMServer.renderToString(element);
+
+    // Import PDF helper
+    const { downloadAsPDF } = await import('../../helpers/pdfHelper');
+    const fileName = `${documentType}_${billData.invoice_no}_${dayjs().format('YYYYMMDD')}`;
+    
+    // Download as PDF
+    await downloadAsPDF(templateHtml, fileName, documentType);
   };
 
   const handleSearch = (value: string) => {
@@ -128,7 +279,24 @@ const BillListPage = () => {
     // RTK Query will automatically refetch with new params
   };
 
+  const handleTabChange = (key: string) => {
+    setActiveTab(key);
+    setPagination({ current: 1, pageSize: pagination.pageSize }); // Reset to page 1 when switching tabs
+  };
+
   const columns = [
+    {
+      title: "Status",
+      dataIndex: "status",
+      key: "status",
+      width: 100,
+      render: (status: string) => {
+        if (status === "draft") {
+          return <Tag color="orange">DRAFT</Tag>;
+        }
+        return <Tag color="green">COMPLETED</Tag>;
+      },
+    },
     {
       title: "Invoice",
       dataIndex: "invoice_no",
@@ -138,6 +306,20 @@ const BillListPage = () => {
           {text}
         </Tag>
       ),
+    },
+    {
+      title: "Type",
+      dataIndex: "document_type",
+      key: "document_type",
+      width: 100,
+      render: (type: string) => {
+        const isBill = !type || type === 'bill';
+        return (
+          <Tag color={isBill ? 'cyan' : 'purple'}>
+            {isBill ? 'BILL' : 'INVOICE'}
+          </Tag>
+        );
+      },
     },
     {
       title: "Date",
@@ -152,19 +334,27 @@ const BillListPage = () => {
       ),
     },
     {
-      title: "Customer",
+      title: "Customer/Vendor",
       dataIndex: "customerDetails",
       key: "customerDetails",
-      render: (customerDetails: any) => (
-        <Space>
-          <UserOutlined />
-          <span>
-            <strong>{customerDetails?.full_name}</strong>
-            <br />
-            <small style={{ color: "#999" }}>{customerDetails?.mobile}</small>
-          </span>
-        </Space>
-      ),
+      render: (customerDetails: any, record: any) => {
+        // Show vendor for invoices, customer for bills
+        const isInvoice = record.document_type === 'invoice';
+        const partyDetails = isInvoice ? record.vendorDetails : customerDetails;
+        const name = partyDetails?.vendor_name || partyDetails?.full_name || partyDetails?.name || 'N/A';
+        const contact = partyDetails?.phone || partyDetails?.mobile || '';
+        
+        return (
+          <Space>
+            <UserOutlined />
+            <span>
+              <strong>{name}</strong>
+              <br />
+              <small style={{ color: "#999" }}>{contact}</small>
+            </span>
+          </Space>
+        );
+      },
     },
     {
       title: "Payment Mode",
@@ -193,41 +383,55 @@ const BillListPage = () => {
     {
       title: "Actions",
       key: "actions",
-      render: (_: any, record: any) => (
-        <Space size="middle">
-          <Tooltip title="View Bill">
-            <Button
-              type="link"
-              icon={<EyeOutlined />}
-              onClick={() => handleView(record)}
-            />
-          </Tooltip>
-          <Tooltip title="Send via Email">
-            <Button
-              type="link"
-              icon={<MailOutlined />}
-              onClick={() => handleEmail(record)}
-            />
-          </Tooltip>
-          <Tooltip title="Print">
-            <Button
-              type="link"
-              icon={<PrinterOutlined />}
-              onClick={() => handlePrint(record)}
-            />
-          </Tooltip>
-          <Popconfirm
-            title="Are you sure to delete this bill?"
-            onConfirm={() => handleDelete(record._id)}
-            okText="Yes"
-            cancelText="No"
-          >
-            <Tooltip title="Delete">
-              <Button type="link" icon={<DeleteOutlined />} danger />
+      render: (_: any, record: any) => {
+        const isDraft = record.status === "draft";
+        return (
+          <Space size="middle">
+            <Tooltip title="View Bill">
+              <Button
+                type="link"
+                icon={<EyeOutlined />}
+                onClick={() => handleView(record)}
+              />
             </Tooltip>
-          </Popconfirm>
-        </Space>
-      ),
+            {!isDraft && (
+              <>
+                <Tooltip title="Send via Email">
+                  <Button
+                    type="link"
+                    icon={<MailOutlined />}
+                    onClick={() => handleEmail(record)}
+                  />
+                </Tooltip>
+                <Tooltip title="Print">
+                  <Button
+                    type="link"
+                    icon={<PrinterOutlined />}
+                    onClick={() => handlePrint(record)}
+                  />
+                </Tooltip>
+                <Tooltip title="Download PDF">
+                  <Button
+                    type="link"
+                    icon={<DownloadOutlined />}
+                    onClick={() => handleDownload(record)}
+                  />
+                </Tooltip>
+              </>
+            )}
+            <Popconfirm
+              title="Are you sure to delete this bill?"
+              onConfirm={() => handleDelete(record._id)}
+              okText="Yes"
+              cancelText="No"
+            >
+              <Tooltip title="Delete">
+                <Button type="link" icon={<DeleteOutlined />} danger />
+              </Tooltip>
+            </Popconfirm>
+          </Space>
+        );
+      },
     },
   ];
 
@@ -267,14 +471,38 @@ const BillListPage = () => {
         </Space>
       </div>
 
+      <Tabs
+        activeKey={activeTab}
+        onChange={handleTabChange}
+        items={[
+          {
+            key: "completed",
+            label: (
+              <span>
+                ✅ Completed Bills ({activeTab === "completed" ? SalesRecordList?.result?.length || 0 : "-"})
+              </span>
+            ),
+          },
+          {
+            key: "drafts",
+            label: (
+              <span>
+                📝 Drafts ({activeTab === "drafts" ? SalesRecordList?.result?.length || 0 : "-"})
+              </span>
+            ),
+          },
+        ]}
+        style={{ marginBottom: 16 }}
+      />
+
       <GlobalTable
-        data={SalesRecordList?.result}
+        data={SalesRecordList?.result || []}
         columns={columns}
         loading={loading}
         bordered
         rowKey="_id"
-        totalCount={SalesRecordList?.pagination?.totalCount || 0}
-        pageLimit={SalesRecordList?.pagination?.pageLimit || 10}
+        totalCount={SalesRecordList?.pagination?.totalCount || SalesRecordList?.result?.length || 0}
+        pageLimit={pagination.pageSize}
         onPaginationChange={handlePaginationChange}
       />
 
@@ -282,7 +510,7 @@ const BillListPage = () => {
         title={selectedBill ? "Edit Sale" : "Create New Sale"}
         onClose={() => setIsDrawerOpen(false)}
         open={isDrawerOpen}
-        width={1200}
+        width="100%"
       >
         <BillDataGrid
           billdata={selectedBill}
@@ -300,30 +528,6 @@ const BillListPage = () => {
           billData={selectedBill}
         />
       )}
-
-      {/* Print Modal for Bill Template */}
-      <Modal
-        open={printModalVisible}
-        onCancel={() => setPrintModalVisible(false)}
-        footer={[
-          <Button key="print" type="primary" onClick={() => window.print()}>
-            Print
-          </Button>,
-          <Button key="close" onClick={() => setPrintModalVisible(false)}>
-            Close
-          </Button>,
-        ]}
-        width={800}
-        title={printBill ? `Print Invoice #${printBill.invoice_no}` : 'Print Invoice'}
-        centered
-      >
-        {printBill && (() => {
-          const key = localStorage.getItem('billingTemplate');
-          const selectedTemplate: 'classic' | 'modern' = (key === 'modern' || key === 'classic') ? key : 'classic';
-          const TemplateComponent = billingTemplates[selectedTemplate].component;
-          return <TemplateComponent billData={printBill} />;
-        })()}
-      </Modal>
 
       {/* Email Send Modal */}
       <EmailSendModal

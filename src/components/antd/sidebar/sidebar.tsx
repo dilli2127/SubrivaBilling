@@ -6,7 +6,7 @@ import React, {
   useLayoutEffect,
   useEffect,
 } from 'react';
-import { getCurrentUser, User } from '../../../helpers/auth';
+import { getCurrentUser, User, clearAuthData } from '../../../helpers/auth';
 import {
   LogoutOutlined,
   MenuFoldOutlined,
@@ -124,7 +124,10 @@ console.log(userItem)
   );
 
   const handleLogout = useCallback(() => {
-    sessionStorage.clear();
+    // Clear all authentication data, permissions, and cache
+    clearAuthData();
+    sessionStorage.clear(); // Clear all session storage
+    localStorage.clear(); // Clear all local storage
     setIsModalVisible(false);
     navigate('/billing_login');
   }, [navigate]);

@@ -269,14 +269,20 @@ const AntdEditableTable: React.FC<AntdEditableTableProps> = ({
 
     switch (column.type) {
       case 'product':
+        // Display product name instead of product_id when cell is focused
+        const productName = data[row]?.product_name
+          ? `${data[row].product_name}${data[row]?.variant_name ? ` ${data[row].variant_name}` : ''}`.trim()
+          : cellValue; // Fallback to product_id if name not available
         return (
           <>
             <div onClick={e => e.stopPropagation()}>
               <Input
                 ref={inputRef}
-                value={cellValue}
+                value={productName}
                 onKeyDown={handleKeyDown}
                 placeholder="Press Enter to select product"
+                readOnly
+                style={{ cursor: 'pointer' }}
               />
             </div>
             {isProductModalVisible && (

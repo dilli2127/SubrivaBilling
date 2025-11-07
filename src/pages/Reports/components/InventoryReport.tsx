@@ -19,19 +19,21 @@ import {
   Pie,
   Cell,
 } from 'recharts';
-import { apiSlice } from '../../../services/redux/api/apiSlice';
+import { useReportDataContext } from '../context/ReportDataContext';
 import dayjs from 'dayjs';
 
 const COLORS = ['#1890ff', '#52c41a', '#722ed1', '#fa8c16', '#13c2c2', '#eb2f96'];
 
 const InventoryReport: React.FC = () => {
-  // Use RTK Query for data fetching
-  const { data: stockReportResponse } = apiSlice.useGetStockReportQuery({});
-  const { data: stockExpiryResponse } = apiSlice.useGetStockExpiryReportQuery({ days_threshold: 30 });
+  // Get data from context instead of making API calls
+  const {
+    stockReportData: stockReportDataContext,
+    stockExpiryData: stockExpiryDataContext,
+  } = useReportDataContext();
   
-  // Extract data from responses
-  const stockReportData = (stockReportResponse as any)?.result || stockReportResponse || {};
-  const stockExpiryData = (stockExpiryResponse as any)?.result || stockExpiryResponse || {};
+  // Extract data from context
+  const stockReportData = stockReportDataContext?.result || {};
+  const stockExpiryData = stockExpiryDataContext?.result || {};
   
   const stockDetails = stockReportData?.stock_details || [];
   const stockSummary = stockReportData?.summary || {};

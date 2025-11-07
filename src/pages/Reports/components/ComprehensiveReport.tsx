@@ -25,27 +25,29 @@ import {
   Cell,
   ComposedChart,
 } from 'recharts';
-import { apiSlice } from '../../../services/redux/api/apiSlice';
+import { useReportDataContext } from '../context/ReportDataContext';
 
 const { Text } = Typography;
 const COLORS = ['#1890ff', '#52c41a', '#722ed1', '#fa8c16', '#13c2c2', '#eb2f96'];
 
 const ComprehensiveReport: React.FC = () => {
-  // Use RTK Query for data fetching
-  const { data: salesReportResponse } = apiSlice.useGetSalesReportQuery({});
-  const { data: profitLossResponse } = apiSlice.useGetProfitLossReportQuery({});
-  const { data: customerSalesResponse } = apiSlice.useGetCustomerSalesReportQuery({});
-  const { data: stockReportResponse } = apiSlice.useGetStockReportQuery({});
-  const { data: paymentCollectionResponse } = apiSlice.useGetPaymentCollectionReportQuery({});
-  const { data: productSalesResponse } = apiSlice.useGetProductSalesReportQuery({});
+  // Get data from context instead of making API calls
+  const {
+    salesReportData: salesReportDataContext,
+    profitLossData: profitLossDataContext,
+    customerSalesData: customerSalesDataContext,
+    stockReportData: stockReportDataContext,
+    paymentCollectionData: paymentCollectionDataContext,
+    productSalesData: productSalesDataContext,
+  } = useReportDataContext();
   
-  // Extract data from responses
-  const salesReportData = (salesReportResponse as any)?.result || salesReportResponse || {};
-  const profitLossData = (profitLossResponse as any)?.result || profitLossResponse || {};
-  const customerSalesData = (customerSalesResponse as any)?.result || customerSalesResponse || {};
-  const stockReportData = (stockReportResponse as any)?.result || stockReportResponse || {};
-  const paymentCollectionData = (paymentCollectionResponse as any)?.result || paymentCollectionResponse || {};
-  const productSalesData = (productSalesResponse as any)?.result || productSalesResponse || {};
+  // Extract data from context
+  const salesReportData = salesReportDataContext?.result || {};
+  const profitLossData = profitLossDataContext?.result || {};
+  const customerSalesData = customerSalesDataContext?.result || {};
+  const stockReportData = stockReportDataContext?.result || {};
+  const paymentCollectionData = paymentCollectionDataContext?.result || {};
+  const productSalesData = productSalesDataContext?.result || {};
   
   // Extract data
   const salesSummary = salesReportData?.summary || {};

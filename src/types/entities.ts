@@ -99,6 +99,7 @@ export interface Stock extends BaseEntity {
   warehouse_id: string;
   batch_no: string;
   available_quantity: number;
+  available_loose_quantity?: number;
   sell_price: number;
   buy_price?: number;
   mrp?: number;
@@ -112,6 +113,7 @@ export interface Stock extends BaseEntity {
     name: string;
     VariantItem?: {
       variant_name: string;
+      pack_size?: string;
     };
   };
   VendorItem?: {
@@ -178,6 +180,7 @@ export interface BillItem {
   product_id: string;
   product_name: string;
   variant_name: string;
+  category_name?: string; // Category name for reference
   stock_id: string;
   batch_no?: string;
   qty: number;
@@ -186,6 +189,17 @@ export interface BillItem {
   mrp: number;
   amount: number;
   tax_percentage: number;
+  hsn_code?: string; // HSN/SAC code for tax purposes
+  hsn_sac?: string; // Alternative field name for HSN/SAC
+  discount?: number; // Item-level discount
+  description?: string; // Item description
+  // Stock data saved from selection (avoids extra API calls)
+  stockData?: {
+    available_quantity: number;
+    available_loose_quantity: number;
+    batch_no: string;
+    pack_size: number;
+  };
   // Legacy fields for compatibility
   quantity?: number;
   rate?: number;

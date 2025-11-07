@@ -13,88 +13,186 @@ interface Product {
   name?: string;
   sku?: string;
   selling_price?: number;
+  hsn_code?: string;
+  hsn_sac?: string;
   VariantItem?: {
     variant_name?: string;
     variant_code?: string;
+    hsn_code?: string;
+  };
+  CategoryItem?: {
+    category_name?: string;
+    tax_percentage?: number;
   };
 }
 
 interface ProductSelectionModalProps {
   visible: boolean;
+  products?: Product[]; // Optional - if not provided, will load from API
   onSelect: (product: Product) => void;
   onCancel: () => void;
 }
 
 const ProductSelectionModal: FC<ProductSelectionModalProps> = ({
   visible,
+  products: providedProducts,
   onSelect,
   onCancel,
 }) => {
-  // Use RTK Query for products
-  const { data: productsData, isLoading: loading } = apiSlice.useGetProductQuery({});
-  const products = (productsData as any)?.result || [];
-
   const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [page, setPage] = useState(1);
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
+  const [hasMore, setHasMore] = useState(true);
   const [selectedRowKey, setSelectedRowKey] = useState<React.Key | null>(null);
   const [highlightedIndex, setHighlightedIndex] = useState<number>(0);
   const [scannerVisible, setScannerVisible] = useState(false);
   const searchInputRef = useRef<InputRef>(null);
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const isLoadingMoreRef = useRef(false);
 
-  const filteredProducts: Product[] =
-    products?.filter((p: Product) => {
-      const searchLower = searchTerm.toLowerCase();
-      return (
-        (p.name?.toLowerCase() || '').includes(searchLower) ||
-        (p.sku?.toLowerCase() || '').includes(searchLower) ||
-        p.VariantItem?.variant_name?.toLowerCase().includes(searchLower) ||
-        p.VariantItem?.variant_code?.toLowerCase().includes(searchLower) ||
-        (p.selling_price?.toString() || '').includes(searchLower)
-      );
-    }).sort((a: Product, b: Product) => {
-      // Prioritize exact matches and matches at the beginning
-      const searchLower = searchTerm.toLowerCase();
+  // Only load from API if products not provided
+  const shouldLoadFromAPI = !providedProducts || providedProducts.length === 0;
+
+  // Use RTK Query for products with pagination and search (only if not provided)
+  const { data: productsData, isLoading: loading } = apiSlice.useGetProductQuery({
+    searchString: debouncedSearch,
+    page: page,
+    limit: 10,
+  }, {
+    skip: !visible || !shouldLoadFromAPI,
+    refetchOnMountOrArgChange: true,
+  });
+
+  // Accumulate products for infinite scroll (only if loading from API)
+  useEffect(() => {
+    // Only process when modal is visible and loading from API
+    if (!visible || !shouldLoadFromAPI) return;
+    
+    if (productsData) {
+      const newItems = (productsData as any)?.result || [];
+      const totalCount = (productsData as any).pagination?.totalCount || (productsData as any).pagination?.total || 0;
       
-      // Check for exact matches first
-      const aExactMatch = (a.name?.toLowerCase() || '') === searchLower || 
-                          a.VariantItem?.variant_name?.toLowerCase() === searchLower ||
-                          (a.sku?.toLowerCase() || '') === searchLower;
-      const bExactMatch = (b.name?.toLowerCase() || '') === searchLower || 
-                          b.VariantItem?.variant_name?.toLowerCase() === searchLower ||
-                          (b.sku?.toLowerCase() || '') === searchLower;
+      if (page === 1) {
+        setAllProducts(newItems);
+        setHasMore(newItems.length < totalCount && newItems.length > 0);
+      } else {
+        setAllProducts(prev => {
+          const existingIds = new Set(prev.map((item: any) => item._id));
+          const uniqueNewItems = newItems.filter((item: any) => !existingIds.has(item._id));
+          const updated = [...prev, ...uniqueNewItems];
+          setHasMore(updated.length < totalCount && uniqueNewItems.length > 0);
+          return updated;
+        });
+      }
       
-      if (aExactMatch && !bExactMatch) return -1;
-      if (!aExactMatch && bExactMatch) return 1;
-      
-      // Then check for matches at the beginning
-      const aStartsWith = (a.name?.toLowerCase() || '').startsWith(searchLower) || 
-                          a.VariantItem?.variant_name?.toLowerCase().startsWith(searchLower) ||
-                          (a.sku?.toLowerCase() || '').startsWith(searchLower);
-      const bStartsWith = (b.name?.toLowerCase() || '').startsWith(searchLower) || 
-                          b.VariantItem?.variant_name?.toLowerCase().startsWith(searchLower) ||
-                          (b.sku?.toLowerCase() || '').startsWith(searchLower);
-      
-      if (aStartsWith && !bStartsWith) return -1;
-      if (!aStartsWith && bStartsWith) return 1;
-      
-      return 0;
-    }) || [];
+      isLoadingMoreRef.current = false;
+    }
+  }, [productsData, page, shouldLoadFromAPI, visible]);
+
+  // Use provided products OR loaded products
+  const sourceProducts = providedProducts || allProducts;
+
+  // Client-side filtering (fast when using provided products)
+  const filteredProducts: Product[] = sourceProducts?.filter((p: Product) => {
+    if (!searchTerm) return true;
+    const searchLower = searchTerm.toLowerCase();
+    return (
+      (p.name?.toLowerCase() || '').includes(searchLower) ||
+      (p.sku?.toLowerCase() || '').includes(searchLower) ||
+      p.VariantItem?.variant_name?.toLowerCase().includes(searchLower) ||
+      p.VariantItem?.variant_code?.toLowerCase().includes(searchLower) ||
+      (p.selling_price?.toString() || '').includes(searchLower)
+    );
+  }).sort((a: Product, b: Product) => {
+    // Prioritize exact matches and matches at the beginning
+    const searchLower = searchTerm.toLowerCase();
+    
+    // Check for exact matches first
+    const aExactMatch = (a.name?.toLowerCase() || '') === searchLower || 
+                        a.VariantItem?.variant_name?.toLowerCase() === searchLower ||
+                        (a.sku?.toLowerCase() || '') === searchLower;
+    const bExactMatch = (b.name?.toLowerCase() || '') === searchLower || 
+                        b.VariantItem?.variant_name?.toLowerCase() === searchLower ||
+                        (b.sku?.toLowerCase() || '') === searchLower;
+    
+    if (aExactMatch && !bExactMatch) return -1;
+    if (!aExactMatch && bExactMatch) return 1;
+    
+    // Then check for matches at the beginning
+    const aStartsWith = (a.name?.toLowerCase() || '').startsWith(searchLower) || 
+                        a.VariantItem?.variant_name?.toLowerCase().startsWith(searchLower) ||
+                        (a.sku?.toLowerCase() || '').startsWith(searchLower);
+    const bStartsWith = (b.name?.toLowerCase() || '').startsWith(searchLower) || 
+                        b.VariantItem?.variant_name?.toLowerCase().startsWith(searchLower) ||
+                        (b.sku?.toLowerCase() || '').startsWith(searchLower);
+    
+    if (aStartsWith && !bStartsWith) return -1;
+    if (!aStartsWith && bStartsWith) return 1;
+    
+    return 0;
+  }) || [];
+
+  // Debounce search (only for API mode)
+  useEffect(() => {
+    if (!shouldLoadFromAPI || !visible) return;
+
+    // Skip if value hasn't changed (prevents clearing immediately on open)
+    if (searchTerm === debouncedSearch) return;
+    
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+    
+    searchTimeoutRef.current = setTimeout(() => {
+      setDebouncedSearch(searchTerm);
+      setPage(1);
+      setAllProducts([]);
+      setHasMore(true);
+      isLoadingMoreRef.current = false;
+    }, 300);
+
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+    };
+  }, [searchTerm, debouncedSearch, shouldLoadFromAPI, visible]);
 
   useEffect(() => {
     setHighlightedIndex(0);
     if (filteredProducts.length > 0) {
-              setSelectedRowKey(filteredProducts[0]._id);
+      setSelectedRowKey(filteredProducts[0]._id);
     } else {
       setSelectedRowKey(null);
     }
-  }, [searchTerm, visible, products]);
+  }, [searchTerm, filteredProducts.length]);
 
+  // Reset when modal opens/closes (only run on visibility change)
   useEffect(() => {
     if (visible) {
       setTimeout(() => {
         searchInputRef.current?.focus();
       }, 100);
+      
+      // Only reset if loading from API
+      if (shouldLoadFromAPI) {
+        setPage(1);
+        setHasMore(true);
+        isLoadingMoreRef.current = false;
+      }
+    } else {
+      setSearchTerm('');
+      if (shouldLoadFromAPI) {
+        setDebouncedSearch('');
+        setPage(1);
+        setAllProducts([]);
+        setHasMore(true);
+        isLoadingMoreRef.current = false;
+      }
     }
-  }, [visible]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visible]); // Only depend on visible to avoid infinite loops
 
   const columns: ColumnType<Product>[] = [
     { 
@@ -147,7 +245,7 @@ const ProductSelectionModal: FC<ProductSelectionModalProps> = ({
     setScannerVisible(false);
     
     // Try to find product by barcode/SKU
-    const foundProduct = products?.result?.find((p: Product) => {
+    const foundProduct = sourceProducts?.find((p: Product) => {
       const searchLower = barcode.toLowerCase();
       return (
         (p.sku?.toLowerCase() || '').includes(searchLower) ||
@@ -242,51 +340,109 @@ const ProductSelectionModal: FC<ProductSelectionModalProps> = ({
             Scan
           </Button>
         </Space.Compact>
-        <Table
-          dataSource={filteredProducts}
-          columns={columns}
-          loading={loading}
-          rowKey="_id"
-          size="small"
-          pagination={false}
-          onRow={(record, idx) => ({
-            onClick: () => {
-              handleSelectRow(record);
-              // Keep focus on search input after selection
-              setTimeout(() => {
-                searchInputRef.current?.focus();
-              }, 10);
-            },
-            onDoubleClick: () => handleSelectRow(record),
-            className:
-              idx === highlightedIndex
-                ? 'ant-table-row ant-table-row-selected'
-                : 'ant-table-row',
-            style: {
-              backgroundColor: idx === highlightedIndex ? '#e6f7ff' : undefined,
-              border: idx === highlightedIndex ? '2px solid #1890ff' : undefined,
-            },
-          })}
-          rowSelection={{
-            type: 'radio',
-            selectedRowKeys: selectedRowKey ? [selectedRowKey] : [],
-            onChange: keys => {
-              setSelectedRowKey(keys[0]);
-              const idx = filteredProducts.findIndex(p => p._id === keys[0]);
-              if (idx !== -1) setHighlightedIndex(idx);
-            },
-          }}
-          scroll={{ y: 300 }}
-        />
-              <div style={{ marginTop: 16, fontSize: '12px', color: '#666' }}>
-        <strong>Keyboard Shortcuts:</strong> ↑↓ Navigate products | Enter Select | Escape Cancel
-        <br />
-        <strong>Search:</strong> Product name, variant name, SKU, or price
-        <br />
-        <strong>Barcode Scanner:</strong> Click "Scan" button or use USB barcode scanner
-        <br />
-        <strong>Tip:</strong> Press F5 anytime to reopen this modal for product changes
-      </div>
+        {shouldLoadFromAPI ? (
+          <div
+            onScroll={(e: any) => {
+              const target = e.currentTarget;
+              const scrollTop = target.scrollTop;
+              const scrollHeight = target.scrollHeight;
+              const clientHeight = target.clientHeight;
+              const scrollPercentage = (scrollTop + clientHeight) / scrollHeight;
+              
+              if (scrollPercentage > 0.7 && hasMore && !loading && !isLoadingMoreRef.current) {
+                isLoadingMoreRef.current = true;
+                setPage(prev => prev + 1);
+              }
+            }}
+            style={{ maxHeight: 360, overflowY: 'auto' }}
+          >
+            <Table
+              dataSource={filteredProducts}
+              columns={columns}
+              loading={loading && filteredProducts.length === 0}
+              rowKey="_id"
+              size="small"
+              pagination={false}
+              onRow={(record, idx) => ({
+                onClick: () => {
+                  handleSelectRow(record);
+                  setTimeout(() => {
+                    searchInputRef.current?.focus();
+                  }, 10);
+                },
+                onDoubleClick: () => handleSelectRow(record),
+                className:
+                  idx === highlightedIndex
+                    ? 'ant-table-row ant-table-row-selected'
+                    : 'ant-table-row',
+                style: {
+                  backgroundColor: idx === highlightedIndex ? '#e6f7ff' : undefined,
+                  border: idx === highlightedIndex ? '2px solid #1890ff' : undefined,
+                },
+              })}
+              rowSelection={{
+                type: 'radio',
+                selectedRowKeys: selectedRowKey ? [selectedRowKey] : [],
+                onChange: keys => {
+                  setSelectedRowKey(keys[0]);
+                  const idx = filteredProducts.findIndex(p => p._id === keys[0]);
+                  if (idx !== -1) setHighlightedIndex(idx);
+                },
+              }}
+              scroll={{ y: undefined }}
+            />
+            {hasMore && filteredProducts.length > 0 && (
+              <div style={{ textAlign: 'center', padding: '8px', color: '#999', borderTop: '1px solid #f0f0f0' }}>
+                {loading ? 'Loading more...' : 'Scroll for more products'}
+              </div>
+            )}
+          </div>
+        ) : (
+          <Table
+            dataSource={filteredProducts}
+            columns={columns}
+            loading={false}
+            rowKey="_id"
+            size="small"
+            pagination={false}
+            onRow={(record, idx) => ({
+              onClick: () => {
+                handleSelectRow(record);
+                setTimeout(() => {
+                  searchInputRef.current?.focus();
+                }, 10);
+              },
+              onDoubleClick: () => handleSelectRow(record),
+              className:
+                idx === highlightedIndex
+                  ? 'ant-table-row ant-table-row-selected'
+                  : 'ant-table-row',
+              style: {
+                backgroundColor: idx === highlightedIndex ? '#e6f7ff' : undefined,
+                border: idx === highlightedIndex ? '2px solid #1890ff' : undefined,
+              },
+            })}
+            rowSelection={{
+              type: 'radio',
+              selectedRowKeys: selectedRowKey ? [selectedRowKey] : [],
+              onChange: keys => {
+                setSelectedRowKey(keys[0]);
+                const idx = filteredProducts.findIndex(p => p._id === keys[0]);
+                if (idx !== -1) setHighlightedIndex(idx);
+              },
+            }}
+            scroll={{ y: 300 }}
+          />
+        )}
+        <div style={{ marginTop: 16, fontSize: '12px', color: '#666' }}>
+          <strong>Keyboard Shortcuts:</strong> ↑↓ Navigate products | Enter Select | Escape Cancel
+          <br />
+          <strong>Search:</strong> Product name, variant name, SKU, or price
+          <br />
+          <strong>Barcode Scanner:</strong> Click "Scan" button or use USB barcode scanner
+          <br />
+          <strong>Tip:</strong> Press F5 anytime to reopen this modal for product changes
+        </div>
       </div>
 
       {/* Barcode Scanner Modal */}

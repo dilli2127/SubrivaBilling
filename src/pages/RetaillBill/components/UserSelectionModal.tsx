@@ -51,12 +51,11 @@ const UserSelectionModal: React.FC<UserSelectionModalProps> = ({
   onSelect,
   onCancel,
 }) => {
-  // Use RTK Query for billing users
-  const { data: userData, isLoading: userLoading } = apiSlice.useGetBillingUsersQuery({});
-  const userList = (userData as any)?.result || userData || {};
-  const users = userList?.items || userList?.result || Array.isArray(userList) ? userList : [];
-
   const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [page, setPage] = useState(1);
+  const [allUsers, setAllUsers] = useState<User[]>([]);
+  const [hasMore, setHasMore] = useState(true);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [selectedRowIndex, setSelectedRowIndex] = useState<number>(-1);
   
@@ -68,22 +67,85 @@ const UserSelectionModal: React.FC<UserSelectionModalProps> = ({
   const searchInputRef = useRef<any>(null);
   const modalRef = useRef<HTMLDivElement>(null);
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const isLoadingMoreRef = useRef(false);
 
-  // Memoized filtered users
-  const filteredUsers = useMemo(() => {
-    if (!searchTerm.trim()) {
-      return users;
+  // Use RTK Query for billing users with pagination
+  const { data: userData, isLoading: userLoading } = apiSlice.useGetBillingUsersQuery({
+    searchString: debouncedSearch,
+    page: page,
+    limit: 10,
+  }, {
+    skip: !visible,
+    refetchOnMountOrArgChange: true,
+  });
+
+  // Accumulate users for infinite scroll
+  useEffect(() => {
+    if (!visible) return;
+    
+    if (userData) {
+      const newItems = (userData as any)?.result || [];
+      const totalCount = (userData as any).pagination?.totalCount || (userData as any).pagination?.total || 0;
+      
+      if (page === 1) {
+        setAllUsers(newItems);
+        setHasMore(newItems.length < totalCount && newItems.length > 0);
+      } else {
+        setAllUsers(prev => {
+          const existingIds = new Set(prev.map((item: any) => item._id));
+          const uniqueNewItems = newItems.filter((item: any) => !existingIds.has(item._id));
+          const updated = [...prev, ...uniqueNewItems];
+          setHasMore(updated.length < totalCount && uniqueNewItems.length > 0);
+          return updated;
+        });
+      }
+      
+      isLoadingMoreRef.current = false;
+    }
+  }, [userData, page, visible]);
+
+  const filteredUsers = allUsers;
+
+  // Debounce search
+  useEffect(() => {
+    if (!visible) return;
+
+    if (searchTerm === debouncedSearch) return;
+
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
     }
     
-    const searchLower = searchTerm.toLowerCase();
-    return users.filter((user: User) =>
-      user.name?.toLowerCase().includes(searchLower) ||
-      user.email?.toLowerCase().includes(searchLower) ||
-      user.mobile?.toLowerCase().includes(searchLower) ||
-      user.user_name?.toLowerCase().includes(searchLower) ||
-      user.roleItems?.name?.toLowerCase().includes(searchLower)
-    );
-  }, [users, searchTerm]);
+    searchTimeoutRef.current = setTimeout(() => {
+      setDebouncedSearch(searchTerm);
+      setPage(1);
+      setAllUsers([]);
+      setHasMore(true);
+      isLoadingMoreRef.current = false;
+    }, 300);
+
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+    };
+  }, [searchTerm, debouncedSearch, visible]);
+
+  // Reset state when modal opens/closes
+  useEffect(() => {
+    if (visible) {
+      setPage(1);
+      setHasMore(true);
+      isLoadingMoreRef.current = false;
+    } else {
+      setSearchTerm('');
+      setDebouncedSearch('');
+      setPage(1);
+      setAllUsers([]);
+      setHasMore(true);
+      isLoadingMoreRef.current = false;
+    }
+  }, [visible]);
 
   // Consolidated keyboard navigation function
   const navigateToUser = useCallback(
@@ -402,11 +464,11 @@ const UserSelectionModal: React.FC<UserSelectionModalProps> = ({
 
   // Auto-select current user when users are loaded
   useEffect(() => {
-    if (visible && users.length > 0 && currentUser?._id && !selectedUser) {
-      const currentUserInList = users.find((user: User) => user._id === currentUser._id);
+    if (visible && filteredUsers.length > 0 && currentUser?._id && !selectedUser) {
+      const currentUserInList = filteredUsers.find((user: User) => user._id === currentUser._id);
       if (currentUserInList) {
         setSelectedUser(currentUserInList);
-        const index = users.findIndex((user: User) => user._id === currentUser._id);
+        const index = filteredUsers.findIndex((user: User) => user._id === currentUser._id);
         setSelectedRowIndex(index);
         
         // Scroll to the selected user after a short delay
@@ -423,7 +485,7 @@ const UserSelectionModal: React.FC<UserSelectionModalProps> = ({
         }, 200);
       }
     }
-  }, [visible, users, currentUser?._id, selectedUser]);
+  }, [visible, filteredUsers, currentUser?._id, selectedUser]);
 
   // Focus search input when modal becomes visible
   useEffect(() => {
@@ -529,15 +591,36 @@ const UserSelectionModal: React.FC<UserSelectionModalProps> = ({
             </Text>
           </div>
         ) : (
-          <Table
-            columns={columns}
-            dataSource={filteredUsers}
-            rowKey="_id"
-            pagination={false}
-            size="small"
-            scroll={{ y: 300 }}
-            onRow={getRowProps}
-          />
+          <div
+            onScroll={(e: any) => {
+              const target = e.currentTarget;
+              const scrollTop = target.scrollTop;
+              const scrollHeight = target.scrollHeight;
+              const clientHeight = target.clientHeight;
+              const scrollPercentage = (scrollTop + clientHeight) / scrollHeight;
+              
+              if (scrollPercentage > 0.7 && hasMore && !userLoading && !isLoadingMoreRef.current) {
+                isLoadingMoreRef.current = true;
+                setPage(prev => prev + 1);
+              }
+            }}
+            style={{ maxHeight: 360, overflowY: 'auto' }}
+          >
+            <Table
+              columns={columns}
+              dataSource={filteredUsers}
+              rowKey="_id"
+              pagination={false}
+              size="small"
+              scroll={{ y: undefined }}
+              onRow={getRowProps}
+            />
+            {hasMore && filteredUsers.length > 0 && (
+              <div style={{ textAlign: 'center', padding: '8px', color: '#999', borderTop: '1px solid #f0f0f0' }}>
+                {userLoading ? 'Loading more...' : 'Scroll for more users'}
+              </div>
+            )}
+          </div>
         )}
       </div>
     </Modal>

@@ -333,7 +333,7 @@ const PricingPage: React.FC = () => {
                           navigate('/tenant-signup');
                         } else if (plan.buttonText === "Contact Sales") {
                           // Handle contact sales
-                          window.open('mailto:sales@probilldesk.com?subject=Enterprise Plan Inquiry');
+                          window.open('mailto:sales@subrivabilling.com?subject=Enterprise Plan Inquiry');
                         }
                       }}
                     >

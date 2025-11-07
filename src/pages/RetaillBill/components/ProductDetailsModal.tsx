@@ -36,23 +36,22 @@ const ProductDetailsModal: FC<ProductDetailsModalProps> = ({
   onCancel,
   productId,
 }) => {
-  // Use RTK Query for products
-  const { data: productsData, isLoading: loading } = apiSlice.useGetProductQuery({});
-  const products = (productsData as any)?.result || [];
-
   const [productDetails, setProductDetails] = useState<ProductDetails | null>(null);
 
+  // Load product when modal opens
+  const { data: productData, isLoading: loading } = apiSlice.useGetProductQuery({
+    _id: productId,
+  }, { skip: !visible || !productId });
+
   useEffect(() => {
-    if (visible && productId && products && Array.isArray(products)) {
-      const product = products.find((p: any) => p._id === productId);
+    if (visible && productId && productData) {
+      const products = (productData as any)?.result || [];
+      const product = Array.isArray(products) ? products.find((p: any) => p._id === productId) : null;
       if (product) {
         setProductDetails(product);
       }
     }
-  }, [visible, productId, products]);
-
-  // RTK Query automatically loads products on mount
-  // No manual fetch needed
+  }, [visible, productId, productData]);
 
   const handleCancel = () => {
     setProductDetails(null);

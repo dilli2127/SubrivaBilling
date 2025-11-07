@@ -67,8 +67,7 @@ class APIService {
                     if (errorMessage.toLowerCase().includes('access denied') || 
                         errorMessage.toLowerCase().includes('insufficient permissions') ||
                         errorMessage.toLowerCase().includes('permission')) {
-                        // Permission denied - don't clear auth, just show error with full message
-                        console.warn('Permission denied:', errorMessage);
+                        // Permission denied - don't clear auth, just show error
                         message.error({
                             content: 'You do not have permission to perform this action.',
                             duration: 5,
@@ -200,17 +199,13 @@ class APIService {
     private handleResponse<T>(response: ApiResponse<T>): ApiResponse<T> {
         // Check for 401 status code in response body (some APIs return 401 in body, not HTTP status)
         if (response.statusCode === 401) {
-            // Check both exception and message fields for the error text
             const errorMessage = (response as any).exception || response.message || '';
-            
-            console.log('401 Response - Exception:', (response as any).exception, 'Message:', response.message);
             
             // Check if it's a permission denied error (not token expiration)
             if (errorMessage.toLowerCase().includes('access denied') || 
                 errorMessage.toLowerCase().includes('insufficient permissions') ||
                 errorMessage.toLowerCase().includes('permission')) {
-                // Permission denied - don't clear auth, just show error with full message
-                console.warn('Permission denied:', errorMessage);
+                // Permission denied - don't clear auth, just show error
                 message.error({
                     content: 'You do not have permission to perform this action.',
                     duration: 5,
@@ -219,9 +214,6 @@ class APIService {
             }
             
             // Token expired - logout user
-            console.warn('Token expired (401 in response body)');
-            
-            // Show error message only once to avoid multiple toasts
             if (!this.hasShownSessionExpiredMessage) {
                 this.hasShownSessionExpiredMessage = true;
                 message.error('Your session has expired. Please login again.');
@@ -229,7 +221,7 @@ class APIService {
             
             clearAuthData();
             window.location.href = '#/billing_login';
-            return response; // Return response but user will be redirected
+            return response;
         }
         
         return {

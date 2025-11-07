@@ -3,15 +3,15 @@ import { Form, Button } from "antd";
 import GlobalDrawer from "../../components/antd/GlobalDrawer";
 import { revertDrawerFormItems } from "./RevertDrawerFormItems";
 import { apiSlice } from "../../services/redux/api/apiSlice";
+import { InfiniteDropdownResult } from "../../hooks/useInfiniteDropdown";
 
 interface RevertDrawerProps {
   open: boolean;
   onClose: () => void;
   onSubmit: (values: any) => void;
   record: any;
-  branchList: any;
-  branchLoading: boolean;
-  loading:boolean
+  branchDropdown: InfiniteDropdownResult;
+  loading: boolean;
 }
 
 const RevertDrawer: React.FC<RevertDrawerProps> = ({
@@ -19,8 +19,7 @@ const RevertDrawer: React.FC<RevertDrawerProps> = ({
   onClose,
   onSubmit,
   record,
-  branchList,
-  branchLoading,
+  branchDropdown,
   loading
 }) => {
   const [form] = Form.useForm();
@@ -62,8 +61,7 @@ const RevertDrawer: React.FC<RevertDrawerProps> = ({
   }, [branchStockData, record, selectedBranchId]);
 
   const formItems = revertDrawerFormItems(
-    branchList,
-    branchLoading,
+    branchDropdown,
     record,
     {
       onBranchChange: (id: string) => {

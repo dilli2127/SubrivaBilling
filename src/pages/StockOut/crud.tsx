@@ -3,7 +3,10 @@ import { DatePicker, Input, InputNumber, Select } from "antd";
 import { GenericCrudPage } from "../../components/common/GenericCrudPage";
 import type { StockOut } from "../../types/entities";
 import { apiSlice } from '../../services/redux/api/apiSlice';
+import { useInfiniteDropdown } from "../../hooks/useInfiniteDropdown";
+
 const { Option } = Select;
+
 type StockAudit = {
   _id: string;
   batch_no: string;
@@ -15,10 +18,13 @@ type StockAudit = {
     };
   };
 };
+
 const StockOutCrud: React.FC = () => {
-  // Use RTK Query for fetching stock audit data
-  const { data: stockAuditData, isLoading: stockAuditLoading } = apiSlice.useGetStockAuditQuery({});
-  const StockAuditList = (stockAuditData as any)?.result || [];
+  // Use infinite scroll for StockAudit dropdown
+  const stockAuditDropdown = useInfiniteDropdown({
+    queryHook: apiSlice.useGetStockAuditQuery,
+    limit: 20,
+  });
 
   type StockOutRecord = {
     stock_audit_items?: {
@@ -77,15 +83,27 @@ const StockOutCrud: React.FC = () => {
         rules: [{ required: true, message: "Please select the stock batch" }],
         component: (
           <Select
-            placeholder="Select category"
-            loading={stockAuditLoading}
+            placeholder="Select stock batch"
+            loading={stockAuditDropdown.loading && stockAuditDropdown.items.length === 0}
             showSearch
             allowClear
+            onSearch={stockAuditDropdown.setSearchString}
+            onPopupScroll={stockAuditDropdown.handlePopupScroll}
+            filterOption={false}
+            dropdownRender={(menu) => (
+              <>
+                {menu}
+                {stockAuditDropdown.hasMore && stockAuditDropdown.items.length > 0 && (
+                  <div style={{ textAlign: 'center', padding: '8px', color: '#999' }}>
+                    {stockAuditDropdown.loading ? 'Loading...' : 'Scroll for more'}
+                  </div>
+                )}
+              </>
+            )}
           >
-            {(StockAuditList?.result || []).map((cat: StockAudit) => (
+            {stockAuditDropdown.items.map((cat: StockAudit) => (
               <Option key={cat._id} value={cat._id}>
-                {cat?.ProductItem?.name} -{" "}
-                {cat?.ProductItem?.VariantItem?.variant_name} - {cat?.batch_no}
+                {cat?.ProductItem?.name} - {cat?.ProductItem?.VariantItem?.variant_name} - {cat?.batch_no}
               </Option>
             ))}
           </Select>

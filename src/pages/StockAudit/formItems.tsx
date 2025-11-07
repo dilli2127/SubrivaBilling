@@ -1,17 +1,21 @@
 import React from "react";
 import { DatePicker, Input, InputNumber, Select } from "antd";
 import dayjs from "dayjs";
+import { InfiniteDropdownResult } from "../../hooks/useInfiniteDropdown";
 
 const { Option } = Select;
 
-export const getStockAuditFormItems = (
-  productList: any,
-  vendorList: any,
-  wareHouseList: any,
-  loading: boolean,
-  vendorloading: boolean,
-  wareHouseLoading: boolean
-) => [
+interface StockAuditFormParams {
+  productDropdown: InfiniteDropdownResult;
+  vendorDropdown: InfiniteDropdownResult;
+  warehouseDropdown: InfiniteDropdownResult;
+}
+
+export const getStockAuditFormItems = ({
+  productDropdown,
+  vendorDropdown,
+  warehouseDropdown,
+}: StockAuditFormParams) => [
   {
     label: "Invoice / Reference ID",
     name: "invoice_id",
@@ -27,18 +31,24 @@ export const getStockAuditFormItems = (
         placeholder="Select product"
         showSearch
         allowClear
-        loading={loading}
-        optionFilterProp="children"
-        filterOption={(input, option) =>
-          typeof option?.children === "string" &&
-          (option.children as string)
-            .toLowerCase()
-            .includes(input.toLowerCase())
-        }
+        loading={productDropdown.loading && productDropdown.items.length === 0}
+        onSearch={productDropdown.setSearchString}
+        onPopupScroll={productDropdown.handlePopupScroll}
+        filterOption={false}
+        dropdownRender={(menu) => (
+          <>
+            {menu}
+            {productDropdown.hasMore && productDropdown.items.length > 0 && (
+              <div style={{ textAlign: 'center', padding: '8px', color: '#999' }}>
+                {productDropdown.loading ? 'Loading...' : 'Scroll for more'}
+              </div>
+            )}
+          </>
+        )}
       >
-        {productList?.map((product: any) => (
-          <Select.Option key={product?._id} value={product?._id}>
-            {`${product.name} ${product?.VariantItem?.variant_name}`}
+        {productDropdown.items.map((product: any) => (
+          <Select.Option key={product._id} value={product._id}>
+            {`${product.name} ${product?.VariantItem?.variant_name || ''}`}
           </Select.Option>
         ))}
       </Select>
@@ -126,27 +136,33 @@ export const getStockAuditFormItems = (
   {
     label: "Vendor",
     name: "vendor",
-    rules: [ {
+    rules: [{
       required: true,
       message: "Select vendor!",
-    },],
+    }],
     component: (
       <Select
         placeholder="Select Vendor"
         showSearch
         allowClear
-        loading={vendorloading}
-        optionFilterProp="children"
-        filterOption={(input, option) =>
-          typeof option?.children === "string" &&
-          (option.children as string)
-            .toLowerCase()
-            .includes(input.toLowerCase())
-        }
+        loading={vendorDropdown.loading && vendorDropdown.items.length === 0}
+        onSearch={vendorDropdown.setSearchString}
+        onPopupScroll={vendorDropdown.handlePopupScroll}
+        filterOption={false}
+        dropdownRender={(menu) => (
+          <>
+            {menu}
+            {vendorDropdown.hasMore && vendorDropdown.items.length > 0 && (
+              <div style={{ textAlign: 'center', padding: '8px', color: '#999' }}>
+                {vendorDropdown.loading ? 'Loading...' : 'Scroll for more'}
+              </div>
+            )}
+          </>
+        )}
       >
-        {vendorList?.map((vendor: any) => (
-          <Select.Option key={vendor?._id} value={vendor?._id}>
-            {`${vendor.vendor_name} ${vendor?.company_name}`}
+        {vendorDropdown.items.map((vendor: any) => (
+          <Select.Option key={vendor._id} value={vendor._id}>
+            {`${vendor.vendor_name} ${vendor?.company_name || ''}`}
           </Select.Option>
         ))}
       </Select>
@@ -180,18 +196,24 @@ export const getStockAuditFormItems = (
         placeholder="Select warehouse"
         showSearch
         allowClear
-        loading={wareHouseLoading}
-        optionFilterProp="children"
-        filterOption={(input, option) =>
-          typeof option?.children === "string" &&
-          (option.children as string)
-            .toLowerCase()
-            .includes(input.toLowerCase())
-        }
+        loading={warehouseDropdown.loading && warehouseDropdown.items.length === 0}
+        onSearch={warehouseDropdown.setSearchString}
+        onPopupScroll={warehouseDropdown.handlePopupScroll}
+        filterOption={false}
+        dropdownRender={(menu) => (
+          <>
+            {menu}
+            {warehouseDropdown.hasMore && warehouseDropdown.items.length > 0 && (
+              <div style={{ textAlign: 'center', padding: '8px', color: '#999' }}>
+                {warehouseDropdown.loading ? 'Loading...' : 'Scroll for more'}
+              </div>
+            )}
+          </>
+        )}
       >
-        {wareHouseList?.result?.map((wareHouse: any) => (
-          <Select.Option key={wareHouse?._id} value={wareHouse?._id}>
-            {`${wareHouse.warehouse_name} ${wareHouse?.warehouse_code}`}
+        {warehouseDropdown.items.map((warehouse: any) => (
+          <Select.Option key={warehouse._id} value={warehouse._id}>
+            {`${warehouse.warehouse_name} ${warehouse?.warehouse_code || ''}`}
           </Select.Option>
         ))}
       </Select>

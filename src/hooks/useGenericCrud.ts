@@ -32,6 +32,7 @@ export interface CrudReturn<T extends BaseEntity> {
     current: number;
     pageSize: number;
     total?: number;
+    totalCount?: number; // Some APIs return totalCount instead of total
   };
   drawerVisible: boolean;
   initialValues: Partial<T>;
@@ -92,6 +93,11 @@ export const useGenericCrud = <T extends BaseEntity>(
     current: 1,
     pageSize: 10,
   });
+
+  // Reset pagination to page 1 when filters change
+  useEffect(() => {
+    setPagination(prev => ({ ...prev, current: 1 }));
+  }, [debouncedFilters]);
 
   // Get RTK Query hooks for this entity
   const entityHooks = getEntityHooks(config.entityName);

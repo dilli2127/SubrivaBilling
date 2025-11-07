@@ -29,8 +29,25 @@ const baseQuery = fetchBaseQuery({
 const baseQueryWithReauth = async (args: any, api: any, extraOptions: any) => {
   let result = await baseQuery(args, api, extraOptions);
 
-  if (result.error && result.error.status === 401) {
-    // Try to refresh token using existing auth system
+  // Check for 401 in TWO places:
+  // 1. HTTP 401 error (result.error.status === 401)
+  // 2. HTTP 200 with statusCode: 401 in body (result.data.statusCode === 401)
+  const isHttpError401 = result.error && result.error.status === 401;
+  const isBodyError401 = result.data && (result.data as any).statusCode === 401;
+  
+  if (isHttpError401 || isBodyError401) {
+    // Check if it's a permission denied error (not token expiration)
+    const errorData: any = isBodyError401 ? result.data : result.error?.data;
+    const errorMessage = errorData?.exception || errorData?.message || '';
+    
+    if (errorMessage.toLowerCase().includes('access denied') || 
+        errorMessage.toLowerCase().includes('insufficient permissions') ||
+        errorMessage.toLowerCase().includes('permission')) {
+      // Permission denied - don't clear auth, just return error
+      return result;
+    }
+    
+    // Token expired - try to refresh token
     const refreshToken = localStorage.getItem('refreshToken');
     if (refreshToken) {
       const refreshResult = await baseQuery(
@@ -60,6 +77,9 @@ const baseQueryWithReauth = async (args: any, api: any, extraOptions: any) => {
         localStorage.removeItem('refreshToken');
         window.location.href = '#/billing_login';
       }
+    } else {
+      localStorage.removeItem('accessToken');
+      window.location.href = '#/billing_login';
     }
   }
 
@@ -134,8 +154,13 @@ const createDynamicEndpoints = (builder: any) => {
                   if (!draft) return;
                   const list = Array.isArray(draft.result) ? draft.result : [];
                   draft.result = [createdItem, ...list];
-                  if (draft.pagination && typeof draft.pagination.total === 'number') {
-                    draft.pagination.total += 1;
+                  if (draft.pagination) {
+                    // Handle both totalCount and total for backward compatibility
+                    if (typeof draft.pagination.totalCount === 'number') {
+                      draft.pagination.totalCount += 1;
+                    } else if (typeof draft.pagination.total === 'number') {
+                      draft.pagination.total += 1;
+                    }
                   }
                   const limit = originalArgs?.limit ?? 10;
                   if (Array.isArray(draft.result) && draft.result.length > limit) {
@@ -268,10 +293,15 @@ const createDynamicEndpoints = (builder: any) => {
                   if (!draft || !Array.isArray(draft.result)) return;
                   const before = draft.result.length;
                   draft.result = draft.result.filter((item: any) => item?._id !== id);
-                  if (draft.pagination && typeof draft.pagination.total === 'number') {
+                  if (draft.pagination) {
                     const after = draft.result.length;
                     if (after < before) {
-                      draft.pagination.total -= 1;
+                      // Handle both totalCount and total for backward compatibility
+                      if (typeof draft.pagination.totalCount === 'number') {
+                        draft.pagination.totalCount -= 1;
+                      } else if (typeof draft.pagination.total === 'number') {
+                        draft.pagination.total -= 1;
+                      }
                     }
                   }
                 })
@@ -319,369 +349,58 @@ export const apiSlice = createApi({
     ...getDynamicTagTypes(), // Dynamically generated tag types from CRUD entities
   ],
   endpoints: builder => {
-    // Get dynamic endpoints
+    // Get dynamic CRUD endpoints
     const dynamicEndpoints = createDynamicEndpoints(builder);
 
     return {
-      // Dynamic CRUD endpoints for all entities
+      // All CRUD endpoints are dynamically generated
+      // Custom non-CRUD endpoints are injected via separate endpoint files
+      // See: src/services/redux/api/endpoints/ for modular endpoints
       ...dynamicEndpoints,
-
-      // Special endpoints that don't follow CRUD pattern
-      login: builder.mutation({
-        query: credentials => {
-          const route = API_ROUTES.Login.Create;
-          return {
-            url: route.endpoint,
-            method: route.method,
-            body: credentials,
-          };
-        },
-      }),
-
-      tenantLogin: builder.mutation({
-        query: credentials => {
-          const route = API_ROUTES.TenantLogin.Create;
-          return {
-            url: route.endpoint,
-            method: route.method,
-            body: credentials,
-          };
-        },
-      }),
-
-      billingLogin: builder.mutation({
-        query: credentials => {
-          const route = API_ROUTES.BillingLogin.Create;
-          return {
-            url: route.endpoint,
-            method: route.method,
-            body: credentials,
-          };
-        },
-      }),
-
-      // Signup endpoints
-      signup: builder.mutation({
-        query: credentials => {
-          const route = API_ROUTES.Signup.Create;
-          return {
-            url: route.endpoint,
-            method: route.method,
-            body: credentials,
-          };
-        },
-      }),
-
-      tenantSignup: builder.mutation({
-        query: data => {
-          return {
-            url: '/tenant_accounts_signup',
-            method: 'POST',
-            body: data,
-          };
-        },
-      }),
-
-      // Dashboard endpoints
-      getDashboardStats: builder.query({
-        query: (params: { [key: string]: any } = {}) => {
-          const route = API_ROUTES.DashBoard.GetCount;
-          return {
-            url: route.endpoint,
-            method: route.method,
-            body: params,
-          };
-        },
-        providesTags: ['Dashboard'],
-      }),
-
-      getSalesChart: builder.query({
-        query: (params: { [key: string]: any } = {}) => {
-          const route = API_ROUTES.DashBoard.SalesChartData;
-          return {
-            url: route.endpoint,
-            method: route.method,
-            body: params,
-          };
-        },
-        providesTags: ['Dashboard'],
-      }),
-
-      getPurchaseChart: builder.query({
-        query: (params: { [key: string]: any } = {}) => {
-          const route = API_ROUTES.DashBoard.PurchaseChartData;
-          return {
-            url: route.endpoint,
-            method: route.method,
-            body: params,
-          };
-        },
-        providesTags: ['Dashboard'],
-      }),
-
-      getStockAlerts: builder.query({
-        query: (params: { [key: string]: any } = {}) => {
-          const route = API_ROUTES.DashBoard.StockAlert;
-          return {
-            url: route.endpoint,
-            method: route.method,
-            body: params,
-          };
-        },
-        providesTags: ['Dashboard'],
-      }),
-
-      getFinancialData: builder.query({
-        query: (params: { [key: string]: any } = {}) => {
-          const route = API_ROUTES.DashBoard.FinancialData;
-          return {
-            url: route.endpoint,
-            method: route.method,
-            body: params,
-          };
-        },
-        providesTags: ['Dashboard'],
-      }),
-
-      getSalesAnalytics: builder.query({
-        query: (params: { [key: string]: any } = {}) => {
-          const route = API_ROUTES.DashBoard.SalesAnalytics;
-          return {
-            url: route.endpoint,
-            method: route.method,
-            body: params,
-          };
-        },
-        providesTags: ['Dashboard'],
-      }),
-
-      getInventoryMetrics: builder.query({
-        query: (params: { [key: string]: any } = {}) => {
-          const route = API_ROUTES.DashBoard.InventoryMetrics;
-          return {
-            url: route.endpoint,
-            method: route.method,
-            body: params,
-          };
-        },
-        providesTags: ['Dashboard'],
-      }),
-
-      // Plan Limits
-      getPlanLimits: builder.query({
-        query: (params: { [key: string]: any } = {}) => {
-          const route = API_ROUTES.PlanLimits.Get;
-          return {
-            url: route.endpoint,
-            method: route.method,
-            body: params,
-          };
-        },
-        providesTags: ['PlanLimits'],
-      }),
-
-      // Reports
-      getSalesReport: builder.query({
-        query: (params: { [key: string]: any } = {}) => {
-          const route = API_ROUTES.Reports.GetSalesReport;
-          return {
-            url: route.endpoint,
-            method: route.method,
-            body: params,
-          };
-        },
-      }),
-      getProductSalesReport: builder.query({
-        query: (params: { [key: string]: any } = {}) => {
-          const route = API_ROUTES.Reports.GetProductSalesReport;
-          return {
-            url: route.endpoint,
-            method: route.method,
-            body: params,
-          };
-        },
-      }),
-      getCustomerSalesReport: builder.query({
-        query: (params: { [key: string]: any } = {}) => {
-          const route = API_ROUTES.Reports.GetCustomerSalesReport;
-          return {
-            url: route.endpoint,
-            method: route.method,
-            body: params,
-          };
-        },
-      }),
-      getStockReport: builder.query({
-        query: (params: { [key: string]: any } = {}) => {
-          const route = API_ROUTES.Reports.GetStockReport;
-          return {
-            url: route.endpoint,
-            method: route.method,
-            body: params,
-          };
-        },
-      }),
-      getProfitLossReport: builder.query({
-        query: (params: { [key: string]: any } = {}) => {
-          const route = API_ROUTES.Reports.GetProfitLossReport;
-          return {
-            url: route.endpoint,
-            method: route.method,
-            body: params,
-          };
-        },
-      }),
-      getOutstandingPaymentsReport: builder.query({
-        query: (params: { [key: string]: any } = {}) => {
-          const route = API_ROUTES.Reports.GetOutstandingPaymentsReport;
-          return {
-            url: route.endpoint,
-            method: route.method,
-            body: params,
-          };
-        },
-      }),
-      getPaymentCollectionReport: builder.query({
-        query: (params: { [key: string]: any } = {}) => {
-          const route = API_ROUTES.Reports.GetPaymentCollectionReport;
-          return {
-            url: route.endpoint,
-            method: route.method,
-            body: params,
-          };
-        },
-      }),
-      getExpenseReport: builder.query({
-        query: (params: { [key: string]: any } = {}) => {
-          const route = API_ROUTES.Reports.GetExpenseReport;
-          return {
-            url: route.endpoint,
-            method: route.method,
-            body: params,
-          };
-        },
-      }),
-      getGSTReport: builder.query({
-        query: (params: { [key: string]: any } = {}) => {
-          const route = API_ROUTES.Reports.GetGSTReport;
-          return {
-            url: route.endpoint,
-            method: route.method,
-            body: params,
-          };
-        },
-      }),
-      getTopProductsReport: builder.query({
-        query: (params: { [key: string]: any } = {}) => {
-          const route = API_ROUTES.Reports.GetTopProductsReport;
-          return {
-            url: route.endpoint,
-            method: route.method,
-            body: params,
-          };
-        },
-      }),
-      getTopCustomersReport: builder.query({
-        query: (params: { [key: string]: any } = {}) => {
-          const route = API_ROUTES.Reports.GetTopCustomersReport;
-          return {
-            url: route.endpoint,
-            method: route.method,
-            body: params,
-          };
-        },
-      }),
-      getStockExpiryReport: builder.query({
-        query: (params: { [key: string]: any } = {}) => {
-          const route = API_ROUTES.Reports.GetStockExpiryReport;
-          return {
-            url: route.endpoint,
-            method: route.method,
-            body: params,
-          };
-        },
-      }),
-
-      // Stock Operations
-      revertStockFromBranch: builder.mutation({
-        query: (data: { [key: string]: any }) => {
-          const route = API_ROUTES.StockRevertFromBranch.RevertStock;
-          return {
-            url: route.endpoint,
-            method: route.method,
-            body: data,
-          };
-        },
-      }),
-
-      // Stock Available endpoints
-      getProductStockCount: builder.query({
-        query: (params: { [key: string]: any } = {}) => {
-          const route = API_ROUTES.StockAvailable.GetProductStockCount;
-          return {
-            url: route.endpoint,
-            method: route.method,
-            body: params,
-          };
-        },
-      }),
-      getBranchStockCount: builder.query({
-        query: (params: { [key: string]: any } = {}) => {
-          const route = API_ROUTES.BranchStockAvailable.GetBranchStockCount;
-          return {
-            url: route.endpoint,
-            method: route.method,
-            body: params,
-          };
-        },
-      }),
     };
   },
 });
 
-// Export all generated hooks dynamically
+/**
+ * CRUD Hooks Export
+ * 
+ * All CRUD hooks are automatically generated by RTK Query and available as:
+ * - useGet{EntityName}Query
+ * - useGet{EntityName}ByIdQuery  
+ * - useCreate{EntityName}Mutation
+ * - useUpdate{EntityName}Mutation
+ * - useDelete{EntityName}Mutation
+ * 
+ * For custom non-CRUD endpoints (Auth, Dashboard, Reports, Stock), 
+ * import from: src/services/redux/api/endpoints/
+ * 
+ * Example:
+ * import { useLoginMutation } from '@/services/redux/api/endpoints';
+ * import { useGetSalesReportQuery } from '@/services/redux/api/endpoints';
+ */
+
+// Export commonly used CRUD hooks for convenience
 export const {
-  // Authentication
-  useLoginMutation,
-  useTenantLoginMutation,
-  useBillingLoginMutation,
-  useSignupMutation,
-  useTenantSignupMutation,
-
-  // Dashboard
-  useGetDashboardStatsQuery,
-  useGetSalesChartQuery,
-  useGetPurchaseChartQuery,
-  useGetStockAlertsQuery,
-  useGetFinancialDataQuery,
-  useGetSalesAnalyticsQuery,
-  useGetInventoryMetricsQuery,
-
-  // Plan Limits
-  useGetPlanLimitsQuery,
-
-  // Reports
-  useGetSalesReportQuery,
-  useGetProductSalesReportQuery,
-  useGetCustomerSalesReportQuery,
-  useGetStockReportQuery,
-  useGetProfitLossReportQuery,
-  useGetOutstandingPaymentsReportQuery,
-  useGetPaymentCollectionReportQuery,
-  useGetExpenseReportQuery,
-  useGetGSTReportQuery,
-  useGetTopProductsReportQuery,
-  useGetTopCustomersReportQuery,
-  useGetStockExpiryReportQuery,
-
-  // Stock Operations
-  useRevertStockFromBranchMutation,
-  useGetProductStockCountQuery,
-  useGetBranchStockCountQuery,
-
-  // All CRUD hooks are automatically generated by RTK Query based on createCrudRoutes
-  // No need to hardcode them - they are dynamically available as:
-  // useGet{EntityName}Query, useGet{EntityName}ByIdQuery, useCreate{EntityName}Mutation, etc.
+  // Tenant Accounts
+  useGetTenantAccountsQuery,
+  useGetTenantAccountsByIdQuery,
+  useCreateTenantAccountsMutation,
+  useUpdateTenantAccountsMutation,
+  useDeleteTenantAccountsMutation,
+  
+  // Organizations
+  useGetOrganisationsQuery,
+  useGetOrganisationsByIdQuery,
+  useCreateOrganisationsMutation,
+  useUpdateOrganisationsMutation,
+  useDeleteOrganisationsMutation,
+  
+  // Branches
+  useGetBranchesQuery,
+  useGetBranchesByIdQuery,
+  useCreateBranchesMutation,
+  useUpdateBranchesMutation,
+  useDeleteBranchesMutation,
 } = apiSlice;
 
 // Helper function to get RTK hooks for any entity dynamically

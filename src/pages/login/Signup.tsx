@@ -3,11 +3,11 @@ import { Form, Input, Button, Checkbox, message, Row, Col, Card } from "antd";
 import { UserOutlined, LockOutlined, MailOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import "./Signup.css";
-import { apiSlice } from "../../services/redux/api/apiSlice";
+import { useSignupMutation } from "../../services/redux/api/endpoints";
 
 const Signup: React.FC = () => {
   const navigate = useNavigate();
-  const [signup, { isLoading: loading }] = apiSlice.useSignupMutation();
+  const [signup, { isLoading: loading }] = useSignupMutation();
   
   const onFinish = async (values: {
     username: string;
