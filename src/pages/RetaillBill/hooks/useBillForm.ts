@@ -140,7 +140,7 @@ export const useBillForm = () => {
         billdata.Items?.map((item: any) => ({
           _id: item._id,
           product_id: item.product_id,
-          product_name: item.productItems?.name || '',
+          product_name: item.productItems?.name || item.product_name || '',
           variant_name: item.productItems?.VariantItem?.variant_name || '',
           stock_id: item.stock_id || item.branch_stock_id,
           batch_no: item.batch_no || '',
@@ -149,7 +149,12 @@ export const useBillForm = () => {
           price: item.price,
           mrp: item.mrp || item.price,
           amount: item.amount,
-          tax_percentage: item.tax_percentage || 0,
+          tax_percentage: item.tax_percentage || item.productItems?.CategoryItem?.tax_percentage || item.productItems?.tax_percentage || 0,
+          hsn_code: item.hsn_code || item.productItems?.hsn_code || item.productItems?.VariantItem?.hsn_code || '',
+          hsn_sac: item.hsn_sac || item.productItems?.hsn_sac || '',
+          discount: item.discount || 0,
+          description: item.description || '',
+          category_name: item.productItems?.CategoryItem?.category_name || '',
         })) || [],
     });
 

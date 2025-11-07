@@ -23,6 +23,12 @@ const ClassicInvoiceTemplate: React.FC<ClassicInvoiceTemplateProps> = ({
   }
 
   // Calculate totals based on GST mode
+  const valueOfGoods = billData?.items?.reduce((sum: number, item: any) => {
+    const qty = Number(item?.qty || item?.quantity || 0);
+    const price = Number(item?.price || 0);
+    return sum + (qty * price);
+  }, 0) || 0;
+  
   const subtotal = Number(billData?.total || 0);
   const cgst = Number(billData?.cgst || (billData?.total_gst || 0) / 2);
   const sgst = Number(billData?.sgst || (billData?.total_gst || 0) / 2);
@@ -137,30 +143,37 @@ const ClassicInvoiceTemplate: React.FC<ClassicInvoiceTemplateProps> = ({
       <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: 24 }}>
         <thead>
           <tr style={{ background: '#f5f5f5', borderTop: '2px solid #333', borderBottom: '2px solid #333' }}>
-            <th style={thStyle}>S.No</th>
-            <th style={{ ...thStyle, textAlign: 'left' }}>Description of Goods</th>
+            <th style={thStyle}>Sr.</th>
+            <th style={{ ...thStyle, textAlign: 'left' }}>Item Description</th>
             <th style={thStyle}>HSN/SAC</th>
             <th style={thStyle}>Qty</th>
-            <th style={thStyle}>Rate</th>
-            <th style={thStyle}>MRP</th>
+            <th style={thStyle}>Price</th>
+            <th style={thStyle}>Discount</th>
             <th style={thStyle}>Tax %</th>
             <th style={thStyle}>Amount</th>
           </tr>
         </thead>
         <tbody>
           {Array.isArray(billData?.items) && billData.items.length > 0 ? (
-            billData.items.map((item: any, idx: number) => (
-              <tr key={idx} style={{ borderBottom: '1px solid #ddd' }}>
-                <td style={tdStyle}>{idx + 1}</td>
-                <td style={{ ...tdStyle, textAlign: 'left' }}>{String(item?.name || item?.product_name || 'Item')}</td>
-                <td style={tdStyle}>{item?.hsn_code || '-'}</td>
-                <td style={tdStyle}>{item?.qty || 0}</td>
-                <td style={tdStyle}>₹{item?.price || 0}</td>
-                <td style={tdStyle}>₹{item?.mrp || item?.price || 0}</td>
-                <td style={tdStyle}>{item?.tax_percentage || 0}%</td>
-                <td style={tdStyle}>₹{item?.amount || 0}</td>
-              </tr>
-            ))
+            billData.items.map((item: any, idx: number) => {
+              const qty = Number(item?.qty || item?.quantity || 0);
+              const price = Number(item?.price || 0);
+              const discount = Number(item?.discount || 0);
+              const valueOfGoods = qty * price;
+              
+              return (
+                <tr key={idx} style={{ borderBottom: '1px solid #ddd' }}>
+                  <td style={tdStyle}>{idx + 1}</td>
+                  <td style={{ ...tdStyle, textAlign: 'left' }}>{String(item?.name || item?.product_name || 'Item')}</td>
+                  <td style={tdStyle}>{item?.hsn_code || item?.hsn_sac || '-'}</td>
+                  <td style={tdStyle}>{qty}</td>
+                  <td style={tdStyle}>₹{price.toFixed(2)}</td>
+                  <td style={tdStyle}>{discount.toFixed(2)}</td>
+                  <td style={tdStyle}>{Number(item?.tax_percentage || 0).toFixed(2)}%</td>
+                  <td style={tdStyle}>₹{valueOfGoods.toFixed(2)}</td>
+                </tr>
+              );
+            })
           ) : (
             <tr>
               <td colSpan={8} style={{ ...tdStyle, textAlign: 'center' }}>No items</td>
@@ -176,10 +189,10 @@ const ClassicInvoiceTemplate: React.FC<ClassicInvoiceTemplateProps> = ({
             <tbody>
               <tr>
                 <td style={{ padding: '6px 12px', textAlign: 'right', fontWeight: 'bold', fontSize: 13 }}>
-                  Subtotal:
+                  Value of Goods:
                 </td>
                 <td style={{ padding: '6px 12px', textAlign: 'right', border: '1px solid #ddd', fontSize: 13 }}>
-                  ₹{subtotal.toFixed(2)}
+                  ₹{valueOfGoods.toFixed(2)}
                 </td>
               </tr>
               <tr>
@@ -196,6 +209,14 @@ const ClassicInvoiceTemplate: React.FC<ClassicInvoiceTemplateProps> = ({
                 </td>
                 <td style={{ padding: '6px 12px', textAlign: 'right', border: '1px solid #ddd', fontSize: 13 }}>
                   {isGstInclusive ? '' : '₹'}{sgst.toFixed(2)}
+                </td>
+              </tr>
+              <tr>
+                <td style={{ padding: '6px 12px', textAlign: 'right', fontWeight: 'bold', fontSize: 13 }}>
+                  Subtotal:
+                </td>
+                <td style={{ padding: '6px 12px', textAlign: 'right', border: '1px solid #ddd', fontSize: 13 }}>
+                  ₹{subtotal.toFixed(2)}
                 </td>
               </tr>
               <tr style={{ background: '#f5f5f5' }}>

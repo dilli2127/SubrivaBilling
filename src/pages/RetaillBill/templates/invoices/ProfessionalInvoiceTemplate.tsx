@@ -23,6 +23,12 @@ const ProfessionalInvoiceTemplate: React.FC<ProfessionalInvoiceTemplateProps> = 
   }
 
   // Calculate totals (ensure all values are numbers)
+  const valueOfGoods = billData?.items?.reduce((sum: number, item: any) => {
+    const qty = Number(item?.qty || item?.quantity || 0);
+    const price = Number(item?.price || 0);
+    return sum + (qty * price);
+  }, 0) || 0;
+  
   const subtotal = billData?.items?.reduce((sum: number, item: any) => sum + Number(item.amount || 0), 0) || 0;
   const discount = Number(billData?.discount || 0);
   const discountAmount = billData?.discount_type === 'percentage' 
@@ -158,33 +164,37 @@ const ProfessionalInvoiceTemplate: React.FC<ProfessionalInvoiceTemplateProps> = 
             <th style={{ ...thStyle, textAlign: 'left' }}>Item Description</th>
             <th style={thStyle}>HSN/SAC</th>
             <th style={thStyle}>Qty</th>
-            <th style={thStyle}>Unit</th>
-            <th style={thStyle}>List Price</th>
-            <th style={thStyle}>Disc.</th>
+            <th style={thStyle}>Price</th>
+            <th style={thStyle}>Discount</th>
             <th style={thStyle}>Tax %</th>
-            <th style={thStyle}>Amount (₹)</th>
+            <th style={thStyle}>Amount</th>
           </tr>
         </thead>
         <tbody>
           {Array.isArray(billData?.items) && billData.items.length > 0 ? (
             <>
-              {billData.items.map((item: any, idx: number) => (
-                <tr key={idx}>
-                  <td style={tdStyle}>{idx + 1}</td>
-                  <td style={{ ...tdStyle, textAlign: 'left' }}>{String(item?.name || item?.product_name || 'Item')}</td>
-                  <td style={tdStyle}>{item?.hsn_code || item?.hsn_sac || '-'}</td>
-                  <td style={tdStyle}>{item?.qty || item?.quantity || 0}</td>
-                  <td style={tdStyle}>{item?.unit || 'N.A.'}</td>
-                  <td style={tdStyle}>{Number(item?.price || 0).toFixed(2)}</td>
-                  <td style={tdStyle}>{item?.discount ? `${item.discount} (%)` : '0.00'}</td>
-                  <td style={tdStyle}>{Number(item?.tax_percentage || 0).toFixed(2)}</td>
-                  <td style={tdStyle}>{Number(item?.amount || 0).toFixed(2)}</td>
-                </tr>
-              ))}
+              {billData.items.map((item: any, idx: number) => {
+                const qty = Number(item?.qty || item?.quantity || 0);
+                const price = Number(item?.price || 0);
+                const discount = Number(item?.discount || 0);
+                const valueOfGoods = qty * price;
+                
+                return (
+                  <tr key={idx}>
+                    <td style={tdStyle}>{idx + 1}</td>
+                    <td style={{ ...tdStyle, textAlign: 'left' }}>{String(item?.name || item?.product_name || 'Item')}</td>
+                    <td style={tdStyle}>{item?.hsn_code || item?.hsn_sac || '-'}</td>
+                    <td style={tdStyle}>{qty}</td>
+                    <td style={tdStyle}>{price.toFixed(2)}</td>
+                    <td style={tdStyle}>{discount.toFixed(2)}</td>
+                    <td style={tdStyle}>{Number(item?.tax_percentage || 0).toFixed(2)}%</td>
+                    <td style={tdStyle}>{valueOfGoods.toFixed(2)}</td>
+                  </tr>
+                );
+              })}
               {/* Empty rows for spacing */}
               {[...Array(Math.max(0, 3 - billData.items.length))].map((_, idx) => (
                 <tr key={`empty-${idx}`}>
-                  <td style={tdStyle}>&nbsp;</td>
                   <td style={tdStyle}>&nbsp;</td>
                   <td style={tdStyle}>&nbsp;</td>
                   <td style={tdStyle}>&nbsp;</td>
@@ -198,7 +208,7 @@ const ProfessionalInvoiceTemplate: React.FC<ProfessionalInvoiceTemplateProps> = 
             </>
           ) : (
             <tr>
-              <td colSpan={9} style={{ ...tdStyle, textAlign: 'center' }}>No items</td>
+              <td colSpan={8} style={{ ...tdStyle, textAlign: 'center' }}>No items</td>
             </tr>
           )}
         </tbody>
@@ -208,8 +218,8 @@ const ProfessionalInvoiceTemplate: React.FC<ProfessionalInvoiceTemplateProps> = 
       <div style={{ marginBottom: 16 }}>
         <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 4 }}>
           <div style={{ width: 200, display: 'flex', justifyContent: 'space-between', padding: '4px 8px', borderBottom: '1px solid #ccc' }}>
-            <span><strong>Subtotal:</strong></span>
-            <span>₹ {subtotal.toFixed(2)}</span>
+            <span><strong>Value of Goods:</strong></span>
+            <span>₹ {valueOfGoods.toFixed(2)}</span>
           </div>
         </div>
         {discountAmount > 0 && (
@@ -230,6 +240,12 @@ const ProfessionalInvoiceTemplate: React.FC<ProfessionalInvoiceTemplateProps> = 
           <div style={{ width: 200, display: 'flex', justifyContent: 'space-between', padding: '4px 8px', borderBottom: '1px solid #ccc' }}>
             <span><strong>{isGstInclusive ? 'SGST (Incl):' : 'SGST:'}</strong></span>
             <span>{isGstInclusive ? '' : '₹ '}{sgst.toFixed(2)}</span>
+          </div>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 4 }}>
+          <div style={{ width: 200, display: 'flex', justifyContent: 'space-between', padding: '4px 8px', borderBottom: '1px solid #ccc' }}>
+            <span><strong>Subtotal:</strong></span>
+            <span>₹ {subtotal.toFixed(2)}</span>
           </div>
         </div>
         <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 8 }}>

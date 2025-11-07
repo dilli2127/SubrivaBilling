@@ -23,6 +23,12 @@ const ModernInvoiceTemplate: React.FC<ModernInvoiceTemplateProps> = ({
   }
 
   // Calculate totals based on GST mode
+  const valueOfGoods = billData?.items?.reduce((sum: number, item: any) => {
+    const qty = Number(item?.qty || item?.quantity || 0);
+    const price = Number(item?.price || 0);
+    return sum + (qty * price);
+  }, 0) || 0;
+  
   const subtotal = Number(billData?.total || 0);
   const cgst = Number(billData?.cgst || (billData?.total_gst || 0) / 2);
   const sgst = Number(billData?.sgst || (billData?.total_gst || 0) / 2);
@@ -186,34 +192,43 @@ const ModernInvoiceTemplate: React.FC<ModernInvoiceTemplateProps> = ({
         <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: 24 }}>
           <thead>
             <tr style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: '#fff' }}>
-              <th style={{ ...modernThStyle, borderTopLeftRadius: 8 }}>S.No</th>
+              <th style={{ ...modernThStyle, borderTopLeftRadius: 8 }}>Sr.</th>
               <th style={{ ...modernThStyle, textAlign: 'left' }}>Item Description</th>
-              <th style={modernThStyle}>HSN</th>
+              <th style={modernThStyle}>HSN/SAC</th>
               <th style={modernThStyle}>Qty</th>
-              <th style={modernThStyle}>Rate</th>
+              <th style={modernThStyle}>Price</th>
+              <th style={modernThStyle}>Discount</th>
               <th style={modernThStyle}>Tax %</th>
               <th style={{ ...modernThStyle, borderTopRightRadius: 8 }}>Amount</th>
             </tr>
           </thead>
           <tbody>
             {Array.isArray(billData?.items) && billData.items.length > 0 ? (
-              billData.items.map((item: any, idx: number) => (
-                <tr key={idx} style={{ 
-                  background: idx % 2 === 0 ? '#fff' : '#f8f9fa',
-                  transition: 'background 0.2s'
-                }}>
-                  <td style={modernTdStyle}>{idx + 1}</td>
-                  <td style={{ ...modernTdStyle, textAlign: 'left', fontWeight: '500' }}>{String(item?.name || item?.product_name || 'Item')}</td>
-                  <td style={modernTdStyle}>{item?.hsn_code || '-'}</td>
-                  <td style={modernTdStyle}>{item?.qty || 0}</td>
-                  <td style={modernTdStyle}>₹{item?.price || 0}</td>
-                  <td style={modernTdStyle}>{item?.tax_percentage || 0}%</td>
-                  <td style={{ ...modernTdStyle, fontWeight: 'bold' }}>₹{item?.amount || 0}</td>
-                </tr>
-              ))
+              billData.items.map((item: any, idx: number) => {
+                const qty = Number(item?.qty || item?.quantity || 0);
+                const price = Number(item?.price || 0);
+                const discount = Number(item?.discount || 0);
+                const valueOfGoods = qty * price;
+                
+                return (
+                  <tr key={idx} style={{ 
+                    background: idx % 2 === 0 ? '#fff' : '#f8f9fa',
+                    transition: 'background 0.2s'
+                  }}>
+                    <td style={modernTdStyle}>{idx + 1}</td>
+                    <td style={{ ...modernTdStyle, textAlign: 'left', fontWeight: '500' }}>{String(item?.name || item?.product_name || 'Item')}</td>
+                    <td style={modernTdStyle}>{item?.hsn_code || item?.hsn_sac || '-'}</td>
+                    <td style={modernTdStyle}>{qty}</td>
+                    <td style={modernTdStyle}>₹{price.toFixed(2)}</td>
+                    <td style={modernTdStyle}>{discount.toFixed(2)}</td>
+                    <td style={modernTdStyle}>{Number(item?.tax_percentage || 0).toFixed(2)}%</td>
+                    <td style={{ ...modernTdStyle, fontWeight: 'bold' }}>₹{valueOfGoods.toFixed(2)}</td>
+                  </tr>
+                );
+              })
             ) : (
               <tr>
-                <td colSpan={7} style={{ ...modernTdStyle, textAlign: 'center' }}>No items</td>
+                <td colSpan={8} style={{ ...modernTdStyle, textAlign: 'center' }}>No items</td>
               </tr>
             )}
           </tbody>
@@ -231,9 +246,9 @@ const ModernInvoiceTemplate: React.FC<ModernInvoiceTemplateProps> = ({
               <table style={{ width: '100%', fontSize: 14 }}>
                 <tbody>
                   <tr>
-                    <td style={{ padding: '8px 0', color: '#666' }}>Subtotal:</td>
+                    <td style={{ padding: '8px 0', color: '#666' }}>Value of Goods:</td>
                     <td style={{ padding: '8px 0', textAlign: 'right', fontWeight: '500' }}>
-                      ₹{subtotal.toFixed(2)}
+                      ₹{valueOfGoods.toFixed(2)}
                     </td>
                   </tr>
                   <tr>
@@ -246,6 +261,12 @@ const ModernInvoiceTemplate: React.FC<ModernInvoiceTemplateProps> = ({
                     <td style={{ padding: '8px 0', color: '#666' }}>{isGstInclusive ? 'SGST (Incl):' : 'SGST:'}</td>
                     <td style={{ padding: '8px 0', textAlign: 'right', fontWeight: '500' }}>
                       {isGstInclusive ? '' : '₹'}{sgst.toFixed(2)}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style={{ padding: '8px 0', color: '#666' }}>Subtotal:</td>
+                    <td style={{ padding: '8px 0', textAlign: 'right', fontWeight: '500' }}>
+                      ₹{subtotal.toFixed(2)}
                     </td>
                   </tr>
                   <tr style={{ borderTop: '2px solid #667eea' }}>

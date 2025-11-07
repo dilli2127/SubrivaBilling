@@ -189,6 +189,10 @@ export interface BillItem {
   mrp: number;
   amount: number;
   tax_percentage: number;
+  hsn_code?: string; // HSN/SAC code for tax purposes
+  hsn_sac?: string; // Alternative field name for HSN/SAC
+  discount?: number; // Item-level discount
+  description?: string; // Item description
   // Stock data saved from selection (avoids extra API calls)
   stockData?: {
     available_quantity: number;

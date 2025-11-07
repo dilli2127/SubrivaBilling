@@ -186,14 +186,13 @@ const ProfessionalTaxInvoiceTemplate: React.FC<ProfessionalTaxInvoiceTemplatePro
           <table className={styles.itemsTable}>
             <thead>
               <tr>
-                <th className={styles.colSr}>#</th>
-                <th className={styles.colItem}>Item & Description</th>
+                <th className={styles.colSr}>Sr.</th>
+                <th className={styles.colItem}>Item Description</th>
+                <th className={styles.colHsn}>HSN/SAC</th>
                 <th className={styles.colQty}>Qty</th>
-                <th className={styles.colRate}>Rate</th>
-                <th className={styles.colCgstPer}>CGST %</th>
-                <th className={styles.colCgstAmt}>CGST Amt</th>
-                <th className={styles.colSgstPer}>SGST %</th>
-                <th className={styles.colSgstAmt}>SGST Amt</th>
+                <th className={styles.colPrice}>Price</th>
+                <th className={styles.colDiscount}>Discount</th>
+                <th className={styles.colTax}>Tax %</th>
                 <th className={styles.colAmount}>Amount</th>
               </tr>
             </thead>
@@ -201,16 +200,10 @@ const ProfessionalTaxInvoiceTemplate: React.FC<ProfessionalTaxInvoiceTemplatePro
               {Array.isArray(billData?.items) && billData.items.length > 0 ? (
                 billData.items.map((item: any, idx: number) => {
                   const itemQty = Number(item?.qty || item?.quantity || 0);
-                  const itemRate = Number(item?.price || 0);
+                  const itemPrice = Number(item?.price || 0);
+                  const itemDiscount = Number(item?.discount || 0);
                   const itemTax = Number(item?.tax_percentage || 0);
-                  const itemAmount = Number(item?.amount || 0);
-                  
-                  // Calculate item-level CGST/SGST
-                  const itemSubtotal = itemQty * itemRate;
-                  const cgstPercent = itemTax / 2;
-                  const sgstPercent = itemTax / 2;
-                  const cgstAmount = (itemSubtotal * cgstPercent) / 100;
-                  const sgstAmount = (itemSubtotal * sgstPercent) / 100;
+                  const valueOfGoods = itemQty * itemPrice;
 
                   return (
                     <tr key={idx}>
@@ -221,19 +214,18 @@ const ProfessionalTaxInvoiceTemplate: React.FC<ProfessionalTaxInvoiceTemplatePro
                           <div className={styles.itemDescription}>{item.description}</div>
                         )}
                       </td>
-                      <td className={styles.colQty}>{itemQty.toFixed(5)}</td>
-                      <td className={styles.colRate}>{itemRate.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-                      <td className={styles.colCgstPer}>{cgstPercent}%</td>
-                      <td className={styles.colCgstAmt}>{cgstAmount.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-                      <td className={styles.colSgstPer}>{sgstPercent}%</td>
-                      <td className={styles.colSgstAmt}>{sgstAmount.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-                      <td className={styles.colAmount}>{itemAmount.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                      <td className={styles.colHsn}>{item?.hsn_code || item?.hsn_sac || '-'}</td>
+                      <td className={styles.colQty}>{itemQty}</td>
+                      <td className={styles.colPrice}>{itemPrice.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                      <td className={styles.colDiscount}>{itemDiscount.toFixed(2)}</td>
+                      <td className={styles.colTax}>{itemTax.toFixed(2)}%</td>
+                      <td className={styles.colAmount}>{valueOfGoods.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
                     </tr>
                   );
                 })
               ) : (
                 <tr>
-                  <td colSpan={9} className={styles.noItems}>No items added</td>
+                  <td colSpan={8} className={styles.noItems}>No items added</td>
                 </tr>
               )}
             </tbody>
@@ -288,30 +280,35 @@ const ProfessionalTaxInvoiceTemplate: React.FC<ProfessionalTaxInvoiceTemplatePro
           <div className={styles.summaryRight}>
             <div className={styles.totalsSummary}>
               <div className={styles.totalRow}>
-                <span className={styles.label}>Sub Total</span>
-                <span className={styles.value}>{subtotalAfterDiscount.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                <span className={styles.label}>Value of Goods</span>
+                <span className={styles.value}>{itemsSubtotal.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
               </div>
               
               {cgst > 0 && (
                 <div className={styles.totalRow}>
-                  <span className={styles.label}>CGST{!isGstInclusive ? '' : ' (Included)'} ({(cgst / subtotalAfterDiscount * 100).toFixed(0)}%)</span>
+                  <span className={styles.label}>CGST{!isGstInclusive ? '' : ' (Incl)'}</span>
                   <span className={styles.value}>{cgst.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
                 </div>
               )}
               
               {sgst > 0 && (
                 <div className={styles.totalRow}>
-                  <span className={styles.label}>SGST{!isGstInclusive ? '' : ' (Included)'} ({(sgst / subtotalAfterDiscount * 100).toFixed(0)}%)</span>
+                  <span className={styles.label}>SGST{!isGstInclusive ? '' : ' (Incl)'}</span>
                   <span className={styles.value}>{sgst.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
                 </div>
               )}
 
               {igst > 0 && (
                 <div className={styles.totalRow}>
-                  <span className={styles.label}>IGST{!isGstInclusive ? '' : ' (Included)'} ({(igst / subtotalAfterDiscount * 100).toFixed(0)}%)</span>
+                  <span className={styles.label}>IGST{!isGstInclusive ? '' : ' (Incl)'}</span>
                   <span className={styles.value}>{igst.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
                 </div>
               )}
+
+              <div className={styles.totalRow}>
+                <span className={styles.label}>Subtotal</span>
+                <span className={styles.value}>₹{subtotalAfterDiscount.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+              </div>
 
               <div className={styles.totalRow}>
                 <span className={styles.label}>Rounding</span>

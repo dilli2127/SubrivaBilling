@@ -13,9 +13,12 @@ interface Product {
   name?: string;
   sku?: string;
   selling_price?: number;
+  hsn_code?: string;
+  hsn_sac?: string;
   VariantItem?: {
     variant_name?: string;
     variant_code?: string;
+    hsn_code?: string;
   };
   CategoryItem?: {
     category_name?: string;

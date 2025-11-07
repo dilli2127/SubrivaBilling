@@ -472,7 +472,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
           if (modals.productSelectionRowIndex === null) return;
           
           const newItems = [...form.billFormData.items];
-          // Store ALL product data (including tax %) for calculations
+          // Store ALL product data (including tax %, HSN code) for calculations
           newItems[modals.productSelectionRowIndex].product_id = product._id || '';
           newItems[modals.productSelectionRowIndex].product_name = product.name || '';
           newItems[modals.productSelectionRowIndex].variant_name =
@@ -480,6 +480,8 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
           newItems[modals.productSelectionRowIndex].price = product.selling_price || 0;
           newItems[modals.productSelectionRowIndex].tax_percentage = product.CategoryItem?.tax_percentage || 0;
           newItems[modals.productSelectionRowIndex].category_name = product.CategoryItem?.category_name || '';
+          newItems[modals.productSelectionRowIndex].hsn_code = product.hsn_code || product.VariantItem?.hsn_code || '';
+          newItems[modals.productSelectionRowIndex].hsn_sac = product.hsn_sac || '';
           
           billing.handleItemsChange(newItems);
           modals.closeProductSelectionModal();

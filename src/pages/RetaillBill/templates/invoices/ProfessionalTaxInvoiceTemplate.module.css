@@ -198,11 +198,9 @@
 
 .itemsTable th.colSr,
 .itemsTable th.colQty,
-.itemsTable th.colRate,
-.itemsTable th.colCgstPer,
-.itemsTable th.colCgstAmt,
-.itemsTable th.colSgstPer,
-.itemsTable th.colSgstAmt,
+.itemsTable th.colPrice,
+.itemsTable th.colDiscount,
+.itemsTable th.colTax,
 .itemsTable th.colAmount {
   text-align: right;
 }
@@ -228,11 +226,9 @@
 
 .itemsTable td.colSr,
 .itemsTable td.colQty,
-.itemsTable td.colRate,
-.itemsTable td.colCgstPer,
-.itemsTable td.colCgstAmt,
-.itemsTable td.colSgstPer,
-.itemsTable td.colSgstAmt,
+.itemsTable td.colPrice,
+.itemsTable td.colDiscount,
+.itemsTable td.colTax,
 .itemsTable td.colAmount {
   text-align: right;
 }
@@ -259,26 +255,28 @@
   line-height: 1.4;
 }
 
-.itemsTable .colQty {
-  width: 80px;
-}
-
-.itemsTable .colRate {
-  width: 100px;
-}
-
-.itemsTable .colCgstPer,
-.itemsTable .colSgstPer {
-  width: 70px;
-}
-
-.itemsTable .colCgstAmt,
-.itemsTable .colSgstAmt {
+.itemsTable .colHsn {
   width: 90px;
 }
 
+.itemsTable .colQty {
+  width: 70px;
+}
+
+.itemsTable .colPrice {
+  width: 100px;
+}
+
+.itemsTable .colDiscount {
+  width: 80px;
+}
+
+.itemsTable .colTax {
+  width: 70px;
+}
+
 .itemsTable .colAmount {
-  width: 110px;
+  width: 120px;
   font-weight: 600;
   color: #000000;
 }
