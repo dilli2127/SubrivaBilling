@@ -1,6 +1,6 @@
 {
   "name": "SUBRIVA-BILLING",
-  "version": "2.0.6",
+  "version": "2.0.8",
   "description": "Professional billing and inventory management desktop application",
   "author": "Fresh Focuz Tech",
   "private": true,
@@ -79,7 +79,11 @@
     "version:major": "node scripts/update-version.js major",
     "version:patch:publish": "node scripts/update-version.js patch --publish",
     "version:minor:publish": "node scripts/update-version.js minor --publish",
-    "version:major:publish": "node scripts/update-version.js major --publish"
+    "version:major:publish": "node scripts/update-version.js major --publish",
+    "build-all": "npm run build && npx electron-builder -mwl --publish=never",
+    "build-win": "npm run build && npx electron-builder --win --publish=never",
+    "build-mac": "npm run build && npx electron-builder --mac --publish=never",
+    "build-linux": "npm run build && npx electron-builder --linux --publish=never"
   },
   "eslintConfig": {
     "extends": [
