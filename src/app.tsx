@@ -8,6 +8,7 @@ import { AccessibilityProvider } from './components/common/AccessibilityProvider
 import PerformanceMonitor from './components/common/PerformanceMonitor';
 import { UserProvider } from './components/antd/UserContext';
 import { BarcodeShortcutProvider } from './components/common/BarcodeShortcutProvider';
+import UpdateNotification from './components/common/UpdateNotification';
 
 const App: FC = () =>
 {
@@ -32,6 +33,7 @@ const App: FC = () =>
                 enableErrorTracking={true}
                 enablePerformanceTracking={true}
               />
+              <UpdateNotification />
               <AppRouter />
             </UserProvider>
           </BarcodeShortcutProvider>
