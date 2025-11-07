@@ -11,9 +11,14 @@ permissions:
   packages: read
   actions: read
 
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
     
     strategy:
       matrix:
@@ -27,6 +32,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 18
+          cache: 'npm'
       
       - name: Install dependencies
         run: npm install
@@ -35,7 +41,7 @@ jobs:
         run: npm run build
       
       - name: Build Electron app and publish
-        run: npm run build && npx electron-builder --publish=always
+        run: npx electron-builder --publish=always
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       
