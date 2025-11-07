@@ -79,11 +79,7 @@
     "version:major": "node scripts/update-version.js major",
     "version:patch:publish": "node scripts/update-version.js patch --publish",
     "version:minor:publish": "node scripts/update-version.js minor --publish",
-    "version:major:publish": "node scripts/update-version.js major --publish",
-    "build-all": "npm run build && npx electron-builder -mwl --publish=never",
-    "build-win": "npm run build && npx electron-builder --win --publish=never",
-    "build-mac": "npm run build && npx electron-builder --mac --publish=never",
-    "build-linux": "npm run build && npx electron-builder --linux --publish=never"
+    "version:major:publish": "node scripts/update-version.js major --publish"
   },
   "eslintConfig": {
     "extends": [
@@ -140,16 +136,8 @@
     "extraMetadata": {
       "main": "main.js"
     },
-    "mac": {
-      "category": "public.app-category.business",
-      "icon": "src/assets/img/icon.jpg"
-    },
     "win": {
       "target": "nsis",
-      "icon": "src/assets/img/icon.jpg"
-    },
-    "linux": {
-      "target": "AppImage",
       "icon": "src/assets/img/icon.jpg"
     },
     "nsis": {
