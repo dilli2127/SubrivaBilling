@@ -15,7 +15,7 @@ import {
   BgColorsOutlined,
   MenuOutlined,
 } from '@ant-design/icons';
-import { Layout, Menu, Modal, Button, Avatar, Drawer } from 'antd';
+import { Layout, Menu, Modal, Button, Avatar, Drawer, Badge } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { getFilteredMenuItems } from './menu';
 import './Sidebar.css';
@@ -23,6 +23,8 @@ import ThemeDrawer from './ThemeDrawer';
 import { themePresets } from './themePresets';
 import { useSessionStorage } from '../../../hooks/useLocalStorage';
 import UpdateStatus from '../../common/UpdateStatus';
+import { getApiModeConfig } from '../../../helpers/apiModeHelper';
+import { isElectron } from '../../../helpers/environment';
 
 const { Header, Content, Sider } = Layout;
 
@@ -54,6 +56,10 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
     'sidebarPosition',
     'left'
   );
+  
+  // Get API mode for badge (Electron only)
+  const isElectronApp = isElectron();
+  const apiMode = getApiModeConfig().mode;
 
   // Draggable button state
   const [buttonTop, setButtonTop] = useState(20); // percentage
@@ -274,7 +280,23 @@ console.log(userItem)
             )}
           </div>
         </div>
-        <h2 className="header-title">Subriva Billing</h2>
+        <h2 className="header-title">
+          Subriva Billing
+          {isElectronApp && (
+            <Badge
+              count={apiMode === 'online' ? 'ONLINE' : 'OFFLINE'}
+              style={{
+                backgroundColor: apiMode === 'online' ? '#52c41a' : '#faad14',
+                marginLeft: '12px',
+                fontSize: '11px',
+                fontWeight: 600,
+                padding: '0 8px',
+                height: '22px',
+                lineHeight: '22px',
+              }}
+            />
+          )}
+        </h2>
         <div className="header-right">
           <UpdateStatus className="update-status-header" />
 

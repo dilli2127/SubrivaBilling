@@ -276,7 +276,7 @@
 }
 
 /* Custom buttons */
-:global(.ant-btn-primary) {
+/* :global(.ant-btn-primary) {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
   border: none !important;
   box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3) !important;
@@ -285,7 +285,7 @@
 :global(.ant-btn-primary:hover) {
   background: linear-gradient(135deg, #764ba2 0%, #667eea 100%) !important;
   box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4) !important;
-}
+} */
 
 @media (max-width: 768px) {
   .settingsContainer {
