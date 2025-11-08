@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Button, Typography, Card, Row, Col, Space, Switch, Badge } from 'antd';
+import { Button, Typography, Card, Row, Col, Space, Switch, Badge, Tooltip, message, Alert } from 'antd';
 import { 
   CheckCircleOutlined,
   StarOutlined,
@@ -7,7 +7,8 @@ import {
   RocketOutlined,
   GoldOutlined,
   PhoneOutlined,
-  MailOutlined
+  MailOutlined,
+  InfoCircleOutlined
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import styles from './pricingPage.module.css';
@@ -252,6 +253,21 @@ const PricingPage: React.FC = () => {
               Annual <Badge count="Save 20%" style={{ backgroundColor: '#52c41a' }} />
             </Text>
           </div>
+          
+          {/* Payment Gateway Info Banner */}
+          <Alert
+            message="Payment Gateway Coming Soon"
+            description="We're currently setting up our payment gateway. Only the Free plan is available for signup at this time. Paid plans will be available soon!"
+            type="info"
+            showIcon
+            icon={<InfoCircleOutlined />}
+            style={{
+              marginTop: '24px',
+              maxWidth: '800px',
+              margin: '24px auto 0',
+              borderRadius: '8px'
+            }}
+          />
         </div>
 
         {/* Pricing Cards */}
@@ -319,26 +335,48 @@ const PricingPage: React.FC = () => {
                       ))}
                     </ul>
 
-                    <Button 
-                      type={plan.popular ? 'primary' : 'default'}
-                      size="large"
-                      block
-                      className={styles.planButton}
-                      style={{ 
-                        background: plan.popular ? `linear-gradient(135deg, ${plan.color}, #1890ff)` : undefined,
-                        borderColor: plan.color
-                      }}
-                      onClick={() => {
-                        if (plan.buttonText === "Start Free" || plan.buttonText === "Get Started" || plan.buttonText === "Most Popular" || plan.buttonText === "Choose Business" || plan.buttonText === "Choose Growth") {
-                          navigate('/tenant-signup');
-                        } else if (plan.buttonText === "Contact Sales") {
-                          // Handle contact sales
-                          window.open('mailto:sales@subrivabilling.com?subject=Enterprise Plan Inquiry');
-                        }
-                      }}
-                    >
-                      {plan.buttonText}
-                    </Button>
+                    {plan.name === "Free" ? (
+                      <Button 
+                        type="primary"
+                        size="large"
+                        block
+                        className={styles.planButton}
+                        style={{ 
+                          background: `linear-gradient(135deg, ${plan.color}, #1890ff)`,
+                          borderColor: plan.color
+                        }}
+                        onClick={() => navigate('/tenant-signup')}
+                      >
+                        {plan.buttonText}
+                      </Button>
+                    ) : (
+                      <Tooltip 
+                        title="Payment gateway is not yet implemented. Please use the Free plan for now."
+                        placement="top"
+                      >
+                        <Button 
+                          type={plan.popular ? 'primary' : 'default'}
+                          size="large"
+                          block
+                          className={styles.planButton}
+                          disabled
+                          style={{ 
+                            borderColor: plan.color,
+                            opacity: 0.6
+                          }}
+                          onClick={() => {
+                            message.info({
+                              content: 'Payment gateway is not yet implemented. Please use the Free plan for now.',
+                              duration: 5,
+                              icon: <InfoCircleOutlined style={{ color: '#1890ff' }} />
+                            });
+                          }}
+                        >
+                          <InfoCircleOutlined style={{ marginRight: '8px' }} />
+                          Coming Soon
+                        </Button>
+                      </Tooltip>
+                    )}
                   </div>
                 </Card>
               </Col>
@@ -393,7 +431,7 @@ const PricingPage: React.FC = () => {
         <div className={styles.pricingCta}>
           <Title level={2} className={styles.ctaTitle}>Ready to Get Started?</Title>
           <Paragraph className={styles.ctaSubtitle}>
-            Join thousands of businesses already using Subriva Billing
+            Start with our Free plan - No credit card required!
           </Paragraph>
           <Space size="large" className={styles.ctaActions}>
             <Button 
@@ -403,15 +441,19 @@ const PricingPage: React.FC = () => {
               className={styles.ctaButton}
               tabIndex={0}
             >
-              Start Free Trial
+              Start Free Now
             </Button>
-            <Button 
-              size="large" 
-              className={styles.contactButton}
-              tabIndex={0}
-            >
-              <PhoneOutlined /> Contact Sales
-            </Button>
+            <Tooltip title="Payment gateway coming soon! Currently, only the free plan is available.">
+              <Button 
+                size="large" 
+                className={styles.contactButton}
+                tabIndex={0}
+                disabled
+                icon={<InfoCircleOutlined />}
+              >
+                Paid Plans - Coming Soon
+              </Button>
+            </Tooltip>
           </Space>
         </div>
       </div>
