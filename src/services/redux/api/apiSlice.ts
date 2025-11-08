@@ -3,10 +3,11 @@ import { RootState } from '../store';
 import { API_ROUTES, getCrudEntities, getDynamicTagTypes } from '../../api/utils';
 import { getAuthToken } from '../../../helpers/auth';
 import { getCSRFToken } from '../../../helpers/csrfToken';
+import { getActiveApiUrl } from '../../../helpers/apiModeHelper';
 
 // Base query with authentication using existing auth system
 const baseQuery = fetchBaseQuery({
-  baseUrl: process.env.REACT_APP_API_URL || 'http://localhost:8247/',
+  baseUrl: getActiveApiUrl(),
   prepareHeaders: (headers, { getState }) => {
     // Get token using existing auth helper
     const token = getAuthToken();

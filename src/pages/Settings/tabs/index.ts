@@ -7,4 +7,5 @@ export { default as NotificationsTab } from './NotificationsTab';
 export { default as TemplateSettingsTab } from './TemplateSettingsTab';
 export { default as BankDetailsTab } from './BankDetailsTab';
 export { default as PaymentQRTab } from './PaymentQRTab';
+export { default as SystemTab } from './SystemTab';
 export * from './types';

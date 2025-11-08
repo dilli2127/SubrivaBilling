@@ -221,6 +221,16 @@
   line-height: 1.5;
 }
 
+.currentModeInfo {
+  background: linear-gradient(135deg, #f0f8ff 0%, #e6f0ff 100%);
+  padding: 16px 24px;
+  border-radius: 8px;
+  border-left: 4px solid #1890ff;
+  font-size: 15px;
+  color: #0050b3;
+  box-shadow: 0 2px 8px rgba(24, 144, 255, 0.1);
+}
+
 /* Custom styled tabs */
 :global(.ant-tabs-tab) {
   font-weight: 600 !important;

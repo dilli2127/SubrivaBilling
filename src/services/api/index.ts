@@ -1,5 +1,6 @@
 import APIService, { ApiRequest } from "./apiService";
 import electronBackendService from "../electronBackend";
+import { getActiveApiUrl } from "../../helpers/apiModeHelper";
 
 // Initialize API service with dynamic backend URL
 let apiService: APIService | null = null;
@@ -14,8 +15,8 @@ const initializeApiService = async (): Promise<APIService> => {
       
       // Skip health check - backend URL configured in .env
     } else {
-      // Running in browser - use environment variable or fallback
-      baseURL = process.env.REACT_APP_API_URL || "http://localhost:8247/";
+      // Running in browser - use API mode configuration
+      baseURL = getActiveApiUrl();
     }
     
     apiService = new APIService(baseURL);

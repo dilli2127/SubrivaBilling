@@ -64,4 +64,9 @@ export interface SettingsFormData {
   qr_size: number;
   qr_position: 'bottom-left' | 'bottom-right' | 'top-right' | 'footer';
   show_upi_id_text: boolean;
+  
+  // System Settings - API Configuration
+  api_mode: 'online' | 'offline';
+  online_url: string;
+  offline_url: string;
 }

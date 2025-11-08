@@ -19,6 +19,7 @@ import {
   ShopOutlined,
   BankOutlined,
   QrcodeOutlined,
+  ApiOutlined,
 } from '@ant-design/icons';
 import styles from './Settings.module.css';
 import { apiSlice } from '../../services/redux/api/apiSlice';
@@ -34,6 +35,7 @@ import {
   TemplateSettingsTab,
   BankDetailsTab,
   PaymentQRTab,
+  SystemTab,
 } from './tabs';
 
 const { Title, Text } = Typography;
@@ -797,6 +799,22 @@ const Settings: React.FC = () => {
               ),
               children: (
                 <PaymentQRTab
+                  form={form}
+                  loading={loading}
+                  onSave={handleSave}
+                  onReset={handleReset}
+                />
+              ),
+            },
+            {
+              key: 'system',
+              label: (
+                <span>
+                  <ApiOutlined /> System
+                </span>
+              ),
+              children: (
+                <SystemTab
                   form={form}
                   loading={loading}
                   onSave={handleSave}
