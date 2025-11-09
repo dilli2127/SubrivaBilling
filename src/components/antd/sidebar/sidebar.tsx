@@ -6,17 +6,19 @@ import React, {
   useLayoutEffect,
   useEffect,
 } from 'react';
-import { getCurrentUser, User, clearAuthData } from '../../../helpers/auth';
+import { getCurrentUser, User, clearAuthData, getAuthToken } from '../../../helpers/auth';
 import {
   LogoutOutlined,
   MenuFoldOutlined,
   MenuUnfoldOutlined,
-  UserOutlined, // Add this import
+  UserOutlined,
   BgColorsOutlined,
   MenuOutlined,
+  SettingOutlined,
 } from '@ant-design/icons';
-import { Layout, Menu, Modal, Button, Avatar, Drawer, Badge } from 'antd';
+import { Layout, Menu, Modal, Button, Avatar, Drawer, Badge, Dropdown } from 'antd';
 import { useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
 import { getFilteredMenuItems } from './menu';
 import './Sidebar.css';
 import ThemeDrawer from './ThemeDrawer';
@@ -27,6 +29,7 @@ import { getApiModeConfig } from '../../../helpers/apiModeHelper';
 import { isElectron } from '../../../helpers/environment';
 import { useGetSubscriptionStatusQuery } from '../../../services/redux/api/endpoints';
 import { processSubscriptionStatus, getSubscriptionMessage } from '../../../utils/subscriptionUtils';
+import { apiSlice } from '../../../services/redux/api/apiSlice';
 
 const { Header, Content, Sider } = Layout;
 
@@ -49,6 +52,7 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [theme, setTheme] = useState(getInitialTheme());
   const [themeDrawerOpen, setThemeDrawerOpen] = useState(false);
 
@@ -63,10 +67,16 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
   const isElectronApp = isElectron();
   const [apiMode, setApiMode] = useState(getApiModeConfig().mode);
   
+  // Get current user - must be declared before using in subscriptionData query
+  const userItem: User | null = useMemo(() => {
+    return getCurrentUser();
+  }, []);
+  
   // Check subscription status using RTK Query
+  // Skip if no user (not logged in) to prevent unnecessary calls
   const { data: subscriptionData } = useGetSubscriptionStatusQuery(undefined, {
     pollingInterval: 60 * 60 * 1000, // Poll every hour
-    refetchOnMountOrArgChange: true,
+    skip: !userItem || !getAuthToken(), // Skip query if user not logged in or no token
   });
   
   // Show subscription warnings
@@ -182,10 +192,6 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
     applyTheme();
   }, [applyTheme]);
 
-  const userItem: User | null = useMemo(() => {
-    return getCurrentUser();
-  }, []);
-console.log(userItem)
   // Removed allowedKeys - now using permission-based filtering
 
   const handleOpenChange = useCallback(
@@ -209,13 +215,16 @@ console.log(userItem)
   );
 
   const handleLogout = useCallback(() => {
+    // Clear RTK Query cache (this clears all cached API data)
+    dispatch(apiSlice.util.resetApiState());
+    
     // Clear all authentication data, permissions, and cache
     clearAuthData();
     sessionStorage.clear(); // Clear all session storage
     localStorage.clear(); // Clear all local storage
     setIsModalVisible(false);
     navigate('/billing_login');
-  }, [navigate]);
+  }, [navigate, dispatch]);
 
   // Draggable button handlers
   const handleMouseDown = useCallback(
@@ -401,11 +410,33 @@ console.log(userItem)
                 <div className="have-a-nice-day">{getRandomMessage()}</div>
               </div>
 
-              <span title="Profile">
+              <Dropdown
+                menu={{
+                  items: [
+                    {
+                      key: 'profile',
+                      label: 'My Profile',
+                      icon: <UserOutlined />,
+                      onClick: () => navigate('/profile'),
+                    },
+                    {
+                      type: 'divider',
+                    },
+                    {
+                      key: 'logout',
+                      label: 'Logout',
+                      icon: <LogoutOutlined />,
+                      danger: true,
+                      onClick: () => setIsModalVisible(true),
+                    },
+                  ],
+                }}
+                placement="bottomRight"
+                trigger={['click']}
+              >
                 <Avatar
                   className="profile-avatar"
                   icon={<UserOutlined />}
-                  onClick={() => navigate('/profile')}
                   style={{
                     cursor: 'pointer',
                     background: '#fff',
@@ -413,18 +444,9 @@ console.log(userItem)
                     marginLeft: 8,
                   }}
                 />
-              </span>
+              </Dropdown>
             </>
           )}
-          <Button
-            icon={<LogoutOutlined />}
-            type="primary"
-            danger
-            onClick={() => setIsModalVisible(true)}
-            className="logout-btn"
-          >
-            Logout
-          </Button>
         </div>
       </Header>
 
@@ -588,13 +610,41 @@ console.log(userItem)
             <span className="nav-label">Reports</span>
           </button>
           
-          <button
-            className="mobile-nav-item"
-            onClick={() => navigate('/profile')}
+          <Dropdown
+            menu={{
+              items: [
+                {
+                  key: 'profile',
+                  label: 'My Profile',
+                  icon: <UserOutlined />,
+                  onClick: () => navigate('/profile'),
+                },
+                {
+                  key: 'settings',
+                  label: 'Settings',
+                  icon: <SettingOutlined />,
+                  onClick: () => navigate('/settings'),
+                },
+                {
+                  type: 'divider',
+                },
+                {
+                  key: 'logout',
+                  label: 'Logout',
+                  icon: <LogoutOutlined />,
+                  danger: true,
+                  onClick: () => setIsModalVisible(true),
+                },
+              ],
+            }}
+            placement="topRight"
+            trigger={['click']}
           >
-            <span className="nav-icon">👤</span>
-            <span className="nav-label">Profile</span>
-          </button>
+            <button className="mobile-nav-item">
+              <span className="nav-icon">👤</span>
+              <span className="nav-label">Profile</span>
+            </button>
+          </Dropdown>
         </div>
       )}
 

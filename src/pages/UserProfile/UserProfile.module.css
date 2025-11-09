@@ -186,3 +186,139 @@
   animation: slideInRight 0.3s ease;
 }
 
+/* Settings Overview Section */
+.settingsOverview {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.settingsIconWrapper {
+  margin: 0 auto 24px;
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 24px rgba(24, 144, 255, 0.3);
+}
+
+.settingsIcon {
+  font-size: 42px;
+  color: white;
+  animation: rotateIcon 3s ease-in-out infinite;
+}
+
+@keyframes rotateIcon {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(180deg);
+  }
+}
+
+.settingsTitle {
+  font-size: 28px;
+  font-weight: 700;
+  color: #262626;
+  margin-bottom: 12px !important;
+}
+
+.settingsDescription {
+  font-size: 16px;
+  color: #8c8c8c;
+  margin-bottom: 40px !important;
+  max-width: 700px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.settingsGrid {
+  max-width: 1000px;
+  margin: 0 auto 40px;
+}
+
+.settingCard {
+  text-align: center;
+  border-radius: 12px;
+  border: 1px solid #f0f0f0;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  height: 100%;
+  padding: 28px 20px;
+  background: white;
+}
+
+.settingCard:hover {
+  border-color: #1890ff;
+  box-shadow: 0 8px 24px rgba(24, 144, 255, 0.15);
+  transform: translateY(-4px);
+}
+
+.settingCardIcon {
+  font-size: 40px;
+  margin-bottom: 16px;
+  display: block;
+}
+
+.settingCardTitle {
+  font-size: 18px;
+  font-weight: 600;
+  color: #262626;
+  margin-bottom: 6px !important;
+}
+
+.settingCardSubtitle {
+  font-size: 14px;
+  color: #8c8c8c;
+}
+
+.openSettingsButton {
+  height: 48px;
+  padding: 0 40px;
+  font-size: 16px;
+  font-weight: 600;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(24, 144, 255, 0.3);
+}
+
+.openSettingsButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(24, 144, 255, 0.4);
+}
+
+/* Responsive design for settings overview */
+@media (max-width: 768px) {
+  .settingsIconWrapper {
+    width: 64px;
+    height: 64px;
+    margin-bottom: 20px;
+  }
+
+  .settingsIcon {
+    font-size: 32px;
+  }
+
+  .settingsTitle {
+    font-size: 24px;
+  }
+
+  .settingsDescription {
+    font-size: 14px;
+    margin-bottom: 32px !important;
+  }
+
+  .settingCard {
+    padding: 24px 16px;
+  }
+
+  .settingCardIcon {
+    font-size: 32px;
+  }
+
+  .settingCardTitle {
+    font-size: 16px;
+  }
+}

@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import styles from './Login.module.css';
 import { setUserData, setAuthToken, setTokens } from '../../helpers/auth';
 import { setPermissions, setMenuKeys, setUserData as setUserDataHelper } from '../../helpers/permissionHelper';
-import { useBillingLoginMutation, useTenantLoginMutation, useLazyGetSubscriptionStatusQuery } from '../../services/redux/api/endpoints';
+import { useBillingLoginMutation, useTenantLoginMutation } from '../../services/redux/api/endpoints';
 import LandingPageHeader from '../../components/common/LandingPageHeader';
 
 const { Text } = Typography;
@@ -18,7 +18,6 @@ const BillingLogin: React.FC = () => {
   // RTK Query mutations
   const [billingLogin, { isLoading: billingLoading, error: billingError }] = useBillingLoginMutation();
   const [tenantLogin, { isLoading: tenantLoading, error: tenantError }] = useTenantLoginMutation();
-  const [getSubscriptionStatus] = useLazyGetSubscriptionStatusQuery();
 
   const onFinish = async (values: { username: string; password: string }) => {
     try {
@@ -58,14 +57,8 @@ const BillingLogin: React.FC = () => {
           setUserDataHelper(data);
         }
         
-        // Fetch subscription status after successful login
-        // This is cached and will be available when user visits settings
-        try {
-          await getSubscriptionStatus(undefined).unwrap();
-        } catch (error) {
-          // Silently fail - subscription check is not critical for login
-          console.warn('Failed to fetch subscription status:', error);
-        }
+        // Note: Subscription status will be automatically fetched by sidebar component
+        // No need to call it here to avoid duplicate requests
         
         navigate('/dashboard');
       } else {

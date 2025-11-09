@@ -293,12 +293,6 @@ export const menuItems = [
     path: '/entities',
   },
   {
-    key: 'settings',
-    label: 'Settings',
-    icon: <SettingOutlined />,
-    path: '/settings',
-  },
-  {
     key: 'master_settings',
     label: 'Master Settings',
     icon: <SettingOutlined />,

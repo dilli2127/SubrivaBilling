@@ -8,6 +8,8 @@ import {
   Row,
   Col,
   Typography,
+  Breadcrumb,
+  Button,
 } from 'antd';
 import {
   SettingOutlined,
@@ -21,7 +23,10 @@ import {
   QrcodeOutlined,
   ApiOutlined,
   CrownOutlined,
+  ArrowLeftOutlined,
+  HomeOutlined,
 } from '@ant-design/icons';
+import { useNavigate, useLocation } from 'react-router-dom';
 import styles from './Settings.module.css';
 import { apiSlice } from '../../services/redux/api/apiSlice';
 import { getCurrentUser } from '../../helpers/auth';
@@ -65,11 +70,22 @@ const populateOrganisationForm = (form: any, orgData: any) => {
 };
 
 const Settings: React.FC = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [form] = Form.useForm();
   const [businessForm] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [businessLoading, setBusinessLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState('business');
+  
+  // Get tab from URL query parameter
+  const getTabFromURL = useCallback(() => {
+    const hash = window.location.hash;
+    const queryString = hash.includes('?') ? hash.split('?')[1] : '';
+    const params = new URLSearchParams(queryString);
+    return params.get('tab') || 'business';
+  }, []);
+  
+  const [activeTab, setActiveTab] = useState(getTabFromURL());
   const [selectedTenant, setSelectedTenant] = useState<string>('all');
   const [selectedOrganisation, setSelectedOrganisation] = useState<string>('all');
 
@@ -160,6 +176,14 @@ const Settings: React.FC = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Update active tab when URL changes
+  useEffect(() => {
+    const tabFromURL = getTabFromURL();
+    if (tabFromURL !== activeTab) {
+      setActiveTab(tabFromURL);
+    }
+  }, [location, getTabFromURL, activeTab]);
 
   // Handle tenant selection change - fetch organisations for selected tenant
   const handleTenantChange = useCallback((tenantId: string) => {
@@ -590,12 +614,36 @@ const Settings: React.FC = () => {
 
   return (
     <div className={styles.settingsContainer}>
+      {/* Breadcrumb Navigation */}
+      <Breadcrumb style={{ marginBottom: 16 }}>
+        <Breadcrumb.Item>
+          <span onClick={() => navigate('/dashboard')} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
+            <HomeOutlined />
+            <span style={{ marginLeft: 4 }}>Home</span>
+          </span>
+        </Breadcrumb.Item>
+        <Breadcrumb.Item>
+          <SettingOutlined />
+          <span style={{ marginLeft: 4 }}>Settings</span>
+        </Breadcrumb.Item>
+      </Breadcrumb>
+
       {/* Page Header */}
       <div className={styles.pageHeader}>
-        <Title level={2} className={styles.pageTitle}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: 8 }}>
+          <Button 
+            icon={<ArrowLeftOutlined />} 
+            onClick={() => navigate(-1)}
+            size="large"
+            style={{ flexShrink: 0 }}
+          >
+            Back
+          </Button>
+          <Title level={2} className={styles.pageTitle} style={{ margin: 0 }}>
           <SettingOutlined />
           Settings
         </Title>
+        </div>
       </div>
 
       {/* Filter Dropdowns for SuperAdmin and Tenant */}

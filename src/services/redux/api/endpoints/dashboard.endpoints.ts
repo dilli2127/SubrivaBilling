@@ -12,9 +12,14 @@ export const dashboardApi = apiSlice.injectEndpoints({
       query: (params: { [key: string]: any } = {}) => {
         const route = API_ROUTES.DashBoard.GetCount;
         return {
-          url: route.endpoint,
+          url: `${route.endpoint}?_=${Date.now()}`, // Cache busting
           method: route.method,
           body: params,
+          headers: {
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0',
+          },
         };
       },
       providesTags: ['Dashboard'],
@@ -25,9 +30,14 @@ export const dashboardApi = apiSlice.injectEndpoints({
       query: (params: { [key: string]: any } = {}) => {
         const route = API_ROUTES.DashBoard.SalesChartData;
         return {
-          url: route.endpoint,
+          url: `${route.endpoint}?_=${Date.now()}`, // Cache busting
           method: route.method,
           body: params,
+          headers: {
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0',
+          },
         };
       },
       providesTags: ['Dashboard'],
@@ -37,9 +47,14 @@ export const dashboardApi = apiSlice.injectEndpoints({
       query: (params: { [key: string]: any } = {}) => {
         const route = API_ROUTES.DashBoard.PurchaseChartData;
         return {
-          url: route.endpoint,
+          url: `${route.endpoint}?_=${Date.now()}`, // Cache busting
           method: route.method,
           body: params,
+          headers: {
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0',
+          },
         };
       },
       providesTags: ['Dashboard'],
@@ -50,9 +65,14 @@ export const dashboardApi = apiSlice.injectEndpoints({
       query: (params: { [key: string]: any } = {}) => {
         const route = API_ROUTES.DashBoard.StockAlert;
         return {
-          url: route.endpoint,
+          url: `${route.endpoint}?_=${Date.now()}`, // Cache busting
           method: route.method,
           body: params,
+          headers: {
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0',
+          },
         };
       },
       providesTags: ['Dashboard'],
@@ -63,9 +83,14 @@ export const dashboardApi = apiSlice.injectEndpoints({
       query: (params: { [key: string]: any } = {}) => {
         const route = API_ROUTES.DashBoard.FinancialData;
         return {
-          url: route.endpoint,
+          url: `${route.endpoint}?_=${Date.now()}`, // Cache busting
           method: route.method,
           body: params,
+          headers: {
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0',
+          },
         };
       },
       providesTags: ['Dashboard'],
@@ -76,9 +101,14 @@ export const dashboardApi = apiSlice.injectEndpoints({
       query: (params: { [key: string]: any } = {}) => {
         const route = API_ROUTES.DashBoard.SalesAnalytics;
         return {
-          url: route.endpoint,
+          url: `${route.endpoint}?_=${Date.now()}`, // Cache busting
           method: route.method,
           body: params,
+          headers: {
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0',
+          },
         };
       },
       providesTags: ['Dashboard'],
@@ -88,9 +118,14 @@ export const dashboardApi = apiSlice.injectEndpoints({
       query: (params: { [key: string]: any } = {}) => {
         const route = API_ROUTES.DashBoard.InventoryMetrics;
         return {
-          url: route.endpoint,
+          url: `${route.endpoint}?_=${Date.now()}`, // Cache busting
           method: route.method,
           body: params,
+          headers: {
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0',
+          },
         };
       },
       providesTags: ['Dashboard'],
@@ -101,9 +136,14 @@ export const dashboardApi = apiSlice.injectEndpoints({
       query: (params: { [key: string]: any } = {}) => {
         const route = API_ROUTES.PlanLimits.Get;
         return {
-          url: route.endpoint,
+          url: `${route.endpoint}?_=${Date.now()}`, // Cache busting
           method: route.method,
           body: params,
+          headers: {
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0',
+          },
         };
       },
       providesTags: ['PlanLimits'],

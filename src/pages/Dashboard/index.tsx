@@ -10,7 +10,7 @@ import {
   Space,
   Button,
 } from 'antd';
-import { getCurrentUser } from '../../helpers/auth';
+import { getCurrentUser, getAuthToken } from '../../helpers/auth';
 import SessionStorageEncryption from '../../helpers/encryption';
 import {
   BarChartOutlined,
@@ -62,23 +62,26 @@ const Dashboard: React.FC = () => {
   const isOrganisationUser = userRole.toLowerCase() === 'organisationuser';
   const isBranchUser = userRole.toLowerCase() === 'branchuser';
 
+  // Check if user is authenticated
+  const isAuthenticated = !!getAuthToken();
+
   // RTK Query for dropdowns - only fetch based on user role
   const { data: tenantsData, isLoading: tenantsLoading } =
     apiSlice.useGetTenantAccountsQuery(
       {},
-      { skip: !isSuperAdmin || isBranchUser }
+      { skip: !isSuperAdmin || isBranchUser || !isAuthenticated }
     );
   const { data: organisationsData, isLoading: organisationsLoading } =
     apiSlice.useGetOrganisationsQuery(
       {},
-      { skip: (!isSuperAdmin && !isTenant) || isBranchUser }
+      { skip: (!isSuperAdmin && !isTenant) || isBranchUser || !isAuthenticated }
     );
   const { data: branchesData, isLoading: branchesLoading } =
     apiSlice.useGetBranchesQuery(
       {},
       {
         skip:
-          (!isSuperAdmin && !isTenant && !isOrganisationUser) || isBranchUser,
+          (!isSuperAdmin && !isTenant && !isOrganisationUser) || isBranchUser || !isAuthenticated,
       }
     );
 

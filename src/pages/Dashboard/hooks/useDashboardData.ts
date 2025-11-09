@@ -10,6 +10,7 @@ import {
   useGetInventoryMetricsQuery,
   useGetPlanLimitsQuery,
 } from '../../../services/redux/api/endpoints';
+import { getAuthToken } from '../../../helpers/auth';
 
 interface DashboardFilters {
   tenant_id?: string;
@@ -19,55 +20,58 @@ interface DashboardFilters {
 
 export const useDashboardData = (activeTab: string, filters: DashboardFilters = {}) => {
   const [loadedTabs, setLoadedTabs] = useState<Set<string>>(new Set());
+  
+  // Check if user is authenticated
+  const isAuthenticated = !!getAuthToken();
 
   // RTK Query hooks
   const { 
     data: statsData, 
     refetch: refetchStats 
   } = useGetDashboardStatsQuery(filters, {
-    skip: !loadedTabs.has('1')
+    skip: !loadedTabs.has('1') || !isAuthenticated
   });
 
   const { 
     data: salesChartData, 
     refetch: refetchSalesChart 
   } = useGetSalesChartQuery(filters, {
-    skip: !loadedTabs.has('1')
+    skip: !loadedTabs.has('1') || !isAuthenticated
   });
 
   const { 
     data: purchaseChartData,
     refetch: refetchPurchaseChart 
   } = useGetPurchaseChartQuery(filters, {
-    skip: !loadedTabs.has('1')
+    skip: !loadedTabs.has('1') || !isAuthenticated
   });
 
   const { 
     data: stockAlertsData, 
     refetch: refetchStockAlerts 
   } = useGetStockAlertsQuery(filters, {
-    skip: !loadedTabs.has('1')
+    skip: !loadedTabs.has('1') || !isAuthenticated
   });
 
   const { 
     data: financialData, 
     refetch: refetchFinancialData 
   } = useGetFinancialDataQuery(filters, {
-    skip: !loadedTabs.has('2')
+    skip: !loadedTabs.has('2') || !isAuthenticated
   });
 
   const { 
     data: salesAnalyticsData, 
     refetch: refetchSalesAnalytics 
   } = useGetSalesAnalyticsQuery(filters, {
-    skip: !loadedTabs.has('4') && !loadedTabs.has('6')
+    skip: (!loadedTabs.has('4') && !loadedTabs.has('6')) || !isAuthenticated
   });
 
   const { 
     data: inventoryMetricsData, 
     refetch: refetchInventoryMetrics 
   } = useGetInventoryMetricsQuery(filters, {
-    skip: !loadedTabs.has('3')
+    skip: !loadedTabs.has('3') || !isAuthenticated
   });
 
   // Load data for active tab only once

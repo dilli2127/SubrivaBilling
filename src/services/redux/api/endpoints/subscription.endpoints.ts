@@ -61,22 +61,32 @@ export const subscriptionApi = apiSlice.injectEndpoints({
     // Get subscription status - called on login and settings page
     getSubscriptionStatus: builder.query<SubscriptionStatusResponse, void>({
       query: () => ({
-        url: '/subscription-status',
+        url: `/subscription-status?_=${Date.now()}`, // Cache busting with timestamp
         method: 'GET',
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0',
+        },
       }),
       providesTags: ['Subscription'],
-      // Cache for 5 minutes
+      // Cache for 5 minutes in RTK Query only (not browser cache)
       keepUnusedDataFor: 300,
     }),
 
     // Get my plan limits - called on settings page only
     getMyPlanLimits: builder.query<PlanLimitsResponse, void>({
       query: () => ({
-        url: '/my-plan-limits',
+        url: `/my-plan-limits?_=${Date.now()}`, // Cache busting with timestamp
         method: 'GET',
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0',
+        },
       }),
       providesTags: ['PlanLimits'],
-      // Cache for 5 minutes
+      // Cache for 5 minutes in RTK Query only (not browser cache)
       keepUnusedDataFor: 300,
     }),
   }),
