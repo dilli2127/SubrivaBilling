@@ -27,49 +27,56 @@ export const useDashboardData = (activeTab: string, filters: DashboardFilters = 
   // RTK Query hooks
   const { 
     data: statsData, 
-    refetch: refetchStats 
+    refetch: refetchStats,
+    isUninitialized: statsUninitialized
   } = useGetDashboardStatsQuery(filters, {
     skip: !loadedTabs.has('1') || !isAuthenticated
   });
 
   const { 
     data: salesChartData, 
-    refetch: refetchSalesChart 
+    refetch: refetchSalesChart,
+    isUninitialized: salesChartUninitialized
   } = useGetSalesChartQuery(filters, {
     skip: !loadedTabs.has('1') || !isAuthenticated
   });
 
   const { 
     data: purchaseChartData,
-    refetch: refetchPurchaseChart 
+    refetch: refetchPurchaseChart,
+    isUninitialized: purchaseChartUninitialized
   } = useGetPurchaseChartQuery(filters, {
     skip: !loadedTabs.has('1') || !isAuthenticated
   });
 
   const { 
     data: stockAlertsData, 
-    refetch: refetchStockAlerts 
+    refetch: refetchStockAlerts,
+    isUninitialized: stockAlertsUninitialized
   } = useGetStockAlertsQuery(filters, {
     skip: !loadedTabs.has('1') || !isAuthenticated
   });
 
   const { 
     data: financialData, 
-    refetch: refetchFinancialData 
+    refetch: refetchFinancialData,
+    isUninitialized: financialDataUninitialized
   } = useGetFinancialDataQuery(filters, {
     skip: !loadedTabs.has('2') || !isAuthenticated
   });
 
   const { 
     data: salesAnalyticsData, 
-    refetch: refetchSalesAnalytics 
+    refetch: refetchSalesAnalytics,
+    isUninitialized: salesAnalyticsUninitialized
   } = useGetSalesAnalyticsQuery(filters, {
     skip: (!loadedTabs.has('4') && !loadedTabs.has('6')) || !isAuthenticated
   });
 
   const { 
     data: inventoryMetricsData, 
-    refetch: refetchInventoryMetrics 
+    refetch: refetchInventoryMetrics,
+    isUninitialized: inventoryMetricsUninitialized
   } = useGetInventoryMetricsQuery(filters, {
     skip: !loadedTabs.has('3') || !isAuthenticated
   });
@@ -94,14 +101,30 @@ export const useDashboardData = (activeTab: string, filters: DashboardFilters = 
   }, [filters.tenant_id, filters.organisation_id, filters.branch_id, activeTab]);
 
   const refetch = useCallback(() => {
-    refetchStats();
-    refetchSalesChart();
-    refetchPurchaseChart();
-    refetchStockAlerts();
-    refetchFinancialData();
-    refetchSalesAnalytics();
-    refetchInventoryMetrics();
-  }, [refetchStats, refetchSalesChart, refetchPurchaseChart, refetchStockAlerts, refetchFinancialData, refetchSalesAnalytics, refetchInventoryMetrics]);
+    // Only refetch queries that have been started (not skipped)
+    if (!statsUninitialized) refetchStats();
+    if (!salesChartUninitialized) refetchSalesChart();
+    if (!purchaseChartUninitialized) refetchPurchaseChart();
+    if (!stockAlertsUninitialized) refetchStockAlerts();
+    if (!financialDataUninitialized) refetchFinancialData();
+    if (!salesAnalyticsUninitialized) refetchSalesAnalytics();
+    if (!inventoryMetricsUninitialized) refetchInventoryMetrics();
+  }, [
+    refetchStats, 
+    refetchSalesChart, 
+    refetchPurchaseChart, 
+    refetchStockAlerts, 
+    refetchFinancialData, 
+    refetchSalesAnalytics, 
+    refetchInventoryMetrics,
+    statsUninitialized,
+    salesChartUninitialized,
+    purchaseChartUninitialized,
+    stockAlertsUninitialized,
+    financialDataUninitialized,
+    salesAnalyticsUninitialized,
+    inventoryMetricsUninitialized
+  ]);
 
   // Memoize return object to prevent unnecessary re-renders
   const SalesChartDataItems = useMemo(() => {
