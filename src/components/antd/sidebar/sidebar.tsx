@@ -36,7 +36,7 @@ interface SidebarProps {
 
 const getInitialTheme = () => {
   const saved = localStorage.getItem('sidebarTheme');
-  return saved || 'classic';
+  return saved || 'professional';
 };
 
 // Removed getAllowedMenuKeys - now using permission-based filtering
@@ -169,8 +169,9 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
       document.body.style.setProperty(key, value);
     });
     localStorage.setItem('sidebarTheme', theme);
-    // Enable dark mode class for the full app
-    if (theme === 'dark') {
+    // Enable dark mode class for the full app (for dark themes)
+    const darkThemes = ['modern-dark', 'midnight-blue', 'charcoal-modern', 'navy-classic', 'corporate'];
+    if (darkThemes.includes(theme)) {
       document.body.classList.add('dark-mode');
     } else {
       document.body.classList.remove('dark-mode');

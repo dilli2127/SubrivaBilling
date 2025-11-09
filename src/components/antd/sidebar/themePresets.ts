@@ -1,504 +1,345 @@
-// Theme presets for sidebar themes
+// Professional Theme Presets - Modern Color Palettes with Optimal Contrast
+// Each theme is carefully designed for readability and aesthetic appeal
+
 export const themePresets = [
   {
-    key: 'classic',
-    label: 'Classic',
+    key: 'professional',
+    label: 'Professional Blue',
     variables: {
-      '--sidebar-bg': 'linear-gradient(180deg, #4e54c8 60%, #8f94fb 100%)',
-      '--header-bg': 'linear-gradient(90deg, #e5daff, #c5c8ee)',
-      '--menu-item-selected':
-        'linear-gradient(90deg, #ff6a00 60%, #ee0979 100%)',
-      '--menu-item-hover': 'linear-gradient(90deg, #ee0979 60%, #ff6a00 100%)',
-      '--header-title': '#4e54c8',
-      '--profile-avatar': '#4e54c8',
-      '--welcome-text': '#4e54c8',
-      '--welcome-mse': '#888',
-      '--have-a-nice-day': 'rgb(203, 55, 244) ',
-      '--description-branch': '#444',
+      '--sidebar-bg': 'linear-gradient(180deg, #1e3a8a 0%, #3b82f6 100%)', // Deep blue to bright blue
+      '--header-bg': 'linear-gradient(90deg, #eff6ff, #dbeafe)', // Light blue tints
+      '--menu-item-selected': 'linear-gradient(90deg, #2563eb, #3b82f6)', // Blue selected
+      '--menu-item-hover': 'linear-gradient(90deg, #1d4ed8, #2563eb)', // Darker blue hover
+      '--header-title': '#1e3a8a', // Deep blue
+      '--profile-avatar': '#1e3a8a',
+      '--welcome-text': '#1e40af', // Navy blue
+      '--welcome-mse': '#64748b', // Slate gray
+      '--have-a-nice-day': '#94a3b8', // Lighter slate
+      '--description-branch': '#475569', // Medium slate
     },
-    previewColor: '#4e54c8',
+    previewColor: '#3b82f6',
   },
   {
-    key: 'sunset',
-    label: 'Sunset',
+    key: 'corporate',
+    label: 'Corporate Gray',
     variables: {
-      '--sidebar-bg': 'linear-gradient(180deg, #ff9966 60%, #ff5e62 100%)',
-      '--header-bg': 'linear-gradient(90deg, #fceabb, #f8b500)',
-      '--menu-item-selected':
-        'linear-gradient(90deg, #ff9966 60%, #ff5e62 100%)',
-      '--menu-item-hover': 'linear-gradient(90deg, #ff5e62 60%, #ff9966 100%)',
-      '--header-title': '#ff5e62',
-      '--profile-avatar': '#ff9966',
-      '--welcome-text': '#ff5e62',
-      '--welcome-mse': '#b07d5c',
-      '--have-a-nice-day': '#bbb',
-      '--description-branch': '#555',
+      '--sidebar-bg': 'linear-gradient(180deg, #1f2937 0%, #374151 100%)', // Dark gray gradient
+      '--header-bg': 'linear-gradient(90deg, #f9fafb, #f3f4f6)', // Very light gray
+      '--menu-item-selected': 'linear-gradient(90deg, #4f46e5, #6366f1)', // Indigo selected
+      '--menu-item-hover': 'linear-gradient(90deg, #4338ca, #4f46e5)', // Darker indigo hover
+      '--header-title': '#111827', // Almost black
+      '--profile-avatar': '#4f46e5', // Indigo
+      '--welcome-text': '#1f2937', // Dark gray
+      '--welcome-mse': '#6b7280', // Medium gray
+      '--have-a-nice-day': '#9ca3af', // Light gray
+      '--description-branch': '#4b5563', // Slate gray
     },
-    previewColor: '#ff9966',
+    previewColor: '#4f46e5',
   },
   {
-    key: 'dark',
-    label: 'Dark',
+    key: 'modern-dark',
+    label: 'Modern Dark',
     variables: {
-      '--sidebar-bg': 'linear-gradient(180deg, #232526 60%, #414345 100%)',
-      '--header-bg': 'linear-gradient(90deg, #232526, #414345)',
-      '--menu-item-selected':
-        'linear-gradient(90deg, #232526 60%, #414345 100%)',
-      '--menu-item-hover': 'linear-gradient(90deg, #414345 60%, #232526 100%)',
-      '--header-title': '#fff',
-      '--profile-avatar': '#fff',
-      '--welcome-text': '#fff',
-      '--welcome-mse': '#bbb',
-      '--have-a-nice-day': '#ccc',
-      '--description-branch': '#666',
+      '--sidebar-bg': 'linear-gradient(180deg, #0f172a 0%, #1e293b 100%)', // Very dark slate
+      '--header-bg': 'linear-gradient(90deg, #f8fafc, #f1f5f9)', // Light slate
+      '--menu-item-selected': 'linear-gradient(90deg, #0ea5e9, #06b6d4)', // Cyan selected
+      '--menu-item-hover': 'linear-gradient(90deg, #0284c7, #0ea5e9)', // Darker cyan hover
+      '--header-title': '#0f172a', // Very dark slate
+      '--profile-avatar': '#0ea5e9', // Sky blue
+      '--welcome-text': '#0f172a', // Dark
+      '--welcome-mse': '#64748b', // Slate
+      '--have-a-nice-day': '#94a3b8', // Light slate
+      '--description-branch': '#475569', // Medium slate
     },
-    previewColor: '#232526',
+    previewColor: '#0ea5e9',
   },
   {
-    key: 'aqua',
-    label: 'Aqua',
+    key: 'emerald-pro',
+    label: 'Emerald Professional',
     variables: {
-      '--sidebar-bg': 'linear-gradient(180deg, #43cea2 60%, #185a9d 100%)',
-      '--header-bg': 'linear-gradient(90deg, #43cea2, #185a9d)',
-      '--menu-item-selected':
-        'linear-gradient(90deg, #43cea2 60%, #185a9d 100%)',
-      '--menu-item-hover': 'linear-gradient(90deg, #185a9d 60%, #43cea2 100%)',
-      '--header-title': '#185a9d',
-      '--profile-avatar': '#43cea2',
-      '--welcome-text': '#185a9d',
-      '--welcome-mse': '#3a6e6e',
-      '--have-a-nice-day': '#ddd',
-      '--description-branch': '#777',
+      '--sidebar-bg': 'linear-gradient(180deg, #065f46 0%, #059669 100%)', // Deep emerald
+      '--header-bg': 'linear-gradient(90deg, #f0fdf4, #dcfce7)', // Light green tints
+      '--menu-item-selected': 'linear-gradient(90deg, #10b981, #34d399)', // Emerald selected
+      '--menu-item-hover': 'linear-gradient(90deg, #059669, #10b981)', // Darker emerald hover
+      '--header-title': '#065f46', // Deep emerald
+      '--profile-avatar': '#059669', // Emerald
+      '--welcome-text': '#047857', // Darker emerald
+      '--welcome-mse': '#64748b', // Slate gray
+      '--have-a-nice-day': '#94a3b8', // Light slate
+      '--description-branch': '#475569', // Medium slate
     },
-    previewColor: '#43cea2',
+    previewColor: '#10b981',
   },
   {
-    key: 'violet',
-    label: 'Violet',
+    key: 'royal-purple',
+    label: 'Royal Purple',
     variables: {
-      '--sidebar-bg': 'linear-gradient(180deg, #8f94fb 60%, #4e54c8 100%)',
-      '--header-bg': 'linear-gradient(90deg, #bba7ed, #cccff6)',
-      '--menu-item-selected':
-        'linear-gradient(90deg, #8f94fb 60%, #4e54c8 100%)',
-      '--menu-item-hover': 'linear-gradient(90deg, #4e54c8 60%, #8f94fb 100%)',
-      '--header-title': '#8f94fb',
-      '--profile-avatar': '#8f94fb',
-      '--welcome-text': '#8f94fb',
-      '--welcome-mse': '#555',
-      '--have-a-nice-day': '#eee',
-      '--description-branch': '#888',
+      '--sidebar-bg': 'linear-gradient(180deg, #581c87 0%, #7c3aed 100%)', // Deep purple to bright purple
+      '--header-bg': 'linear-gradient(90deg, #faf5ff, #f3e8ff)', // Light purple tints
+      '--menu-item-selected': 'linear-gradient(90deg, #8b5cf6, #a78bfa)', // Purple selected
+      '--menu-item-hover': 'linear-gradient(90deg, #7c3aed, #8b5cf6)', // Darker purple hover
+      '--header-title': '#581c87', // Deep purple
+      '--profile-avatar': '#7c3aed', // Bright purple
+      '--welcome-text': '#6b21a8', // Dark purple
+      '--welcome-mse': '#64748b', // Slate gray
+      '--have-a-nice-day': '#94a3b8', // Light slate
+      '--description-branch': '#475569', // Medium slate
     },
-    previewColor: '#8f94fb',
+    previewColor: '#8b5cf6',
   },
   {
-    key: 'rose',
-    label: 'Rose',
+    key: 'ocean-blue',
+    label: 'Ocean Blue',
     variables: {
-      '--sidebar-bg': 'linear-gradient(180deg, #f857a6 60%, #ff5858 100%)',
-      '--header-bg': 'linear-gradient(90deg, #f857a6, #ff5858)',
-      '--menu-item-selected':
-        'linear-gradient(90deg, #f857a6 60%, #ff5858 100%)',
-      '--menu-item-hover': 'linear-gradient(90deg, #ff5858 60%, #f857a6 100%)',
-      '--header-title': '#f857a6',
-      '--profile-avatar': '#f857a6',
-      '--welcome-text': '#f857a6',
-      '--welcome-mse': '#888',
-      '--have-a-nice-day': '#fff',
-      '--description-branch': '#999',
+      '--sidebar-bg': 'linear-gradient(180deg, #0c4a6e 0%, #0284c7 100%)', // Deep ocean to sky blue
+      '--header-bg': 'linear-gradient(90deg, #f0f9ff, #e0f2fe)', // Light blue tints
+      '--menu-item-selected': 'linear-gradient(90deg, #0ea5e9, #38bdf8)', // Sky blue selected
+      '--menu-item-hover': 'linear-gradient(90deg, #0284c7, #0ea5e9)', // Darker blue hover
+      '--header-title': '#0c4a6e', // Deep ocean
+      '--profile-avatar': '#0284c7', // Sky blue
+      '--welcome-text': '#075985', // Dark sky blue
+      '--welcome-mse': '#64748b', // Slate gray
+      '--have-a-nice-day': '#94a3b8', // Light slate
+      '--description-branch': '#475569', // Medium slate
     },
-    previewColor: '#f857a6',
+    previewColor: '#0ea5e9',
   },
   {
-    key: 'ocean',
-    label: 'Ocean',
+    key: 'crimson-pro',
+    label: 'Crimson Professional',
     variables: {
-      '--sidebar-bg': 'linear-gradient(180deg, #00c6ff 0%, #0072ff 100%)',
-      '--header-bg': 'linear-gradient(90deg, #00c6ff, #0072ff)',
-      '--menu-item-selected': 'linear-gradient(90deg, #36d1dc, #5b86e5)',
-      '--menu-item-hover': 'linear-gradient(90deg, #5b86e5, #36d1dc)',
-      '--header-title': '#ffffff',
-      '--profile-avatar': '#36d1dc',
-      '--welcome-text': '#ffffff',
-      '--welcome-mse': '#555',
-      '--have-a-nice-day': '#aaa',
-      '--description-branch': '#aaa',
+      '--sidebar-bg': 'linear-gradient(180deg, #881337 0%, #be123c 100%)', // Deep rose to crimson
+      '--header-bg': 'linear-gradient(90deg, #fff1f2, #ffe4e6)', // Light rose tints
+      '--menu-item-selected': 'linear-gradient(90deg, #e11d48, #f43f5e)', // Rose selected
+      '--menu-item-hover': 'linear-gradient(90deg, #be123c, #e11d48)', // Darker rose hover
+      '--header-title': '#881337', // Deep rose
+      '--profile-avatar': '#be123c', // Crimson
+      '--welcome-text': '#9f1239', // Dark rose
+      '--welcome-mse': '#64748b', // Slate gray
+      '--have-a-nice-day': '#94a3b8', // Light slate
+      '--description-branch': '#475569', // Medium slate
     },
-    previewColor: '#00c6ff',
+    previewColor: '#e11d48',
   },
   {
-    key: 'sunrise',
-    label: 'Sunrise',
+    key: 'teal-modern',
+    label: 'Modern Teal',
     variables: {
-      '--sidebar-bg': 'linear-gradient(180deg, #ff512f 0%, #f09819 100%)',
-      '--header-bg': 'linear-gradient(90deg, #ff512f, #f09819)',
-      '--menu-item-selected': 'linear-gradient(90deg, #ff512f, #dd2476)',
-      '--menu-item-hover': 'linear-gradient(90deg, #f09819, #ff512f)',
-      '--header-title': '#ffffff',
-      '--profile-avatar': '#f09819',
-      '--welcome-text': '#ffffff',
-      '--welcome-mse': '#888',
-      '--have-a-nice-day': '#bbb',
-      '--description-branch': '#bbb',
+      '--sidebar-bg': 'linear-gradient(180deg, #115e59 0%, #0d9488 100%)', // Deep teal to bright teal
+      '--header-bg': 'linear-gradient(90deg, #f0fdfa, #ccfbf1)', // Light teal tints
+      '--menu-item-selected': 'linear-gradient(90deg, #14b8a6, #2dd4bf)', // Teal selected
+      '--menu-item-hover': 'linear-gradient(90deg, #0d9488, #14b8a6)', // Darker teal hover
+      '--header-title': '#115e59', // Deep teal
+      '--profile-avatar': '#0d9488', // Bright teal
+      '--welcome-text': '#134e4a', // Dark teal
+      '--welcome-mse': '#64748b', // Slate gray
+      '--have-a-nice-day': '#94a3b8', // Light slate
+      '--description-branch': '#475569', // Medium slate
     },
-    previewColor: '#ff512f',
+    previewColor: '#14b8a6',
   },
   {
-    key: 'mint',
-    label: 'Mint',
+    key: 'amber-executive',
+    label: 'Executive Amber',
     variables: {
-      '--sidebar-bg': 'linear-gradient(180deg, #00b09b 0%, #96c93d 100%)',
-      '--header-bg': 'linear-gradient(90deg, #00b09b, #96c93d)',
-      '--menu-item-selected': 'linear-gradient(90deg, #43e97b, #38f9d7)',
-      '--menu-item-hover': 'linear-gradient(90deg, #38f9d7, #43e97b)',
-      '--header-title': '#ffffff',
-      '--profile-avatar': '#43e97b',
-      '--welcome-text': '#ffffff',
-      '--welcome-mse': '#555',
-      '--have-a-nice-day': '#ccc',
-      '--description-branch': '#ccc',
+      '--sidebar-bg': 'linear-gradient(180deg, #92400e 0%, #d97706 100%)', // Deep amber to bright amber
+      '--header-bg': 'linear-gradient(90deg, #fffbeb, #fef3c7)', // Light amber tints
+      '--menu-item-selected': 'linear-gradient(90deg, #f59e0b, #fbbf24)', // Amber selected
+      '--menu-item-hover': 'linear-gradient(90deg, #d97706, #f59e0b)', // Darker amber hover
+      '--header-title': '#92400e', // Deep amber
+      '--profile-avatar': '#d97706', // Bright amber
+      '--welcome-text': '#b45309', // Dark amber
+      '--welcome-mse': '#64748b', // Slate gray
+      '--have-a-nice-day': '#94a3b8', // Light slate
+      '--description-branch': '#475569', // Medium slate
     },
-    previewColor: '#00b09b',
+    previewColor: '#f59e0b',
   },
   {
-    key: 'plum',
-    label: 'Plum',
+    key: 'midnight-blue',
+    label: 'Midnight Blue',
     variables: {
-      '--sidebar-bg': 'linear-gradient(180deg, #41295a 0%, #2f0743 100%)',
-      '--header-bg': 'linear-gradient(90deg, #41295a, #2f0743)',
-      '--menu-item-selected':
-        'linear-gradient(90deg, #833ab4, #fd1d1d, #fcb045)',
-      '--menu-item-hover': 'linear-gradient(90deg, #fcb045, #fd1d1d, #833ab4)',
-      '--header-title': '#ffffff',
-      '--profile-avatar': '#833ab4',
-      '--welcome-text': '#ffffff',
-      '--welcome-mse': '#888',
-      '--have-a-nice-day': '#ddd',
-      '--description-branch': '#ddd',
+      '--sidebar-bg': 'linear-gradient(180deg, #1e1b4b 0%, #312e81 100%)', // Very dark indigo
+      '--header-bg': 'linear-gradient(90deg, #eef2ff, #e0e7ff)', // Light indigo tints
+      '--menu-item-selected': 'linear-gradient(90deg, #6366f1, #818cf8)', // Indigo selected
+      '--menu-item-hover': 'linear-gradient(90deg, #4f46e5, #6366f1)', // Darker indigo hover
+      '--header-title': '#1e1b4b', // Very dark indigo
+      '--profile-avatar': '#4f46e5', // Indigo
+      '--welcome-text': '#3730a3', // Dark indigo
+      '--welcome-mse': '#64748b', // Slate gray
+      '--have-a-nice-day': '#94a3b8', // Light slate
+      '--description-branch': '#475569', // Medium slate
     },
-    previewColor: '#41295a',
+    previewColor: '#6366f1',
   },
   {
-    key: 'blush',
-    label: 'Blush',
+    key: 'mint-fresh',
+    label: 'Fresh Mint',
     variables: {
-      '--sidebar-bg': 'linear-gradient(180deg, #ff9a9e 0%, #fad0c4 100%)',
-      '--header-bg': 'linear-gradient(90deg, #ff9a9e, #fad0c4)',
-      '--menu-item-selected': 'linear-gradient(90deg, #fad0c4, #ffdde1)',
-      '--menu-item-hover': 'linear-gradient(90deg, #ffdde1, #fad0c4)',
-      '--header-title': '#8a2be2',
-      '--profile-avatar': '#ff9a9e',
-      '--welcome-text': '#8a2be2',
-      '--welcome-mse': '#555',
-      '--have-a-nice-day': '#eee',
-      '--description-branch': '#eee',
+      '--sidebar-bg': 'linear-gradient(180deg, #14532d 0%, #15803d 100%)', // Deep green to bright green
+      '--header-bg': 'linear-gradient(90deg, #f7fee7, #ecfccb)', // Light lime tints
+      '--menu-item-selected': 'linear-gradient(90deg, #22c55e, #4ade80)', // Green selected
+      '--menu-item-hover': 'linear-gradient(90deg, #16a34a, #22c55e)', // Darker green hover
+      '--header-title': '#14532d', // Deep green
+      '--profile-avatar': '#15803d', // Bright green
+      '--welcome-text': '#166534', // Dark green
+      '--welcome-mse': '#64748b', // Slate gray
+      '--have-a-nice-day': '#94a3b8', // Light slate
+      '--description-branch': '#475569', // Medium slate
     },
-    previewColor: '#ff9a9e',
+    previewColor: '#22c55e',
   },
   {
-    key: 'emerald',
-    label: 'Emerald',
+    key: 'rose-gold',
+    label: 'Rose Gold',
     variables: {
-      '--sidebar-bg': 'linear-gradient(180deg, #11998e 0%, #38ef7d 100%)',
-      '--header-bg': 'linear-gradient(90deg, #11998e, #38ef7d)',
-      '--menu-item-selected': 'linear-gradient(90deg, #6dd5ed, #2193b0)',
-      '--menu-item-hover': 'linear-gradient(90deg, #2193b0, #6dd5ed)',
-      '--header-title': '#ffffff',
-      '--profile-avatar': '#38ef7d',
-      '--welcome-text': '#ffffff',
-      '--welcome-mse': '#555',
-      '--have-a-nice-day': '#fff',
-      '--description-branch': '#fff',
+      '--sidebar-bg': 'linear-gradient(180deg, #9f1239 0%, #e11d48 100%)', // Deep rose to bright rose
+      '--header-bg': 'linear-gradient(90deg, #fff1f2, #ffe4e6)', // Light rose tints
+      '--menu-item-selected': 'linear-gradient(90deg, #f43f5e, #fb7185)', // Rose selected
+      '--menu-item-hover': 'linear-gradient(90deg, #e11d48, #f43f5e)', // Darker rose hover
+      '--header-title': '#9f1239', // Deep rose
+      '--profile-avatar': '#e11d48', // Bright rose
+      '--welcome-text': '#be123c', // Dark rose
+      '--welcome-mse': '#64748b', // Slate gray
+      '--have-a-nice-day': '#94a3b8', // Light slate
+      '--description-branch': '#475569', // Medium slate
     },
-    previewColor: '#38ef7d',
+    previewColor: '#f43f5e',
   },
   {
-    key: 'midnight',
-    label: 'Midnight',
+    key: 'slate-professional',
+    label: 'Professional Slate',
     variables: {
-      '--sidebar-bg': 'linear-gradient(180deg, #232526 0%, #414345 100%)',
-      '--header-bg': 'linear-gradient(90deg, #232526, #414345)',
-      '--menu-item-selected':
-        'linear-gradient(90deg, #0f2027, #203a43, #2c5364)',
-      '--menu-item-hover': 'linear-gradient(90deg, #2c5364, #203a43, #0f2027)',
-      '--header-title': '#ffffff',
-      '--profile-avatar': '#2c5364',
-      '--welcome-text': '#ffffff',
-      '--welcome-mse': '#888',
-      '--have-a-nice-day': '#aaa',
-      '--description-branch': '#aaa',
+      '--sidebar-bg': 'linear-gradient(180deg, #334155 0%, #475569 100%)', // Medium slate gradient
+      '--header-bg': 'linear-gradient(90deg, #f8fafc, #f1f5f9)', // Very light slate
+      '--menu-item-selected': 'linear-gradient(90deg, #3b82f6, #60a5fa)', // Blue selected
+      '--menu-item-hover': 'linear-gradient(90deg, #2563eb, #3b82f6)', // Darker blue hover
+      '--header-title': '#0f172a', // Very dark slate
+      '--profile-avatar': '#3b82f6', // Blue
+      '--welcome-text': '#1e293b', // Dark slate
+      '--welcome-mse': '#64748b', // Medium slate
+      '--have-a-nice-day': '#94a3b8', // Light slate
+      '--description-branch': '#475569', // Slate
     },
-    previewColor: '#2c5364',
+    previewColor: '#64748b',
   },
   {
-    key: 'lavender',
-    label: 'Lavender',
+    key: 'orange-sunset',
+    label: 'Sunset Orange',
     variables: {
-      '--sidebar-bg': 'linear-gradient(180deg, #c8c6ff 0%, #e7d1ff 100%)',
-      '--header-bg': 'linear-gradient(90deg, #f6f0ff, #dedbff)',
-      '--menu-item-selected': 'linear-gradient(90deg, #b19cd9, #8e9ed7)',
-      '--menu-item-hover': 'linear-gradient(90deg, #b39ddb, #9575cd)',
-      '--header-title': '#7e57c2',
-      '--profile-avatar': '#7e57c2',
-      '--welcome-text': '#7e57c2',
-      '--welcome-mse': '#555',
-      '--have-a-nice-day': '#bbb',
-      '--description-branch': '#bbb',
+      '--sidebar-bg': 'linear-gradient(180deg, #9a3412 0%, #ea580c 100%)', // Deep orange to bright orange
+      '--header-bg': 'linear-gradient(90deg, #fff7ed, #ffedd5)', // Light orange tints
+      '--menu-item-selected': 'linear-gradient(90deg, #f97316, #fb923c)', // Orange selected
+      '--menu-item-hover': 'linear-gradient(90deg, #ea580c, #f97316)', // Darker orange hover
+      '--header-title': '#9a3412', // Deep orange
+      '--profile-avatar': '#ea580c', // Bright orange
+      '--welcome-text': '#c2410c', // Dark orange
+      '--welcome-mse': '#64748b', // Slate gray
+      '--have-a-nice-day': '#94a3b8', // Light slate
+      '--description-branch': '#475569', // Medium slate
     },
-    previewColor: '#b19cd9',
+    previewColor: '#f97316',
   },
   {
-    key: 'citrus',
-    label: 'Citrus',
+    key: 'violet-luxury',
+    label: 'Luxury Violet',
     variables: {
-      '--sidebar-bg': 'linear-gradient(180deg, #fceabb, #f8b500)',
-      '--header-bg': 'linear-gradient(90deg, #f6e27a, #f7d358)',
-      '--menu-item-selected': 'linear-gradient(90deg, #f9d423, #ff4e50)',
-      '--menu-item-hover': 'linear-gradient(90deg, #ff4e50, #f9d423)',
-      '--header-title': '#ff9800',
-      '--profile-avatar': '#f8b500',
-      '--welcome-text': '#f8b500',
-      '--welcome-mse': '#888',
-      '--have-a-nice-day': '#ccc',
-      '--description-branch': '#ccc',
+      '--sidebar-bg': 'linear-gradient(180deg, #4c1d95 0%, #6d28d9 100%)', // Deep violet to bright violet
+      '--header-bg': 'linear-gradient(90deg, #faf5ff, #f3e8ff)', // Light violet tints
+      '--menu-item-selected': 'linear-gradient(90deg, #8b5cf6, #a78bfa)', // Violet selected
+      '--menu-item-hover': 'linear-gradient(90deg, #7c3aed, #8b5cf6)', // Darker violet hover
+      '--header-title': '#4c1d95', // Deep violet
+      '--profile-avatar': '#6d28d9', // Bright violet
+      '--welcome-text': '#5b21b6', // Dark violet
+      '--welcome-mse': '#64748b', // Slate gray
+      '--have-a-nice-day': '#94a3b8', // Light slate
+      '--description-branch': '#475569', // Medium slate
     },
-    previewColor: '#f8b500',
+    previewColor: '#8b5cf6',
   },
   {
-    key: 'teal',
-    label: 'Teal',
+    key: 'navy-classic',
+    label: 'Classic Navy',
     variables: {
-      '--sidebar-bg': 'linear-gradient(180deg, #1de9b6, #1dc4e9)',
-      '--header-bg': 'linear-gradient(90deg, #1de9b6, #1dc4e9)',
-      '--menu-item-selected': 'linear-gradient(90deg, #00c9ff, #92fe9d)',
-      '--menu-item-hover': 'linear-gradient(90deg, #92fe9d, #00c9ff)',
-      '--header-title': '#1dc4e9',
-      '--profile-avatar': '#1de9b6',
-      '--welcome-text': '#1dc4e9',
-      '--welcome-mse': '#555',
-      '--have-a-nice-day': '#ddd',
-      '--description-branch': '#ddd',
+      '--sidebar-bg': 'linear-gradient(180deg, #1e293b 0%, #334155 100%)', // Dark navy to medium navy
+      '--header-bg': 'linear-gradient(90deg, #f1f5f9, #e2e8f0)', // Light slate
+      '--menu-item-selected': 'linear-gradient(90deg, #1e40af, #2563eb)', // Blue selected
+      '--menu-item-hover': 'linear-gradient(90deg, #1e3a8a, #1e40af)', // Darker blue hover
+      '--header-title': '#0f172a', // Very dark slate
+      '--profile-avatar': '#1e40af', // Navy blue
+      '--welcome-text': '#1e293b', // Dark slate
+      '--welcome-mse': '#64748b', // Medium slate
+      '--have-a-nice-day': '#94a3b8', // Light slate
+      '--description-branch': '#475569', // Slate
     },
-    previewColor: '#1dc4e9',
+    previewColor: '#1e40af',
   },
   {
-    key: 'coral',
-    label: 'Coral',
+    key: 'forest-green',
+    label: 'Forest Green',
     variables: {
-      '--sidebar-bg': 'linear-gradient(180deg, #ff7e5f, #feb47b)',
-      '--header-bg': 'linear-gradient(90deg, #ff758c, #ff7eb3)',
-      '--menu-item-selected': 'linear-gradient(90deg, #ff9a9e, #fad0c4)',
-      '--menu-item-hover': 'linear-gradient(90deg, #fad0c4, #ff9a9e)',
-      '--header-title': '#ff7e5f',
-      '--profile-avatar': '#ff758c',
-      '--welcome-text': '#ff758c',
-      '--welcome-mse': '#888',
-      '--have-a-nice-day': '#eee',
-      '--description-branch': '#eee',
+      '--sidebar-bg': 'linear-gradient(180deg, #14532d 0%, #166534 100%)', // Deep forest green
+      '--header-bg': 'linear-gradient(90deg, #f0fdf4, #dcfce7)', // Light green tints
+      '--menu-item-selected': 'linear-gradient(90deg, #16a34a, #22c55e)', // Green selected
+      '--menu-item-hover': 'linear-gradient(90deg, #15803d, #16a34a)', // Darker green hover
+      '--header-title': '#14532d', // Deep green
+      '--profile-avatar': '#166534', // Forest green
+      '--welcome-text': '#15803d', // Dark green
+      '--welcome-mse': '#64748b', // Slate gray
+      '--have-a-nice-day': '#94a3b8', // Light slate
+      '--description-branch': '#475569', // Medium slate
     },
-    previewColor: '#ff7e5f',
+    previewColor: '#16a34a',
   },
   {
-    key: 'graphite',
-    label: 'Graphite',
+    key: 'burgundy',
+    label: 'Burgundy Wine',
     variables: {
-      '--sidebar-bg': 'linear-gradient(180deg, #434343, #000000)',
-      '--header-bg': 'linear-gradient(90deg, #232526, #414345)',
-      '--menu-item-selected': 'linear-gradient(90deg, #606c88, #3f4c6b)',
-      '--menu-item-hover': 'linear-gradient(90deg, #3f4c6b, #606c88)',
-      '--header-title': '#ffffff',
-      '--profile-avatar': '#777777',
-      '--welcome-text': '#ffffff',
-      '--welcome-mse': '#555',
-      '--have-a-nice-day': '#fff',
-      '--description-branch': '#fff',
+      '--sidebar-bg': 'linear-gradient(180deg, #7f1d1d 0%, #991b1b 100%)', // Deep burgundy
+      '--header-bg': 'linear-gradient(90deg, #fef2f2, #fee2e2)', // Light red tints
+      '--menu-item-selected': 'linear-gradient(90deg, #dc2626, #ef4444)', // Red selected
+      '--menu-item-hover': 'linear-gradient(90deg, #b91c1c, #dc2626)', // Darker red hover
+      '--header-title': '#7f1d1d', // Deep burgundy
+      '--profile-avatar': '#991b1b', // Burgundy
+      '--welcome-text': '#991b1b', // Dark red
+      '--welcome-mse': '#64748b', // Slate gray
+      '--have-a-nice-day': '#94a3b8', // Light slate
+      '--description-branch': '#475569', // Medium slate
     },
-    previewColor: '#434343',
+    previewColor: '#dc2626',
   },
   {
-    key: 'flamingo',
-    label: 'Flamingo',
+    key: 'sapphire',
+    label: 'Sapphire Blue',
     variables: {
-      '--sidebar-bg': 'linear-gradient(180deg, #ff9a9e, #fecfef)',
-      '--header-bg': 'linear-gradient(90deg, #ffdde1, #ee9ca7)',
-      '--menu-item-selected': 'linear-gradient(90deg, #ff758c, #ff7eb3)',
-      '--menu-item-hover': 'linear-gradient(90deg, #ff7eb3, #ff758c)',
-      '--header-title': '#ee9ca7',
-      '--profile-avatar': '#ff9a9e',
-      '--welcome-text': '#ee9ca7',
-      '--welcome-mse': '#888',
-      '--have-a-nice-day': '#aaa',
-      '--description-branch': '#aaa',
+      '--sidebar-bg': 'linear-gradient(180deg, #1e40af 0%, #2563eb 100%)', // Sapphire blue
+      '--header-bg': 'linear-gradient(90deg, #eff6ff, #dbeafe)', // Light blue tints
+      '--menu-item-selected': 'linear-gradient(90deg, #3b82f6, #60a5fa)', // Blue selected
+      '--menu-item-hover': 'linear-gradient(90deg, #2563eb, #3b82f6)', // Darker blue hover
+      '--header-title': '#1e3a8a', // Deep blue
+      '--profile-avatar': '#2563eb', // Sapphire
+      '--welcome-text': '#1e40af', // Navy blue
+      '--welcome-mse': '#64748b', // Slate gray
+      '--have-a-nice-day': '#94a3b8', // Light slate
+      '--description-branch': '#475569', // Medium slate
     },
-    previewColor: '#ff758c',
+    previewColor: '#3b82f6',
   },
   {
-    key: 'neon',
-    label: 'Neon',
+    key: 'charcoal-modern',
+    label: 'Modern Charcoal',
     variables: {
-      '--sidebar-bg': 'linear-gradient(180deg, #12c2e9, #c471ed, #f64f59)',
-      '--header-bg': 'linear-gradient(90deg, #f64f59, #c471ed, #12c2e9)',
-      '--menu-item-selected': 'linear-gradient(90deg, #12c2e9, #f64f59)',
-      '--menu-item-hover': 'linear-gradient(90deg, #f64f59, #12c2e9)',
-      '--header-title': '#ffffff',
-      '--profile-avatar': '#f64f59',
-      '--welcome-text': '#ffffff',
-      '--welcome-mse': '#555',
-      '--have-a-nice-day': '#bbb',
-      '--description-branch': '#bbb',
+      '--sidebar-bg': 'linear-gradient(180deg, #18181b 0%, #27272a 100%)', // Very dark zinc
+      '--header-bg': 'linear-gradient(90deg, #fafafa, #f4f4f5)', // Light zinc
+      '--menu-item-selected': 'linear-gradient(90deg, #3f3f46, #52525b)', // Zinc selected
+      '--menu-item-hover': 'linear-gradient(90deg, #27272a, #3f3f46)', // Darker zinc hover
+      '--header-title': '#18181b', // Very dark zinc
+      '--profile-avatar': '#3f3f46', // Medium zinc
+      '--welcome-text': '#18181b', // Very dark
+      '--welcome-mse': '#71717a', // Medium zinc
+      '--have-a-nice-day': '#a1a1aa', // Light zinc
+      '--description-branch': '#52525b', // Zinc
     },
-    previewColor: '#f64f59',
+    previewColor: '#3f3f46',
   },
-  {
-    key: 'forest',
-    label: 'Forest',
-    variables: {
-      '--sidebar-bg': 'linear-gradient(180deg, #5a3f37, #2c7744)',
-      '--header-bg': 'linear-gradient(90deg, #11998e, #38ef7d)',
-      '--menu-item-selected': 'linear-gradient(90deg, #00c853, #64dd17)',
-      '--menu-item-hover': 'linear-gradient(90deg, #64dd17, #00c853)',
-      '--header-title': '#38ef7d',
-      '--profile-avatar': '#00c853',
-      '--welcome-text': '#38ef7d',
-      '--welcome-mse': '#555',
-      '--have-a-nice-day': '#ccc',
-      '--description-branch': '#ccc',
-    },
-    previewColor: '#2c7744',
-  },
-  {
-    key: 'frost',
-    label: 'Frost',
-    variables: {
-      '--sidebar-bg': 'linear-gradient(180deg, #e0eafc, #cfdef3)',
-      '--header-bg': 'linear-gradient(90deg, #89f7fe, #66a6ff)',
-      '--menu-item-selected': 'linear-gradient(90deg, #66a6ff, #89f7fe)',
-      '--menu-item-hover': 'linear-gradient(90deg, #89f7fe, #66a6ff)',
-      '--header-title': '#66a6ff',
-      '--profile-avatar': '#89f7fe',
-      '--welcome-text': '#66a6ff',
-      '--welcome-mse': '#555',
-      '--have-a-nice-day': '#ddd',
-      '--description-branch': '#ddd',
-    },
-    previewColor: '#66a6ff',
-  },
-  {
-    key: 'amber',
-    label: 'Amber',
-    variables: {
-      '--sidebar-bg': 'linear-gradient(180deg, #ffb347, #ffcc33)',
-      '--header-bg': 'linear-gradient(90deg, #f6d365, #fda085)',
-      '--menu-item-selected': 'linear-gradient(90deg, #fda085, #f6d365)',
-      '--menu-item-hover': 'linear-gradient(90deg, #f6d365, #fda085)',
-      '--header-title': '#ff9800',
-      '--profile-avatar': '#ffb347',
-      '--welcome-text': '#ff9800',
-      '--welcome-mse': '#888',
-      '--have-a-nice-day': '#eee',
-      '--description-branch': '#eee',
-    },
-    previewColor: '#ffb347',
-  },
-  {
-    key: 'silver',
-    label: 'Silver',
-    variables: {
-      '--sidebar-bg': 'linear-gradient(180deg, #bdc3c7, #95a5a6)',
-      '--header-bg': 'linear-gradient(90deg, #ecf0f1, #bdc3c7)',
-      '--menu-item-selected': 'linear-gradient(90deg, #7f8c8d, #95a5a6)',
-      '--menu-item-hover': 'linear-gradient(90deg, #95a5a6, #7f8c8d)',
-      '--header-title': '#2c3e50',
-      '--profile-avatar': '#7f8c8d',
-      '--welcome-text': '#2c3e50',
-      '--welcome-mse': '#555',
-      '--have-a-nice-day': '#fff',
-      '--description-branch': '#fff',
-    },
-    previewColor: '#95a5a6',
-  },
-  {
-    key: 'slate',
-    label: 'Slate',
-    variables: {
-      '--sidebar-bg': 'linear-gradient(180deg, #667eea, #764ba2)',
-      '--header-bg': 'linear-gradient(90deg, #a8b5d1, #9ba5c5)',
-      '--menu-item-selected': 'linear-gradient(90deg, #667eea, #764ba2)',
-      '--menu-item-hover': 'linear-gradient(90deg, #764ba2, #667eea)',
-      '--header-title': '#667eea',
-      '--profile-avatar': '#764ba2',
-      '--welcome-text': '#667eea',
-      '--welcome-mse': '#555',
-      '--have-a-nice-day': '#fff',
-      '--description-branch': '#fff',
-    },
-    previewColor: '#667eea',
-  },
-  {
-    key: 'steel',
-    label: 'Steel',
-    variables: {
-      '--sidebar-bg': 'linear-gradient(180deg, #536976, #292e49)',
-      '--header-bg': 'linear-gradient(90deg, #64748b, #475569)',
-      '--menu-item-selected': 'linear-gradient(90deg, #64748b, #475569)',
-      '--menu-item-hover': 'linear-gradient(90deg, #475569, #64748b)',
-      '--header-title': '#ffffff',
-      '--profile-avatar': '#64748b',
-      '--welcome-text': '#ffffff',
-      '--welcome-mse': '#aaa',
-      '--have-a-nice-day': '#ccc',
-      '--description-branch': '#ccc',
-    },
-    previewColor: '#536976',
-  },
-  {
-    key: 'ash',
-    label: 'Ash',
-    variables: {
-      '--sidebar-bg': 'linear-gradient(180deg, #9e9e9e, #616161)',
-      '--header-bg': 'linear-gradient(90deg, #bdbdbd, #9e9e9e)',
-      '--menu-item-selected': 'linear-gradient(90deg, #757575, #424242)',
-      '--menu-item-hover': 'linear-gradient(90deg, #424242, #757575)',
-      '--header-title': '#212121',
-      '--profile-avatar': '#616161',
-      '--welcome-text': '#212121',
-      '--welcome-mse': '#555',
-      '--have-a-nice-day': '#fff',
-      '--description-branch': '#fff',
-    },
-    previewColor: '#9e9e9e',
-  },
-  {
-    key: 'cloud',
-    label: 'Cloud',
-    variables: {
-      '--sidebar-bg': 'linear-gradient(180deg, #d7d2cc, #304352)',
-      '--header-bg': 'linear-gradient(90deg, #e8e4e0, #d7d2cc)',
-      '--menu-item-selected': 'linear-gradient(90deg, #8e9eab, #6d7993)',
-      '--menu-item-hover': 'linear-gradient(90deg, #6d7993, #8e9eab)',
-      '--header-title': '#304352',
-      '--profile-avatar': '#8e9eab',
-      '--welcome-text': '#304352',
-      '--welcome-mse': '#555',
-      '--have-a-nice-day': '#fff',
-      '--description-branch': '#fff',
-    },
-    previewColor: '#8e9eab',
-  },
-  {
-    key: 'charcoal',
-    label: 'Charcoal',
-    variables: {
-      '--sidebar-bg': 'linear-gradient(180deg, #52616B, #1E2022)',
-      '--header-bg': 'linear-gradient(90deg, #52616B, #1E2022)',
-      '--menu-item-selected': 'linear-gradient(90deg, #C9D6DF, #52616B)',
-      '--menu-item-hover': 'linear-gradient(90deg, #52616B, #C9D6DF)',
-      '--header-title': '#ffffff',
-      '--profile-avatar': '#C9D6DF',
-      '--welcome-text': '#ffffff',
-      '--welcome-mse': '#aaa',
-      '--have-a-nice-day': '#ddd',
-      '--description-branch': '#ddd',
-    },
-    previewColor: '#52616B',
-  }
 ];

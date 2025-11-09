@@ -25,24 +25,20 @@ interface ThemeDrawerProps {
 
 const themeGroups = [
   {
-    title: 'Classic',
-    keys: ['classic', 'violet', 'dark', 'sunset', 'forest', 'amber'],
+    title: 'Professional',
+    keys: ['professional', 'corporate', 'slate-professional', 'navy-classic'],
   },
   {
-    title: 'Grey Gradients',
-    keys: ['silver', 'slate', 'steel', 'ash', 'cloud', 'graphite', 'charcoal'],
+    title: 'Modern & Bold',
+    keys: ['modern-dark', 'ocean-blue', 'sapphire', 'midnight-blue', 'teal-modern', 'charcoal-modern'],
   },
   {
-    title: 'Modern',
+    title: 'Vibrant Colors',
     keys: [
-      'aqua', 'peach', 'rose',
-      'ocean', 'sunrise', 'mint',
-      'plum', 'blush', 'emerald', 'frost',
+      'emerald-pro', 'royal-purple', 'crimson-pro', 
+      'amber-executive', 'mint-fresh', 'rose-gold',
+      'orange-sunset', 'violet-luxury', 'forest-green', 'burgundy',
     ],
-  },
-  {
-    title: 'Neon / Bold',
-    keys: ['flamingo', 'neon', 'citrus', 'teal', 'lavender'],
   },
 ];
 
