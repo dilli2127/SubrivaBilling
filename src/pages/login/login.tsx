@@ -9,7 +9,7 @@ import {
 import { UserOutlined, LockOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import "./Login.css";
-import { useLoginMutation } from "../../services/redux/api/endpoints";
+import { useLoginMutation, useLazyGetSubscriptionStatusQuery } from "../../services/redux/api/endpoints";
 import { setUserData, setAuthToken, setTokens } from "../../helpers/auth";
 import { setPermissions, setMenuKeys, setUserData as setUserDataHelper } from "../../helpers/permissionHelper";
 
@@ -18,6 +18,7 @@ const { Title, Text } = Typography;
 const Login: React.FC = () => {
   const navigate = useNavigate();
   const [login, { isLoading, error }] = useLoginMutation();
+  const [getSubscriptionStatus] = useLazyGetSubscriptionStatusQuery();
 
   const onFinish = async (values: {
     username: string;
@@ -56,6 +57,15 @@ const Login: React.FC = () => {
         // Store complete user data for new API structure
         if (data) {
           setUserDataHelper(data);
+        }
+        
+        // Fetch subscription status after successful login
+        // This is cached and will be available when user visits settings
+        try {
+          await getSubscriptionStatus(undefined).unwrap();
+        } catch (error) {
+          // Silently fail - subscription check is not critical for login
+          console.warn('Failed to fetch subscription status:', error);
         }
         
         if (data?.UserItem?.usertype === "admin") {

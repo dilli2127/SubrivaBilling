@@ -20,6 +20,7 @@ import {
   BankOutlined,
   QrcodeOutlined,
   ApiOutlined,
+  CrownOutlined,
 } from '@ant-design/icons';
 import styles from './Settings.module.css';
 import { apiSlice } from '../../services/redux/api/apiSlice';
@@ -36,6 +37,7 @@ import {
   BankDetailsTab,
   PaymentQRTab,
   SystemTab,
+  SubscriptionTab,
 } from './tabs';
 
 const { Title, Text } = Typography;
@@ -820,6 +822,17 @@ const Settings: React.FC = () => {
                   onSave={handleSave}
                   onReset={handleReset}
                 />
+              ),
+            },
+            {
+              key: 'subscription',
+              label: (
+                <span>
+                  <CrownOutlined /> Subscription
+                </span>
+              ),
+              children: (
+                <SubscriptionTab />
               ),
             },
           ]}

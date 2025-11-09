@@ -25,6 +25,8 @@ import { useSessionStorage } from '../../../hooks/useLocalStorage';
 import UpdateStatus from '../../common/UpdateStatus';
 import { getApiModeConfig } from '../../../helpers/apiModeHelper';
 import { isElectron } from '../../../helpers/environment';
+import { useGetSubscriptionStatusQuery } from '../../../services/redux/api/endpoints';
+import { processSubscriptionStatus, getSubscriptionMessage } from '../../../utils/subscriptionUtils';
 
 const { Header, Content, Sider } = Layout;
 
@@ -59,7 +61,83 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
   
   // Get API mode for badge (Electron only)
   const isElectronApp = isElectron();
-  const apiMode = getApiModeConfig().mode;
+  const [apiMode, setApiMode] = useState(getApiModeConfig().mode);
+  
+  // Check subscription status using RTK Query
+  const { data: subscriptionData } = useGetSubscriptionStatusQuery(undefined, {
+    pollingInterval: 60 * 60 * 1000, // Poll every hour
+    refetchOnMountOrArgChange: true,
+  });
+  
+  // Show subscription warnings
+  useEffect(() => {
+    if (subscriptionData) {
+      const status = processSubscriptionStatus(subscriptionData);
+      
+      if (!status.isActive && status.message !== 'Working in offline mode - subscription will be verified when online') {
+        Modal.warning({
+          title: 'Subscription Status',
+          content: getSubscriptionMessage(status.isActive, status.daysRemaining, status.expiryDate),
+        });
+      } else if (status.daysRemaining && status.daysRemaining <= 7) {
+        // Show warning for expiring soon
+        Modal.info({
+          title: 'Subscription Expiring Soon',
+          content: getSubscriptionMessage(status.isActive, status.daysRemaining, status.expiryDate),
+        });
+      }
+    }
+  }, [subscriptionData]);
+  
+  // Toggle API mode
+  const handleToggleMode = () => {
+    Modal.confirm({
+      title: `Switch to ${apiMode === 'online' ? 'Offline' : 'Online'} Mode?`,
+      content: (
+        <div>
+          {apiMode === 'online' ? (
+            <>
+              <p>You are about to switch to <strong>Offline Mode</strong>.</p>
+              <p>• The application will connect to your local server</p>
+              <p>• Make sure your local server is running</p>
+              <p>• <strong>You will be logged out and need to login again</strong></p>
+            </>
+          ) : (
+            <>
+              <p>You are about to switch to <strong>Online Mode</strong>.</p>
+              <p>• The application will connect to the default hosted server</p>
+              <p>• All data will sync to online server</p>
+              <p>• <strong>You will be logged out and need to login again</strong></p>
+            </>
+          )}
+        </div>
+      ),
+      okText: 'Switch & Login Again',
+      cancelText: 'Cancel',
+      onOk: () => {
+        const newMode = apiMode === 'online' ? 'offline' : 'online';
+        const { setApiModeConfig } = require('../../../helpers/apiModeHelper');
+        const { clearAuthData } = require('../../../helpers/auth');
+        
+        // Save new mode
+        setApiModeConfig({ mode: newMode });
+        
+        // Clear all authentication data
+        clearAuthData();
+        
+        // Clear all localStorage except the API mode config
+        const apiModeConfig = localStorage.getItem('api_mode_config');
+        localStorage.clear();
+        if (apiModeConfig) {
+          localStorage.setItem('api_mode_config', apiModeConfig);
+        }
+        
+        // Redirect to login page
+        window.location.href = '#/billing_login';
+        window.location.reload();
+      },
+    });
+  };
 
   // Draggable button state
   const [buttonTop, setButtonTop] = useState(20); // percentage
@@ -285,6 +363,7 @@ console.log(userItem)
           {isElectronApp && (
             <Badge
               count={apiMode === 'online' ? 'ONLINE' : 'OFFLINE'}
+              onClick={handleToggleMode}
               style={{
                 backgroundColor: apiMode === 'online' ? '#52c41a' : '#faad14',
                 marginLeft: '12px',
@@ -293,7 +372,18 @@ console.log(userItem)
                 padding: '0 8px',
                 height: '22px',
                 lineHeight: '22px',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
               }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.opacity = '0.8';
+                e.currentTarget.style.transform = 'scale(1.05)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.opacity = '1';
+                e.currentTarget.style.transform = 'scale(1)';
+              }}
+              title="Click to switch mode"
             />
           )}
         </h2>

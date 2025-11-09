@@ -8,4 +8,5 @@ export { default as TemplateSettingsTab } from './TemplateSettingsTab';
 export { default as BankDetailsTab } from './BankDetailsTab';
 export { default as PaymentQRTab } from './PaymentQRTab';
 export { default as SystemTab } from './SystemTab';
+export { default as SubscriptionTab } from './SubscriptionTab';
 export * from './types';

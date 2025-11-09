@@ -347,6 +347,7 @@ export const apiSlice = createApi({
   tagTypes: [
     'Dashboard',
     'PlanLimits',
+    'Subscription',
     ...getDynamicTagTypes(), // Dynamically generated tag types from CRUD entities
   ],
   endpoints: builder => {
