@@ -121,8 +121,21 @@ export const useBillActions = (config: BillActionsConfig) => {
         return true;
       }
       return false;
-    } catch (error) {
-      message.error('Failed to save draft. Please try again.');
+    } catch (error: any) {
+      // Check if it's a plan limit error
+      if (error?.data?.exception === 'PLAN_LIMIT_REACHED' || error?.data?.statusCode === 403) {
+        const meta = error?.data?.meta;
+        const errorMessage = error?.data?.message || 'You have reached the maximum limit for your plan.';
+        
+        if (meta) {
+          const detailedMessage = `${errorMessage}\n\nCurrent Usage: ${meta.current_count} / ${meta.max_limit} ${meta.resource_type}\nPlan: ${meta.plan_type?.toUpperCase()}\nUsage: ${meta.usage_percentage}%`;
+          message.error(detailedMessage, 8);
+        } else {
+          message.error(errorMessage, 8);
+        }
+      } else {
+        message.error('Failed to save draft. Please try again.');
+      }
       return false;
     }
   }, [config, dispatch]);
@@ -237,8 +250,21 @@ export const useBillActions = (config: BillActionsConfig) => {
         return true;
       }
       return false;
-    } catch (error) {
-      message.error('Failed to complete bill. Please try again.');
+    } catch (error: any) {
+      // Check if it's a plan limit error
+      if (error?.data?.exception === 'PLAN_LIMIT_REACHED' || error?.data?.statusCode === 403) {
+        const meta = error?.data?.meta;
+        const errorMessage = error?.data?.message || 'You have reached the maximum limit for your plan.';
+        
+        if (meta) {
+          const detailedMessage = `${errorMessage}\n\nCurrent Usage: ${meta.current_count} / ${meta.max_limit} ${meta.resource_type}\nPlan: ${meta.plan_type?.toUpperCase()}\nUsage: ${meta.usage_percentage}%`;
+          message.error(detailedMessage, 8);
+        } else {
+          message.error(errorMessage, 8);
+        }
+      } else {
+        message.error('Failed to complete bill. Please try again.');
+      }
       return false;
     }
   }, [config, validateStockQuantities, dispatch]);
