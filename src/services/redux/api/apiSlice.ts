@@ -403,6 +403,27 @@ export const {
   useCreateBranchesMutation,
   useUpdateBranchesMutation,
   useDeleteBranchesMutation,
+  
+  // Products
+  useGetProductQuery,
+  useGetProductByIdQuery,
+  useCreateProductMutation,
+  useUpdateProductMutation,
+  useDeleteProductMutation,
+  
+  // Vendors
+  useGetVendorQuery,
+  useGetVendorByIdQuery,
+  useCreateVendorMutation,
+  useUpdateVendorMutation,
+  useDeleteVendorMutation,
+  
+  // Warehouses
+  useGetWarehouseQuery,
+  useGetWarehouseByIdQuery,
+  useCreateWarehouseMutation,
+  useUpdateWarehouseMutation,
+  useDeleteWarehouseMutation,
 } = apiSlice;
 
 // Helper function to get RTK hooks for any entity dynamically

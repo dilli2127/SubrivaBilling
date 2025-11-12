@@ -86,6 +86,9 @@ export const RESOURCES = {
   BRANCH_STOCK: 'branch_stock',
   ORGANISATION_STOCK: 'organisation_stock',
   
+  // Purchase Orders
+  PURCHASE_ORDER: 'purchase_order',
+  
   // Reports
   CUSTOMER_REPORT: 'customer_report',
   SALES_REPORT: 'sales_report',

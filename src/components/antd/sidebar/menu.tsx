@@ -22,6 +22,8 @@ import {
   MinusCircleOutlined,
   LineHeightOutlined,
   AppstoreOutlined,
+  ShoppingOutlined,
+  InboxOutlined,
 } from '@ant-design/icons';
 import { getPermissions, isSuperAdmin, getMenuKeys } from '../../../helpers/permissionHelper';
 
@@ -193,6 +195,25 @@ export const menuItems = [
     ],
   },
   {
+    key: 'Procurement',
+    label: 'Procurement',
+    icon: <ShoppingOutlined />,
+    children: [
+      {
+        key: 'purchase-orders',
+        label: 'Purchase Orders',
+        icon: <InboxOutlined />,
+        path: '/purchase_orders',
+      },
+      {
+        key: 'vendor',
+        label: 'Vendors',
+        icon: <SolutionOutlined />,
+        path: '/vendor_crud',
+      },
+    ],
+  },
+  {
     key: 'customers',
     label: 'Customers',
     icon: <UserOutlined />,
@@ -202,12 +223,6 @@ export const menuItems = [
         label: 'Customer',
         icon: <IdcardOutlined />,
         path: '/customer_crud',
-      },
-      {
-        key: 'vendor',
-        label: 'Vendor',
-        icon: <SolutionOutlined />,
-        path: '/vendor_crud',
       },
     ],
   },

@@ -302,4 +302,7 @@ export const API_ROUTES = {
       endpoint: "/tenant/plan-limits",
     },
   },
+  // Purchase Order - Basic CRUD only (custom endpoints in purchaseOrder.endpoints.ts)
+  PurchaseOrder: createCrudRoutes("/purchase_orders", "PurchaseOrder"),
+  PurchaseOrderReceipt: createCrudRoutes("/purchase_order_receipts", "PurchaseOrderReceipt"),
 };
