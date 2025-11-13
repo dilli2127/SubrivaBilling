@@ -21,7 +21,7 @@ export const useBillForm = () => {
     date: dayjs().format('YYYY-MM-DD'),
     customer_id: '',
     customer_name: '',
-    billed_by_id: '',
+    billed_by: '',
     billed_by_name: '',
     payment_mode: 'cash',
     items: [],
@@ -87,7 +87,7 @@ export const useBillForm = () => {
       date: dayjs().format('YYYY-MM-DD'),
       customer_id: '',
       customer_name: '',
-      billed_by_id: '',
+      billed_by: '',
       billed_by_name: '',
       payment_mode: 'cash',
       items: [
@@ -133,7 +133,7 @@ export const useBillForm = () => {
       date: dayjs(billdata.date).format('YYYY-MM-DD'),
       customer_id: partyId,
       customer_name: partyName,
-      billed_by_id: billdata.billed_by_id || '',
+      billed_by: billdata.billed_by || '',
       billed_by_name: billdata.billedByDetails?.name || '',
       payment_mode: billdata.payment_mode,
       items:

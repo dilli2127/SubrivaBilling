@@ -222,7 +222,7 @@ export interface BillFormData {
   date: string;
   customer_id: string;
   customer_name: string;
-  billed_by_id?: string;
+  billed_by?: string;
   billed_by_name?: string;
   payment_mode: string;
   items: BillItem[];

@@ -12,7 +12,7 @@ interface BillHeaderProps {
     date: string;
     customer_id: string;
     customer_name?: string;
-    billed_by_id?: string;
+    billed_by?: string;
     billed_by_name?: string;
     payment_mode: string;
   };
@@ -116,9 +116,9 @@ const BillHeader: React.FC<BillHeaderProps> = ({
         },
       },
       {
-        key: 'billed_by_id',
+        key: 'billed_by',
         title: '👨‍💼 BILLED BY',
-        dataIndex: 'billed_by_id',
+        dataIndex: 'billed_by',
         type: 'text',
         editable: false,
         required: false,
@@ -191,7 +191,7 @@ const BillHeader: React.FC<BillHeaderProps> = ({
         invoice_no: billFormData.invoice_no,
         date: billFormData.date,
         customer_id: billFormData.customer_id,
-        billed_by_id: billFormData.billed_by_id,
+        billed_by: billFormData.billed_by,
         payment_mode: billFormData.payment_mode,
       },
     ],
@@ -199,7 +199,7 @@ const BillHeader: React.FC<BillHeaderProps> = ({
       billFormData.invoice_no,
       billFormData.date,
       billFormData.customer_id,
-      billFormData.billed_by_id,
+      billFormData.billed_by,
       billFormData.payment_mode,
     ]
   );

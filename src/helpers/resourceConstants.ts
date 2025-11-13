@@ -1,6 +1,6 @@
 /**
  * Resource Constants - Available Resources for Permission Management
- * 
+ *
  * This file defines all available resources in the system and their metadata.
  * Used by the Role creation/edit forms to display permission checkboxes.
  */
@@ -19,191 +19,212 @@ export interface ResourceDefinition {
  */
 export const AVAILABLE_RESOURCES: ResourceDefinition[] = [
   // Core
-  { 
-    resource: 'dashboard', 
+  {
+    resource: 'dashboard',
     label: 'Dashboard',
     category: 'Core',
     description: 'Main dashboard view',
-    menus: ['dashboard']
+    menus: ['dashboard'],
   },
-  
+
   // Sales (Shared API - one permission controls multiple menus)
-  { 
-    resource: 'sales_record', 
+  {
+    resource: 'sales_record',
     label: 'Sales Records',
     category: 'Sales',
     description: 'Controls: SalesRecords menu, Create Sales, Sales List',
-    menus: ['SalesRecords', 'create-sales-record', 'sales-records-list']
+    menus: ['SalesRecords', 'create-sales-record', 'sales-records-list'],
   },
-  
+  {
+    resource: 'sales_return',
+    label: 'Sales Returns',
+    category: 'Sales',
+    description: 'Customer returns and refund management',
+    menus: ['sales-returns-list', 'create-sales-return'],
+  },
+  {
+    resource: 'customer_points',
+    label: 'Customer Points',
+    category: 'Sales',
+    description: 'Unified points system for rewards and refunds',
+    menus: ['customer-points'],
+  },
+
   // Customers & Vendors (Separate APIs)
-  { 
-    resource: 'customer', 
+  {
+    resource: 'customer',
     label: 'Customers',
     category: 'Sales',
     description: 'Customer management',
-    menus: ['add-customer']
+    menus: ['add-customer'],
   },
-  { 
-    resource: 'vendor', 
+  {
+    resource: 'vendor',
     label: 'Vendors',
-    category: 'Sales',
+    category: 'Procurement',
     description: 'Vendor management',
-    menus: ['vendor']
+    menus: ['vendor'],
   },
-  
+  {
+    resource: 'purchase_order',
+    label: 'Purchase Orders',
+    category: 'Procurement',
+    description: 'Purchase order management with approval workflow',
+    menus: ['purchase-orders'],
+  },
+
   // Products (Separate APIs for each)
-  { 
-    resource: 'product', 
+  {
+    resource: 'product',
     label: 'Products',
     category: 'Inventory',
     description: 'Product management',
-    menus: ['add-product']
+    menus: ['add-product'],
   },
-  { 
-    resource: 'unit', 
+  {
+    resource: 'unit',
     label: 'Units',
     category: 'Inventory',
     description: 'Unit management',
-    menus: ['unit']
+    menus: ['unit'],
   },
-  { 
-    resource: 'category', 
+  {
+    resource: 'category',
     label: 'Categories',
     category: 'Inventory',
     description: 'Category management',
-    menus: ['category']
+    menus: ['category'],
   },
-  { 
-    resource: 'variant', 
+  {
+    resource: 'variant',
     label: 'Variants',
     category: 'Inventory',
     description: 'Variant management',
-    menus: ['variant']
+    menus: ['variant'],
   },
-  { 
-    resource: 'warehouse', 
+  {
+    resource: 'warehouse',
     label: 'Warehouses',
     category: 'Inventory',
     description: 'Warehouse management',
-    menus: ['warehouse']
+    menus: ['warehouse'],
   },
-  { 
-    resource: 'rack', 
+  {
+    resource: 'rack',
     label: 'Racks',
     category: 'Inventory',
     description: 'Rack management',
-    menus: ['rack']
+    menus: ['rack'],
   },
-  
+
   // Stock Management (Mixed - some share APIs, some don't)
-  { 
-    resource: 'stock_audit', 
+  {
+    resource: 'stock_audit',
     label: 'Stock In / Org Stock',
     category: 'Stock',
     description: 'Controls: Stock In, Organisation Stock Available',
-    menus: ['stock-in', 'organisation-stock-available']
+    menus: ['stock-in', 'organisation-stock-available'],
   },
-  { 
-    resource: 'stock_out', 
+  {
+    resource: 'stock_out',
     label: 'Stock Out',
     category: 'Stock',
     description: 'Stock out management',
-    menus: ['stock-out']
+    menus: ['stock-out'],
   },
-  { 
-    resource: 'branch_stock', 
+  {
+    resource: 'branch_stock',
     label: 'Branch Stock',
     category: 'Stock',
     description: 'Controls: Branch Stock, Branch Stock Available',
-    menus: ['branch-stock', 'branch-stock-available']
+    menus: ['branch-stock', 'branch-stock-available'],
   },
-  { 
-    resource: 'storage_stock', 
+  {
+    resource: 'storage_stock',
     label: 'Storage Stock',
     category: 'Stock',
     description: 'Storage stock list',
-    menus: ['storage-stock-list']
+    menus: ['storage-stock-list'],
   },
-  
+
   // Financial
-  { 
-    resource: 'payment_history', 
+  {
+    resource: 'payment_history',
     label: 'Payment History',
     category: 'Financial',
     description: 'Payment history management',
-    menus: ['payment-history']
+    menus: ['payment-history'],
   },
-  { 
-    resource: 'expense', 
+  {
+    resource: 'expense',
     label: 'Expenses',
     category: 'Financial',
     description: 'Expense management',
-    menus: ['expenses']
+    menus: ['expenses'],
   },
-  
+
   // Reports
-  { 
-    resource: 'reports', 
+  {
+    resource: 'reports',
     label: 'Reports',
     category: 'Reports',
     description: 'All reports',
-    menus: ['reports', 'report']
+    menus: ['reports', 'report'],
   },
-  
+
   // Advanced
-  { 
-    resource: 'custom_entities', 
+  {
+    resource: 'custom_entities',
     label: 'Custom Forms',
     category: 'Advanced',
     description: 'Custom entity management',
-    menus: ['custom_forms']
+    menus: ['custom_forms'],
   },
-  
+
   // Settings
-  { 
-    resource: 'settings', 
+  {
+    resource: 'settings',
     label: 'Settings',
     category: 'Settings',
     description: 'Application settings',
-    menus: ['settings']
+    menus: ['settings'],
   },
-  
+
   // Master Settings
-  { 
-    resource: 'organisation', 
+  {
+    resource: 'organisation',
     label: 'Organisation',
     category: 'Master Settings',
     description: 'Organisation management',
-    menus: ['organisation']
+    menus: ['organisation'],
   },
-  { 
-    resource: 'branch', 
+  {
+    resource: 'branch',
     label: 'Branches',
     category: 'Master Settings',
     description: 'Branch management',
-    menus: ['braches']
+    menus: ['braches'],
   },
-  { 
-    resource: 'billing_user', 
+  {
+    resource: 'billing_user',
     label: 'Users',
     category: 'Master Settings',
     description: 'User management',
-    menus: ['users']
+    menus: ['users'],
   },
-  { 
-    resource: 'role', 
+  {
+    resource: 'role',
     label: 'Roles',
     category: 'Master Settings',
     description: 'Role management',
-    menus: ['roles']
+    menus: ['roles'],
   },
-  { 
-    resource: 'permission', 
+  {
+    resource: 'permission',
     label: 'Permissions',
     category: 'Master Settings',
     description: 'Permission management',
-    menus: ['permissions']
+    menus: ['permissions'],
   },
 ];
 
@@ -217,13 +238,16 @@ export const getGroupedResources = (): Record<string, ResourceDefinition[]> => {
     return groupedResourcesCache;
   }
 
-  groupedResourcesCache = AVAILABLE_RESOURCES.reduce((acc, resource) => {
-    if (!acc[resource.category]) {
-      acc[resource.category] = [];
-    }
-    acc[resource.category].push(resource);
-    return acc;
-  }, {} as Record<string, ResourceDefinition[]>);
+  groupedResourcesCache = AVAILABLE_RESOURCES.reduce(
+    (acc, resource) => {
+      if (!acc[resource.category]) {
+        acc[resource.category] = [];
+      }
+      acc[resource.category].push(resource);
+      return acc;
+    },
+    {} as Record<string, ResourceDefinition[]>
+  );
 
   return groupedResourcesCache;
 };
@@ -238,7 +262,9 @@ export const getCategories = (): string[] => {
     return categoriesCache;
   }
 
-  categoriesCache = Array.from(new Set(AVAILABLE_RESOURCES.map(r => r.category)));
+  categoriesCache = Array.from(
+    new Set(AVAILABLE_RESOURCES.map(r => r.category))
+  );
   return categoriesCache;
 };
 
@@ -247,7 +273,9 @@ export const getCategories = (): string[] => {
  */
 const resourceLookupCache = new Map<string, ResourceDefinition | undefined>();
 
-export const getResourceByName = (resourceName: string): ResourceDefinition | undefined => {
+export const getResourceByName = (
+  resourceName: string
+): ResourceDefinition | undefined => {
   if (resourceLookupCache.has(resourceName)) {
     return resourceLookupCache.get(resourceName);
   }
@@ -256,4 +284,3 @@ export const getResourceByName = (resourceName: string): ResourceDefinition | un
   resourceLookupCache.set(resourceName, resource);
   return resource;
 };
-

@@ -74,11 +74,19 @@ export const useInfiniteDropdown = ({
   }, [searchString, searchDebounceMs]);
 
   // Fetch data using the provided query hook
-  const { data, isLoading } = queryHook({
-    page,
-    limit,
-    searchString: debouncedSearch,
-  });
+  // Enable refetchOnMountOrArgChange to ensure fresh data on component mount
+  const { data, isLoading } = queryHook(
+    {
+      page,
+      limit,
+      searchString: debouncedSearch,
+    },
+    {
+      refetchOnMountOrArgChange: true, // Always fetch fresh data on mount
+      refetchOnFocus: false,
+      refetchOnReconnect: true, // Refetch if connection was lost
+    }
+  );
 
   // Accumulate items for infinite scroll
   useEffect(() => {

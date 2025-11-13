@@ -35,6 +35,11 @@ export const getStockAuditFormItems = ({
         onSearch={productDropdown.setSearchString}
         onPopupScroll={productDropdown.handlePopupScroll}
         filterOption={false}
+        notFoundContent={
+          productDropdown.loading ? 'Loading products...' : 
+          productDropdown.items.length === 0 ? 'No products found. Add products first.' : 
+          null
+        }
         dropdownRender={(menu) => (
           <>
             {menu}

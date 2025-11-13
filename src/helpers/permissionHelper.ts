@@ -89,6 +89,10 @@ export const RESOURCES = {
   // Purchase Orders
   PURCHASE_ORDER: 'purchase_order',
   
+  // Sales Returns
+  SALES_RETURN: 'sales_return',
+  CUSTOMER_POINTS: 'customer_points',
+  
   // Reports
   CUSTOMER_REPORT: 'customer_report',
   SALES_REPORT: 'sales_report',

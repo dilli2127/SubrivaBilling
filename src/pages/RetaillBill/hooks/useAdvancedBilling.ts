@@ -430,16 +430,16 @@ export const useAdvancedBilling = ({ billdata, onSuccess }: AdvancedBillingProps
 
   // 11. Auto-set current user as billed_by
   useEffect(() => {
-    if (!billdata && billData.userListResult.length && billData.user?._id && !form.billFormData.billed_by_id) {
+    if (!billdata && billData.userListResult.length && billData.user?._id && !form.billFormData.billed_by) {
       const currentUser = billData.userListResult.find((u: any) => u._id === billData.user?._id);
       if (currentUser && billData.user) {
         form.updateHeader({
-          billed_by_id: billData.user._id,
+          billed_by: billData.user._id,
           billed_by_name: currentUser.name || billData.user.name || '',
         });
       }
     }
-  }, [billData.userListResult, billData.user, billdata, form.billFormData.billed_by_id]);
+  }, [billData.userListResult, billData.user, billdata, form.billFormData.billed_by]);
 
   // 12. Update document type from settings
   useEffect(() => {
@@ -559,11 +559,11 @@ export const useAdvancedBilling = ({ billdata, onSuccess }: AdvancedBillingProps
         value: user._id,
       }));
 
-      if (form.billFormData.billed_by_id && form.billFormData.billed_by_name) {
-        const exists = options.some((opt: { value: string }) => opt.value === form.billFormData.billed_by_id);
+      if (form.billFormData.billed_by && form.billFormData.billed_by_name) {
+        const exists = options.some((opt: { value: string }) => opt.value === form.billFormData.billed_by);
         if (!exists) {
           options.push({
-            value: form.billFormData.billed_by_id,
+            value: form.billFormData.billed_by,
             label: form.billFormData.billed_by_name,
           });
         }
@@ -572,7 +572,7 @@ export const useAdvancedBilling = ({ billdata, onSuccess }: AdvancedBillingProps
       return options;
     }, [
       billData.userListResult,
-      form.billFormData.billed_by_id,
+      form.billFormData.billed_by,
       form.billFormData.billed_by_name,
     ]),
   };

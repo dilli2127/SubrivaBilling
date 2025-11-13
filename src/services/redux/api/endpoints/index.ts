@@ -15,6 +15,8 @@ export * from './reports.endpoints';
 export * from './stock.endpoints';
 export * from './subscription.endpoints';
 export * from './purchaseOrder.endpoints';
+export * from './salesReturn.endpoints';
+export * from './points.endpoints';
 
 // Add your custom endpoints here:
 // export * from './custom.endpoints';

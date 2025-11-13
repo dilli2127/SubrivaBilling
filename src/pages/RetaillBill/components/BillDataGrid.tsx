@@ -101,14 +101,14 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
                       (v: any) => v._id === rows[0].customer_id
                     );
               const user = billData.userListResult.find(
-                (u: any) => u._id === rows[0].billed_by_id
+                (u: any) => u._id === rows[0].billed_by
               );
               form.updateHeader({
                 invoice_no: rows[0].invoice_no || '',
                 date: rows[0].date,
                 customer_id: rows[0].customer_id || '',
                 customer_name: customer?.full_name || customer?.vendor_name || '',
-                billed_by_id: rows[0].billed_by_id || '',
+                billed_by: rows[0].billed_by || '',
                 billed_by_name: user?.name || '',
                 payment_mode: rows[0].payment_mode || 'cash',
               });
@@ -443,9 +443,9 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
       <UserSelectionModal
         visible={modals.userModalVisible}
         onSelect={user => {
-          if (form.billFormData.billed_by_id === user._id) return;
+          if (form.billFormData.billed_by === user._id) return;
           form.updateHeader({
-            billed_by_id: user._id,
+            billed_by: user._id,
             billed_by_name: user.name,
           });
           modals.closeUserModal();

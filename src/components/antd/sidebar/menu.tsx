@@ -24,8 +24,15 @@ import {
   AppstoreOutlined,
   ShoppingOutlined,
   InboxOutlined,
+  UndoOutlined,
+  CreditCardOutlined,
+  GiftOutlined,
 } from '@ant-design/icons';
-import { getPermissions, isSuperAdmin, getMenuKeys } from '../../../helpers/permissionHelper';
+import {
+  getPermissions,
+  isSuperAdmin,
+  getMenuKeys,
+} from '../../../helpers/permissionHelper';
 
 // Cache for filtered menu items to avoid recalculation on every render
 let cachedFilteredItems: any[] | null = null;
@@ -36,44 +43,46 @@ const CACHE_DURATION = 30000; // 30 seconds
 export const getFilteredMenuItems = () => {
   try {
     const now = Date.now();
-    
+
     // Return cached result if still valid
-    if (cachedFilteredItems && (now - cacheTimestamp) < CACHE_DURATION) {
+    if (cachedFilteredItems && now - cacheTimestamp < CACHE_DURATION) {
       return cachedFilteredItems;
     }
 
     // SuperAdmin can see all menus without restrictions
     const isSuper = isSuperAdmin();
-    
+
     if (isSuper) {
       cachedFilteredItems = menuItems;
       cacheTimestamp = now;
       return cachedFilteredItems;
     }
-    
+
     // Try new API structure first (allowedMenuKeys array from login response)
     const menuKeys = getMenuKeys();
-    
+
     let allowedKeys: Set<string> | string[] | null = null;
-    
+
     if (menuKeys && menuKeys.length > 0) {
       allowedKeys = menuKeys;
     } else {
       // Fallback to old structure (permissions with allowed_menu_keys)
       const permissions = getPermissions();
-      
+
       // If no permissions found, show nothing
       if (!permissions || Object.keys(permissions).length === 0) {
         cachedFilteredItems = [];
         cacheTimestamp = now;
         return cachedFilteredItems;
       }
-      
+
       // Get all allowed menu keys from permissions
       const allowedMenuKeys = new Set<string>();
       Object.values(permissions).forEach((perm: any) => {
         if (perm.allowed_menu_keys && Array.isArray(perm.allowed_menu_keys)) {
-          perm.allowed_menu_keys.forEach((key: string) => allowedMenuKeys.add(key));
+          perm.allowed_menu_keys.forEach((key: string) =>
+            allowedMenuKeys.add(key)
+          );
         }
       });
 
@@ -83,31 +92,35 @@ export const getFilteredMenuItems = () => {
         cacheTimestamp = now;
         return cachedFilteredItems;
       }
-      
+
       allowedKeys = allowedMenuKeys;
     }
 
-    const filteredItems = menuItems.map(item => {
-      // If item has children, filter them based on allowed keys
-      if (item.children) {
-        const filteredChildren = item.children.filter(child => {
-          return Array.isArray(allowedKeys) 
-            ? allowedKeys.includes(child.key)
-            : allowedKeys.has(child.key);
-        });
+    const filteredItems = menuItems
+      .map(item => {
+        // If item has children, filter them based on allowed keys
+        if (item.children) {
+          const filteredChildren = item.children.filter(child => {
+            return Array.isArray(allowedKeys)
+              ? allowedKeys.includes(child.key)
+              : allowedKeys.has(child.key);
+          });
 
-        // Only show parent if it has visible children
-        return filteredChildren.length > 0 ? { ...item, children: filteredChildren } : null;
-      }
+          // Only show parent if it has visible children
+          return filteredChildren.length > 0
+            ? { ...item, children: filteredChildren }
+            : null;
+        }
 
-      // For single menu items, check if allowed
-      const isAllowed = Array.isArray(allowedKeys) 
-        ? allowedKeys.includes(item.key)
-        : allowedKeys.has(item.key);
-        
-      return isAllowed ? item : null;
-    }).filter(Boolean);
-    
+        // For single menu items, check if allowed
+        const isAllowed = Array.isArray(allowedKeys)
+          ? allowedKeys.includes(item.key)
+          : allowedKeys.has(item.key);
+
+        return isAllowed ? item : null;
+      })
+      .filter(Boolean);
+
     cachedFilteredItems = filteredItems;
     cacheTimestamp = now;
     return cachedFilteredItems;
@@ -148,6 +161,12 @@ export const menuItems = [
         label: 'Sales Records List',
         icon: <FileSearchOutlined />,
         path: '/retaill_bill_list',
+      },
+      {
+        key: 'sales-returns-list',
+        label: 'Sales Returns',
+        icon: <UndoOutlined />,
+        path: '/sales_returns',
       },
     ],
   },
@@ -221,8 +240,12 @@ export const menuItems = [
       {
         key: 'add-customer',
         label: 'Customer',
-        icon: <IdcardOutlined />,
         path: '/customer_crud',
+      },
+      {
+        key: 'customer-points',
+        label: 'Customer Points',
+        path: '/customer_points',
       },
     ],
   },

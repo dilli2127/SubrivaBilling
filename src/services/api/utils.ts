@@ -305,4 +305,10 @@ export const API_ROUTES = {
   // Purchase Order - Basic CRUD only (custom endpoints in purchaseOrder.endpoints.ts)
   PurchaseOrder: createCrudRoutes("/purchase_orders", "PurchaseOrder"),
   PurchaseOrderReceipt: createCrudRoutes("/purchase_order_receipts", "PurchaseOrderReceipt"),
+  
+  // Sales Returns - Basic CRUD only (custom endpoints in salesReturn.endpoints.ts)
+  SalesReturn: createCrudRoutes("/sales_returns", "SalesReturn"),
+  
+  // Customer Points - Basic CRUD only (custom endpoints in points.endpoints.ts)
+  CustomerPoints: createCrudRoutes("/customer_points", "CustomerPoints"),
 };
