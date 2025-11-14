@@ -19,7 +19,13 @@ export const allocateDrawerFormItems = (
         allowClear
         onSearch={branchDropdown.setSearchString}
         onPopupScroll={branchDropdown.handlePopupScroll}
+        onDropdownVisibleChange={branchDropdown.onDropdownVisibleChange}
         filterOption={false}
+        notFoundContent={
+          branchDropdown.loading ? 'Loading branches...' : 
+          branchDropdown.items.length === 0 ? 'No branches found' : 
+          null
+        }
         dropdownRender={(menu) => (
           <>
             {menu}

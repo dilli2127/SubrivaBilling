@@ -59,6 +59,7 @@ export const InfiniteSelect: React.FC<InfiniteSelectProps> = ({
       allowClear={allowClear}
       onSearch={dropdown.setSearchString}
       onPopupScroll={dropdown.handlePopupScroll}
+      onDropdownVisibleChange={dropdown.onDropdownVisibleChange}
       filterOption={false}
       disabled={disabled}
       style={style}

@@ -34,6 +34,7 @@ export const getStockAuditFormItems = ({
         loading={productDropdown.loading && productDropdown.items.length === 0}
         onSearch={productDropdown.setSearchString}
         onPopupScroll={productDropdown.handlePopupScroll}
+        onDropdownVisibleChange={productDropdown.onDropdownVisibleChange}
         filterOption={false}
         notFoundContent={
           productDropdown.loading ? 'Loading products...' : 
@@ -153,7 +154,13 @@ export const getStockAuditFormItems = ({
         loading={vendorDropdown.loading && vendorDropdown.items.length === 0}
         onSearch={vendorDropdown.setSearchString}
         onPopupScroll={vendorDropdown.handlePopupScroll}
+        onDropdownVisibleChange={vendorDropdown.onDropdownVisibleChange}
         filterOption={false}
+        notFoundContent={
+          vendorDropdown.loading ? 'Loading vendors...' : 
+          vendorDropdown.items.length === 0 ? 'No vendors found. Add vendors first.' : 
+          null
+        }
         dropdownRender={(menu) => (
           <>
             {menu}
@@ -204,7 +211,13 @@ export const getStockAuditFormItems = ({
         loading={warehouseDropdown.loading && warehouseDropdown.items.length === 0}
         onSearch={warehouseDropdown.setSearchString}
         onPopupScroll={warehouseDropdown.handlePopupScroll}
+        onDropdownVisibleChange={warehouseDropdown.onDropdownVisibleChange}
         filterOption={false}
+        notFoundContent={
+          warehouseDropdown.loading ? 'Loading warehouses...' : 
+          warehouseDropdown.items.length === 0 ? 'No warehouses found' : 
+          null
+        }
         dropdownRender={(menu) => (
           <>
             {menu}

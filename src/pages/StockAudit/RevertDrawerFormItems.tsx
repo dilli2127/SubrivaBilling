@@ -25,8 +25,14 @@ export const revertDrawerFormItems = (
         allowClear
         onSearch={branchDropdown.setSearchString}
         onPopupScroll={branchDropdown.handlePopupScroll}
+        onDropdownVisibleChange={branchDropdown.onDropdownVisibleChange}
         filterOption={false}
         onChange={options.onBranchChange}
+        notFoundContent={
+          branchDropdown.loading ? 'Loading branches...' : 
+          branchDropdown.items.length === 0 ? 'No branches found' : 
+          null
+        }
         dropdownRender={(menu) => (
           <>
             {menu}

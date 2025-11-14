@@ -94,7 +94,13 @@ const VariantCrud: React.FC = () => {
             allowClear
             onSearch={unitDropdown.setSearchString}
             onPopupScroll={unitDropdown.handlePopupScroll}
+            onDropdownVisibleChange={unitDropdown.onDropdownVisibleChange}
             filterOption={false}
+            notFoundContent={
+              unitDropdown.loading ? 'Loading units...' : 
+              unitDropdown.items.length === 0 ? 'No units found' : 
+              null
+            }
             dropdownRender={(menu) => (
               <>
                 {menu}

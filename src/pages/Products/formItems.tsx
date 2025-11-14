@@ -51,7 +51,13 @@ export const productsFormItems = ({
         allowClear
         onSearch={categoryDropdown.setSearchString}
         onPopupScroll={categoryDropdown.handlePopupScroll}
+        onDropdownVisibleChange={categoryDropdown.onDropdownVisibleChange}
         filterOption={false}
+        notFoundContent={
+          categoryDropdown.loading ? 'Loading categories...' : 
+          categoryDropdown.items.length === 0 ? 'No categories found' : 
+          null
+        }
         dropdownRender={(menu) => (
           <>
             {menu}
@@ -115,7 +121,13 @@ export const productsFormItems = ({
         allowClear
         onSearch={variantDropdown.setSearchString}
         onPopupScroll={variantDropdown.handlePopupScroll}
+        onDropdownVisibleChange={variantDropdown.onDropdownVisibleChange}
         filterOption={false}
+        notFoundContent={
+          variantDropdown.loading ? 'Loading variants...' : 
+          variantDropdown.items.length === 0 ? 'No variants found' : 
+          null
+        }
         dropdownRender={(menu) => (
           <>
             {menu}

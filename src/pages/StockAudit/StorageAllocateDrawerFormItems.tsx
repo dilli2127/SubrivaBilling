@@ -19,7 +19,13 @@ export const storageAllocateDrawerFormItems = (
         allowClear
         onSearch={rackDropdown.setSearchString}
         onPopupScroll={rackDropdown.handlePopupScroll}
+        onDropdownVisibleChange={rackDropdown.onDropdownVisibleChange}
         filterOption={false}
+        notFoundContent={
+          rackDropdown.loading ? 'Loading racks...' : 
+          rackDropdown.items.length === 0 ? 'No racks found' : 
+          null
+        }
         dropdownRender={(menu) => (
           <>
             {menu}

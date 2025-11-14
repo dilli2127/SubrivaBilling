@@ -14,6 +14,7 @@ export interface InfiniteDropdownResult {
   setSearchString: (value: string) => void; // Update search
   hasMore: boolean; // Whether more items exist
   handlePopupScroll: (e: React.UIEvent<HTMLDivElement>) => void; // Scroll handler
+  onDropdownVisibleChange: (open: boolean) => void; // Handle dropdown open/close
 }
 
 /**
@@ -28,6 +29,7 @@ export interface InfiniteDropdownResult {
  * <Select
  *   onSearch={categoryDropdown.setSearchString}
  *   onPopupScroll={categoryDropdown.handlePopupScroll}
+ *   onDropdownVisibleChange={categoryDropdown.onDropdownVisibleChange}
  *   loading={categoryDropdown.loading && categoryDropdown.items.length === 0}
  *   filterOption={false}
  * >
@@ -50,9 +52,15 @@ export const useInfiniteDropdown = ({
   // Refs
   const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isLoadingMoreRef = useRef(false);
+  const isInitialSearchRef = useRef(true);
 
   // Debounce search input
   useEffect(() => {
+    if (isInitialSearchRef.current) {
+      isInitialSearchRef.current = false;
+      return;
+    }
+
     if (searchTimerRef.current) {
       clearTimeout(searchTimerRef.current);
     }
@@ -75,7 +83,7 @@ export const useInfiniteDropdown = ({
 
   // Fetch data using the provided query hook
   // Enable refetchOnMountOrArgChange to ensure fresh data on component mount
-  const { data, isLoading } = queryHook(
+  const { data, isLoading, isFetching, refetch } = queryHook(
     {
       page,
       limit,
@@ -142,6 +150,13 @@ export const useInfiniteDropdown = ({
     }
   }, [hasMore, isLoading, scrollThreshold]);
 
+  // Handle dropdown visibility changes
+  const onDropdownVisibleChange = useCallback((open: boolean) => {
+    if (open && allItems.length === 0 && !isLoading && !isFetching) {
+      refetch();
+    }
+  }, [allItems.length, isLoading, isFetching, refetch]);
+
   return useMemo(() => ({
     items: allItems,
     loading: isLoading,
@@ -149,6 +164,7 @@ export const useInfiniteDropdown = ({
     setSearchString,
     hasMore,
     handlePopupScroll,
-  }), [allItems, isLoading, searchString, hasMore, handlePopupScroll]);
+    onDropdownVisibleChange,
+  }), [allItems, isLoading, searchString, hasMore, handlePopupScroll, onDropdownVisibleChange]);
 };
 

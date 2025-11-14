@@ -89,7 +89,13 @@ const StockOutCrud: React.FC = () => {
             allowClear
             onSearch={stockAuditDropdown.setSearchString}
             onPopupScroll={stockAuditDropdown.handlePopupScroll}
+            onDropdownVisibleChange={stockAuditDropdown.onDropdownVisibleChange}
             filterOption={false}
+            notFoundContent={
+              stockAuditDropdown.loading ? 'Loading stock batches...' : 
+              stockAuditDropdown.items.length === 0 ? 'No stock batches found' : 
+              null
+            }
             dropdownRender={(menu) => (
               <>
                 {menu}
