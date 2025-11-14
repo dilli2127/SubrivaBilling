@@ -94,6 +94,14 @@ const POReceiveModal: React.FC<POReceiveModalProps> = ({
         return;
       }
       
+      // Validate expiry date is required for all received items
+      const itemsWithReceivedQuantity = lineItems.filter(item => item.received_quantity > 0);
+      const missingExpiryDates = itemsWithReceivedQuantity.filter(item => !item.expiry_date);
+      if (missingExpiryDates.length > 0) {
+        message.error('Expiry date is required for all received items');
+        return;
+      }
+      
       // Prepare items data
       const items = lineItems
         .filter(item => item.received_quantity > 0)
@@ -240,21 +248,36 @@ const POReceiveModal: React.FC<POReceiveModalProps> = ({
           value={record.mfg_date ? dayjs(record.mfg_date) : undefined}
           onChange={(date) => handleFieldChange(index, 'mfg_date', date)}
           style={{ width: '100%' }}
+          disabledDate={(current) => current && current > dayjs().endOf('day')}
         />
       ),
     },
     {
-      title: 'Expiry Date',
+      title: (
+        <span>
+          Expiry Date <span style={{ color: 'red' }}>*</span>
+        </span>
+      ),
       key: 'expiry_date',
       width: 140,
-      render: (record: any, _: any, index: number) => (
-        <DatePicker
-          format="YYYY-MM-DD"
-          value={record.expiry_date ? dayjs(record.expiry_date) : undefined}
-          onChange={(date) => handleFieldChange(index, 'expiry_date', date)}
-          style={{ width: '100%' }}
-        />
-      ),
+      render: (record: any, _: any, index: number) => {
+        const isRequired = record.received_quantity > 0;
+        const hasError = isRequired && !record.expiry_date;
+        return (
+          <DatePicker
+            format="YYYY-MM-DD"
+            value={record.expiry_date ? dayjs(record.expiry_date) : undefined}
+            onChange={(date) => handleFieldChange(index, 'expiry_date', date)}
+            style={{ 
+              width: '100%',
+              borderColor: hasError ? '#ff4d4f' : undefined
+            }}
+            disabledDate={(current) => current && current < dayjs().endOf('day')}
+            placeholder={isRequired ? "Required *" : "Select date"}
+            className={hasError ? 'ant-picker-error' : ''}
+          />
+        );
+      },
     },
   ];
   
@@ -297,7 +320,15 @@ const POReceiveModal: React.FC<POReceiveModalProps> = ({
           <Col span={8}>
             <Form.Item
               name="vendor_invoice_no"
-              label="Vendor Invoice Number"
+              label={
+                <span>
+                  Vendor Invoice Number <span style={{ color: 'red' }}>*</span>
+                </span>
+              }
+              rules={[
+                { required: true, message: 'Please enter vendor invoice number' },
+                { whitespace: true, message: 'Vendor invoice number cannot be empty' },
+              ]}
             >
               <Input placeholder="Enter vendor's invoice number" />
             </Form.Item>
