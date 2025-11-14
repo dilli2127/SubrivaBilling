@@ -120,11 +120,11 @@ const SelectInvoiceModal: React.FC<SelectInvoiceModalProps> = ({
     },
     {
       title: 'Payment',
-      dataIndex: 'payment_status',
+      dataIndex: 'is_paid',
       key: 'payment_status',
       width: 100,
-      render: (status: string) => {
-        const isPaid = status === 'paid' || status === 'completed';
+      render: (status: boolean) => {
+        const isPaid = status === true;
         return (
           <Tag color={isPaid ? 'green' : 'orange'}>
             {isPaid ? 'Paid' : 'Pending'}
