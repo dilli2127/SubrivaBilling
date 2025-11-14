@@ -13,6 +13,7 @@ import POReceiveModal from './POReceiveModal';
 import POApprovalModal from './POApprovalModal';
 import POSendModal from './POSendModal';
 import POViewModal from './POViewModal';
+import POPaymentModal from './POPaymentModal';
 import dayjs from 'dayjs';
 import { getCurrentUser } from '../../helpers/auth';
 import { canCreate, canUpdate, canDelete, RESOURCES } from '../../helpers/permissionHelper';
@@ -28,6 +29,7 @@ const PurchaseOrderCrud: React.FC = () => {
   const [approvalModalOpen, setApprovalModalOpen] = useState(false);
   const [sendModalOpen, setSendModalOpen] = useState(false);
   const [viewModalOpen, setViewModalOpen] = useState(false);
+  const [paymentModalOpen, setPaymentModalOpen] = useState(false);
   const [selectedPO, setSelectedPO] = useState<any>(null);
   
   // API queries - memoized params
@@ -277,6 +279,10 @@ const PurchaseOrderCrud: React.FC = () => {
       setSelectedPO(record);
       setReceiveModalOpen(true);
     },
+    onPay: (record: any) => {
+      setSelectedPO(record);
+      setPaymentModalOpen(true);
+    },
     onCancel: async (record: any) => {
       Modal.confirm({
         title: 'Cancel Purchase Order?',
@@ -371,6 +377,20 @@ const PurchaseOrderCrud: React.FC = () => {
           setSelectedPO(null);
         }}
         purchaseOrder={selectedPO}
+      />
+      
+      <POPaymentModal
+        open={paymentModalOpen}
+        onClose={() => {
+          setPaymentModalOpen(false);
+          setSelectedPO(null);
+        }}
+        purchaseOrder={selectedPO}
+        onSuccess={() => {
+          // Refetch purchase orders to update payment amounts
+          // GenericCrudPage will automatically refetch due to cache invalidation
+          setPaymentModalOpen(false);
+        }}
       />
     </>
   );

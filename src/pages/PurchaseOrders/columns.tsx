@@ -20,6 +20,7 @@ import {
   WarningOutlined,
   MoreOutlined,
   UploadOutlined,
+  CreditCardOutlined,
 } from '@ant-design/icons';
 import { POStatus } from '../../types/purchaseOrder';
 import { canRead, canUpdate, canDelete, RESOURCES } from '../../helpers/permissionHelper';
@@ -47,6 +48,7 @@ interface ColumnActions {
   onReject: (record: any) => void;
   onSend: (record: any) => void;
   onReceive: (record: any) => void;
+  onPay: (record: any) => void;
   onCancel: (record: any) => void;
   onPrint: (record: any) => void;
 }
@@ -366,6 +368,22 @@ export const purchaseOrderColumns = (actions: ColumnActions) => [
             >
               Print / Download
             </Menu.Item>
+          )}
+          
+          {/* Pay - requires update permission, only show if there's outstanding amount */}
+          {hasUpdatePerm && record.outstanding_amount > 0 && (
+            <>
+              <Menu.Divider />
+              <Menu.Item 
+                key="pay" 
+                icon={<CreditCardOutlined />}
+                onClick={() => actions.onPay(record)}
+                style={{ color: '#52c41a' }}
+                disabled={!['sent', 'confirmed', 'partially_received', 'fully_received', 'closed'].includes(record.status)}
+              >
+                Record Payment
+              </Menu.Item>
+            </>
           )}
           
           {/* Cancel - requires update permission */}

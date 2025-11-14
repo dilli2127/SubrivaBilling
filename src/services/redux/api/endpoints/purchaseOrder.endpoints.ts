@@ -249,6 +249,110 @@ export const purchaseOrderApi = apiSlice.injectEndpoints({
       }),
       providesTags: (result, error, poId) => [{ type: 'PurchaseOrder', id: poId }],
     }),
+    
+    // ==================== Payment Operations ====================
+    
+    // Create Payment for Purchase Order
+    // POST /purchase_orders/:id/payments
+    createPOPayment: builder.mutation<any, {
+      purchase_order_id: string;
+      payment_date: string;
+      payment_amount: number;
+      payment_mode: string;
+      transaction_id?: string;
+      cheque_number?: string;
+      bank_name?: string;
+      reference_number?: string;
+      notes?: string;
+      paid_by_id?: string;
+      paid_by_name?: string;
+      organisation_id: string;
+      branch_id?: string;
+      tenant_id: string;
+    }>({
+      query: ({ purchase_order_id, ...data }) => ({
+        url: `/purchase_orders/${purchase_order_id}/payments`,
+        method: 'POST',
+        body: data,
+      }),
+      invalidatesTags: (result, error, { purchase_order_id }) => [
+        { type: 'PurchaseOrder', id: purchase_order_id },
+        'PurchaseOrder',
+        { type: 'PurchaseOrderPayment', id: `LIST-${purchase_order_id}` },
+        'PurchaseOrderPayment',
+      ],
+    }),
+    
+    // Get all Payments for a Purchase Order
+    // GET /purchase_orders/:id/payments
+    getPOPayments: builder.query<any, string>({
+      query: (poId) => ({
+        url: `/purchase_orders/${poId}/payments`,
+        method: 'GET',
+      }),
+      providesTags: (result, error, poId) => [
+        { type: 'PurchaseOrderPayment', id: `LIST-${poId}` },
+        'PurchaseOrderPayment',
+      ],
+    }),
+    
+    // Get Payment by ID
+    // GET /purchase_orders/:id/payments/:payment_id
+    getPOPaymentById: builder.query<any, { poId: string; paymentId: string }>({
+      query: ({ poId, paymentId }) => ({
+        url: `/purchase_orders/${poId}/payments/${paymentId}`,
+        method: 'GET',
+      }),
+      providesTags: (result, error, { paymentId }) => [
+        { type: 'PurchaseOrderPayment', id: paymentId }
+      ],
+    }),
+    
+    // Update Payment
+    // PATCH /purchase_orders/:id/payments/:payment_id
+    updatePOPayment: builder.mutation<any, {
+      poId: string;
+      paymentId: string;
+      data: {
+        payment_date?: string;
+        payment_amount?: number;
+        payment_mode?: string;
+        transaction_id?: string;
+        cheque_number?: string;
+        bank_name?: string;
+        reference_number?: string;
+        notes?: string;
+      };
+    }>({
+      query: ({ poId, paymentId, data }) => ({
+        url: `/purchase_orders/${poId}/payments/${paymentId}`,
+        method: 'PATCH',
+        body: data,
+      }),
+      invalidatesTags: (result, error, { poId, paymentId }) => [
+        { type: 'PurchaseOrderPayment', id: paymentId },
+        { type: 'PurchaseOrderPayment', id: `LIST-${poId}` },
+        'PurchaseOrderPayment',
+        { type: 'PurchaseOrder', id: poId },
+        'PurchaseOrder',
+      ],
+    }),
+    
+    // Delete Payment
+    // DELETE /purchase_orders/:id/payments/:payment_id
+    deletePOPayment: builder.mutation<any, { poId: string; paymentId: string }>({
+      query: ({ poId, paymentId }) => ({
+        url: `/purchase_orders/${poId}/payments/${paymentId}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: (result, error, { poId, paymentId }) => [
+        { type: 'PurchaseOrderPayment', id: paymentId },
+        { type: 'PurchaseOrderPayment', id: `LIST-${poId}` },
+        'PurchaseOrderPayment',
+        { type: 'PurchaseOrder', id: poId },
+        'PurchaseOrder',
+      ],
+    }),
   }),
 });
 
@@ -282,5 +386,12 @@ export const {
   useGetPendingApprovalsQuery,
   useGetOverduePOsQuery,
   useGetPOvsGRNComparisonQuery,
+  
+  // Payments
+  useCreatePOPaymentMutation,
+  useGetPOPaymentsQuery,
+  useGetPOPaymentByIdQuery,
+  useUpdatePOPaymentMutation,
+  useDeletePOPaymentMutation,
 } = purchaseOrderApi;
 

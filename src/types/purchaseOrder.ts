@@ -216,6 +216,36 @@ export interface POStatusHistory extends BaseEntity {
   notes?: string;
 }
 
+// Purchase Order Payment
+export interface PurchaseOrderPayment extends BaseEntity {
+  purchase_order_id: string;
+  po_number?: string;
+  payment_date: string;
+  payment_amount: number;
+  payment_mode: 'cash' | 'card' | 'upi' | 'bank_transfer' | 'cheque' | 'other';
+  
+  // Transaction Details
+  transaction_id?: string;
+  cheque_number?: string;
+  bank_name?: string;
+  reference_number?: string;
+  
+  // Notes
+  notes?: string;
+  
+  // Paid By
+  paid_by_id?: string;
+  paid_by_name?: string;
+  
+  // Multi-tenant Support
+  organisation_id: string;
+  branch_id?: string;
+  tenant_id: string;
+  
+  // Relations
+  PurchaseOrderItem?: PurchaseOrder;
+}
+
 // Filter/Search Types
 export interface POFilters {
   status?: POStatus[];
