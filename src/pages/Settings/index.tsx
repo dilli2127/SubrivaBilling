@@ -89,6 +89,19 @@ const Settings: React.FC = () => {
   const [selectedTenant, setSelectedTenant] = useState<string>('all');
   const [selectedOrganisation, setSelectedOrganisation] = useState<string>('all');
 
+  // Handle tab change - update both state and URL
+  const handleTabChange = useCallback((key: string) => {
+    setActiveTab(key);
+    // Update URL without reloading page
+    const currentHash = window.location.hash;
+    const hashPath = currentHash.split('?')[0] || '#/settings';
+    const existingParams = currentHash.includes('?') ? currentHash.split('?')[1] : '';
+    const params = new URLSearchParams(existingParams);
+    params.set('tab', key);
+    const newUrl = `${hashPath}?${params.toString()}`;
+    window.history.replaceState(null, '', newUrl);
+  }, []);
+
   // Get user info with memoization
   const userItem = useMemo(() => getCurrentUser(), []);
   
@@ -177,13 +190,21 @@ const Settings: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Update active tab when URL changes
+  // Sync tab from URL on mount and handle browser back/forward navigation
   useEffect(() => {
-    const tabFromURL = getTabFromURL();
-    if (tabFromURL !== activeTab) {
-      setActiveTab(tabFromURL);
-    }
-  }, [location, getTabFromURL, activeTab]);
+    // Listen for hash changes (browser back/forward buttons)
+    // Note: window.history.replaceState doesn't trigger hashchange, but that's fine
+    // because handleTabChange updates state directly
+    const handleHashChange = () => {
+      const newTabFromURL = getTabFromURL();
+      if (newTabFromURL) {
+        setActiveTab(newTabFromURL);
+      }
+    };
+
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, [getTabFromURL]); // getTabFromURL is stable (useCallback with no deps)
 
   // Handle tenant selection change - fetch organisations for selected tenant
   const handleTenantChange = useCallback((tenantId: string) => {
@@ -611,6 +632,53 @@ const Settings: React.FC = () => {
     })) || [];
   }, [organisationsItems]);
 
+  // Keyboard navigation for tabs
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Don't interfere if user is typing in form inputs
+      const target = e.target as HTMLElement;
+      if (
+        target.tagName === 'INPUT' ||
+        target.tagName === 'TEXTAREA' ||
+        target.classList.contains('ant-select-selector') ||
+        target.closest('.ant-select-dropdown') ||
+        target.closest('.ant-picker-dropdown') ||
+        target.isContentEditable
+      ) {
+        return;
+      }
+
+      // Tab navigation shortcuts
+      const tabKeys = ['business', 'tax', 'invoice', 'printer', 'defaults', 'notifications', 'templates', 'bank', 'payment-qr', 'system', 'subscription'];
+      
+      // Ctrl+Number shortcuts (1-9, 0 for 10th tab) - works globally
+      if (e.ctrlKey && !e.shiftKey && !e.altKey) {
+        let tabIndex = -1;
+        if (e.key >= '1' && e.key <= '9') {
+          tabIndex = parseInt(e.key) - 1;
+        } else if (e.key === '0') {
+          tabIndex = 9;
+        }
+        
+        if (tabIndex >= 0 && tabIndex < tabKeys.length) {
+          e.preventDefault();
+          e.stopPropagation();
+          handleTabChange(tabKeys[tabIndex]);
+          
+          // Focus the tab after a short delay to ensure it's rendered
+          setTimeout(() => {
+            const tabElement = document.querySelector(`.ant-tabs-tab[data-node-key="${tabKeys[tabIndex]}"]`) as HTMLElement;
+            if (tabElement) {
+              tabElement.focus();
+            }
+          }, 50);
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [activeTab, handleTabChange]);
 
   return (
     <div className={styles.settingsContainer}>
@@ -708,7 +776,7 @@ const Settings: React.FC = () => {
       <Card className={styles.tabsCard}>
         <Tabs
           activeKey={activeTab}
-          onChange={setActiveTab}
+          onChange={handleTabChange}
           type="card"
           items={[
             {
