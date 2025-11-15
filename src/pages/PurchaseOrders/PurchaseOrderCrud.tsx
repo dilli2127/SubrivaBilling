@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useMemo } from 'react';
-import { message, Modal, Form, Input, Select, DatePicker, InputNumber } from 'antd';
+import { message, Modal, Form, Input, Select, DatePicker, InputNumber, Tabs } from 'antd';
+import { FileTextOutlined, ShoppingOutlined } from '@ant-design/icons';
 import { GenericCrudPage } from '../../components/common/GenericCrudPage';
 import { purchaseOrderColumns } from './columns';
 import { apiSlice } from '../../services/redux/api/apiSlice';
@@ -14,6 +15,7 @@ import POApprovalModal from './POApprovalModal';
 import POSendModal from './POSendModal';
 import POViewModal from './POViewModal';
 import POPaymentModal from './POPaymentModal';
+import GRNListTab from './GRNListTab';
 import dayjs from 'dayjs';
 import { getCurrentUser } from '../../helpers/auth';
 import { canCreate, canUpdate, canDelete, RESOURCES } from '../../helpers/permissionHelper';
@@ -23,6 +25,7 @@ const { Option } = Select;
 
 const PurchaseOrderCrud: React.FC = () => {
   const currentUser = getCurrentUser();
+  const [activeTab, setActiveTab] = useState('purchase-orders');
   
   // Modals state
   const [receiveModalOpen, setReceiveModalOpen] = useState(false);
@@ -71,13 +74,16 @@ const PurchaseOrderCrud: React.FC = () => {
     items.forEach(item => {
       const qty = Number(item.quantity) || 0;
       const price = Number(item.unit_price) || 0;
-      const itemTotal = qty * price;
-      const itemSubtotal = getItemSubtotal(item);
-      const taxPct = Number(item.tax_percentage) || 0;
-      
-      subtotal += itemSubtotal;
-      tax_amount += itemSubtotal * (taxPct / 100);
-      discount_amount += itemTotal - itemSubtotal;
+      // Only calculate if price is set (price will be 0 during creation, filled at receipt)
+      if (price > 0) {
+        const itemTotal = qty * price;
+        const itemSubtotal = getItemSubtotal(item);
+        const taxPct = Number(item.tax_percentage) || 0;
+        
+        subtotal += itemSubtotal;
+        tax_amount += itemSubtotal * (taxPct / 100);
+        discount_amount += itemTotal - itemSubtotal;
+      }
     });
 
     const total_amount = subtotal + tax_amount;
@@ -96,7 +102,7 @@ const PurchaseOrderCrud: React.FC = () => {
     {
       name: 'po_number',
       label: 'PO Number',
-      rules: [{ required: true, message: 'PO number is required' }],
+      rules: [{ required: false, message: 'PO number is required' }],
       component: <Input placeholder="Auto-generated or enter manually" />,
     },
     {
@@ -179,11 +185,6 @@ const PurchaseOrderCrud: React.FC = () => {
       component: <Input placeholder="e.g., Road Transport, Air Cargo" />,
     },
     {
-      name: 'shipping_cost',
-      label: 'Shipping Cost',
-      component: <InputNumber min={0} precision={2} style={{ width: '100%' }} prefix="₹" />,
-    },
-    {
       name: 'notes',
       label: 'Notes',
       component: <TextArea rows={3} placeholder="Additional notes or instructions" />,
@@ -204,10 +205,10 @@ const PurchaseOrderCrud: React.FC = () => {
               throw new Error('At least one item is required');
             }
             const hasInvalidItems = items.some(
-              item => !item.product_id || !item.quantity || !item.unit_price
+              item => !item.product_id || !item.quantity
             );
             if (hasInvalidItems) {
-              throw new Error('All items must have product, quantity, and price');
+              throw new Error('All items must have product and quantity');
             }
           },
         },
@@ -341,7 +342,32 @@ const PurchaseOrderCrud: React.FC = () => {
   
   return (
     <>
-      <GenericCrudPage config={config} />
+      <Tabs
+        activeKey={activeTab}
+        onChange={setActiveTab}
+        type="card"
+        size="large"
+        items={[
+          {
+            key: 'purchase-orders',
+            label: (
+              <span>
+                <ShoppingOutlined /> Purchase Orders
+              </span>
+            ),
+            children: <GenericCrudPage config={config} />,
+          },
+          {
+            key: 'grn',
+            label: (
+              <span>
+                <FileTextOutlined /> GRN
+              </span>
+            ),
+            children: <GRNListTab />,
+          },
+        ]}
+      />
       
       <POReceiveModal
         open={receiveModalOpen}

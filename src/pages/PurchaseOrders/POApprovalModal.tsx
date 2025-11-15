@@ -87,7 +87,7 @@ const POApprovalModal: React.FC<POApprovalModalProps> = ({
           <Tag color="blue">{purchaseOrder?.po_number}</Tag>
         </Descriptions.Item>
         <Descriptions.Item label="Vendor" span={2}>
-          {purchaseOrder?.VendorItem?.vendor_name}
+          {purchaseOrder?.vendor?.vendor_name}
         </Descriptions.Item>
         <Descriptions.Item label="Total Amount" span={2}>
           <strong style={{ color: '#52c41a' }}>

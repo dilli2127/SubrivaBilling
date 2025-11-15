@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   Modal,
   Form,
@@ -16,6 +16,7 @@ import {
   Statistic,
   Row,
   Col,
+  Select,
 } from 'antd';
 import {
   InboxOutlined,
@@ -40,6 +41,7 @@ const POReceiveModal: React.FC<POReceiveModalProps> = ({
   const [form] = Form.useForm();
   const [lineItems, setLineItems] = useState<any[]>([]);
   const [createStockEntries, setCreateStockEntries] = useState(true);
+  const [shippingCost, setShippingCost] = useState<number>(0);
   
   const [convertToGRN, { isLoading }] = useConvertPOToGRNMutation();
   
@@ -57,8 +59,19 @@ const POReceiveModal: React.FC<POReceiveModalProps> = ({
         mfg_date: undefined,
         expiry_date: undefined,
         notes: '',
+        // Price, tax, and discount - use existing if available, otherwise 0 (to be filled)
+        unit_price: item.unit_price || 0,
+        tax_percentage: item.tax_percentage || 0,
+        discount: item.discount || 0,
+        discount_type: item.discount_type || 'percentage',
       }));
       setLineItems(items);
+    }
+    // Initialize shipping cost from PO if available, otherwise reset to 0
+    if (purchaseOrder?.shipping_cost) {
+      setShippingCost(purchaseOrder.shipping_cost);
+    } else {
+      setShippingCost(0);
     }
   }, [purchaseOrder]);
   
@@ -102,6 +115,18 @@ const POReceiveModal: React.FC<POReceiveModalProps> = ({
         return;
       }
       
+      // Validate price and tax are required for all received items
+      const missingPrice = itemsWithReceivedQuantity.filter(item => !item.unit_price || item.unit_price <= 0);
+      if (missingPrice.length > 0) {
+        message.error('Unit price is required for all received items');
+        return;
+      }
+      const missingTax = itemsWithReceivedQuantity.filter(item => item.tax_percentage === undefined || item.tax_percentage === null);
+      if (missingTax.length > 0) {
+        message.error('Tax percentage is required for all received items');
+        return;
+      }
+      
       // Prepare items data
       const items = lineItems
         .filter(item => item.received_quantity > 0)
@@ -113,6 +138,11 @@ const POReceiveModal: React.FC<POReceiveModalProps> = ({
           mfg_date: item.mfg_date ? dayjs(item.mfg_date).format('YYYY-MM-DD') : undefined,
           expiry_date: item.expiry_date ? dayjs(item.expiry_date).format('YYYY-MM-DD') : undefined,
           notes: item.notes,
+          // Include price, tax, and discount from receipt
+          unit_price: item.unit_price,
+          tax_percentage: item.tax_percentage,
+          discount: item.discount || 0,
+          discount_type: item.discount_type || 'percentage',
         }));
       
       const payload = {
@@ -122,6 +152,7 @@ const POReceiveModal: React.FC<POReceiveModalProps> = ({
         vendor_invoice_date: values.vendor_invoice_date ? 
           dayjs(values.vendor_invoice_date).format('YYYY-MM-DD') : undefined,
         notes: values.notes,
+        shipping_cost: shippingCost || 0,
         create_stock_entries: createStockEntries,
       };
       
@@ -142,6 +173,50 @@ const POReceiveModal: React.FC<POReceiveModalProps> = ({
     rejected: lineItems.reduce((sum, item) => sum + (item.rejected_quantity || 0), 0),
     accepted: lineItems.reduce((sum, item) => sum + (item.accepted_quantity || 0), 0),
   };
+  
+  // Calculate financial totals for received items
+  const financialTotals = useMemo(() => {
+    const receivedItems = lineItems.filter(item => item.received_quantity > 0);
+    let subtotal = 0;
+    let discountAmount = 0;
+    let taxAmount = 0;
+    
+    receivedItems.forEach(item => {
+      const qty = item.accepted_quantity || 0;
+      const price = Number(item.unit_price) || 0;
+      const taxPct = Number(item.tax_percentage) || 0;
+      const discountVal = Number(item.discount) || 0;
+      const discountType = item.discount_type || 'percentage';
+      
+      if (price > 0) {
+        let itemSubtotal = qty * price;
+        
+        // Apply discount
+        let itemDiscount = 0;
+        if (discountType === 'percentage') {
+          itemDiscount = itemSubtotal * (discountVal / 100);
+        } else {
+          itemDiscount = discountVal;
+        }
+        itemSubtotal = itemSubtotal - itemDiscount;
+        
+        subtotal += itemSubtotal;
+        discountAmount += itemDiscount;
+        taxAmount += itemSubtotal * (taxPct / 100);
+      }
+    });
+    
+    const shipping = Number(shippingCost) || 0;
+    const total = subtotal + taxAmount + shipping;
+    
+    return {
+      subtotal: Number(subtotal.toFixed(2)),
+      discountAmount: Number(discountAmount.toFixed(2)),
+      taxAmount: Number(taxAmount.toFixed(2)),
+      shippingCost: Number(shipping.toFixed(2)),
+      total: Number(total.toFixed(2)),
+    };
+  }, [lineItems, shippingCost]);
   
   // Table columns
   const columns = [
@@ -227,6 +302,92 @@ const POReceiveModal: React.FC<POReceiveModalProps> = ({
       ),
     },
     {
+      title: (
+        <span>
+          Unit Price <span style={{ color: 'red' }}>*</span>
+        </span>
+      ),
+      key: 'unit_price',
+      width: 120,
+      render: (record: any, _: any, index: number) => {
+        const isRequired = record.received_quantity > 0;
+        const hasError = isRequired && (!record.unit_price || record.unit_price <= 0);
+        return (
+          <InputNumber
+            min={0}
+            precision={2}
+            placeholder="₹0.00"
+            prefix="₹"
+            style={{ 
+              width: '100%',
+              borderColor: hasError ? '#ff4d4f' : undefined
+            }}
+            value={record.unit_price}
+            onChange={(val) => handleFieldChange(index, 'unit_price', val || 0)}
+            disabled={record.received_quantity === 0}
+            className={hasError ? 'ant-input-number-error' : ''}
+          />
+        );
+      },
+    },
+    {
+      title: (
+        <span>
+          GST % <span style={{ color: 'red' }}>*</span>
+        </span>
+      ),
+      key: 'tax_percentage',
+      width: 100,
+      render: (record: any, _: any, index: number) => {
+        const isRequired = record.received_quantity > 0;
+        const hasError = isRequired && (record.tax_percentage === undefined || record.tax_percentage === null);
+        return (
+          <InputNumber
+            min={0}
+            max={100}
+            precision={2}
+            placeholder="18%"
+            suffix="%"
+            style={{ 
+              width: '100%',
+              borderColor: hasError ? '#ff4d4f' : undefined
+            }}
+            value={record.tax_percentage}
+            onChange={(val) => handleFieldChange(index, 'tax_percentage', val || 0)}
+            disabled={record.received_quantity === 0}
+            className={hasError ? 'ant-input-number-error' : ''}
+          />
+        );
+      },
+    },
+    {
+      title: 'Discount',
+      key: 'discount',
+      width: 150,
+      render: (record: any, _: any, index: number) => (
+        <Space.Compact style={{ width: '100%' }}>
+          <InputNumber
+            min={0}
+            precision={2}
+            placeholder="0"
+            style={{ width: '70%' }}
+            value={record.discount}
+            onChange={(val) => handleFieldChange(index, 'discount', val || 0)}
+            disabled={record.received_quantity === 0}
+          />
+          <Select
+            style={{ width: '30%' }}
+            value={record.discount_type}
+            onChange={(val) => handleFieldChange(index, 'discount_type', val)}
+            disabled={record.received_quantity === 0}
+          >
+            <Select.Option value="percentage">%</Select.Option>
+            <Select.Option value="amount">₹</Select.Option>
+          </Select>
+        </Space.Compact>
+      ),
+    },
+    {
       title: 'Batch No',
       key: 'batch_no',
       width: 130,
@@ -309,7 +470,7 @@ const POReceiveModal: React.FC<POReceiveModalProps> = ({
     >
       <Alert
         message="Goods Receipt Note (GRN)"
-        description="Record the actual quantities received from the vendor. This will update inventory and PO status."
+        description="Record the actual quantities received from the vendor. Enter the unit price, GST percentage, and discount (if any) for each item, plus the total shipping cost as provided by the vendor. This will update inventory and PO status."
         type="info"
         showIcon
         style={{ marginBottom: 16 }}
@@ -375,15 +536,65 @@ const POReceiveModal: React.FC<POReceiveModalProps> = ({
           dataSource={lineItems}
           rowKey="po_line_item_id"
           pagination={false}
-          scroll={{ x: 1200 }}
+          scroll={{ x: 1650 }}
           size="small"
           bordered
         />
         
         <Divider />
         
+        {/* Financial Totals */}
+        {financialTotals.total > 0 && (
+          <Row gutter={16} style={{ marginBottom: 16, padding: '16px', background: '#f5f5f5', borderRadius: '4px' }}>
+            <Col span={5}>
+              <Statistic 
+                title="Subtotal (After Discount)" 
+                value={financialTotals.subtotal} 
+                prefix="₹"
+                valueStyle={{ fontSize: '16px' }}
+              />
+            </Col>
+            {financialTotals.discountAmount > 0 && (
+              <Col span={5}>
+                <Statistic 
+                  title="Discount" 
+                  value={financialTotals.discountAmount} 
+                  prefix="₹"
+                  valueStyle={{ fontSize: '16px', color: '#ff4d4f' }}
+                />
+              </Col>
+            )}
+            <Col span={5}>
+              <Statistic 
+                title="Tax Amount" 
+                value={financialTotals.taxAmount} 
+                prefix="₹"
+                valueStyle={{ fontSize: '16px' }}
+              />
+            </Col>
+            {financialTotals.shippingCost > 0 && (
+              <Col span={5}>
+                <Statistic 
+                  title="Shipping Cost" 
+                  value={financialTotals.shippingCost} 
+                  prefix="₹"
+                  valueStyle={{ fontSize: '16px' }}
+                />
+              </Col>
+            )}
+            <Col span={financialTotals.shippingCost > 0 ? 4 : financialTotals.discountAmount > 0 ? 9 : 14}>
+              <Statistic 
+                title="Total Amount" 
+                value={financialTotals.total} 
+                prefix="₹"
+                valueStyle={{ fontSize: '18px', color: '#52c41a', fontWeight: 'bold' }}
+              />
+            </Col>
+          </Row>
+        )}
+        
         <Row gutter={16}>
-          <Col span={16}>
+          <Col span={12}>
             <Form.Item name="notes" label="Notes">
               <Input.TextArea
                 rows={3}
@@ -391,10 +602,22 @@ const POReceiveModal: React.FC<POReceiveModalProps> = ({
               />
             </Form.Item>
           </Col>
-          <Col span={8}>
+          <Col span={12}>
+            <Form.Item label="Shipping Cost">
+              <InputNumber
+                min={0}
+                precision={2}
+                placeholder="₹0.00"
+                prefix="₹"
+                style={{ width: '100%' }}
+                value={shippingCost}
+                onChange={(val) => setShippingCost(val || 0)}
+              />
+            </Form.Item>
             <Checkbox
               checked={createStockEntries}
               onChange={(e) => setCreateStockEntries(e.target.checked)}
+              style={{ marginTop: 16 }}
             >
               <strong>Auto-create Stock Entries</strong>
               <div style={{ fontSize: '11px', color: '#888' }}>

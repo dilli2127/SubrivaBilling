@@ -418,7 +418,7 @@ export const purchaseOrderColumns = (actions: ColumnActions) => [
           {/* Default Actions - Based on permissions */}
           
           {/* Edit - requires update permission */}
-          {hasUpdatePerm && (
+          {/* {hasUpdatePerm && (
             <Tooltip title={canEdit ? "Edit" : hasUpdatePerm ? "Edit (not available for this status)" : "No update permission"}>
               <Button
                 type="link"
@@ -429,9 +429,9 @@ export const purchaseOrderColumns = (actions: ColumnActions) => [
               />
             </Tooltip>
           )}
-          
+           */}
           {/* Delete - requires delete permission */}
-          {hasDeletePerm && (
+          {/* {hasDeletePerm && (
             <Popconfirm
               title="Delete this Purchase Order?"
               description="This action cannot be undone."
@@ -450,7 +450,7 @@ export const purchaseOrderColumns = (actions: ColumnActions) => [
                 />
               </Tooltip>
             </Popconfirm>
-          )}
+          )} */}
           
           {/* P/O Actions Dropdown - only show if user has read or update permission */}
           {(hasReadPerm || hasUpdatePerm) && (
@@ -460,7 +460,9 @@ export const purchaseOrderColumns = (actions: ColumnActions) => [
                   type="primary"
                   size="small"
                   icon={<MoreOutlined />}
-                />
+                >
+                 Actions
+                 </Button>
               </Tooltip>
             </Dropdown>
           )}

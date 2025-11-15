@@ -162,10 +162,15 @@ export const purchaseOrderApi = apiSlice.injectEndpoints({
         mfg_date?: string;
         expiry_date?: string;
         notes?: string;
+        unit_price?: number;
+        tax_percentage?: number;
+        discount?: number;
+        discount_type?: 'percentage' | 'amount';
       }>;
       vendor_invoice_no?: string;
       vendor_invoice_date?: string;
       notes?: string;
+      shipping_cost?: number;
       create_stock_entries?: boolean;
     }>({
       query: ({ id, ...data }) => ({
@@ -184,9 +189,9 @@ export const purchaseOrderApi = apiSlice.injectEndpoints({
     // Get all Receipts/GRNs
     getPurchaseOrderReceipts: builder.query<any, any>({
       query: (params) => ({
-        url: '/purchase_order_receipts',
-        method: 'GET',
-        params,
+        url: '/purchase_order_receipts/getAll',
+        method: 'POST',
+        body: params,
       }),
       providesTags: ['PurchaseOrderReceipt'],
     }),

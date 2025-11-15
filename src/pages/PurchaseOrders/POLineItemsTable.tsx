@@ -46,8 +46,8 @@ const POLineItemsTable: React.FC<POLineItemsTableProps> = ({
       variant_name: '',
       description: '',
       quantity: 1,
-      unit_price: 0,
-      tax_percentage: 18,
+      unit_price: 0, // Will be filled at receipt time
+      tax_percentage: 0, // Will be filled at receipt time
       discount: 0,
       discount_type: 'percentage',
       line_total: 0,
@@ -118,8 +118,9 @@ const POLineItemsTable: React.FC<POLineItemsTableProps> = ({
       product_name: product.name,
       variant_name: product.VariantItem?.variant_name || '',
       description: product.description || '',
-      tax_percentage: product.CategoryItem?.tax_percentage || 18,
-      unit_price: product.buy_price || 0,
+      // Price and tax will be filled at receipt time by vendor
+      tax_percentage: 0,
+      unit_price: 0,
     };
     
     const calculated = calculateLineTotal(item);
@@ -237,19 +238,19 @@ const POLineItemsTable: React.FC<POLineItemsTableProps> = ({
       ),
     },
     {
-      title: <span style={{ color: 'red' }}>* Unit Price</span>,
+      title: 'Unit Price',
       key: 'unit_price',
       width: 110,
       render: (_: any, record: POLineItem, index: number) => (
         <InputNumber
           min={0}
           precision={2}
-          placeholder="₹0.00"
+          placeholder="Enter at receipt"
           prefix="₹"
           style={{ width: '100%' }}
           value={record.unit_price}
           onChange={(val) => handleFieldChange(index, 'unit_price', val)}
-          disabled={disabled}
+          disabled={true}
         />
       ),
     },
@@ -262,12 +263,12 @@ const POLineItemsTable: React.FC<POLineItemsTableProps> = ({
           min={0}
           max={100}
           precision={2}
-          placeholder="18%"
+          placeholder="Enter at receipt"
           suffix="%"
           style={{ width: '100%' }}
           value={record.tax_percentage}
           onChange={(val) => handleFieldChange(index, 'tax_percentage', val)}
-          disabled={disabled}
+          disabled={true}
         />
       ),
     },
@@ -280,17 +281,17 @@ const POLineItemsTable: React.FC<POLineItemsTableProps> = ({
           <InputNumber
             min={0}
             precision={2}
-            placeholder="0"
+            placeholder="Enter at receipt"
             style={{ width: '70%' }}
             value={record.discount}
             onChange={(val) => handleFieldChange(index, 'discount', val)}
-            disabled={disabled}
+            disabled={true}
           />
           <Select
             style={{ width: '30%' }}
             value={record.discount_type}
             onChange={(val) => handleFieldChange(index, 'discount_type', val)}
-            disabled={disabled}
+            disabled={true}
           >
             <Select.Option value="percentage">%</Select.Option>
             <Select.Option value="amount">₹</Select.Option>
@@ -303,9 +304,11 @@ const POLineItemsTable: React.FC<POLineItemsTableProps> = ({
       key: 'line_total',
       width: 110,
       render: (_: any, record: POLineItem) => (
-        <Tooltip title={`Qty: ${record.quantity} × ₹${record.unit_price}`}>
-          <strong style={{ color: '#52c41a' }}>
-            ₹{(record.line_total || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+        <Tooltip title={record.unit_price > 0 ? `Qty: ${record.quantity} × ₹${record.unit_price}` : 'Price will be set at receipt'}>
+          <strong style={{ color: record.unit_price > 0 ? '#52c41a' : '#999' }}>
+            {record.unit_price > 0 
+              ? `₹${(record.line_total || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`
+              : 'TBD'}
           </strong>
         </Tooltip>
       ),
