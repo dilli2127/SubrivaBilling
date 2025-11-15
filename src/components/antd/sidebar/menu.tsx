@@ -163,6 +163,12 @@ export const menuItems = [
         path: '/retaill_bill_list',
       },
       {
+        key: 'quotations',
+        label: 'Quotations',
+        icon: <FileTextOutlined />,
+        path: '/quotations',
+      },
+      {
         key: 'sales-returns-list',
         label: 'Sales Returns',
         icon: <UndoOutlined />,

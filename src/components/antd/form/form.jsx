@@ -72,7 +72,7 @@ const AntdForm = (props) => {
       >
         <Row gutter={[16, 16]}>
           {formItems?.map((item, index) => (
-            <Col span={24 / columns} key={index}>
+            <Col span={item.colSpan ? (item.colSpan * (24 / columns)) : (24 / columns)} key={index}>
               {splitLabelAndField ? (
                 <div>
                   <Typography.Text strong>

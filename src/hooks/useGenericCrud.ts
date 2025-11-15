@@ -19,6 +19,9 @@ export interface CrudConfig<T extends BaseEntity> {
   dynamicFieldNames?: string[]; // Names of dynamic metadata fields
   metadataFieldName?: string; // Field name for storing metadata (default: 'meta_data_values', can be 'custom_data')
   skipMetadataWrapping?: boolean; // If true, send fields directly without any wrapping
+  beforeSave?: (
+    values: Partial<T>
+  ) => Partial<T> | Promise<Partial<T>>; // Optional hook to transform payload before submit
 }
 
 export interface CrudReturn<T extends BaseEntity> {
@@ -443,7 +446,10 @@ export const useGenericCrud = <T extends BaseEntity>(
 
   const handleSubmit = useCallback(
     async (values: Partial<T>) => {
-      const payload = processPayload(values);
+      const transformedValues = config.beforeSave
+        ? await config.beforeSave(values)
+        : values;
+      const payload = processPayload(transformedValues);
 
       try {
         if (initialValues._id) {
@@ -457,7 +463,14 @@ export const useGenericCrud = <T extends BaseEntity>(
         console.error('Submit error:', error);
       }
     },
-    [initialValues._id, create, update, resetForm, processPayload]
+    [
+      initialValues._id,
+      create,
+      update,
+      resetForm,
+      processPayload,
+      config.beforeSave,
+    ]
   );
   // Initial data load is handled by RTK Query automatically
 

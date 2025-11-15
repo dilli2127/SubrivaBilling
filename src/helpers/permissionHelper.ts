@@ -89,6 +89,9 @@ export const RESOURCES = {
   // Purchase Orders
   PURCHASE_ORDER: 'purchase_order',
   
+  // Quotations
+  QUOTATION: 'quotation',
+  
   // Sales Returns
   SALES_RETURN: 'sales_return',
   CUSTOMER_POINTS: 'customer_points',

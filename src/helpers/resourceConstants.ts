@@ -36,6 +36,13 @@ export const AVAILABLE_RESOURCES: ResourceDefinition[] = [
     menus: ['SalesRecords', 'create-sales-record', 'sales-records-list'],
   },
   {
+    resource: 'quotation',
+    label: 'Quotations',
+    category: 'Sales',
+    description: 'Quotation/Estimate management for sales process',
+    menus: ['quotations'],
+  },
+  {
     resource: 'sales_return',
     label: 'Sales Returns',
     category: 'Sales',

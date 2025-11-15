@@ -28,6 +28,7 @@ const ExpensesPage = lazy(() => import("../pages/Payment/ExpensesPage"));
 const StockAudit = lazy(() => import("../pages/StockAudit/crud"));
 const VendorCrud = lazy(() => import("../pages/Vendor/crud"));
 const PurchaseOrderCrud = lazy(() => import("../pages/PurchaseOrders/PurchaseOrderCrud"));
+const QuotationCrud = lazy(() => import("../pages/Quotations/QuotationCrud"));
 const SalesReturnsCrud = lazy(() => import("../pages/SalesReturns/SalesReturnsCrud"));
 const CustomerPointsPage = lazy(() => import("../pages/CustomerPoints/CustomerPointsPage"));
 const Warehouse = lazy(() => import("../pages/Warehouse/crud"));
@@ -314,6 +315,16 @@ const routerData: RouteConfig[] = [
         element: (
           <Suspense fallback={<Loader />}>
             <PurchaseOrderCrud />
+          </Suspense>
+        ),
+        children: [],
+      },
+      {
+        key: "quotations",
+        path: "quotations",
+        element: (
+          <Suspense fallback={<Loader />}>
+            <QuotationCrud />
           </Suspense>
         ),
         children: [],

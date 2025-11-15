@@ -15,6 +15,7 @@ export * from './reports.endpoints';
 export * from './stock.endpoints';
 export * from './subscription.endpoints';
 export * from './purchaseOrder.endpoints';
+export * from './quotation.endpoints';
 export * from './salesReturn.endpoints';
 export * from './points.endpoints';
 
