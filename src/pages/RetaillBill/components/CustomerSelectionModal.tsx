@@ -99,8 +99,8 @@ const CustomerSelectionModalComponent: React.FC<CustomerSelectionModalProps> = (
     apiSlice.useGetCustomerQuery(
       { 
         searchString: debouncedSearchTerm,
-        page: page,
-        limit: 10
+        pageNumber: page,
+        pageLimit: 10
       },
       { 
         skip: !visible, // Only fetch when modal is open

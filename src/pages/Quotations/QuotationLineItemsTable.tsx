@@ -67,8 +67,8 @@ const QuotationLineItemsTable: React.FC<QuotationLineItemsTableProps> = ({
 
   // Fetch products with server-side search
   const productQueryParams = useMemo(() => ({
-    page: productPage,
-    limit: 20,
+    pageNumber: productPage,
+    pageLimit: 20,
     searchString: productDebouncedSearch || '',
   }), [productPage, productDebouncedSearch]);
 
@@ -190,8 +190,8 @@ const QuotationLineItemsTable: React.FC<QuotationLineItemsTableProps> = ({
 
     // Create stable query params object - memoized to prevent unnecessary refetches
     const queryParams = useMemo(() => ({
-      page,
-      limit: 20,
+      pageNumber: page,
+      pageLimit: 20,
       searchString: debouncedSearch || '',
       product_id: productId || undefined,
     }), [page, debouncedSearch, productId]);

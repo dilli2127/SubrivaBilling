@@ -169,6 +169,18 @@ const ModernInvoiceTemplate: React.FC<ModernInvoiceTemplateProps> = ({
               >
                 Bill To
               </h3>
+              {billData?.customerCompanyName && (
+                <p
+                  style={{
+                    margin: '4px 0',
+                    fontSize: 15,
+                    fontWeight: 'bold',
+                    color: '#333',
+                  }}
+                >
+                  {billData.customerCompanyName}
+                </p>
+              )}
               <p
                 style={{
                   margin: '4px 0',
@@ -200,8 +212,8 @@ const ModernInvoiceTemplate: React.FC<ModernInvoiceTemplateProps> = ({
                 </p>
               )}
               {billData?.customer_gstin && (
-                <p style={{ margin: '4px 0', fontSize: 13, color: '#666' }}>
-                  GSTIN: {billData.customer_gstin}
+                <p style={{ margin: '4px 0', fontSize: 13, fontWeight: 'bold', color: '#333' }}>
+                  <strong>GSTIN:</strong> {billData.customer_gstin}
                 </p>
               )}
               {billData?.customer_pan && (

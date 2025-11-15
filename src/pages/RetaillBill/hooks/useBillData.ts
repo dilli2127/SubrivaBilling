@@ -67,7 +67,7 @@ export const useBillData = (billdata?: any) => {
 
   // Fetch settings
   const { data: settingsData } = apiSlice.useGetSettingsQuery(
-    { organisation_id: organisationId, page: 1, limit: 1 },
+    { organisation_id: organisationId, pageNumber: 1, pageLimit: 1 },
     { skip: !organisationId, refetchOnMountOrArgChange: false }
   );
 

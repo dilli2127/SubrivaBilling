@@ -57,12 +57,12 @@ export const useReportData = (props: UseReportDataProps) => {
   // Memoize additional filter objects to prevent recreation on every render
   const topProductsFilters = useMemo(() => ({
     ...apiFilters,
-    limit: 10,
+    pageLimit: 10,
   }), [apiFilters]);
-  
+
   const topCustomersFilters = useMemo(() => ({
     ...apiFilters,
-    limit: 10,
+    pageLimit: 10,
   }), [apiFilters]);
   
   const stockExpiryFilters = useMemo(() => ({

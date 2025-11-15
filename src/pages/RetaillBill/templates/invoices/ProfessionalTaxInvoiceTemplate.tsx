@@ -162,6 +162,11 @@ const ProfessionalTaxInvoiceTemplate: React.FC<ProfessionalTaxInvoiceTemplatePro
         {/* Bill To Section - Zoho Style */}
         <div className={styles.billToSection}>
           <h3 className={styles.sectionHeading}>Bill To</h3>
+          {billData?.customerCompanyName && (
+            <p className={styles.customerName} style={{ fontWeight: 'bold', fontSize: '14px', marginBottom: '4px' }}>
+              {billData.customerCompanyName}
+            </p>
+          )}
           <p className={styles.customerName}>{billData?.customerName || 'Customer Name'}</p>
           {billData?.customerAddress && (
             <p className={styles.customerInfo}>{billData.customerAddress}</p>
@@ -172,7 +177,9 @@ const ProfessionalTaxInvoiceTemplate: React.FC<ProfessionalTaxInvoiceTemplatePro
             </p>
           )}
           {billData?.customer_gstin && (
-            <p className={styles.customerInfo}><strong>GSTIN:</strong> {billData.customer_gstin}</p>
+            <p className={styles.customerInfo} style={{ fontWeight: 'bold', marginTop: '4px' }}>
+              <strong>GSTIN:</strong> {billData.customer_gstin}
+            </p>
           )}
         </div>
 

@@ -55,7 +55,7 @@ const BillHeader: React.FC<BillHeaderProps> = ({
       },
       {
         key: 'customer_id',
-        title: documentType === 'bill' ? '👤 CUSTOMER' : '🏢 VENDOR',
+        title: '👤 CUSTOMER',
         dataIndex: 'customer_id',
         type: 'text',
         editable: false,
@@ -65,13 +65,10 @@ const BillHeader: React.FC<BillHeaderProps> = ({
           const selectedItem = customerOrVendorOptions.find(
             (opt: any) => opt.value === value
           );
-          const isVendor = documentType === 'invoice';
-          const placeholderText = isVendor ? 'Select vendor' : 'Select customer';
+          const placeholderText = 'Select customer';
           const displayLabel =
             selectedItem?.label || billFormData.customer_name || placeholderText;
-          const tooltipText = isVendor
-            ? 'Click to open vendor selection modal (or press End key)'
-            : 'Click to open customer selection modal (or press End key)';
+          const tooltipText = 'Click to open customer selection modal (or press End key)';
 
           return (
             <Tooltip title={tooltipText}>

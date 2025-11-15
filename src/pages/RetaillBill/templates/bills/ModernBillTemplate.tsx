@@ -69,6 +69,9 @@ const ModernBillTemplate: React.FC<ModernBillTemplateProps> = ({
         </div>
         <div style={{ textAlign: 'right' }}>
           <div><strong>Customer:</strong></div>
+          {billData?.customerCompanyName && (
+            <div>{billData.customerCompanyName.toString().substring(0, 20)}</div>
+          )}
           <div>{(billData?.customerName || 'Walk-in Customer').toString().substring(0, 20)}</div>
         </div>
       </div>

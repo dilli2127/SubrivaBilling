@@ -1,6 +1,6 @@
 import { apiSlice } from '../api/apiSlice';
 
-export const useCustomersRTK = (params: { page?: number; limit?: number; [key: string]: any } = {}) => {
+export const useCustomersRTK = (params: { pageNumber?: number; pageLimit?: number; [key: string]: any } = {}) => {
   const {
     data,
     error,

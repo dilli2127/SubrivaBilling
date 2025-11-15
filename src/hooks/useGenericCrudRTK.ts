@@ -6,8 +6,8 @@ type EntityName = string;
 
 // Type for RTK query parameters
 export interface RTKQueryParams {
-  page?: number;
-  limit?: number;
+  pageNumber?: number;
+  pageLimit?: number;
   [key: string]: any;
 }
 

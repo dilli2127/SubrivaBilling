@@ -122,17 +122,17 @@ const BillListPage = () => {
 
   // Format bill data for templates
   const formatBillData = (record: any) => {
-    // Bills use customerDetails, Invoices use vendorDetails
-    const isInvoice = record.document_type === 'invoice';
-    const partyDetails = isInvoice ? record.vendorDetails : record.customerDetails;
+    // Always use customerDetails for both bills and invoices
+    const partyDetails = record.customerDetails;
     
     // If no party details found, log warning and use fallback
     if (!partyDetails) {
-      console.warn(`⚠️ Data mismatch: ${isInvoice ? 'Invoice' : 'Bill'} missing ${isInvoice ? 'vendorDetails' : 'customerDetails'}`, record);
+      console.warn(`⚠️ Data mismatch: ${record.document_type || 'Bill'} missing customerDetails`, record);
     }
     
     return {
-      customerName: partyDetails?.vendor_name || partyDetails?.full_name || partyDetails?.name || '',
+      customerName: partyDetails?.full_name || partyDetails?.name || '',
+      customerCompanyName: partyDetails?.company_name || '',
       customerAddress: partyDetails?.address || partyDetails?.address1 || '',
       customerCity: partyDetails?.city || '',
       customerState: partyDetails?.state || '',
@@ -334,14 +334,13 @@ const BillListPage = () => {
       ),
     },
     {
-      title: "Customer/Vendor",
+      title: "Customer",
       dataIndex: "customerDetails",
       key: "customerDetails",
       render: (customerDetails: any, record: any) => {
-        // Show vendor for invoices, customer for bills
-        const isInvoice = record.document_type === 'invoice';
-        const partyDetails = isInvoice ? record.vendorDetails : customerDetails;
-        const name = partyDetails?.vendor_name || partyDetails?.full_name || partyDetails?.name || 'N/A';
+        // Always show customer for both bills and invoices
+        const partyDetails = customerDetails;
+        const name = partyDetails?.full_name || partyDetails?.name || 'N/A';
         const contact = partyDetails?.phone || partyDetails?.mobile || '';
         
         return (

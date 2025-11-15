@@ -72,8 +72,8 @@ const UserSelectionModal: React.FC<UserSelectionModalProps> = ({
   // Use RTK Query for billing users with pagination
   const { data: userData, isLoading: userLoading } = apiSlice.useGetBillingUsersQuery({
     searchString: debouncedSearch,
-    page: page,
-    limit: 10,
+    pageNumber: page,
+    pageLimit: 10,
   }, {
     skip: !visible,
     refetchOnMountOrArgChange: true,

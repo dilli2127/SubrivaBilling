@@ -57,8 +57,8 @@ const ProductSelectionModal: FC<ProductSelectionModalProps> = ({
   // Use RTK Query for products with pagination and search (only if not provided)
   const { data: productsData, isLoading: loading } = apiSlice.useGetProductQuery({
     searchString: debouncedSearch,
-    page: page,
-    limit: 10,
+    pageNumber: page,
+    pageLimit: 10,
   }, {
     skip: !visible || !shouldLoadFromAPI,
     refetchOnMountOrArgChange: true,

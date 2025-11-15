@@ -108,8 +108,8 @@ export const useGenericCrud = <T extends BaseEntity>(
   // Memoize query parameters to prevent unnecessary re-renders
   const queryParams = useMemo(
     () => ({
-      page: pagination.current,
-      limit: pagination.pageSize,
+      pageNumber: pagination.current,
+      pageLimit: pagination.pageSize,
       ...debouncedFilters,
     }),
     [pagination, debouncedFilters]

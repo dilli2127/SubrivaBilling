@@ -20,8 +20,8 @@ const SelectInvoiceModal: React.FC<SelectInvoiceModalProps> = ({
   
   // Get all sales records (completed sales only)
   const { data: salesData, isLoading } = apiSlice.useGetSalesRecordQuery({
-    page: 1,
-    limit: 100,
+    pageNumber: 1,
+    pageLimit: 100,
     // TODO: Add filter for completed sales only
   });
   

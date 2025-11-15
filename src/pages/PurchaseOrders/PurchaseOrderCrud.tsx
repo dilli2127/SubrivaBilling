@@ -36,7 +36,7 @@ const PurchaseOrderCrud: React.FC = () => {
   const [selectedPO, setSelectedPO] = useState<any>(null);
   
   // API queries - memoized params
-  const queryParams = useMemo(() => ({ page: 1, limit: 100 }), []);
+  const queryParams = useMemo(() => ({ pageNumber: 1, pageLimit: 100 }), []);
   const { data: vendorsData, isLoading: vendorsLoading } = apiSlice.useGetVendorQuery(queryParams);
   const { data: warehousesData, isLoading: warehousesLoading } = apiSlice.useGetWarehouseQuery(queryParams);
   

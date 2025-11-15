@@ -77,6 +77,12 @@ const ClassicBillTemplate: React.FC<ClassicBillTemplateProps> = ({
           </div>
         </div>
         <div style={{ textAlign: 'right' }}>
+          {billData?.customerCompanyName && (
+            <div>
+              COMPANY:{' '}
+              {billData.customerCompanyName.toString().substring(0, 20).toUpperCase()}
+            </div>
+          )}
           <div>
             NAME:{' '}
             {(billData?.customerName || '').toString().substring(0, 20).toUpperCase()}

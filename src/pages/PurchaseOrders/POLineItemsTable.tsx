@@ -33,7 +33,7 @@ const POLineItemsTable: React.FC<POLineItemsTableProps> = ({
   disabled = false,
 }) => {
   // Memoized query params
-  const queryParams = useMemo(() => ({ page: 1, limit: 100 }), []);
+  const queryParams = useMemo(() => ({ pageNumber: 1, pageLimit: 100 }), []);
   const { data: productsData, isLoading: productsLoading } = apiSlice.useGetProductQuery(queryParams);
   
   const products = useMemo(() => (productsData as any)?.result || [], [productsData]);

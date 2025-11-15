@@ -156,7 +156,7 @@ const Settings: React.FC = () => {
 
   // Fetch settings using GetAll with organisation_id filter
   const { data: settingsData, refetch: refetchSettings } = apiSlice.useGetSettingsQuery(
-    { organisation_id: selectedSettingsId, page: 1, limit: 10 },
+    { organisation_id: selectedSettingsId, pageNumber: 1, pageLimit: 10 },
     { 
       skip: shouldSkipSettings || !selectedSettingsId,
       refetchOnMountOrArgChange: true

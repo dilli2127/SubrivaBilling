@@ -122,11 +122,11 @@ export const useBillForm = () => {
 
   // Load bill data (for editing)
   const loadBillData = useCallback((billdata: any, onLoadComplete?: () => void) => {
-    const isInvoice = billdata.document_type === 'invoice';
-    const partyDetails = isInvoice ? billdata.vendorDetails : billdata.customerDetails;
-    const partyId = isInvoice ? billdata.vendor_id : billdata.customer_id;
+    // Always use customerDetails for both bills and invoices
+    const partyDetails = billdata.customerDetails;
+    const partyId = billdata.customer_id;
     const partyName =
-      partyDetails?.vendor_name || partyDetails?.full_name || partyDetails?.name || '';
+      partyDetails?.full_name || partyDetails?.name || '';
 
     setBillFormData({
       invoice_no: billdata.invoice_no,

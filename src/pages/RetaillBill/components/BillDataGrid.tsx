@@ -14,7 +14,6 @@ import BillHeader from './BillHeader';
 import BillSummary from './BillSummary';
 import StockSelectionModal from './StockSelectionModal';
 import CustomerSelectionModal from './CustomerSelectionModal';
-import VendorSelectionModal from './VendorSelectionModal';
 import UserSelectionModal from './UserSelectionModal';
 import BillSaveConfirmationModal from './BillSaveConfirmationModal';
 import BillListDrawer from './BillListDrawer';
@@ -57,7 +56,6 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
     handleDownload,
     productOptions,
     customerOptions,
-    vendorOptions,
     userOptions,
   } = billing;
 
@@ -85,21 +83,14 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
       <div className={styles.invoiceDetailsGrid}>
         <BillHeader
           billFormData={form.billFormData}
-          customerOrVendorOptions={
-            form.documentType === 'bill' ? customerOptions : vendorOptions
-          }
+          customerOrVendorOptions={customerOptions}
           userOptions={userOptions}
           documentType={form.documentType}
           onHeaderChange={rows => {
             if (rows[0]) {
-              const customer =
-                form.documentType === 'bill'
-                  ? billData.customerListResult.find(
-                      (c: any) => c._id === rows[0].customer_id
-                    )
-                  : billData.vendorListResult.find(
-                      (v: any) => v._id === rows[0].customer_id
-                    );
+              const customer = billData.customerListResult.find(
+                (c: any) => c._id === rows[0].customer_id
+              );
               const user = billData.userListResult.find(
                 (u: any) => u._id === rows[0].billed_by
               );
@@ -107,7 +98,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
                 invoice_no: rows[0].invoice_no || '',
                 date: rows[0].date,
                 customer_id: rows[0].customer_id || '',
-                customer_name: customer?.full_name || customer?.vendor_name || '',
+                customer_name: customer?.full_name || customer?.name || '',
                 billed_by: rows[0].billed_by || '',
                 billed_by_name: user?.name || '',
                 payment_mode: rows[0].payment_mode || 'cash',
@@ -116,7 +107,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
           }}
           onCustomerModalOpen={modals.openCustomerModal}
           onUserModalOpen={modals.openUserModal}
-          loading={billData.customerLoading || billData.vendorLoading}
+          loading={billData.customerLoading}
         />
       </div>
 
@@ -406,39 +397,21 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
         />
       )}
 
-      {form.documentType === 'bill' && (
-        <CustomerSelectionModal
-          visible={modals.customerModalVisible}
-          onSelect={customer => {
-            if (form.billFormData.customer_id === customer._id) return;
-            form.updateHeader({
-              customer_id: customer._id,
-              customer_name: customer.full_name,
-            });
-            modals.closeCustomerModal();
-            setTimeout(() => modals.openUserModal(), 100);
-            message.success(`Customer "${customer.full_name}" selected successfully!`);
-          }}
-          onCancel={modals.closeCustomerModal}
-        />
-      )}
+      <CustomerSelectionModal
+        visible={modals.customerModalVisible}
+        onSelect={customer => {
+          if (form.billFormData.customer_id === customer._id) return;
+          form.updateHeader({
+            customer_id: customer._id,
+            customer_name: customer.full_name,
+          });
+          modals.closeCustomerModal();
+          setTimeout(() => modals.openUserModal(), 100);
+          message.success(`Customer "${customer.full_name}" selected successfully!`);
+        }}
+        onCancel={modals.closeCustomerModal}
+      />
 
-      {form.documentType === 'invoice' && (
-        <VendorSelectionModal
-          visible={modals.customerModalVisible}
-          onSelect={vendor => {
-            if (form.billFormData.customer_id === vendor._id) return;
-            form.updateHeader({
-              customer_id: vendor._id,
-              customer_name: vendor.vendor_name,
-            });
-            modals.closeCustomerModal();
-            setTimeout(() => modals.openUserModal(), 100);
-            message.success(`Vendor "${vendor.vendor_name}" selected successfully!`);
-          }}
-          onCancel={modals.closeCustomerModal}
-        />
-      )}
 
       <UserSelectionModal
         visible={modals.userModalVisible}

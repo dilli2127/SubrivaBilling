@@ -80,6 +80,11 @@ const ClassicInvoiceTemplate: React.FC<ClassicInvoiceTemplateProps> = ({
           <h3 style={{ margin: '0 0 8px 0', fontSize: 14, fontWeight: 'bold', textDecoration: 'underline' }}>
             Bill To:
           </h3>
+          {billData?.customerCompanyName && (
+            <p style={{ margin: '4px 0', fontSize: 14, fontWeight: 'bold', color: '#333' }}>
+              {billData.customerCompanyName}
+            </p>
+          )}
           <p style={{ margin: '4px 0', fontSize: 14 }}>
             <strong>{billData?.customerName || ''}</strong>
           </p>
@@ -94,8 +99,8 @@ const ClassicInvoiceTemplate: React.FC<ClassicInvoiceTemplateProps> = ({
             </p>
           )}
           {billData?.customer_gstin && (
-            <p style={{ margin: '4px 0', fontSize: 13 }}>
-              GSTIN: {billData.customer_gstin}
+            <p style={{ margin: '4px 0', fontSize: 13, fontWeight: 'bold', color: '#333' }}>
+              <strong>GSTIN:</strong> {billData.customer_gstin}
             </p>
           )}
           {billData?.customer_pan && (

@@ -187,14 +187,14 @@ export const useAdvancedBilling = ({ billdata, onSuccess }: AdvancedBillingProps
       return;
     }
 
-    const isInvoice = form.documentType === 'invoice';
-    const partyList = isInvoice ? billData.vendorListResult : billData.customerListResult;
+    // Always use customerListResult for both bills and invoices
+    const partyList = billData.customerListResult;
     const selectedParty = partyList.find((p: any) => p._id === form.billFormData.customer_id);
 
     const billDataForPDF = {
       invoice_no: form.billFormData.invoice_no,
       date: form.billFormData.date,
-      customerName: selectedParty?.vendor_name || selectedParty?.full_name || '',
+      customerName: selectedParty?.full_name || selectedParty?.name || '',
       customerAddress: selectedParty?.address || selectedParty?.address1 || '',
       customerCity: selectedParty?.city || '',
       customerState: selectedParty?.state || '',
@@ -274,14 +274,14 @@ export const useAdvancedBilling = ({ billdata, onSuccess }: AdvancedBillingProps
       return;
     }
 
-    const isInvoice = form.documentType === 'invoice';
-    const partyList = isInvoice ? billData.vendorListResult : billData.customerListResult;
+    // Always use customerListResult for both bills and invoices
+    const partyList = billData.customerListResult;
     const selectedParty = partyList.find((p: any) => p._id === form.billFormData.customer_id);
 
     const billDataForPDF = {
       invoice_no: form.billFormData.invoice_no,
       date: form.billFormData.date,
-      customerName: selectedParty?.vendor_name || selectedParty?.full_name || '',
+      customerName: selectedParty?.full_name || selectedParty?.name || '',
       customerAddress: selectedParty?.address || selectedParty?.address1 || '',
       customerCity: selectedParty?.city || '',
       customerState: selectedParty?.state || '',
@@ -526,29 +526,6 @@ export const useAdvancedBilling = ({ billdata, onSuccess }: AdvancedBillingProps
       return options;
     }, [
       billData.customerListResult,
-      form.billFormData.customer_id,
-      form.billFormData.customer_name,
-    ]),
-    
-    vendorOptions: useMemo(() => {
-      const options = billData.vendorListResult.map((vendor: any) => ({
-        label: `${vendor.vendor_name} - ${vendor.contact_number || 'N/A'}`,
-        value: vendor._id,
-      }));
-
-      if (form.billFormData.customer_id && form.billFormData.customer_name) {
-        const exists = options.some((opt: { value: string }) => opt.value === form.billFormData.customer_id);
-        if (!exists) {
-          options.push({
-            value: form.billFormData.customer_id,
-            label: form.billFormData.customer_name,
-          });
-        }
-      }
-
-      return options;
-    }, [
-      billData.vendorListResult,
       form.billFormData.customer_id,
       form.billFormData.customer_name,
     ]),

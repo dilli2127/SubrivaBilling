@@ -101,13 +101,13 @@ const createDynamicEndpoints = (builder: any) => {
     // Get All endpoint
     endpoints[`get${name}`] = builder.query({
       query: (
-        params: { page?: number; limit?: number; [key: string]: any } = {}
+        params: { pageNumber?: number; pageLimit?: number; [key: string]: any } = {}
       ) => {
         const route = routes.GetAll;
         return {
           url: route.endpoint,
           method: route.method,
-          body: { page: 1, limit: 10, ...params },
+          body: { pageNumber: 1, pageLimit: 10, ...params },
         };
       },
       providesTags: [name],
@@ -163,9 +163,9 @@ const createDynamicEndpoints = (builder: any) => {
                       draft.pagination.total += 1;
                     }
                   }
-                  const limit = originalArgs?.limit ?? 10;
-                  if (Array.isArray(draft.result) && draft.result.length > limit) {
-                    draft.result = draft.result.slice(0, limit);
+                  const pageLimit = originalArgs?.pageLimit ?? 10;
+                  if (Array.isArray(draft.result) && draft.result.length > pageLimit) {
+                    draft.result = draft.result.slice(0, pageLimit);
                   }
                 })
               );

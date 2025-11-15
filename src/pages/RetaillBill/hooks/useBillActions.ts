@@ -56,9 +56,7 @@ export const useBillActions = (config: BillActionsConfig) => {
     const payload = {
       invoice_no: config.billFormData.invoice_no,
       date: config.billFormData.date || dayjs().format('YYYY-MM-DD'),
-      ...(config.documentType === 'invoice'
-        ? { vendor_id: config.billFormData.customer_id || null }
-        : { customer_id: config.billFormData.customer_id || null }),
+      customer_id: config.billFormData.customer_id || null,
       billed_by: config.billFormData.billed_by || null,
       payment_mode: config.billFormData.payment_mode || 'cash',
       items: config.billFormData.items.map((item: any) => ({
@@ -170,9 +168,7 @@ export const useBillActions = (config: BillActionsConfig) => {
     const payload = {
       invoice_no: config.billFormData.invoice_no,
       date: config.billFormData.date,
-      ...(config.documentType === 'invoice'
-        ? { vendor_id: config.billFormData.customer_id }
-        : { customer_id: config.billFormData.customer_id }),
+      customer_id: config.billFormData.customer_id,
       billed_by: config.billFormData.billed_by,
       payment_mode: config.billFormData.payment_mode,
       items: config.billFormData.items.map((item: any) => ({

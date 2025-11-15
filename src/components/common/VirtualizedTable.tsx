@@ -45,8 +45,8 @@ const VirtualizedTable = <T extends Record<string, any>>({
   pageSize = 10,
 }: VirtualizedTableProps<T>) => {
   const [params, setParams] = useState<RTKQueryParams>({
-    page: 1,
-    limit: pageSize,
+    pageNumber: 1,
+    pageLimit: pageSize,
     ...initialParams,
   });
 
@@ -81,8 +81,8 @@ const VirtualizedTable = <T extends Record<string, any>>({
   const handleTableChange = useCallback((pagination: any, filters: any, sorter: any) => {
     const newParams: RTKQueryParams = {
       ...params,
-      page: pagination.current || 1,
-      limit: pagination.pageSize || pageSize,
+      pageNumber: pagination.current || 1,
+      pageLimit: pagination.pageSize || pageSize,
     };
 
     // Add sorting

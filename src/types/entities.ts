@@ -12,6 +12,12 @@ export interface Customer extends BaseEntity {
   mobile: string;
   address?: string;
   customer_type: 'regular' | 'vip' | 'wholesale';
+  company_name?: string;
+  pan_no?: string;
+  gst_no?: string;
+  city?: string;
+  state?: string;
+  pincode?: string;
 }
 
 // Product entity

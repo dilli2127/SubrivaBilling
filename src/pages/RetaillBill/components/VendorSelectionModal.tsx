@@ -62,8 +62,8 @@ const VendorSelectionModalComponent: React.FC<VendorSelectionModalProps> = ({
     apiSlice.useGetVendorQuery(
       { 
         searchString: debouncedSearchTerm,
-        page: page,
-        limit: 10
+        pageNumber: page,
+        pageLimit: 10
       },
       { 
         skip: !visible,
