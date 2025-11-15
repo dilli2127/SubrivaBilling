@@ -5,16 +5,11 @@ import {
   Tag,
   Input,
   Row,
-  Table,
-  Statistic,
-  Col,
   Tooltip,
 } from 'antd';
 import {
   EyeOutlined,
   SearchOutlined,
-  FileTextOutlined,
-  InboxOutlined,
   CalendarOutlined,
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
@@ -55,18 +50,6 @@ const GRNListTab: React.FC = () => {
     setViewModalOpen(true);
   };
 
-  // Calculate summary statistics
-  const summaryStats = useMemo(() => {
-    const totalGRNs = grnsList.length;
-    const totalAmount = grnsList.reduce((sum: number, grn: any) => sum + (Number(grn.total_amount) || 0), 0);
-    const totalItems = grnsList.reduce((sum: number, grn: any) => sum + (grn.items?.length || 0), 0);
-    
-    return {
-      totalGRNs,
-      totalAmount,
-      totalItems,
-    };
-  }, [grnsList]);
 
   // Table columns
   const columns = [
@@ -142,7 +125,7 @@ const GRNListTab: React.FC = () => {
       key: 'items_count',
       width: 100,
       render: (record: any) => (
-        <Tag icon={<InboxOutlined />}>
+        <Tag>
           {record.items?.length || 0} items
         </Tag>
       ),
@@ -225,35 +208,6 @@ const GRNListTab: React.FC = () => {
             allowClear
           />
         </div>
-      </Row>
-
-      {/* Summary Statistics */}
-      <Row gutter={16} style={{ marginBottom: 24 }}>
-        <Col span={8}>
-          <Statistic
-            title="Total GRNs"
-            value={summaryStats.totalGRNs}
-            prefix={<FileTextOutlined />}
-            valueStyle={{ color: '#1890ff' }}
-          />
-        </Col>
-        <Col span={8}>
-          <Statistic
-            title="Total Items Received"
-            value={summaryStats.totalItems}
-            prefix={<InboxOutlined />}
-            valueStyle={{ color: '#52c41a' }}
-          />
-        </Col>
-        <Col span={8}>
-          <Statistic
-            title="Total Amount"
-            value={summaryStats.totalAmount}
-            prefix="₹"
-            precision={2}
-            valueStyle={{ color: '#52c41a', fontSize: '20px' }}
-          />
-        </Col>
       </Row>
 
       <GlobalTable
