@@ -295,6 +295,7 @@ export const API_ROUTES = {
   FieldMetadata: createCrudRoutes("/field_metadata", "FieldMetadata"),
   EntityDefinition: createCrudRoutes("/entity_definitions", "EntityDefinition"),
   RoleType: createCrudRoutes("/role_types", "RoleType"),
+  BusinessType: createCrudRoutes("/business_types", "BusinessType"),
   PlanLimits: {
     Get: {
       identifier: "GetPlanLimits",

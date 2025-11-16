@@ -40,6 +40,7 @@ const BrachesCrud = lazy(() => import("../pages/Branches/crud"));
 const SalesAccountCrud = lazy(() => import("../pages/UserAccount/crud"));
 const RolesCrud = lazy(() => import("../pages/Roles/crud"));
 const RoleTypeCrud = lazy(() => import("../pages/RoleType/crud"));
+const BusinessTypeCrud = lazy(() => import("../pages/BusinessType/crud"));
 const PermissionManagement = lazy(() => import("../pages/Permissions/PermissionManagement"));
 const TenantAccount = lazy(() => import("../pages/TentantAccount/crud"));
 const BranchStockAvailable = lazy(() => import("../pages/BranchProductStocks/List"));
@@ -415,6 +416,16 @@ const routerData: RouteConfig[] = [
         element: (
           <Suspense fallback={<Loader />}>
             <RolesCrud />
+          </Suspense>
+        ),
+        children: [],
+      },
+      {
+        key: "business_type",
+        path: "business_type",
+        element: (
+          <Suspense fallback={<Loader />}>
+            <BusinessTypeCrud />
           </Suspense>
         ),
         children: [],

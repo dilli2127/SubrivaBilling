@@ -366,6 +366,12 @@ export const menuItems = [
         path: '/roles',
       },
       {
+        key: 'business_type',
+        label: 'Business Type',
+        icon: <BankOutlined />,
+        path: '/business_type',
+      },
+      {
         key: 'role_type',
         label: 'Role Type',
         icon: <BankOutlined />,
