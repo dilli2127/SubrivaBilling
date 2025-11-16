@@ -3,37 +3,12 @@ import {
   DatePicker,
   Input,
   InputNumber,
-  Select,
   Switch,
   Tag,
   Upload,
 } from 'antd';
 import { CheckCircleTwoTone, CloseCircleTwoTone } from '@ant-design/icons';
-
-const businessTypes = [
-  { name: "Supermarket / Grocery Store" },
-  { name: "Medical / Pharmacy" },
-  { name: "Hardware Store" },
-  { name: "Hardware and Electronics Store" },
-  { name: "Electronics Store" },
-  { name: "Stationery / Book Store" },
-  { name: "Clothing / Textile Store" },
-  { name: "Footwear Store" },
-  { name: "Bakery / Sweet Shop" },
-  { name: "Fruits & Vegetables Shop" },
-  { name: "Furniture Store" },
-  { name: "Automobile / Spare Parts" },
-  { name: "Mobile Accessories Store" },
-  { name: "Cosmetics / Beauty Store" },
-  { name: "Jewellery / Fancy Store" },
-  { name: "Pet Store" },
-  { name: "General Store" },
-  { name: "Wholesale Business" },
-  { name: "Computer & Laptop Store" },
-  { name: "Mobile And Laptop Store" },
-  { name: "Electrical Store" },
-  { name: "Restaurant / Café" },
-];
+import BusinessTypeSelect from '../../components/common/BusinessTypeSelect';
 
 
 export const organisationFormItems = [
@@ -48,17 +23,7 @@ export const organisationFormItems = [
     name: 'business_type',
     rules: [{ required: true, message: 'Please select business type!' }],
     component: (
-      <Select
-        placeholder="Select business type"
-        showSearch
-        filterOption={(input, option) =>
-          (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
-        }
-        options={businessTypes.map(type => ({
-          value: type.name,
-          label: type.name,
-        }))}
-      />
+      <BusinessTypeSelect placeholder="Select business type" />
     ),
   },
   {

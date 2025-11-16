@@ -3,7 +3,6 @@ import {
   Form,
   Button,
   Input,
-  Select,
   Space,
   Divider,
   Switch,
@@ -19,34 +18,9 @@ import {
 } from '@ant-design/icons';
 import styles from '../Settings.module.css';
 import { SettingsTabProps } from './types';
+import BusinessTypeSelect from '../../../components/common/BusinessTypeSelect';
 
-const { Option } = Select;
 const { TextArea } = Input;
-
-const businessTypes = [
-  { name: "Supermarket / Grocery Store" },
-  { name: "Medical / Pharmacy" },
-  { name: "Hardware Store" },
-  { name: "Hardware and Electronics Store" },
-  { name: "Electronics Store" },
-  { name: "Stationery / Book Store" },
-  { name: "Clothing / Textile Store" },
-  { name: "Footwear Store" },
-  { name: "Bakery / Sweet Shop" },
-  { name: "Fruits & Vegetables Shop" },
-  { name: "Furniture Store" },
-  { name: "Automobile / Spare Parts" },
-  { name: "Mobile Accessories Store" },
-  { name: "Cosmetics / Beauty Store" },
-  { name: "Jewellery / Fancy Store" },
-  { name: "Pet Store" },
-  { name: "General Store" },
-  { name: "Wholesale Business" },
-  { name: "Computer & Laptop Store" },
-  { name: "Mobile And Laptop Store" },
-  { name: "Electrical Store" },
-  { name: "Restaurant / Café" },
-];
 
 const BusinessInfoTab: React.FC<SettingsTabProps> = ({
   form,
@@ -84,17 +58,7 @@ const BusinessInfoTab: React.FC<SettingsTabProps> = ({
             name="business_type"
             rules={[{ required: true, message: 'Please select business type!' }]}
           >
-            <Select
-              placeholder="Select business type"
-              showSearch
-              filterOption={(input, option) =>
-                (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
-              }
-              options={businessTypes.map(type => ({
-                value: type.name,
-                label: type.name,
-              }))}
-            />
+            <BusinessTypeSelect multiple placeholder="Select business types" />
           </Form.Item>
         </Col>
       </Row>

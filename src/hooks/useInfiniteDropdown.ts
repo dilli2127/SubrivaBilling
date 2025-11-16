@@ -85,8 +85,8 @@ export const useInfiniteDropdown = ({
   // Enable refetchOnMountOrArgChange to ensure fresh data on component mount
   const { data, isLoading, isFetching, refetch } = queryHook(
     {
-      page,
-      limit,
+      pageNumber: page,
+      pageLimit: limit,
       searchString: debouncedSearch,
     },
     {

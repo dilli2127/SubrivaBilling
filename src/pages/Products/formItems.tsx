@@ -2,6 +2,7 @@ import React from 'react';
 import { Input, Select, Switch, Button } from 'antd';
 import { ScanOutlined } from '@ant-design/icons';
 import { InfiniteDropdownResult } from '../../hooks/useInfiniteDropdown';
+import BusinessTypeSelect from '../../components/common/BusinessTypeSelect';
 
 const { Option } = Select;
 
@@ -170,32 +171,7 @@ export const productsFormItems = ({
     name: 'business_type',
     rules: [{ required: false, message: 'Please select business type!' }],
     component: (
-      <Select
-        placeholder="Select business type"
-        allowClear
-      >
-        <Option value="Supermarket / Grocery Store">Supermarket / Grocery Store</Option>
-        <Option value="Medical / Pharmacy">Medical / Pharmacy</Option>
-        <Option value="Hardware Store">Hardware Store</Option>
-        <Option value="Hardware and Electronics Store">Hardware and Electronics Store</Option>
-        <Option value="Electronics Store">Electronics Store</Option>
-        <Option value="Stationery / Book Store">Stationery / Book Store</Option>
-        <Option value="Clothing / Textile Store">Clothing / Textile Store</Option>
-        <Option value="Footwear Store">Footwear Store</Option>
-        <Option value="Bakery / Sweet Shop">Bakery / Sweet Shop</Option>
-        <Option value="Fruits & Vegetables Shop">Fruits & Vegetables Shop</Option>
-        <Option value="Furniture Store">Furniture Store</Option>
-        <Option value="Automobile / Spare Parts">Automobile / Spare Parts</Option>
-        <Option value="Mobile Accessories Store">Mobile Accessories Store</Option>
-        <Option value="Cosmetics / Beauty Store">Cosmetics / Beauty Store</Option>
-        <Option value="Jewellery / Fancy Store">Jewellery / Fancy Store</Option>
-        <Option value="Pet Store">Pet Store</Option>
-        <Option value="General Store">General Store</Option>
-        <Option value="Wholesale Business">Wholesale Business</Option>
-        <Option value="Computer & Laptop Store">Computer & Laptop Store</Option>
-        <Option value="Mobile And Laptop Store">Mobile And Laptop Store</Option>
-        <Option value="Other">Other</Option>
-      </Select>
+      <BusinessTypeSelect placeholder="Select business type" allowClear />
     ),
   },
   {

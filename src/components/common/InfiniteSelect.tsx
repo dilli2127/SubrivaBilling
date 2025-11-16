@@ -36,7 +36,7 @@ interface InfiniteSelectProps {
  *   })}
  * />
  */
-export const InfiniteSelect: React.FC<InfiniteSelectProps> = ({
+export const InfiniteSelect: React.FC<InfiniteSelectProps & { mode?: 'multiple' | 'tags' }> = ({
   dropdown,
   placeholder = 'Select...',
   value,
@@ -48,12 +48,14 @@ export const InfiniteSelect: React.FC<InfiniteSelectProps> = ({
   loadingText = 'Loading...',
   scrollText = 'Scroll for more',
   className,
+  mode,
 }) => {
   return (
     <Select
       placeholder={placeholder}
       value={value}
       onChange={onChange}
+      mode={mode}
       loading={dropdown.loading && dropdown.items.length === 0}
       showSearch
       allowClear={allowClear}
