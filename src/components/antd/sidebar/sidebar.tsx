@@ -30,6 +30,7 @@ import { isElectron } from '../../../helpers/environment';
 import { useGetSubscriptionStatusQuery } from '../../../services/redux/api/endpoints';
 import { processSubscriptionStatus, getSubscriptionMessage } from '../../../utils/subscriptionUtils';
 import { apiSlice } from '../../../services/redux/api/apiSlice';
+import { isSuperAdmin } from '../../../helpers/permissionHelper';
 
 const { Header, Content, Sider } = Layout;
 
@@ -76,12 +77,22 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
   // Skip if no user (not logged in) to prevent unnecessary calls
   const { data: subscriptionData } = useGetSubscriptionStatusQuery(undefined, {
     pollingInterval: 60 * 60 * 1000, // Poll every hour
-    skip: !userItem || !getAuthToken(), // Skip query if user not logged in or no token
+    skip: !userItem || !getAuthToken() || isSuperAdmin(), // Skip for not logged in/no token/superadmin
   });
   
   // Show subscription warnings
   useEffect(() => {
     if (subscriptionData) {
+      // Ignore non-200 or missing-tenant responses
+      const statusCode = (subscriptionData as any)?.statusCode;
+      const messageText = (subscriptionData as any)?.message?.toLowerCase?.() || '';
+      if (statusCode !== 200 || messageText.includes('tenant id not found')) {
+        return;
+      }
+      // Bypass subscription checks for superadmin
+      if (isSuperAdmin()) {
+        return;
+      }
       const status = processSubscriptionStatus(subscriptionData);
       
       if (!status.isActive && status.message !== 'Working in offline mode - subscription will be verified when online') {

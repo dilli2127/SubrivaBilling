@@ -24,6 +24,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useGetPlanLimitsQuery } from '../services/redux/api/endpoints';
+import { isSuperAdmin } from '../helpers/permissionHelper';
 
 export interface PlanLimits {
   plan: {
@@ -72,11 +73,12 @@ export interface UsePlanLimitsResult {
  */
 export function usePlanLimits(autoFetch: boolean = true): UsePlanLimitsResult {
   const [error, setError] = useState<string | null>(null);
+  const superAdmin = isSuperAdmin();
 
   // Use RTK Query to fetch plan limits
   const { data: planLimitsResponse, isLoading: loading, error: queryError, refetch: fetchPlanLimits } = useGetPlanLimitsQuery(
     {},
-    { skip: !autoFetch }
+    { skip: !autoFetch || superAdmin }
   );
 
   // Extract plan limits from response
@@ -90,7 +92,13 @@ export function usePlanLimits(autoFetch: boolean = true): UsePlanLimitsResult {
   useEffect(() => {
     if (queryError) {
       const errorData = (queryError as any)?.data || queryError;
-      setError(errorData?.exception || errorData?.message || 'Failed to fetch plan limits');
+      const msg = (errorData?.exception || errorData?.message || '').toString();
+      // Silently ignore when tenant info is missing in token
+      if (msg.toLowerCase().includes('tenant id not found')) {
+        setError(null);
+      } else {
+        setError(msg || 'Failed to fetch plan limits');
+      }
     } else {
       setError(null);
     }

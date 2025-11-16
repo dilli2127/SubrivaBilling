@@ -35,6 +35,7 @@ import {
   CurrentUsage,
   PlanLimitsResponse 
 } from '../../../services/redux/api/endpoints';
+import { isSuperAdmin } from '../../../helpers/permissionHelper';
 import { 
   calculateDaysRemaining, 
   getSubscriptionMessage,
@@ -174,14 +175,14 @@ const SubscriptionTab: React.FC = () => {
     isLoading: isLoadingSubscription,
     error: subscriptionError,
     refetch: refetchSubscription 
-  } = useGetSubscriptionStatusQuery(undefined);
+  } = useGetSubscriptionStatusQuery(undefined, { skip: isSuperAdmin() });
   
   const { 
     data: planLimitsData, 
     isLoading: isLoadingLimits,
     error: limitsError,
     refetch: refetchLimits 
-  } = useGetMyPlanLimitsQuery(undefined);
+  } = useGetMyPlanLimitsQuery(undefined, { skip: isSuperAdmin() });
 
   const loading = isLoadingSubscription || isLoadingLimits;
   

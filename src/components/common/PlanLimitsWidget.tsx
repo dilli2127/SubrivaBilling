@@ -23,6 +23,7 @@ import {
   CrownOutlined 
 } from '@ant-design/icons';
 import usePlanLimits from '../../hooks/usePlanLimits';
+import { isSuperAdmin } from '../../helpers/permissionHelper';
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -36,6 +37,7 @@ const PlanLimitsWidget: React.FC<PlanLimitsWidgetProps> = ({
   showRefresh = true 
 }) => {
   const { planLimits, loading, error, refetch, getUsagePercentage, isNearLimit } = usePlanLimits();
+  const superAdmin = isSuperAdmin();
 
   if (loading) {
     return (
@@ -49,6 +51,10 @@ const PlanLimitsWidget: React.FC<PlanLimitsWidgetProps> = ({
   }
 
   if (error) {
+    // Suppress UI if tenant is missing in token; nothing to show
+    if (error.toLowerCase().includes('tenant id not found')) {
+      return null;
+    }
     return (
       <Alert
         message="Failed to Load Plan Limits"
@@ -142,7 +148,7 @@ const PlanLimitsWidget: React.FC<PlanLimitsWidgetProps> = ({
       size={compact ? 'small' : 'default'}
     >
       {/* Plan Status */}
-      {!planLimits.plan.status && (
+      {!superAdmin && !planLimits.plan.status && (
         <Alert
           message="Plan Inactive"
           description="Your plan is currently inactive. Please contact support or renew your subscription."
@@ -153,7 +159,7 @@ const PlanLimitsWidget: React.FC<PlanLimitsWidgetProps> = ({
       )}
 
       {/* License Expiry Warning */}
-      {planLimits.plan.license_expiry && (
+      {!superAdmin && planLimits.plan.license_expiry && (
         <Alert
           message={`License expires on ${new Date(planLimits.plan.license_expiry).toLocaleDateString()}`}
           type="info"

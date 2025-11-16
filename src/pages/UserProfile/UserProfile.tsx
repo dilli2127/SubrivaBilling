@@ -24,6 +24,7 @@ import {
   useGetMyPlanLimitsQuery,
   PlanLimitsResponse
 } from '../../services/redux/api/endpoints';
+import { isSuperAdmin } from '../../helpers/permissionHelper';
 import {
   processSubscriptionStatus,
 } from '../../utils/subscriptionUtils';
@@ -56,13 +57,13 @@ const UserProfile: React.FC = () => {
     data: subscriptionData, 
     isLoading: isLoadingSubscription,
     refetch: refetchSubscription 
-  } = useGetSubscriptionStatusQuery(undefined);
+  } = useGetSubscriptionStatusQuery(undefined, { skip: isSuperAdmin() });
   
   const { 
     data: planLimitsData, 
     isLoading: isLoadingLimits,
     refetch: refetchLimits 
-  } = useGetMyPlanLimitsQuery(undefined);
+  } = useGetMyPlanLimitsQuery(undefined, { skip: isSuperAdmin() });
 
   useEffect(() => {
     if (user) {
