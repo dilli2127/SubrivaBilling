@@ -119,8 +119,8 @@ const Dashboard: React.FC = () => {
     if (selectedOrganisation !== 'all') {
       branches = branches.filter(
         (branch: any) =>
-          branch.organisation_id === selectedOrganisation ||
-          branch.org_id === selectedOrganisation
+          branch.organisation_id === selectedOrganisation 
+          // branch.org_id === selectedOrganisation
       );
     }
     return branches.map((branch: any) => ({

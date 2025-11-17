@@ -1,7 +1,7 @@
 import { useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { apiSlice } from '../../../services/redux/api/apiSlice';
-import { getCurrentUserRole } from '../../../helpers/auth';
+import { canCreate, canRead, canUpdate, RESOURCES } from '../../../helpers/permissionHelper';
 import { EntityDefinition, UseEntityExplorerReturn } from '../types';
 
 /**
@@ -11,13 +11,15 @@ import { EntityDefinition, UseEntityExplorerReturn } from '../types';
 export const useEntityExplorer = (): UseEntityExplorerReturn => {
   const navigate = useNavigate();
 
-  // Get current user role for permission checks
-  const currentUserRole = getCurrentUserRole();
-  const isSuperAdmin = useMemo(() => {
-    const role = currentUserRole?.toLowerCase();
-    return role === 'superadmin' || role === 'tenant' || role === 'admin';
-  }, [currentUserRole]);
-
+  // Permission-based access (no longer role-based)
+  const hasPermission = useMemo(() => {
+    // Treat "super" capabilities as having manage permissions on entity definitions
+    const canManageEntityDefinitions =
+      canCreate(RESOURCES.ENTITY_DEFINITION) ||
+      canUpdate(RESOURCES.ENTITY_DEFINITION) ||
+      canRead(RESOURCES.ENTITY_DEFINITION);
+    return !!canManageEntityDefinitions;
+  }, []);
   // Use RTK Query to fetch entity definitions
   const { data: entityDefData, isLoading: loading, refetch: fetchEntities } = apiSlice.useGetEntityDefinitionQuery(
     { is_active: true },
@@ -57,7 +59,7 @@ export const useEntityExplorer = (): UseEntityExplorerReturn => {
     hasEntities,
     
     // Permissions
-    isSuperAdmin,
+    hasPermission,
     
     // Actions
     navigateToEntity,

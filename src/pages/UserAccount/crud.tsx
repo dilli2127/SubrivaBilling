@@ -20,7 +20,7 @@ const UserAccountCrud: React.FC = () => {
   >(null);
   const { data: branchesData } = apiSlice.useGetBranchesQuery(
     selectedOrganisationId
-      ? { organisation_id: selectedOrganisationId, org_id: selectedOrganisationId }
+      ? { organisation_id: selectedOrganisationId }
       : {},
     { skip: !selectedOrganisationId }
   );
@@ -59,7 +59,7 @@ const UserAccountCrud: React.FC = () => {
     branchesItems?.map((branch: any) => ({
       label: branch.branch_name || branch.name,
       value: branch._id,
-      organisation_id: branch.organisation_id || branch.org_id, // ensure this property exists for filtering
+      organisation_id: branch.organisation_id
     })) || [], [branchesItems]);
 
   // Dependent select logic

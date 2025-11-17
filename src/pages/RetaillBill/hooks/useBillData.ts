@@ -61,7 +61,7 @@ export const useBillData = (billdata?: any) => {
 
   // Fetch organization data
   const { data: organisationsData } = apiSlice.useGetOrganisationsQuery(
-    { organisation_id: organisationId },
+    { _id: organisationId },
     { skip: !organisationId }
   );
 

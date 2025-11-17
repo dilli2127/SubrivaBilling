@@ -4,6 +4,7 @@ import { API_ROUTES, getCrudEntities, getDynamicTagTypes } from '../../api/utils
 import { getAuthToken } from '../../../helpers/auth';
 import { getCSRFToken } from '../../../helpers/csrfToken';
 import { getActiveApiUrl } from '../../../helpers/apiModeHelper';
+import { showToast } from '../../../helpers/Common_functions';
 
 // Base query with authentication using existing auth system
 const baseQuery = fetchBaseQuery({
@@ -45,6 +46,16 @@ const baseQueryWithReauth = async (args: any, api: any, extraOptions: any) => {
         errorMessage.toLowerCase().includes('insufficient permissions') ||
         errorMessage.toLowerCase().includes('permission')) {
       // Permission denied - don't clear auth, just return error
+      // Also notify the user since HTTP status may be 200 with body statusCode 401
+      try {
+        const msg =
+          (typeof errorMessage === 'string' && errorMessage.trim().length > 0)
+            ? errorMessage
+            : 'Access denied';
+        showToast('error', msg);
+      } catch {
+        showToast('error', 'Access denied');
+      }
       return result;
     }
     
@@ -82,6 +93,41 @@ const baseQueryWithReauth = async (args: any, api: any, extraOptions: any) => {
       localStorage.removeItem('accessToken');
       window.location.href = '#/billing_login';
     }
+  }
+
+  // Global error notification for non-401 failures
+  // Covers: network errors, 4xx/5xx responses, or API responses with non-success statusCode
+  try {
+    const hasHttpError = !!result.error;
+    const bodyStatusCode = (result.data as any)?.statusCode;
+    const isBodyError =
+      typeof bodyStatusCode === 'number' &&
+      bodyStatusCode !== 200 &&
+      bodyStatusCode !== 201 &&
+      bodyStatusCode !== 204;
+
+    if (hasHttpError || isBodyError) {
+      // Prefer server-provided message when available
+      const serverMessage =
+        (result.error as any)?.data?.message ||
+        (result.error as any)?.data?.error ||
+        (result.data as any)?.message ||
+        (result.data as any)?.error ||
+        (result.error as any)?.statusText ||
+        '';
+
+      const message =
+        typeof serverMessage === 'string' && serverMessage.trim().length > 0
+          ? serverMessage
+          : 'Something went wrong';
+
+      // Avoid spamming: only show toast for the "end" of a request lifecycle
+      // RTK Query calls baseQuery per request; showing once here is sufficient
+      showToast('error', message);
+    }
+  } catch {
+    // Fallback if parsing above throws
+    showToast('error', 'Something went wrong');
   }
 
   return result;

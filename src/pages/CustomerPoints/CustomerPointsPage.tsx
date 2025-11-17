@@ -20,7 +20,7 @@ const CustomerPointsPage: React.FC = () => {
   const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
   
   const { data, isLoading } = useGetAllCustomerPointsQuery({
-    search: searchText,
+    searchString: searchText,
     tier: tierFilter,
   });
   

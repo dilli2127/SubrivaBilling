@@ -181,7 +181,7 @@ export const AVAILABLE_RESOURCES: ResourceDefinition[] = [
 
   // Advanced
   {
-    resource: 'custom_entities',
+    resource: 'entity_definitions',
     label: 'Custom Forms',
     category: 'Advanced',
     description: 'Custom entity management',

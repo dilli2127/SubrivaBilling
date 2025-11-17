@@ -22,7 +22,7 @@ const EntityExplorer: React.FC = memo(() => {
     entities,
     loading,
     hasEntities,
-    isSuperAdmin,
+    hasPermission,
     navigateToEntity,
     navigateToDefinitions,
   } = useEntityExplorer();
@@ -55,7 +55,7 @@ const EntityExplorer: React.FC = memo(() => {
           </Paragraph>
         </Col>
         <Col>
-          {isSuperAdmin && (
+          {hasPermission && (
             <Button
               type="primary"
               icon={<PlusOutlined />}
@@ -75,11 +75,11 @@ const EntityExplorer: React.FC = memo(() => {
               No Custom Entities
             </Title>
             <Paragraph type="secondary">
-              {isSuperAdmin
+              {hasPermission
                 ? 'Create your first custom entity to get started'
                 : 'Contact your administrator to create custom entities'}
             </Paragraph>
-            {isSuperAdmin && (
+            {hasPermission && (
               <Button
                 type="primary"
                 icon={<PlusOutlined />}

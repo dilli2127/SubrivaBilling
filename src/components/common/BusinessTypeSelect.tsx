@@ -49,7 +49,7 @@ export const BusinessTypeSelect: React.FC<BusinessTypeSelectProps> = ({
 			mode={multiple ? 'multiple' : undefined}
 			renderOption={(bt: any) => ({
 				label: bt.name ?? bt.label ?? '',
-				value: bt.name ?? bt.label ?? bt._id,
+				value: bt.code ?? bt.label ?? bt._id,
 				key: bt._id ?? bt.name ?? bt.label,
 			})}
 			loadingText="Loading types..."

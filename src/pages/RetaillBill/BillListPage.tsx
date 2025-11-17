@@ -53,7 +53,7 @@ const BillListPage = () => {
   // Fetch organization data from API
   const organisationId = userItem?.organisation_id || userItem?.organisationItems?._id;
   const { data: organisationsData } = apiSlice.useGetOrganisationsQuery(
-    { organisation_id: organisationId },
+    { _id: organisationId },
     { skip: !organisationId }
   );
 

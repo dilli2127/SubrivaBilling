@@ -116,7 +116,7 @@ export interface UseEntityExplorerReturn {
   hasEntities: boolean;
   
   // Permissions
-  isSuperAdmin: boolean;
+  hasPermission: boolean;
   
   // Actions
   navigateToEntity: (entityName: string) => void;

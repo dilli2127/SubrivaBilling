@@ -98,7 +98,7 @@ export const useSuperAdminFilters = (): SuperAdminFiltersReturn => {
   const { data: branchesData, isLoading: branchesLoading, refetch: refetchBranches } =
     apiSlice.useGetBranchesQuery(
       effectiveOrganisationId
-        ? { organisation_id: effectiveOrganisationId, org_id: effectiveOrganisationId }
+        ? { organisation_id: effectiveOrganisationId }
         : {},
       {
         skip:
@@ -138,8 +138,8 @@ export const useSuperAdminFilters = (): SuperAdminFiltersReturn => {
     if (selectedOrganisation !== 'all') {
       branches = branches.filter(
         (branch: any) =>
-          branch.organisation_id === selectedOrganisation ||
-          branch.org_id === selectedOrganisation
+          branch.organisation_id === selectedOrganisation
+          // branch.org_id === selectedOrganisation
       );
     }
     return branches.map((branch: any) => ({
@@ -182,7 +182,7 @@ export const useSuperAdminFilters = (): SuperAdminFiltersReturn => {
     
     if ((isSuperAdmin || isTenant) && selectedOrganisation && selectedOrganisation !== 'all') {
       filters.organisation_id = selectedOrganisation;
-      filters.org_id = selectedOrganisation; // Some APIs use org_id
+      // filters.org_id = selectedOrganisation; // Some APIs use org_id
     }
     
     if ((isSuperAdmin || isTenant || isOrganisationUser) && selectedBranch && selectedBranch !== 'all') {
