@@ -61,6 +61,7 @@ const BusinessTypeCrud: React.FC = () => {
 		],
 		entityName: 'BusinessType',
 		formColumns: 2,
+		searchFields: ['name', 'code'],
 		canEdit: (_record: BusinessType) => true,
 		canDelete: (_record: BusinessType) => true,
 	}), []);

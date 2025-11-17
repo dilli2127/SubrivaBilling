@@ -84,6 +84,7 @@ const RoleTypeCrud: React.FC = () => {
     ],
     entityName: 'RoleType',
     formColumns: 2,
+    searchFields: ['name'],
     canEdit: (record: RoleType) => {
       // If is_global is true, only superadmin can edit
       if (record.is_global) {

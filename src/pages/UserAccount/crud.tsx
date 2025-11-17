@@ -92,6 +92,7 @@ const UserAccountCrud: React.FC = () => {
         }),
         entityName: 'BillingUsers',
         formColumns: 2,
+        searchFields: ['name', 'user_name', 'email', 'mobile'],
       }}
       onValuesChange={handleValuesChange}
       enableDynamicFields={true}

@@ -156,6 +156,7 @@ const StockOutCrud: React.FC = () => {
     ],
     entityName: "StockOut",
     formColumns: 2,
+    searchFields: ['out_reason'],
   };
 
   return <GenericCrudPage config={stockOutConfig} />;

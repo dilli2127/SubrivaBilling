@@ -181,6 +181,7 @@ const StockAuditCrud: React.FC = () => {
     entityName: 'StockAudit',
     formColumns: 3,
     drawerWidth: 1200,
+    searchFields: ['invoice_id', 'batch_no'],
   }), [
     handleAllocate,
     handleRevert,

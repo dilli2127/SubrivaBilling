@@ -116,6 +116,7 @@ const warehouseConfig = {
   ],
   entityName: 'Warehouse',
   formColumns: 2,
+  searchFields: ['warehouse_name', 'warehouse_code'],
 };
 
 const WarehouseCrud: React.FC = () => {

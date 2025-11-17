@@ -137,6 +137,7 @@ const vendorConfig = {
   ],
   entityName: 'Vendor',
   formColumns: 2,
+  searchFields: ['vendor_name', 'company_name'],
 };
 
 const VendorCrud: React.FC = () => {

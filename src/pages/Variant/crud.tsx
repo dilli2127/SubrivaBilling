@@ -170,6 +170,7 @@ const VariantCrud: React.FC = () => {
     ],
     entityName: "Variant",
     formColumns: 2,
+    searchFields: ['variant_name'],
     canEdit: (record: Variant) => {
       // If global_variant is true, only superadmin can edit
       if (record.global_variant) {

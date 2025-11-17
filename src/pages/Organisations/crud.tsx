@@ -10,6 +10,7 @@ const organisationsConfig = {
   entityName: 'Organisations',
   formColumns: 2,
   drawerWidth: 800,
+  searchFields: ['org_name'],
 };
 
 const OrganisationsCrud: React.FC = () => {

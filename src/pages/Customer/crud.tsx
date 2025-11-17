@@ -203,6 +203,7 @@ const customerConfig = {
   entityName: 'Customer',
   formColumns: 2,
   drawerWidth: 600,
+  searchFields: ['full_name', 'email', 'mobile'],
 };
 
 const CustomerCrud: React.FC = () => {

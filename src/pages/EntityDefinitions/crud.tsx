@@ -162,6 +162,7 @@ const EntityDefinitionsCrud: React.FC = () => {
       entityName: 'EntityDefinition',
       formColumns: 2,
       drawerWidth: 600,
+      searchFields: ['entity_name', 'display_name'],
     }),
     [isSuperAdmin]
   );

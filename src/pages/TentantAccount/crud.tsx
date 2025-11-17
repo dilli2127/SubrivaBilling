@@ -12,6 +12,7 @@ const TenantAccount: React.FC = () => {
         formItems: tenantAccountFormItems,
         entityName: 'TenantAccounts',
         formColumns: 2,
+        searchFields: ['email', 'mobile'],
       }}
       enableDynamicFields={true}
       entityName="tenantaccounts"

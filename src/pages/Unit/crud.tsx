@@ -82,6 +82,7 @@ const UnitCrud: React.FC = () => {
     ],
     entityName: 'Unit',
     formColumns: 2,
+    searchFields: ['unit_name'], // Fields to search when searchString is provided
     canEdit: (record: Unit) => {
       // If is_global is true, only superadmin can edit
       if (record.is_global) {

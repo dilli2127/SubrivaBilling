@@ -70,6 +70,7 @@ const ProductCrud: React.FC = () => {
     }),
     entityName: 'Product',
     formColumns: 2,
+    searchFields: ['name', 'sku', 'barcode'],
     // Custom business logic for global products
     // Note: PermissionAwareCrudPage will combine these with user permissions
     canEdit,

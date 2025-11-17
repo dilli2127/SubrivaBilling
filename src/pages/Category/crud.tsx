@@ -122,6 +122,7 @@ const CategoryCrud: React.FC = () => {
       ],
       entityName: 'Category',
       formColumns: 2,
+      searchFields: ['category_name'],
       canEdit: (record: Category) => {
         // If global_category is true, only superadmin can edit
         if (record.global_category) {

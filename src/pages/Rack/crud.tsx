@@ -32,6 +32,7 @@ const rackConfig = {
   ],
   entityName: 'Rack',
   formColumns: 2,
+  searchFields: ['name'],
 };
 
 const RackCrud: React.FC = () => {

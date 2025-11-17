@@ -33,6 +33,7 @@ const BranchesCrud: React.FC = () => {
         columns: brancheColumns,
         formItems: branchesFormItems(organisationItems as any, userRole || ''),
         formColumns: 2,
+        searchFields: ['branch_name'],
       }}
       customButtons={customButtons}
       enableDynamicFields={true}

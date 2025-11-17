@@ -19,6 +19,7 @@ export interface CrudConfig<T extends BaseEntity> {
   dynamicFieldNames?: string[]; // Names of dynamic metadata fields
   metadataFieldName?: string; // Field name for storing metadata (default: 'meta_data_values', can be 'custom_data')
   skipMetadataWrapping?: boolean; // If true, send fields directly without any wrapping
+  searchFields?: string[]; // Fields to search when searchString is provided (e.g., ['unit_name'])
   beforeSave?: (
     values: Partial<T>
   ) => Partial<T> | Promise<Partial<T>>; // Optional hook to transform payload before submit
@@ -107,12 +108,21 @@ export const useGenericCrud = <T extends BaseEntity>(
 
   // Memoize query parameters to prevent unnecessary re-renders
   const queryParams = useMemo(
-    () => ({
-      pageNumber: pagination.current,
-      pageLimit: pagination.pageSize,
-      ...debouncedFilters,
-    }),
-    [pagination, debouncedFilters]
+    () => {
+      const params: Record<string, any> = {
+        pageNumber: pagination.current,
+        pageLimit: pagination.pageSize,
+        ...debouncedFilters,
+      };
+      
+      // Add searchFields array if searchString is present and searchFields is configured
+      if (params.searchString && config.searchFields && config.searchFields.length > 0) {
+        params.searchFields = config.searchFields;
+      }
+      
+      return params;
+    },
+    [pagination, debouncedFilters, config.searchFields]
   );
 
   // RTK Query hooks
