@@ -126,12 +126,12 @@ const Settings: React.FC = () => {
   // For OrganisationUser/BranchUser: Load their specific organisation
   const organisationsQueryParams = useMemo(() => {
     if (isSuperAdmin && selectedTenant && selectedTenant !== 'all') {
-      return { tenant_id: selectedTenant };
+      return { _id: selectedTenant };
     }
     if (isOrganisationUser || isBranchUser) {
       const organisationId = userItem?.organisation_id || userItem?.organisationItems?._id;
       if (organisationId) {
-        return { organisation_id: organisationId };
+        return { _id: organisationId };
       }
     }
     return {};
