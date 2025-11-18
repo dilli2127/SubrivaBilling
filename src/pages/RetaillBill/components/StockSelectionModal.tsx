@@ -1,4 +1,4 @@
-import React, { useEffect, useState, FC, KeyboardEvent, useRef } from 'react';
+import React, { useEffect, useState, useMemo, FC, KeyboardEvent, useRef } from 'react';
 import { Modal, Table, Input, Tag, Tooltip, message } from 'antd';
 import type { InputRef } from 'antd/es/input';
 import type { ColumnType } from 'antd/es/table';
@@ -53,29 +53,89 @@ const StockSelectionModal: FC<StockSelectionModalProps> = ({
   // Only fetch after a product is selected and modal is visible
   const shouldFetch = !!productId && !!visible;
 
+  const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
+  const [selectedRowKey, setSelectedRowKey] = useState<React.Key | null>(null);
+  const [highlightedIndex, setHighlightedIndex] = useState<number>(0);
+  const [errorMessage, setErrorMessage] = useState<string>('');
+  const tableBodyRef = useRef<HTMLDivElement>(null);
+  const searchInputRef = useRef<InputRef>(null);
+  const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Debounce search term for API calls
+  useEffect(() => {
+    if (!visible) return;
+
+    if (searchTerm === debouncedSearchTerm) return;
+
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    searchTimeoutRef.current = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, 300);
+
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+    };
+  }, [searchTerm, debouncedSearchTerm, visible]);
+
+  // Reset search when modal closes
+  useEffect(() => {
+    if (!visible) {
+      setSearchTerm('');
+      setDebouncedSearchTerm('');
+    }
+  }, [visible]);
+
+  // Memoize query parameters for stock audit API
+  const stockAuditQueryParams = useMemo(
+    () => {
+      const params: any = {
+        pageNumber: 1,
+        pageLimit: 10,
+        product: productId,
+      };
+      
+      // Only include searchFields when searchString is present
+      if (debouncedSearchTerm) {
+        params.searchFields = ['batch_no'];
+        params.searchString = debouncedSearchTerm;
+      }
+      
+      return params;
+    },
+    [productId, debouncedSearchTerm]
+  );
+
   // Organisation users -> stock_audit
   const { data: orgStocksData, isLoading: loadingOrg } =
-    apiSlice.useGetStockAuditQuery(
-      { product_id: productId },
-      {
-        skip: !shouldFetch || !isOrganisationUser,
-        refetchOnMountOrArgChange: true,
-        refetchOnFocus: true,
-        refetchOnReconnect: true,
-      }
-    );
+    apiSlice.useGetStockAuditQuery(stockAuditQueryParams, {
+      skip: !shouldFetch || !isOrganisationUser,
+      refetchOnMountOrArgChange: true,
+      refetchOnFocus: true,
+      refetchOnReconnect: true,
+    });
 
   // Branch users -> branch_stock
+  const branchStockQueryParams = useMemo(
+    () => ({
+      product_id: productId,
+      searchString: debouncedSearchTerm || undefined,
+    }),
+    [productId, debouncedSearchTerm]
+  );
+
   const { data: branchStocksData, isLoading: loadingBranch } =
-    apiSlice.useGetBranchStockQuery(
-      { product_id: productId },
-      {
-        skip: !shouldFetch || !isBranchUser,
-        refetchOnMountOrArgChange: true,
-        refetchOnFocus: true,
-        refetchOnReconnect: true,
-      }
-    );
+    apiSlice.useGetBranchStockQuery(branchStockQueryParams, {
+      skip: !shouldFetch || !isBranchUser,
+      refetchOnMountOrArgChange: true,
+      refetchOnFocus: true,
+      refetchOnReconnect: true,
+    });
 
   const stocks = (
     (isOrganisationUser
@@ -85,13 +145,6 @@ const StockSelectionModal: FC<StockSelectionModalProps> = ({
       : []) || []
   ) as Stock[];
   const loading = loadingOrg || loadingBranch;
-
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedRowKey, setSelectedRowKey] = useState<React.Key | null>(null);
-  const [highlightedIndex, setHighlightedIndex] = useState<number>(0);
-  const [errorMessage, setErrorMessage] = useState<string>('');
-  const tableBodyRef = useRef<HTMLDivElement>(null);
-  const searchInputRef = useRef<InputRef>(null);
 
   // Helper function to check if stock is expired
   const isStockExpired = (stock: Stock): boolean => {
@@ -128,22 +181,8 @@ const StockSelectionModal: FC<StockSelectionModalProps> = ({
     }, 5000);
   };
 
-  const filteredStocks: Stock[] =
-    (Array.isArray(stocks) ? stocks : []).filter((s: Stock) => {
-      const searchLower = searchTerm.toLowerCase();
-      return (
-        s.batch_no?.toLowerCase().includes(searchLower) ||
-        s.ProductItem?.name?.toLowerCase().includes(searchLower) ||
-        s.ProductItem?.VariantItem?.variant_name
-          ?.toLowerCase()
-          .includes(searchLower) ||
-        s.available_quantity?.toString().includes(searchLower) ||
-        s.sell_price?.toString().includes(searchLower)
-      );
-    });
-
-  // Show all stocks including expired ones, but disable selection of expired items
-  const allStocks = filteredStocks;
+  // Use stocks directly from API (search is handled server-side)
+  const allStocks = (Array.isArray(stocks) ? stocks : []) as Stock[];
 
   useEffect(() => {
     setHighlightedIndex(0);
@@ -168,7 +207,7 @@ const StockSelectionModal: FC<StockSelectionModalProps> = ({
     } else {
       setSelectedRowKey(null);
     }
-  }, [searchTerm, visible, stocks]);
+  }, [visible, stocks]);
 
   useEffect(() => {
     if (visible) {

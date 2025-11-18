@@ -189,16 +189,25 @@ const QuotationLineItemsTable: React.FC<QuotationLineItemsTableProps> = ({
     }, [productId]);
 
     // Create stable query params object - memoized to prevent unnecessary refetches
-    const queryParams = useMemo(() => ({
-      pageNumber: page,
-      pageLimit: 20,
-      searchString: debouncedSearch || '',
-      product_id: productId || undefined,
-    }), [page, debouncedSearch, productId]);
+    const queryParams = useMemo(() => {
+      const params: any = {
+        pageNumber: page,
+        pageLimit: 20,
+        product: productId || undefined,
+      };
+      
+      // Only include searchFields when searchString is present
+      if (debouncedSearch) {
+        params.searchFields = ['batch_no'];
+        params.searchString = debouncedSearch;
+      }
+      
+      return params;
+    }, [page, debouncedSearch, productId]);
 
     // Create query key string to detect actual query changes (not record changes)
     const queryKey = useMemo(() => 
-      JSON.stringify({ page, searchString: debouncedSearch, product_id: productId }), 
+      JSON.stringify({ page, searchString: debouncedSearch, product: productId }), 
       [page, debouncedSearch, productId]
     );
 
@@ -211,7 +220,7 @@ const QuotationLineItemsTable: React.FC<QuotationLineItemsTableProps> = ({
       return paramsChanged;
     }, [queryKey]);
 
-    // Fetch stock audit with product_id filter
+    // Fetch stock audit with product filter
     // Set refetchOnMountOrArgChange to false to prevent refetch on component re-render
     // RTK Query will still refetch when query params change naturally
     const { data, isLoading, isFetching } = apiSlice.useGetStockAuditQuery(
