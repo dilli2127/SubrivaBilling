@@ -17,11 +17,13 @@ const ProductCrud: React.FC = () => {
   const categoryDropdown = useInfiniteDropdown({
     queryHook: apiSlice.useGetCategoryQuery,
     limit: 20,
+    searchFields: ['category_name'],
   });
 
   const variantDropdown = useInfiniteDropdown({
     queryHook: apiSlice.useGetVariantQuery,
     limit: 20,
+    searchFields: ['variant_name'],
   });
 
   const [scannerVisible, setScannerVisible] = useState(false);

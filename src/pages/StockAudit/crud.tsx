@@ -28,26 +28,31 @@ const StockAuditCrud: React.FC = () => {
   const productDropdown = useInfiniteDropdown({
     queryHook: apiSlice.useGetProductQuery,
     limit: 20,
+    searchFields: ['name', 'sku', 'barcode'],
   });
 
   const vendorDropdown = useInfiniteDropdown({
     queryHook: apiSlice.useGetVendorQuery,
     limit: 20,
+    searchFields: ['vendor_name', 'company_name'],
   });
 
   const warehouseDropdown = useInfiniteDropdown({
     queryHook: apiSlice.useGetWarehouseQuery,
     limit: 20,
+    searchFields: ['warehouse_name', 'warehouse_code'],
   });
 
   const branchDropdown = useInfiniteDropdown({
     queryHook: apiSlice.useGetBranchesQuery,
     limit: 20,
+    searchFields: ['branch_name'],
   });
 
   const rackDropdown = useInfiniteDropdown({
     queryHook: apiSlice.useGetRackQuery,
     limit: 20,
+    searchFields: ['name'],
   });
 
   // Use RTK Query mutations

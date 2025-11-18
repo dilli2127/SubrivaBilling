@@ -34,6 +34,7 @@ export const BusinessTypeSelect: React.FC<BusinessTypeSelectProps> = ({
 		queryHook: (apiSlice as any).useGetBusinessTypeQuery,
 		limit: 20,
 		searchDebounceMs: 300,
+		searchFields: ['name', 'code'],
 	});
 
 	return (

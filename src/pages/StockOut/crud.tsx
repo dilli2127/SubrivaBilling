@@ -24,6 +24,7 @@ const StockOutCrud: React.FC = () => {
   const stockAuditDropdown = useInfiniteDropdown({
     queryHook: apiSlice.useGetStockAuditQuery,
     limit: 20,
+    searchFields: ['invoice_id', 'batch_no'],
   });
 
   type StockOutRecord = {

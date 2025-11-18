@@ -5,6 +5,7 @@ export interface InfiniteDropdownOptions {
   limit?: number; // Items per page (default: 20)
   searchDebounceMs?: number; // Debounce delay (default: 300ms)
   scrollThreshold?: number; // Scroll percentage to trigger load (default: 0.7 = 70%)
+  searchFields?: string[]; // Fields to target when performing backend search
 }
 
 export interface InfiniteDropdownResult {
@@ -41,6 +42,7 @@ export const useInfiniteDropdown = ({
   limit = 20,
   searchDebounceMs = 300,
   scrollThreshold = 0.7,
+  searchFields = [],
 }: InfiniteDropdownOptions): InfiniteDropdownResult => {
   // State
   const [searchString, setSearchString] = useState('');
@@ -83,12 +85,21 @@ export const useInfiniteDropdown = ({
 
   // Fetch data using the provided query hook
   // Enable refetchOnMountOrArgChange to ensure fresh data on component mount
+  const hasSearchString = debouncedSearch.trim().length > 0;
+  const shouldApplySearchFields = hasSearchString && searchFields.length > 0;
+
+  const queryArgs: Record<string, any> = {
+    pageNumber: page,
+    pageLimit: limit,
+    searchString: debouncedSearch,
+  };
+
+  if (shouldApplySearchFields) {
+    queryArgs.searchFields = searchFields;
+  }
+
   const { data, isLoading, isFetching, refetch } = queryHook(
-    {
-      pageNumber: page,
-      pageLimit: limit,
-      searchString: debouncedSearch,
-    },
+    queryArgs,
     {
       refetchOnMountOrArgChange: true, // Always fetch fresh data on mount
       refetchOnFocus: false,

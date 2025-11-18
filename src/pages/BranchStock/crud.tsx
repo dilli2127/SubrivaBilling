@@ -20,6 +20,7 @@ const BranchStock: React.FC = () => {
   const rackDropdown = useInfiniteDropdown({
     queryHook: apiSlice.useGetRackQuery,
     limit: 20,
+    searchFields: ['name'],
   });
   
   const BranchStockList = (branchStockData as any)?.result || [];

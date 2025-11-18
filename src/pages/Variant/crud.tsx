@@ -17,6 +17,7 @@ const VariantCrud: React.FC = () => {
   const unitDropdown = useInfiniteDropdown({
     queryHook: apiSlice.useGetUnitQuery,
     limit: 20,
+    searchFields: ['unit_name'],
   });
 
   const variantConfig = useMemo(() => ({
