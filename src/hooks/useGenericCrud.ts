@@ -104,7 +104,17 @@ export const useGenericCrud = <T extends BaseEntity>(
   }, [debouncedFilters]);
 
   // Get RTK Query hooks for this entity
-  const entityHooks = getEntityHooks(config.entityName);
+  const entityHooks = useMemo(() => {
+    try {
+      return getEntityHooks(config.entityName);
+    } catch (error: any) {
+      const errorMessage = error?.message || 'Unknown error';
+      throw new Error(
+        `Failed to get RTK Query hooks for entity '${config.entityName}': ${errorMessage}. ` +
+        `Please check that the entity name matches the name used in API_ROUTES.`
+      );
+    }
+  }, [config.entityName]);
 
   // Memoize query parameters to prevent unnecessary re-renders
   const queryParams = useMemo(
@@ -125,7 +135,14 @@ export const useGenericCrud = <T extends BaseEntity>(
     [pagination, debouncedFilters, config.searchFields]
   );
 
-  // RTK Query hooks
+  // RTK Query hooks - validate that hooks exist before calling
+  if (!entityHooks?.useGetQuery || typeof entityHooks.useGetQuery !== 'function') {
+    throw new Error(
+      `RTK Query hook 'useGetQuery' is not available for entity '${config.entityName}'. ` +
+      `The hook may not be properly generated. Please check that the entity is defined in API_ROUTES.`
+    );
+  }
+
   const {
     data: queryData,
     isLoading: loading,

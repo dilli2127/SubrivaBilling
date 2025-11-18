@@ -477,17 +477,224 @@ export const {
   useDeleteWarehouseMutation,
 } = apiSlice;
 
+// Cache to track dynamically injected entities
+const injectedEntities = new Set<string>();
+
+/**
+ * Dynamically inject RTK Query endpoints for an entity that's not in API_ROUTES
+ * This allows dynamic entities (from EntityDefinition) to work without being pre-defined
+ */
+const injectDynamicEntityEndpoints = (entityName: string) => {
+  // Normalize entity name (capitalize first letter)
+  const normalizedName = entityName.charAt(0).toUpperCase() + entityName.slice(1);
+  
+  // Check if already injected
+  if (injectedEntities.has(normalizedName)) {
+    return;
+  }
+
+  // Check if entity already exists in API_ROUTES
+  const availableEntities = getAvailableEntities();
+  const existsInRoutes = availableEntities.some(
+    (e) => e.toLowerCase() === entityName.toLowerCase()
+  );
+  
+  if (existsInRoutes) {
+    return; // Entity already exists, no need to inject
+  }
+
+  // Create CRUD routes for the dynamic entity
+  const baseEndpoint = `/${entityName}`;
+  const routes = {
+    GetAll: {
+      identifier: `GetAll${normalizedName}`,
+      method: 'POST',
+      endpoint: baseEndpoint,
+    },
+    Get: {
+      identifier: `Get${normalizedName}`,
+      method: 'GET',
+      endpoint: baseEndpoint,
+    },
+    Create: {
+      identifier: `Add${normalizedName}`,
+      method: 'PUT',
+      endpoint: baseEndpoint,
+    },
+    Update: {
+      identifier: `Update${normalizedName}`,
+      method: 'POST',
+      endpoint: baseEndpoint,
+    },
+    Delete: {
+      identifier: `Delete${normalizedName}`,
+      method: 'DELETE',
+      endpoint: baseEndpoint,
+    },
+  };
+
+  // Inject endpoints into apiSlice
+  apiSlice.injectEndpoints({
+    endpoints: (builder) => {
+      const endpoints: any = {};
+      const name = normalizedName;
+
+      // Get All endpoint
+      endpoints[`get${name}`] = builder.query({
+        query: (
+          params: { pageNumber?: number; pageLimit?: number; [key: string]: any } = {}
+        ) => {
+          const route = routes.GetAll;
+          return {
+            url: route.endpoint,
+            method: route.method,
+            body: { pageNumber: 1, pageLimit: 10, ...params },
+          };
+        },
+        providesTags: [name],
+      });
+
+      // Get by ID endpoint
+      endpoints[`get${name}ById`] = builder.query({
+        query: ({ id, ...params }: { id: string; [key: string]: any }) => {
+          const route = routes.Get;
+          return {
+            url: `${route.endpoint}/${id}`,
+            method: route.method,
+            body: params,
+          };
+        },
+        providesTags: (result: any, error: any, { id }: { id: string }) => [
+          { type: name, id },
+        ],
+      });
+
+      // Create endpoint
+      endpoints[`create${name}`] = builder.mutation({
+        query: (data: any) => {
+          const route = routes.Create;
+          return {
+            url: route.endpoint,
+            method: route.method,
+            body: data,
+          };
+        },
+        invalidatesTags: [name],
+      });
+
+      // Update endpoint
+      endpoints[`update${name}`] = builder.mutation({
+        query: ({ id, data }: { id: string; data: any }) => {
+          const route = routes.Update;
+          return {
+            url: `${route.endpoint}/${id}`,
+            method: route.method,
+            body: data,
+          };
+        },
+        invalidatesTags: (result: any, error: any, { id }: { id: string }) => [
+          { type: name, id },
+          name,
+        ],
+      });
+
+      // Delete endpoint
+      endpoints[`delete${name}`] = builder.mutation({
+        query: (id: string) => {
+          const route = routes.Delete;
+          return {
+            url: `${route.endpoint}/${id}`,
+            method: route.method,
+          };
+        },
+        invalidatesTags: (result: any, error: any, id: string) => [
+          { type: name, id },
+          name,
+        ],
+      });
+
+      return endpoints;
+    },
+    overrideExisting: false, // Don't override if already exists
+  });
+
+  // Mark as injected
+  injectedEntities.add(normalizedName);
+};
+
 // Helper function to get RTK hooks for any entity dynamically
 export const getEntityHooks = (entityName: string) => {
-  // Capitalize first letter
-  const capitalizedEntity = entityName.charAt(0).toUpperCase() + entityName.slice(1);
+  // Try to find the correct entity name format by checking available entities
+  const availableEntities = getAvailableEntities();
+  let actualEntityName = entityName;
+  
+  // Try to match the entity name (case-insensitive)
+  const matchedEntity = availableEntities.find(
+    (e) => e.toLowerCase() === entityName.toLowerCase()
+  );
+  
+  if (matchedEntity) {
+    actualEntityName = matchedEntity;
+  } else {
+    // Fallback: capitalize first letter
+    actualEntityName = entityName.charAt(0).toUpperCase() + entityName.slice(1);
+  }
 
   // Get the hooks directly from the apiSlice
-  const getQueryHook = (apiSlice as any)[`useGet${capitalizedEntity}Query`];
-  const getByIdQueryHook = (apiSlice as any)[`useGet${capitalizedEntity}ByIdQuery`];
-  const createMutationHook = (apiSlice as any)[`useCreate${capitalizedEntity}Mutation`];
-  const updateMutationHook = (apiSlice as any)[`useUpdate${capitalizedEntity}Mutation`];
-  const deleteMutationHook = (apiSlice as any)[`useDelete${capitalizedEntity}Mutation`];
+  let getQueryHook = (apiSlice as any)[`useGet${actualEntityName}Query`];
+  let getByIdQueryHook = (apiSlice as any)[`useGet${actualEntityName}ByIdQuery`];
+  let createMutationHook = (apiSlice as any)[`useCreate${actualEntityName}Mutation`];
+  let updateMutationHook = (apiSlice as any)[`useUpdate${actualEntityName}Mutation`];
+  let deleteMutationHook = (apiSlice as any)[`useDelete${actualEntityName}Mutation`];
+
+  // If hooks don't exist, try to inject them dynamically (for dynamic entities)
+  if (!getQueryHook || typeof getQueryHook !== 'function') {
+    try {
+      injectDynamicEntityEndpoints(entityName);
+      // Try again after injection
+      actualEntityName = entityName.charAt(0).toUpperCase() + entityName.slice(1);
+      getQueryHook = (apiSlice as any)[`useGet${actualEntityName}Query`];
+      getByIdQueryHook = (apiSlice as any)[`useGet${actualEntityName}ByIdQuery`];
+      createMutationHook = (apiSlice as any)[`useCreate${actualEntityName}Mutation`];
+      updateMutationHook = (apiSlice as any)[`useUpdate${actualEntityName}Mutation`];
+      deleteMutationHook = (apiSlice as any)[`useDelete${actualEntityName}Mutation`];
+    } catch (injectionError) {
+      // If injection fails, fall through to error message
+      console.warn(`Failed to inject dynamic endpoints for ${entityName}:`, injectionError);
+    }
+  }
+
+  // Validate that required hooks exist
+  if (!getQueryHook || typeof getQueryHook !== 'function') {
+    const availableEntitiesList = availableEntities.join(', ');
+    throw new Error(
+      `RTK Query hook 'useGet${actualEntityName}Query' not found for entity '${entityName}'. ` +
+      `Available entities: ${availableEntitiesList || 'none'}. ` +
+      `Tried to inject dynamic endpoints but hooks are still not available. ` +
+      `Tried entity name: '${actualEntityName}'`
+    );
+  }
+
+  if (!createMutationHook || typeof createMutationHook !== 'function' ||
+      !updateMutationHook || typeof updateMutationHook !== 'function' ||
+      !deleteMutationHook || typeof deleteMutationHook !== 'function') {
+    const missingHooks = [];
+    if (!createMutationHook || typeof createMutationHook !== 'function') {
+      missingHooks.push(`useCreate${actualEntityName}Mutation`);
+    }
+    if (!updateMutationHook || typeof updateMutationHook !== 'function') {
+      missingHooks.push(`useUpdate${actualEntityName}Mutation`);
+    }
+    if (!deleteMutationHook || typeof deleteMutationHook !== 'function') {
+      missingHooks.push(`useDelete${actualEntityName}Mutation`);
+    }
+    
+    throw new Error(
+      `RTK Query hooks not found for entity '${entityName}': ${missingHooks.join(', ')}. ` +
+      `Tried to inject dynamic endpoints but hooks are still not available. ` +
+      `Tried entity name: '${actualEntityName}'`
+    );
+  }
 
   return {
     useGetQuery: getQueryHook,
