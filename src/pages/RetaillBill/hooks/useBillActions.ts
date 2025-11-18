@@ -85,6 +85,10 @@ export const useBillActions = (config: BillActionsConfig) => {
           : 0,
       status: 'draft',
       document_type: config.documentType,
+      // Points redemption fields
+      ...(config.billFormData.points_used > 0 && {
+        points_used: config.billFormData.points_used,
+      }),
     };
 
     try {
@@ -203,6 +207,10 @@ export const useBillActions = (config: BillActionsConfig) => {
           : 0,
       status: 'completed',
       document_type: config.documentType,
+      // Points redemption fields - only include if points are being used
+      ...(config.billFormData.points_used > 0 && {
+        points_used: config.billFormData.points_used,
+      }),
     };
 
     try {
@@ -235,6 +243,11 @@ export const useBillActions = (config: BillActionsConfig) => {
 
         // Invalidate stock caches
         dispatch(apiSlice.util.invalidateTags(['StockAudit', 'BranchStock']));
+        
+        // Invalidate customer points cache if points were used
+        if (config.billFormData.points_used > 0 && config.billFormData.customer_id) {
+          dispatch(apiSlice.util.invalidateTags([{ type: 'CustomerPoints', id: config.billFormData.customer_id }]));
+        }
 
         config.onSaveSuccess?.(savedData);
         
@@ -258,8 +271,19 @@ export const useBillActions = (config: BillActionsConfig) => {
         } else {
           message.error(errorMessage, 8);
         }
-      } else {
-        message.error('Failed to complete bill. Please try again.');
+      } 
+      // Check if it's a points redemption error
+      else if (
+        error?.data?.exception === 'Points Redemption Failed' ||
+        error?.data?.message?.toLowerCase().includes('points') ||
+        error?.data?.statusCode === 400
+      ) {
+        const errorMessage = error?.data?.message || error?.data?.exception || 'Points redemption failed';
+        message.error(errorMessage, 6);
+      } 
+      else {
+        const errorMessage = error?.data?.message || error?.data?.exception || 'Failed to complete bill. Please try again.';
+        message.error(errorMessage, 6);
       }
       return false;
     }

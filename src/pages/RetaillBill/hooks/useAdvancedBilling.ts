@@ -11,6 +11,7 @@ import { useBillCalculations } from './useBillCalculations';
 import { useBillKeyboardShortcuts } from './useBillKeyboardShortcuts';
 import { useBillActions } from './useBillActions';
 import { useTemplateSettings } from '../../../hooks/useTemplateSettings';
+import { useCustomerPoints } from './useCustomerPoints';
 
 interface AdvancedBillingProps {
   billdata?: any;
@@ -37,6 +38,12 @@ export const useAdvancedBilling = ({ billdata, onSuccess }: AdvancedBillingProps
 
   // 2. Form State Management
   const form = useBillForm();
+
+  // 2.5. Customer Points Management
+  const customerPoints = useCustomerPoints({
+    customerId: form.billFormData.customer_id,
+    enabled: !!form.billFormData.customer_id,
+  });
 
   // 3. Modal Management
   const modals = useBillModals();
@@ -129,6 +136,40 @@ export const useAdvancedBilling = ({ billdata, onSuccess }: AdvancedBillingProps
     },
     [form.billFormData.items, handleItemsChange, modals]
   );
+
+  // Handle points change
+  const handlePointsChange = useCallback(
+    (points: number) => {
+      // Validate points
+      if (customerPoints.customerPoints) {
+        const validation = customerPoints.validatePointsRedemption(points);
+        if (!validation.valid) {
+          message.warning(validation.error || 'Invalid points value');
+          return;
+        }
+      }
+
+      // Calculate discount amount
+      const discountAmount = customerPoints.calculateDiscountFromPoints(points);
+
+      // Update form with points and calculated discount
+      form.updateHeader({
+        points_used: points,
+        points_converted_amount: discountAmount,
+      });
+    },
+    [customerPoints, form]
+  );
+
+  // Reset points when customer changes
+  useEffect(() => {
+    // Reset points when customer changes or is cleared
+    form.updateHeader({
+      points_used: 0,
+      points_converted_amount: 0,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [form.billFormData.customer_id]);
 
   // Handle stock selection
   const handleStockSelect = useCallback(
@@ -486,6 +527,9 @@ export const useAdvancedBilling = ({ billdata, onSuccess }: AdvancedBillingProps
     // Calculations
     billCalculations,
     
+    // Customer Points
+    customerPoints,
+    
     // Modals
     modals,
     
@@ -497,6 +541,7 @@ export const useAdvancedBilling = ({ billdata, onSuccess }: AdvancedBillingProps
     handleQuantityChange,
     handleProductSelect,
     handleStockSelect,
+    handlePointsChange,
     handlePrint,
     handleDownload,
     

@@ -49,9 +49,11 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
     modals,
     actions,
     billCalculations,
+    customerPoints,
     handleQuantityChange,
     handleProductSelect,
     handleStockSelect,
+    handlePointsChange,
     handlePrint,
     handleDownload,
     productOptions,
@@ -277,6 +279,10 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
         <BillSummary
           billCalculations={billCalculations}
           billSettings={form.billSettings}
+          customerId={form.billFormData.customer_id}
+          pointsUsed={form.billFormData.points_used || 0}
+          pointsConvertedAmount={form.billFormData.points_converted_amount || 0}
+          availablePoints={customerPoints.customerPoints?.available_points || 0}
           onDiscountChange={value => form.updateSettings({ discount: value })}
           onDiscountTypeChange={checked =>
             form.updateSettings({
@@ -284,6 +290,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
             })
           }
           onPaidAmountChange={value => form.updateSettings({ paidAmount: value })}
+          onPointsUsedChange={handlePointsChange}
         />
       </div>
 

@@ -232,4 +232,6 @@ export interface BillFormData {
   billed_by_name?: string;
   payment_mode: string;
   items: BillItem[];
+  points_used?: number;
+  points_converted_amount?: number;
 }

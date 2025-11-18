@@ -16,6 +16,7 @@ import {
 } from '../../../../types/customerPoints';
 
 export const pointsApi = apiSlice.injectEndpoints({
+  overrideExisting: true,
   endpoints: (builder) => ({
     // ==================== Customer Points ====================
     

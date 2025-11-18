@@ -1,5 +1,6 @@
 import React from 'react';
 import { Typography, InputNumber, Switch } from 'antd';
+import { GiftOutlined } from '@ant-design/icons';
 import styles from './BillDataGrid.module.css';
 
 const { Text } = Typography;
@@ -21,17 +22,27 @@ interface BillSummaryProps {
     isPartiallyPaid: boolean;
     paidAmount: number;
   };
+  customerId?: string;
+  pointsUsed?: number;
+  pointsConvertedAmount?: number;
+  availablePoints?: number;
   onDiscountChange: (value: number) => void;
   onDiscountTypeChange: (checked: boolean) => void;
   onPaidAmountChange: (value: number) => void;
+  onPointsUsedChange?: (points: number) => void;
 }
 
 const BillSummary: React.FC<BillSummaryProps> = ({
   billCalculations,
   billSettings,
+  customerId,
+  pointsUsed = 0,
+  pointsConvertedAmount = 0,
+  availablePoints = 0,
   onDiscountChange,
   onDiscountTypeChange,
   onPaidAmountChange,
+  onPointsUsedChange,
 }) => {
   return (
     <div className={styles.billSummary}>
@@ -100,6 +111,18 @@ const BillSummary: React.FC<BillSummaryProps> = ({
           </div>
         )}
 
+        {pointsConvertedAmount > 0 && (
+          <div className={styles.summaryRow}>
+            <Text className={styles.summaryLabel}>
+              <GiftOutlined style={{ marginRight: 4 }} />
+              POINTS DISCOUNT:
+            </Text>
+            <Text className={styles.discountValue}>
+              -₹{pointsConvertedAmount.toFixed(2)}
+            </Text>
+          </div>
+        )}
+
         <div className={styles.totalAmountRow}>
           <Text className={styles.totalAmountLabel}>NET/EXC/REPL:</Text>
           <Text className={styles.totalAmountValue}>
@@ -155,6 +178,37 @@ const BillSummary: React.FC<BillSummaryProps> = ({
             />
           </div>
         </div>
+
+        {/* Points Redemption Controls */}
+        {customerId && onPointsUsedChange && (
+          <div className={styles.pointsControl}>
+            <Text className={styles.pointsControlLabel}>
+              <GiftOutlined style={{ marginRight: 4 }} />
+              POINTS {availablePoints > 0 ? `(${availablePoints} pts)` : '(0 pts)'}
+            </Text>
+            <InputNumber
+              min={0}
+              max={availablePoints}
+              value={pointsUsed}
+              onChange={value => onPointsUsedChange(value || 0)}
+              style={{ width: 90 }}
+              size="small"
+              placeholder="0"
+              step={1}
+              disabled={availablePoints === 0}
+            />
+            {pointsUsed > 0 && (
+              <Text style={{ fontSize: '11px', color: '#52c41a', marginTop: 4, display: 'block' }}>
+                Discount: ₹{pointsConvertedAmount.toFixed(2)}
+              </Text>
+            )}
+            {availablePoints === 0 && (
+              <Text style={{ fontSize: '10px', color: '#999', marginTop: 4, display: 'block' }}>
+                No points available
+              </Text>
+            )}
+          </div>
+        )}
 
         {/* Partial Payment Controls */}
         {billSettings.isPartiallyPaid && (

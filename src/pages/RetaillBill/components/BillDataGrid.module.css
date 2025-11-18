@@ -689,6 +689,29 @@
   margin-bottom: 4px;
 }
 
+/* Points Control */
+.pointsControl {
+  text-align: center;
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid #f59e0b;
+  min-width: 130px;
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.15);
+  transition: all 0.3s ease;
+  margin-bottom: 12px;
+}
+
+.pointsControlLabel {
+  color: #92400e;
+  font-size: 10px;
+  display: block;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
 /* Action Hub */
 .actionHub {
   display: flex;

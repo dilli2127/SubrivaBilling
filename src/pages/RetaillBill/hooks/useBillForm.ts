@@ -25,6 +25,8 @@ export const useBillForm = () => {
     billed_by_name: '',
     payment_mode: 'cash',
     items: [],
+    points_used: 0,
+    points_converted_amount: 0,
   });
 
   const [billSettings, setBillSettings] = useState<BillSettings>({
@@ -105,6 +107,8 @@ export const useBillForm = () => {
           tax_percentage: 0,
         },
       ],
+      points_used: 0,
+      points_converted_amount: 0,
     });
 
     setBillSettings({
@@ -136,6 +140,8 @@ export const useBillForm = () => {
       billed_by: billdata.billed_by || '',
       billed_by_name: billdata.billedByDetails?.name || '',
       payment_mode: billdata.payment_mode,
+      points_used: billdata.points_used || 0,
+      points_converted_amount: billdata.points_converted_amount || 0,
       items:
         billdata.Items?.map((item: any) => ({
           _id: item._id,
