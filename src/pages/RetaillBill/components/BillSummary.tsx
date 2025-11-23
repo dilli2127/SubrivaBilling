@@ -49,7 +49,7 @@ const BillSummary: React.FC<BillSummaryProps> = ({
       {/* Decorative half circles for summary */}
       <div className={styles.summaryCircle1} />
       <div className={styles.summaryCircle2} />
-      
+
       {/* Header */}
       <div className={styles.summaryHeader}>
         <Text className={styles.summaryTitle}>💰 BILL SUMMARY</Text>
@@ -99,14 +99,14 @@ const BillSummary: React.FC<BillSummaryProps> = ({
               -₹
               {billSettings.discountType === 'percentage'
                 ? (
-                    ((billCalculations.sub_total + billCalculations.total_gst) *
-                      (typeof billSettings.discount === 'number' ? billSettings.discount : 0)) /
-                    100
-                  ).toFixed(2)
+                  ((billCalculations.sub_total + billCalculations.total_gst) *
+                    (typeof billSettings.discount === 'number' ? billSettings.discount : 0)) /
+                  100
+                ).toFixed(2)
                 : (typeof billSettings.discount === 'number'
-                    ? billSettings.discount
-                    : 0
-                  ).toFixed(2)}
+                  ? billSettings.discount
+                  : 0
+                ).toFixed(2)}
             </Text>
           </div>
         )}
@@ -177,33 +177,38 @@ const BillSummary: React.FC<BillSummaryProps> = ({
               size="small"
             />
           </div>
+          {billSettings.discount > 0 && (
+            <Text style={{ fontSize: '11px', color: '#10b981', marginTop: 4, display: 'block', fontWeight: 600 }}>
+              Saved: ₹{billCalculations.discountValue.toFixed(2)}
+            </Text>
+          )}
         </div>
 
         {/* Points Redemption Controls */}
         {customerId && onPointsUsedChange && (
           <div className={styles.pointsControl}>
             <Text className={styles.pointsControlLabel}>
-              <GiftOutlined style={{ marginRight: 4 }} />
-              POINTS {availablePoints > 0 ? `(${availablePoints} pts)` : '(0 pts)'}
+              <GiftOutlined style={{ marginRight: 4, color: '#8b5cf6' }} />
+              POINTS {availablePoints > 0 ? `(${availablePoints})` : ''}
             </Text>
             <InputNumber
               min={0}
               max={availablePoints}
               value={pointsUsed}
               onChange={value => onPointsUsedChange(value || 0)}
-              style={{ width: 90 }}
+              style={{ width: '100%' }}
               size="small"
               placeholder="0"
               step={1}
               disabled={availablePoints === 0}
             />
             {pointsUsed > 0 && (
-              <Text style={{ fontSize: '11px', color: '#52c41a', marginTop: 4, display: 'block' }}>
-                Discount: ₹{pointsConvertedAmount.toFixed(2)}
+              <Text style={{ fontSize: '11px', color: '#10b981', marginTop: 4, display: 'block', fontWeight: 600 }}>
+                Saved: ₹{pointsConvertedAmount.toFixed(2)}
               </Text>
             )}
             {availablePoints === 0 && (
-              <Text style={{ fontSize: '10px', color: '#999', marginTop: 4, display: 'block' }}>
+              <Text style={{ fontSize: '10px', color: '#94a3b8', marginTop: 4, display: 'block' }}>
                 No points available
               </Text>
             )}

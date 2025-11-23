@@ -283,7 +283,7 @@ const BillDataGrid: React.FC<BillDataGridProps> = ({ billdata, onSuccess }) => {
           pointsUsed={form.billFormData.points_used || 0}
           pointsConvertedAmount={form.billFormData.points_converted_amount || 0}
           availablePoints={customerPoints.customerPoints?.available_points || 0}
-          onDiscountChange={value => form.updateSettings({ discount: value })}
+          onDiscountChange={billing.handleDiscountChange}
           onDiscountTypeChange={checked =>
             form.updateSettings({
               discountType: checked ? 'percentage' : 'amount',

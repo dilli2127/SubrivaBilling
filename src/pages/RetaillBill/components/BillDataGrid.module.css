@@ -351,7 +351,7 @@
   font-size: 16px;
   text-transform: uppercase;
   letter-spacing: 1px;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .billItemsBadge {
@@ -554,7 +554,7 @@
 .discountControlLabel {
   font-weight: 600;
   color: #7c3aed;
-  font-size: 12px;
+  font-size: 11px;
   margin-bottom: 8px;
   display: block;
 }
@@ -581,14 +581,14 @@
 .summaryTotalLabel {
   font-weight: 800;
   font-size: 14px;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .summaryTotalValue {
   font-weight: 900;
   font-size: 18px;
   font-family: monospace;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .partialPaymentInfo {
@@ -642,23 +642,28 @@
 
 .discountControl {
   text-align: center;
-  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  background: #ffffff;
   padding: 10px 12px;
   border-radius: 8px;
-  border: 1px solid #f59e0b;
+  border: 1px solid #e2e8f0;
   min-width: 120px;
-  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.15);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
   transition: all 0.3s ease;
 }
 
+.discountControl:hover {
+  border-color: #cbd5e1;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
 .discountLabel {
-  color: #92400e;
-  font-size: 10px;
+  color: #64748b;
+  font-size: 11px;
   display: block;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
 }
 
 .discountInputs {
@@ -692,24 +697,29 @@
 /* Points Control */
 .pointsControl {
   text-align: center;
-  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  background: #ffffff;
   padding: 10px 12px;
   border-radius: 8px;
-  border: 1px solid #f59e0b;
+  border: 1px solid #e2e8f0;
   min-width: 130px;
-  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.15);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
   transition: all 0.3s ease;
   margin-bottom: 12px;
 }
 
+.pointsControl:hover {
+  border-color: #cbd5e1;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
 .pointsControlLabel {
-  color: #92400e;
-  font-size: 10px;
+  color: #64748b;
+  font-size: 11px;
   display: block;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
 }
 
 /* Action Hub */
@@ -728,7 +738,8 @@
   flex-direction: column;
   gap: 10px;
 }
-.actionButtonsContainer{
+
+.actionButtonsContainer {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -1034,13 +1045,27 @@
 
 /* Animations */
 @keyframes gradientShift {
-  0%, 100% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
+
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
 }
 
 @keyframes float {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-20px); }
+
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-20px);
+  }
 }
 
 @keyframes slideInDown {
@@ -1048,6 +1073,7 @@
     opacity: 0;
     transform: translateY(-30px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -1059,6 +1085,7 @@
     opacity: 0;
     transform: translateY(30px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -1070,6 +1097,7 @@
     opacity: 0;
     transform: translateX(-30px);
   }
+
   to {
     opacity: 1;
     transform: translateX(0);
@@ -1081,6 +1109,7 @@
     opacity: 0;
     transform: translateX(30px);
   }
+
   to {
     opacity: 1;
     transform: translateX(0);
@@ -1092,6 +1121,7 @@
     opacity: 0;
     transform: translateX(-30px);
   }
+
   to {
     opacity: 1;
     transform: translateX(0);
@@ -1103,6 +1133,7 @@
     opacity: 0;
     transform: translateX(30px);
   }
+
   to {
     opacity: 1;
     transform: translateX(0);
@@ -1114,6 +1145,7 @@
     opacity: 0;
     transform: translateY(30px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -1121,24 +1153,36 @@
 }
 
 @keyframes bounce {
-  0%, 20%, 53%, 80%, 100% {
-    transform: translate3d(0,0,0);
+
+  0%,
+  20%,
+  53%,
+  80%,
+  100% {
+    transform: translate3d(0, 0, 0);
   }
-  40%, 43% {
-    transform: translate3d(0,-30px,0);
+
+  40%,
+  43% {
+    transform: translate3d(0, -30px, 0);
   }
+
   70% {
-    transform: translate3d(0,-15px,0);
+    transform: translate3d(0, -15px, 0);
   }
+
   90% {
-    transform: translate3d(0,-4px,0);
+    transform: translate3d(0, -4px, 0);
   }
 }
 
 @keyframes pulse {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: scale(1);
   }
+
   50% {
     transform: scale(1.05);
   }
@@ -1148,6 +1192,7 @@
   from {
     transform: rotate(0deg);
   }
+
   to {
     transform: rotate(360deg);
   }
@@ -1158,6 +1203,7 @@
     transform: scale(0);
     opacity: 0;
   }
+
   100% {
     transform: scale(1);
     opacity: 1;

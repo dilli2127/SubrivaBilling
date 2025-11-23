@@ -60,7 +60,8 @@ export const useAdvancedBilling = ({ billdata, onSuccess }: AdvancedBillingProps
   // 5. Bill Calculations
   const billCalculations = useBillCalculations(
     form.billFormData.items,
-    form.billSettings
+    form.billSettings,
+    form.billFormData.points_converted_amount || 0
   );
 
   // 6. Save/Print/Clear Actions
@@ -83,7 +84,23 @@ export const useAdvancedBilling = ({ billdata, onSuccess }: AdvancedBillingProps
   // Handle items change with calculation
   const handleItemsChange = useCallback(
     (newItems: any[]) => {
-      const calculatedItems = items.handleItemsChange(newItems);
+      // Sanitize inputs: prevent negative quantities
+      const sanitizedItems = newItems.map(item => {
+        const qty = Number(item.qty);
+        const loose_qty = Number(item.loose_qty);
+        
+        if (qty < 0 || loose_qty < 0) {
+          message.warning('Quantity cannot be negative');
+        }
+
+        return {
+          ...item,
+          qty: Math.max(0, qty || 0),
+          loose_qty: Math.max(0, loose_qty || 0)
+        };
+      });
+
+      const calculatedItems = items.handleItemsChange(sanitizedItems);
       form.updateItems(calculatedItems);
     },
     [items, form]
@@ -92,6 +109,11 @@ export const useAdvancedBilling = ({ billdata, onSuccess }: AdvancedBillingProps
   // Handle quantity change
   const handleQuantityChange = useCallback(
     (rowIndex: number, field: 'qty' | 'loose_qty', value: number) => {
+      if (value < 0) {
+        message.warning('Quantity cannot be negative');
+        return;
+      }
+
       const newItems = [...form.billFormData.items];
       const item = newItems[rowIndex];
 
@@ -108,7 +130,7 @@ export const useAdvancedBilling = ({ billdata, onSuccess }: AdvancedBillingProps
   const handleProductSelect = useCallback(
     (product: any, rowOrIndex: any) => {
       const newItems = [...form.billFormData.items];
-      
+
       // Find row index - AntdEditableTable passes row object, others might pass index number
       let rowIndex: number;
       if (typeof rowOrIndex === 'number') {
@@ -117,12 +139,12 @@ export const useAdvancedBilling = ({ billdata, onSuccess }: AdvancedBillingProps
         // rowOrIndex is the row object - find its index by key
         rowIndex = newItems.findIndex(item => (item as any).key === rowOrIndex.key);
       }
-      
+
       if (rowIndex === -1) {
         console.error('❌ Could not find row index for product selection!');
         return;
       }
-      
+
       // Store ALL product data (including tax %) for calculations
       newItems[rowIndex].product_id = product.id || product._id || '';
       newItems[rowIndex].product_name = product.name || '';
@@ -130,7 +152,7 @@ export const useAdvancedBilling = ({ billdata, onSuccess }: AdvancedBillingProps
       newItems[rowIndex].price = product.selling_price || 0;
       newItems[rowIndex].tax_percentage = product.CategoryItem?.tax_percentage || 0;
       newItems[rowIndex].category_name = product.CategoryItem?.category_name || '';
-      
+
       handleItemsChange(newItems);
       modals.openStockModal(rowIndex);
     },
@@ -152,13 +174,43 @@ export const useAdvancedBilling = ({ billdata, onSuccess }: AdvancedBillingProps
       // Calculate discount amount
       const discountAmount = customerPoints.calculateDiscountFromPoints(points);
 
+      // Validate against bill amount
+      if (discountAmount > billCalculations.total_amount) {
+        message.warning('Points discount cannot exceed bill amount');
+        return;
+      }
+
       // Update form with points and calculated discount
       form.updateHeader({
         points_used: points,
         points_converted_amount: discountAmount,
       });
     },
-    [customerPoints, form]
+    [customerPoints, form, billCalculations]
+  );
+
+  // Handle discount change
+  const handleDiscountChange = useCallback(
+    (value: number) => {
+      if (value < 0) return;
+
+      if (form.billSettings.discountType === 'percentage') {
+        if (value > 100) {
+          message.warning('Discount percentage cannot exceed 100%');
+          return;
+        }
+      } else {
+        // Amount validation
+        // Use sub_total as the limit (gross amount before discount)
+        if (value > billCalculations.sub_total) {
+          message.warning('Discount amount cannot exceed bill subtotal');
+          return;
+        }
+      }
+
+      form.updateSettings({ discount: value });
+    },
+    [form, billCalculations.sub_total]
   );
 
   // Reset points when customer changes
@@ -290,21 +342,21 @@ export const useAdvancedBilling = ({ billdata, onSuccess }: AdvancedBillingProps
     };
 
     // Select appropriate template
-    const TemplateComponent = form.documentType === 'bill' 
-      ? BillTemplateComponent 
+    const TemplateComponent = form.documentType === 'bill'
+      ? BillTemplateComponent
       : InvoiceTemplateComponent;
 
     // Render template to HTML
-    const element = React.createElement(TemplateComponent, { 
-      billData: billDataForPDF, 
-      settings: enhancedSettings 
+    const element = React.createElement(TemplateComponent, {
+      billData: billDataForPDF,
+      settings: enhancedSettings
     });
     const templateHtml = ReactDOMServer.renderToString(element);
 
     // Import and use PDF helper for printing
     const { printAsPDF } = await import('../../../helpers/pdfHelper');
     const fileName = `${form.documentType}_${billDataForPDF.invoice_no}_${dayjs().format('YYYYMMDD')}`;
-    
+
     await printAsPDF(templateHtml, fileName, form.documentType);
   }, [form, billCalculations, billData, BillTemplateComponent, InvoiceTemplateComponent, settings]);
 
@@ -377,21 +429,21 @@ export const useAdvancedBilling = ({ billdata, onSuccess }: AdvancedBillingProps
     };
 
     // Select appropriate template
-    const TemplateComponent = form.documentType === 'bill' 
-      ? BillTemplateComponent 
+    const TemplateComponent = form.documentType === 'bill'
+      ? BillTemplateComponent
       : InvoiceTemplateComponent;
 
     // Render template to HTML
-    const element = React.createElement(TemplateComponent, { 
-      billData: billDataForPDF, 
-      settings: enhancedSettings 
+    const element = React.createElement(TemplateComponent, {
+      billData: billDataForPDF,
+      settings: enhancedSettings
     });
     const templateHtml = ReactDOMServer.renderToString(element);
 
     // Import and use PDF helper
     const { downloadAsPDF } = await import('../../../helpers/pdfHelper');
     const fileName = `${form.documentType}_${billDataForPDF.invoice_no}_${dayjs().format('YYYYMMDD')}`;
-    
+
     await downloadAsPDF(templateHtml, fileName, form.documentType);
   }, [form, billCalculations, billData, BillTemplateComponent, InvoiceTemplateComponent, settings]);
 
@@ -436,7 +488,7 @@ export const useAdvancedBilling = ({ billdata, onSuccess }: AdvancedBillingProps
   useEffect(() => {
     // Products, Customers, Vendors, Users: All loaded by modals when opened
     // Selected product data (with tax %) is stored in bill items for calculations
-    
+
     // Get invoice number for new bills
     if (!billdata && !billData.invoice_no_create_loading && !form.billFormData.invoice_no) {
       billData.refetchInvoiceNo();
@@ -491,14 +543,14 @@ export const useAdvancedBilling = ({ billdata, onSuccess }: AdvancedBillingProps
 
   // 13. Recalculate items when editing and stock data is loaded
   useEffect(() => {
-    if (billdata && form.billFormData.items.length > 0 && 
-        (billData.branchStockListResult.length > 0 || billData.stockAuditListResult.length > 0)) {
-      
+    if (billdata && form.billFormData.items.length > 0 &&
+      (billData.branchStockListResult.length > 0 || billData.stockAuditListResult.length > 0)) {
+
       // Check if any item needs stock data populated
       const needsStockData = form.billFormData.items.some(
         (item: any) => item.stock_id && !item.stockData
       );
-      
+
       if (needsStockData) {
         // Recalculate items to populate stockData from stock lists
         const calculatedItems = items.calculateItemAmounts(form.billFormData.items);
@@ -508,8 +560,8 @@ export const useAdvancedBilling = ({ billdata, onSuccess }: AdvancedBillingProps
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     billdata?._id, // Trigger when different bill is loaded
-    form.billFormData.items.length, 
-    billData.branchStockListResult.length, 
+    form.billFormData.items.length,
+    billData.branchStockListResult.length,
     billData.stockAuditListResult.length
   ]);
 
@@ -517,41 +569,42 @@ export const useAdvancedBilling = ({ billdata, onSuccess }: AdvancedBillingProps
   return {
     // Data
     billData,
-    
+
     // Form
     form,
     billFormData: form.billFormData,
     billSettings: form.billSettings,
     documentType: form.documentType,
-    
+
     // Calculations
     billCalculations,
-    
+
     // Customer Points
     customerPoints,
-    
+
     // Modals
     modals,
-    
+
     // Actions
     actions,
-    
+
     // Handlers
     handleItemsChange,
     handleQuantityChange,
     handleProductSelect,
     handleStockSelect,
     handlePointsChange,
+    handleDiscountChange,
     handlePrint,
     handleDownload,
-    
+
     // Keyboard
     shortcuts,
 
     // Options for dropdowns
     // Product options not needed - products loaded in modal on demand
     productOptions: [],
-    
+
     customerOptions: useMemo(() => {
       const options = billData.customerListResult.map((customer: any) => ({
         label: `${customer.full_name} - ${customer.mobile}`,
@@ -574,7 +627,7 @@ export const useAdvancedBilling = ({ billdata, onSuccess }: AdvancedBillingProps
       form.billFormData.customer_id,
       form.billFormData.customer_name,
     ]),
-    
+
     userOptions: useMemo(() => {
       const options = billData.userListResult.map((user: any) => ({
         label: `${user.name} (${user.roleItems?.name || 'No Role'})`,

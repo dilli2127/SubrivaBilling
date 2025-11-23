@@ -31,14 +31,14 @@ export const useCustomerPoints = ({ customerId, enabled = true }: UseCustomerPoi
   // Extract customer points data from API response
   const customerPoints: CustomerPointsData | null = useMemo(() => {
     if (!pointsData) return null;
-    
+
     const result = (pointsData as any)?.result || pointsData;
-    
+
     return {
       available_points: Number(result?.available_points || 0),
       total_earned: Number(result?.total_earned || 0),
       total_redeemed: Number(result?.total_redeemed || 0),
-      points_value: Number(result?.points_value || 1), // Default 1 point = ₹1
+      points_value: Number(result?.points_value) || 1, // Default 1 point = ₹1
       tier: result?.tier || 'bronze',
     };
   }, [pointsData]);

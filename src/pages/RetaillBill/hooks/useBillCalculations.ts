@@ -10,7 +10,8 @@ interface BillSettings {
 
 export const useBillCalculations = (
   items: BillItem[],
-  billSettings: BillSettings
+  billSettings: BillSettings,
+  pointsDiscount: number = 0
 ) => {
   const billCalculations = useMemo(() => {
     if (!items.length)
@@ -24,14 +25,19 @@ export const useBillCalculations = (
         discountValue: 0,
       };
 
-    return calculateBillTotals({
+    const totals = calculateBillTotals({
       items,
       productList: [], // Not needed - tax_percentage stored in bill items
       isGstIncluded: billSettings.isGstIncluded,
       discount: billSettings.discount,
       discountType: billSettings.discountType,
     });
-  }, [items, billSettings]);
+
+    return {
+      ...totals,
+      total_amount: Math.max(0, totals.total_amount - pointsDiscount),
+    };
+  }, [items, billSettings, pointsDiscount]);
 
   return billCalculations;
 };
